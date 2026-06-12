@@ -54,17 +54,24 @@ auth.onAuthStateChanged(async (user) => {
   }
 });
 
+function clearSession() {
+  sessionStorage.removeItem('sessionInit');
+}
+
 async function registerUser(email, password, displayName) {
+  clearSession();
   const cred = await auth.createUserWithEmailAndPassword(email, password);
   await cred.user.updateProfile({ displayName });
   return cred;
 }
 
 async function loginUser(email, password) {
+  clearSession();
   return auth.signInWithEmailAndPassword(email, password);
 }
 
 async function loginGoogle() {
+  clearSession();
   return auth.signInWithPopup(googleProvider);
 }
 
