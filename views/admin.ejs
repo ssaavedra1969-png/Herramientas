@@ -1,0 +1,81 @@
+<%- include('partials/head') %>
+<div class="flex h-screen overflow-hidden">
+  <%- include('partials/sidebar', { page: 'admin' }) %>
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="lg:hidden bg-blue-900 text-white p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-blue-800">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="font-bold">Grupo Falpat SRL</span>
+      <span class="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center text-sm font-bold"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+    </div>
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">Usuarios</h1>
+          <p class="text-gray-500 text-sm">Gestión de usuarios y roles</p>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-white rounded-xl shadow-sm">
+        <div class="p-4 border-b border-gray-200">
+          <p class="text-sm text-gray-500">Solo los administradores pueden modificar roles.</p>
+        </div>
+        <div class="table-container p-4">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-gray-500 border-b border-gray-200">
+                <th class="pb-3 font-medium">Nombre</th>
+                <th class="pb-3 font-medium">Email</th>
+                <th class="pb-3 font-medium">Rol</th>
+                <th class="pb-3 font-medium">Fecha de registro</th>
+                <th class="pb-3 font-medium no-print">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <tr><td colspan="5" class="text-center py-8 text-gray-400">Cargando usuarios...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('partials/mobile-menu', { page: 'admin' }) %>
+
+<div id="modal-usuario" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md modal-content">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+      <h3 class="text-lg font-bold text-gray-800">Editar Rol de Usuario</h3>
+      <button onclick="closeUserModal()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-usuario" class="p-6 space-y-4">
+      <input type="hidden" id="user-id">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+        <p id="user-display-name" class="text-gray-900 font-medium"></p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <p id="user-email" class="text-gray-900"></p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
+        <select id="user-role" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+          <option value="Usuario">Usuario</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <button type="button" onclick="closeUserModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm">Cancelar</button>
+        <button type="submit" class="px-6 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/admin.js"></script>
+<%- include('partials/footer') %>

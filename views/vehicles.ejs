@@ -1,0 +1,145 @@
+<%- include('partials/head') %>
+<div class="flex h-screen overflow-hidden">
+  <%- include('partials/sidebar', { page: 'vehicles' }) %>
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="lg:hidden bg-blue-900 text-white p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-blue-800">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="font-bold">Grupo Falpat SRL</span>
+      <span class="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center text-sm font-bold"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+    </div>
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">Vehículos</h1>
+          <p class="text-gray-500 text-sm">Gestión de flota vehicular</p>
+        </div>
+        <% if (currentUserData?.role === 'Admin') { %>
+        <button onclick="openVehicleModal()" class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Nuevo
+        </button>
+        <% } %>
+      </div>
+
+      <div class="mt-6 bg-white rounded-xl shadow-sm">
+        <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+          <div class="flex gap-2 flex-wrap">
+            <input type="text" id="search-vehiculo" placeholder="Buscar por patente, marca..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm w-64 focus:ring-2 focus:ring-blue-500">
+            <select id="filter-estado" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+              <option value="">Todos los estados</option>
+              <option value="Activo">Activo</option>
+              <option value="En taller">En taller</option>
+              <option value="Dado de baja">Dado de baja</option>
+            </select>
+            <button onclick="applyFilters()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">Filtrar</button>
+          </div>
+        </div>
+        <div class="table-container p-4">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-gray-500 border-b border-gray-200">
+                <th class="pb-3 font-medium">Interno</th>
+                <th class="pb-3 font-medium">Patente</th>
+                <th class="pb-3 font-medium">Marca / Modelo</th>
+                <th class="pb-3 font-medium">Tipo</th>
+                <th class="pb-3 font-medium">Km</th>
+                <th class="pb-3 font-medium">Estado</th>
+                <th class="pb-3 font-medium">Próx. Service</th>
+                <th class="pb-3 font-medium no-print">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="vehiculos-table-body">
+              <tr><td colspan="8" class="text-center py-8 text-gray-400">Cargando vehículos...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('partials/mobile-menu', { page: 'vehicles' }) %>
+
+<div id="modal-vehiculo" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+      <h3 class="text-lg font-bold text-gray-800" id="modal-vehiculo-title">Nuevo Vehículo</h3>
+      <button onclick="closeVehicleModal()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-vehiculo" class="p-6 space-y-4">
+      <input type="hidden" id="vehiculo-id">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Patente *</label>
+          <input type="text" id="v-patente" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="ABC123">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">N° Interno *</label>
+          <input type="text" id="v-interno" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="001">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Marca *</label>
+          <input type="text" id="v-marca" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Marca">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Modelo *</label>
+          <input type="text" id="v-modelo" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Modelo">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Año</label>
+          <input type="number" id="v-anio" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="2024">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+          <select id="v-tipo" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            <option value="Camión volcador">Camión volcador</option>
+            <option value="Camión mixer">Camión mixer</option>
+            <option value="Auto">Auto</option>
+            <option value="Cargadora frontal">Cargadora frontal</option>
+            <option value="Retroexcavadora">Retroexcavadora</option>
+            <option value="Motoniveladora">Motoniveladora</option>
+            <option value="Camión hormigonera">Camión hormigonera</option>
+            <option value="Camión cisterna">Camión cisterna</option>
+            <option value="Camión jaula">Camión jaula</option>
+            <option value="Utilitario">Utilitario</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Kilometraje</label>
+          <input type="number" id="v-km" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
+          <select id="v-estado" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            <option value="Activo">Activo</option>
+            <option value="En taller">En taller</option>
+            <option value="Dado de baja">Dado de baja</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Próx. Service (km)</label>
+          <input type="number" id="v-prox-km" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="10000">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Próx. Service (fecha)</label>
+          <input type="date" id="v-prox-fecha" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Foto (URL)</label>
+        <input type="url" id="v-foto" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://ejemplo.com/foto.jpg">
+      </div>
+      <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <button type="button" onclick="closeVehicleModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm">Cancelar</button>
+        <button type="submit" class="px-6 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/vehicles.js"></script>
+<%- include('partials/footer') %>
