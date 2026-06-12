@@ -171,9 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await loginGoogle();
     } catch (error) {
-      const msg = error.code === 'auth/popup-closed-by-user' ? 'Ventana cerrada. Intente de nuevo.' : friendlyError(error);
-      showLoginError(msg);
-      if (typeof showToast === 'function') showToast(msg, 'error');
+      if (error.code !== 'auth/popup-closed-by-user') {
+        const msg = friendlyError(error);
+        showLoginError(msg);
+        if (typeof showToast === 'function') showToast(msg, 'error');
+      }
     }
   });
 });

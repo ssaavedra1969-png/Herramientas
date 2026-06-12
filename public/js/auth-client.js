@@ -7,13 +7,16 @@ let currentUserData = null;
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
+let googlePopupInProgress = false;
+
 auth.onAuthStateChanged(async (user) => {
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
   if (user) {
+    if (googlePopupInProgress) return;
     try {
-      if (!sessionStorage.getItem('sessionInit')) {
+      if (!sessionStorage.getItem('sessionInit') || loginPage) {
         const token = await user.getIdToken();
         await fetch('/api/auth/session', {
           method: 'POST',
@@ -71,8 +74,12 @@ async function loginUser(email, password) {
 }
 
 async function loginGoogle() {
-  clearSession();
-  return auth.signInWithPopup(googleProvider);
+  googlePopupInProgress = true;
+  try {
+    return await auth.signInWithPopup(googleProvider);
+  } finally {
+    googlePopupInProgress = false;
+  }
 }
 
 async function handleLogout() {
