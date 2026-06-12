@@ -110,12 +110,30 @@ document.addEventListener('DOMContentLoaded', () => {
     registerError.classList.add('hidden');
   });
 
+  function friendlyError(e) {
+    const map = {
+      'auth/invalid-credential': 'Credenciales incorrectas. Si no tenés cuenta, registrate primero.',
+      'auth/user-not-found': 'Credenciales incorrectas. Si no tenés cuenta, registrate primero.',
+      'auth/wrong-password': 'Credenciales incorrectas. Si no tenés cuenta, registrate primero.',
+      'auth/operation-not-allowed': 'El registro con email está deshabilitado temporalmente. Usá Google o contactá al administrador.',
+      'auth/email-already-in-use': 'Este email ya está registrado. Iniciá sesión.',
+      'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+      'auth/too-many-requests': 'Demasiados intentos. Esperá un momento y volvé a intentar.',
+      'auth/network-request-failed': 'Error de conexión. Revisá tu internet.'
+    };
+    return map[e.code] || e.message;
+  }
+
   async function doLogin() {
     loginError.classList.add('hidden');
     if (typeof loginUser !== 'function') return showLoginError('Error al cargar la aplicación. Intente recargar la página.');
     try {
       await loginUser(document.getElementById('login-email').value, document.getElementById('login-password').value);
-    } catch (e) { showLoginError(e.message); }
+    } catch (e) {
+      const msg = friendlyError(e);
+      showLoginError(msg);
+      if (typeof showToast === 'function') showToast(msg, 'error');
+    }
   }
 
   async function doRegister() {
@@ -123,7 +141,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof registerUser !== 'function') return showRegisterError('Error al cargar la aplicación. Intente recargar la página.');
     try {
       await registerUser(document.getElementById('reg-name').value, document.getElementById('reg-email').value, document.getElementById('reg-password').value);
-    } catch (e) { showRegisterError(e.message); }
+    } catch (e) {
+      const msg = friendlyError(e);
+      showRegisterError(msg);
+      if (typeof showToast === 'function') showToast(msg, 'error');
+    }
   }
 
   document.getElementById('login-email')?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
@@ -142,7 +164,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await loginGoogle();
     } catch (error) {
-      showLoginError(error.message === 'The popup has been closed by the user before the final operation.' ? 'Ventana cerrada. Intente de nuevo.' : error.message);
+      const msg = error.code === 'auth/popup-closed-by-user' ? 'Ventana cerrada. Intente de nuevo.' : friendlyError(error);
+      showLoginError(msg);
+      if (typeof showToast === 'function') showToast(msg, 'error');
     }
   });
 });
