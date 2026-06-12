@@ -23,12 +23,20 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-const limiter = rateLimit({
+const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 100,
   message: { error: 'Demasiadas solicitudes, intente más tarde' }
 });
-app.use('/api/', limiter);
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  message: { error: 'Demasiadas solicitudes, intente más tarde' }
+});
+
+app.use('/api/auth', authLimiter);
+app.use('/api/', apiLimiter);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));

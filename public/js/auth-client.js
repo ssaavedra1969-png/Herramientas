@@ -7,42 +7,39 @@ let currentUserData = null;
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
+let sessionInit = false;
+
 auth.onAuthStateChanged(async (user) => {
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
   if (user) {
     try {
-      const token = await user.getIdToken();
-      await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: token })
-      });
+      if (!sessionInit) {
+        const token = await user.getIdToken();
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken: token })
+        });
+        sessionInit = true;
+      }
 
-      const res = await fetch('/api/auth/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
-      });
-
-      if (res.ok) {
-        const userDoc = await db.collection('users').doc(user.uid).get();
-        if (userDoc.exists) {
-          currentUserData = userDoc.data();
-        } else {
-          const newUser = {
-            email: user.email,
-            role: 'Usuario',
-            displayName: user.displayName || user.email.split('@')[0],
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          };
-          await db.collection('users').doc(user.uid).set(newUser);
-          currentUserData = newUser;
-        }
+      const userDoc = await db.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        currentUserData = userDoc.data();
+      } else {
+        const newUser = {
+          email: user.email,
+          role: 'Usuario',
+          displayName: user.displayName || user.email.split('@')[0],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        await db.collection('users').doc(user.uid).set(newUser);
+        currentUserData = newUser;
       }
     } catch (e) {
-      console.warn('Error loading user data, redirecting anyway:', e.message);
+      console.warn('Error loading user data:', e.message);
       currentUserData = { role: 'Usuario', displayName: user.displayName || user.email?.split('@')[0] };
     }
 
