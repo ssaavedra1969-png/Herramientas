@@ -36,13 +36,13 @@ auth.onAuthStateChanged(async (user) => {
         await db.collection('users').doc(user.uid).set(newUser);
         currentUserData = newUser;
       }
+
+      if (loginPage) {
+        window.location.href = '/dashboard';
+      }
     } catch (e) {
       console.warn('Error loading user data:', e.message);
       currentUserData = { role: 'Usuario', displayName: user.displayName || user.email?.split('@')[0] };
-    }
-
-    if (loginPage) {
-      window.location.href = '/dashboard';
     }
   } else {
     currentUserData = null;
