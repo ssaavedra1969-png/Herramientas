@@ -51,57 +51,56 @@
   </div>
 </div>
 
+<%- include('partials/footer') %>
 <script>
-const tabLogin = document.getElementById('tab-login');
-const tabRegister = document.getElementById('tab-register');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const loginError = document.getElementById('login-error');
-const registerError = document.getElementById('register-error');
+document.addEventListener('DOMContentLoaded', () => {
+  const tabLogin = document.getElementById('tab-login');
+  const tabRegister = document.getElementById('tab-register');
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+  const loginError = document.getElementById('login-error');
+  const registerError = document.getElementById('register-error');
 
-tabLogin.addEventListener('click', () => {
-  tabLogin.classList.add('bg-white', 'shadow-sm');
-  tabRegister.classList.remove('bg-white', 'shadow-sm');
-  loginForm.classList.remove('hidden');
-  registerForm.classList.add('hidden');
-  loginError.classList.add('hidden');
-  registerError.classList.add('hidden');
-});
+  if (!tabLogin || !loginForm) return;
 
-tabRegister.addEventListener('click', () => {
-  tabRegister.classList.add('bg-white', 'shadow-sm');
-  tabLogin.classList.remove('bg-white', 'shadow-sm');
-  registerForm.classList.remove('hidden');
-  loginForm.classList.add('hidden');
-  loginError.classList.add('hidden');
-  registerError.classList.add('hidden');
-});
+  tabLogin.addEventListener('click', () => {
+    tabLogin.classList.add('bg-white', 'shadow-sm');
+    tabRegister.classList.remove('bg-white', 'shadow-sm');
+    loginForm.classList.remove('hidden');
+    registerForm.classList.add('hidden');
+    loginError.classList.add('hidden');
+    registerError.classList.add('hidden');
+  });
 
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  loginError.classList.add('hidden');
-  try {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    await loginUser(email, password);
-  } catch (error) {
-    loginError.textContent = error.message;
-    loginError.classList.remove('hidden');
-  }
-});
+  tabRegister.addEventListener('click', () => {
+    tabRegister.classList.add('bg-white', 'shadow-sm');
+    tabLogin.classList.remove('bg-white', 'shadow-sm');
+    registerForm.classList.remove('hidden');
+    loginForm.classList.add('hidden');
+    loginError.classList.add('hidden');
+    registerError.classList.add('hidden');
+  });
 
-registerForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  registerError.classList.add('hidden');
-  try {
-    const name = document.getElementById('reg-name').value;
-    const email = document.getElementById('reg-email').value;
-    const password = document.getElementById('reg-password').value;
-    await registerUser(email, password, name);
-  } catch (error) {
-    registerError.textContent = error.message;
-    registerError.classList.remove('hidden');
-  }
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.classList.add('hidden');
+    try {
+      await loginUser(document.getElementById('login-email').value, document.getElementById('login-password').value);
+    } catch (error) {
+      loginError.textContent = error.message;
+      loginError.classList.remove('hidden');
+    }
+  });
+
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    registerError.classList.add('hidden');
+    try {
+      await registerUser(document.getElementById('reg-name').value, document.getElementById('reg-email').value, document.getElementById('reg-password').value);
+    } catch (error) {
+      registerError.textContent = error.message;
+      registerError.classList.remove('hidden');
+    }
+  });
 });
 </script>
-<%- include('partials/footer') %>
