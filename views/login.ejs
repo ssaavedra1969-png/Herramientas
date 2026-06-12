@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginError.classList.add('hidden');
     if (typeof loginUser !== 'function') return showLoginError('Error al cargar la aplicación. Intente recargar la página.');
     try {
-      await loginUser(document.getElementById('login-email').value, document.getElementById('login-password').value);
+      await loginUser(document.getElementById('login-email').value.trim(), document.getElementById('login-password').value);
     } catch (e) {
       const msg = friendlyError(e);
       showLoginError(msg);
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     registerError.classList.add('hidden');
     if (typeof registerUser !== 'function') return showRegisterError('Error al cargar la aplicación. Intente recargar la página.');
     try {
-      await registerUser(document.getElementById('reg-name').value, document.getElementById('reg-email').value, document.getElementById('reg-password').value);
+      await registerUser(document.getElementById('reg-name').value.trim(), document.getElementById('reg-email').value.trim(), document.getElementById('reg-password').value);
     } catch (e) {
       const msg = friendlyError(e);
       showRegisterError(msg);
