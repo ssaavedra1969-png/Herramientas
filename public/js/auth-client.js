@@ -37,7 +37,7 @@ auth.onAuthStateChanged(async (user) => {
         currentUserData = newUser;
       }
 
-      if (loginPage && !sessionStorage.getItem('googlePopup')) {
+      if (loginPage) {
         window.location.href = '/dashboard';
       }
     } catch (e) {
@@ -71,18 +71,7 @@ async function loginUser(email, password) {
 }
 
 async function loginGoogle() {
-  sessionStorage.setItem('googlePopup', '1');
-  try {
-    const cred = await auth.signInWithPopup(googleProvider);
-    sessionStorage.removeItem('googlePopup');
-    if (window.location.pathname === '/login' || window.location.pathname === '/') {
-      window.location.href = '/dashboard';
-    }
-    return cred;
-  } catch (e) {
-    sessionStorage.removeItem('googlePopup');
-    throw e;
-  }
+  return auth.signInWithPopup(googleProvider);
 }
 
 async function handleLogout() {

@@ -171,11 +171,14 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await loginGoogle();
     } catch (error) {
-      if (error.code !== 'auth/popup-closed-by-user') {
-        const msg = friendlyError(error);
-        showLoginError(msg);
-        if (typeof showToast === 'function') showToast(msg, 'error');
+      let msg;
+      if (error.code === 'auth/popup-closed-by-user') {
+        msg = 'El popup se cerró. Permití ventanas emergentes para este sitio.';
+      } else {
+        msg = friendlyError(error);
       }
+      showLoginError(msg);
+      if (typeof showToast === 'function') showToast(msg, 'error');
     }
   });
 });
