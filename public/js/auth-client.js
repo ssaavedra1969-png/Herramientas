@@ -5,39 +5,45 @@ const storage = firebase.storage();
 let currentUser = null;
 let currentUserData = null;
 
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
 auth.onAuthStateChanged(async (user) => {
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
   if (user) {
-    const token = await user.getIdToken();
-    await fetch('/api/auth/session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken: token })
-    });
+    try {
+      const token = await user.getIdToken();
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: token })
+      });
 
-    const res = await fetch('/api/auth/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token })
-    });
+      const res = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
 
-    if (res.ok) {
-      const data = await res.json();
-      const userDoc = await db.collection('users').doc(user.uid).get();
-      if (userDoc.exists) {
-        currentUserData = userDoc.data();
-      } else {
-        const newUser = {
-          email: user.email,
-          role: 'Usuario',
-          displayName: user.displayName || user.email.split('@')[0],
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        await db.collection('users').doc(user.uid).set(newUser);
-        currentUserData = newUser;
+      if (res.ok) {
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          currentUserData = userDoc.data();
+        } else {
+          const newUser = {
+            email: user.email,
+            role: 'Usuario',
+            displayName: user.displayName || user.email.split('@')[0],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          await db.collection('users').doc(user.uid).set(newUser);
+          currentUserData = newUser;
+        }
       }
+    } catch (e) {
+      console.warn('Error loading user data, redirecting anyway:', e.message);
+      currentUserData = { role: 'Usuario', displayName: user.displayName || user.email?.split('@')[0] };
     }
 
     if (loginPage) {
@@ -60,6 +66,10 @@ async function registerUser(email, password, displayName) {
 
 async function loginUser(email, password) {
   return auth.signInWithEmailAndPassword(email, password);
+}
+
+async function loginGoogle() {
+  return auth.signInWithPopup(googleProvider);
 }
 
 async function handleLogout() {
