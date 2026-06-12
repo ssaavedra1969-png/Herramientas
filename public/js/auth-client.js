@@ -61,6 +61,7 @@ async function registerUser(email, password, displayName) {
 }
 
 async function loginUser(email, password) {
+  if (auth.currentUser) await auth.signOut();
   return auth.signInWithEmailAndPassword(email, password);
 }
 

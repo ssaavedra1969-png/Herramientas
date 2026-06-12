@@ -119,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
       'auth/email-already-in-use': 'Este email ya está registrado. Iniciá sesión.',
       'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
       'auth/too-many-requests': 'Demasiados intentos. Esperá un momento y volvé a intentar.',
-      'auth/network-request-failed': 'Error de conexión. Revisá tu internet.'
+      'auth/network-request-failed': 'Error de conexión. Revisá tu internet.',
+      'auth/invalid-email': 'El email ingresado no es válido. Revisá que no tenga espacios.'
     };
     return map[e.code] || e.message;
   }
@@ -127,8 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
   async function doLogin() {
     loginError.classList.add('hidden');
     if (typeof loginUser !== 'function') return showLoginError('Error al cargar la aplicación. Intente recargar la página.');
+    const email = document.getElementById('login-email').value.trim();
+    if (!email) return showLoginError('Ingresá un email válido.');
     try {
-      await loginUser(document.getElementById('login-email').value.trim(), document.getElementById('login-password').value);
+      await loginUser(email, document.getElementById('login-password').value);
     } catch (e) {
       const msg = friendlyError(e);
       showLoginError(msg);
