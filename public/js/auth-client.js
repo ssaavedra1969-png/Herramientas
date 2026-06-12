@@ -7,22 +7,20 @@ let currentUserData = null;
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-let sessionInit = false;
-
 auth.onAuthStateChanged(async (user) => {
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
   if (user) {
     try {
-      if (!sessionInit) {
+      if (!sessionStorage.getItem('sessionInit')) {
         const token = await user.getIdToken();
         await fetch('/api/auth/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ idToken: token })
         });
-        sessionInit = true;
+        sessionStorage.setItem('sessionInit', '1');
       }
 
       const userDoc = await db.collection('users').doc(user.uid).get();
@@ -48,6 +46,7 @@ auth.onAuthStateChanged(async (user) => {
     }
   } else {
     currentUserData = null;
+    sessionStorage.removeItem('sessionInit');
     await fetch('/api/auth/logout', { method: 'POST' });
     if (!loginPage) {
       window.location.href = '/login';
