@@ -7,14 +7,11 @@ let currentUserData = null;
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-let googlePopupInProgress = false;
-
 auth.onAuthStateChanged(async (user) => {
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
   if (user) {
-    if (googlePopupInProgress) return;
     try {
       if (!sessionStorage.getItem('sessionInit') || loginPage) {
         const token = await user.getIdToken();
@@ -40,7 +37,7 @@ auth.onAuthStateChanged(async (user) => {
         currentUserData = newUser;
       }
 
-      if (loginPage) {
+      if (loginPage && !sessionStorage.getItem('googlePopup')) {
         window.location.href = '/dashboard';
       }
     } catch (e) {
@@ -74,11 +71,17 @@ async function loginUser(email, password) {
 }
 
 async function loginGoogle() {
-  googlePopupInProgress = true;
+  sessionStorage.setItem('googlePopup', '1');
   try {
-    return await auth.signInWithPopup(googleProvider);
-  } finally {
-    googlePopupInProgress = false;
+    const cred = await auth.signInWithPopup(googleProvider);
+    sessionStorage.removeItem('googlePopup');
+    if (window.location.pathname === '/login' || window.location.pathname === '/') {
+      window.location.href = '/dashboard';
+    }
+    return cred;
+  } catch (e) {
+    sessionStorage.removeItem('googlePopup');
+    throw e;
   }
 }
 
