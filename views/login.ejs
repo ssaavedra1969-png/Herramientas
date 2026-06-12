@@ -129,10 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
     loginError.classList.add('hidden');
     if (typeof loginUser !== 'function') return showLoginError('Error al cargar la aplicación. Intente recargar la página.');
     const email = document.getElementById('login-email').value.trim();
-    if (!email) return showLoginError('Ingresá un email válido.');
+    const pass = document.getElementById('login-password').value;
+    if (!email || !email.includes('@')) return showLoginError('Ingresá un email válido.');
+    if (!pass) return showLoginError('Ingresá la contraseña.');
     try {
-      await loginUser(email, document.getElementById('login-password').value);
+      await loginUser(email, pass);
     } catch (e) {
+      console.warn('Login error:', e.code, e.message, e);
       const msg = friendlyError(e);
       showLoginError(msg);
       if (typeof showToast === 'function') showToast(msg, 'error');
