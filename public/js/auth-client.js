@@ -37,7 +37,7 @@ auth.onAuthStateChanged(async (user) => {
         currentUserData = newUser;
       }
 
-      if (loginPage && !sessionStorage.getItem('googlePopup')) {
+      if (loginPage) {
         window.location.href = '/dashboard';
       }
     } catch (e) {
@@ -70,24 +70,7 @@ async function loginUser(email, password) {
 }
 
 async function loginGoogle() {
-  const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
-  sessionStorage.setItem('googlePopup', '1');
-  try {
-    const cred = await auth.signInWithPopup(googleProvider);
-    sessionStorage.removeItem('googlePopup');
-    const token = await cred.user.getIdToken();
-    await fetch('/api/auth/session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken: token })
-    });
-    sessionStorage.setItem('sessionInit', '1');
-    if (loginPage) window.location.href = '/dashboard';
-    return cred;
-  } catch (e) {
-    sessionStorage.removeItem('googlePopup');
-    throw e;
-  }
+  await auth.signInWithRedirect(googleProvider);
 }
 
 async function handleLogout() {
