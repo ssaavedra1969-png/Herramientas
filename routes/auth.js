@@ -24,6 +24,10 @@ router.post('/session', async (req, res) => {
     const { idToken } = req.body;
     if (!idToken) return res.status(400).json({ error: 'ID Token requerido' });
 
+    console.log('Session creation requested, NODE_ENV:', process.env.NODE_ENV);
+    console.log('FIREBASE_SERVICE_ACCOUNT set:', !!process.env.FIREBASE_SERVICE_ACCOUNT);
+    console.log('FIREBASE_SERVICE_ACCOUNT_PATH set:', !!process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
+
     const expiresIn = 60 * 60 * 24 * 14 * 1000;
     const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
 
@@ -34,15 +38,26 @@ router.post('/session', async (req, res) => {
       sameSite: 'lax'
     });
 
+    console.log('Session cookie created successfully');
     res.json({ success: true });
   } catch (error) {
-    res.status(401).json({ error: 'Error al crear sesión' });
+    console.error('Session creation error:', error.code || error.message, error);
+    res.status(401).json({ error: 'Error al crear sesión: ' + (error.message || 'desconocido') });
   }
 });
 
 router.post('/logout', (req, res) => {
   res.clearCookie('__session');
   res.json({ success: true });
+});
+
+router.get('/debug', (req, res) => {
+  res.json({
+    hasServiceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+    hasServiceAccountPath: !!process.env.FIREBASE_SERVICE_ACCOUNT_PATH,
+    nodeEnv: process.env.NODE_ENV,
+    hasFirebaseAdmin: !!require('../config/firebase').auth
+  });
 });
 
 module.exports = router;
