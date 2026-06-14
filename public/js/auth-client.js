@@ -48,18 +48,32 @@ async function completeSignIn(user) {
 // Process Google OAuth redirect result from URL hash
 async function processGoogleRedirect() {
   const hash = window.location.hash;
-  if (!hash || !hash.includes('access_token=')) return;
+  if (!hash || hash.length < 5) {
+    console.log('No hash found in URL');
+    return;
+  }
 
-  console.log('Found redirect hash, processing...');
+  console.log('Hash found in URL, length:', hash.length, 'prefix:', hash.substring(0, 50));
+  const params = new URLSearchParams(hash.substring(1));
+  const hasAccessToken = params.has('access_token');
+  const hasIdToken = params.has('id_token');
+  const hasFirebaseAuth = hash.includes('firebase-auth-redirect');
+  console.log('Hash params: access_token:', hasAccessToken, 'id_token:', hasIdToken, 'firebase-auth-redirect:', hasFirebaseAuth);
+  if (hasFirebaseAuth) console.log('Firebase auth redirect param:', params.get('firebase-auth-redirect'));
+
+  const accessToken = params.get('access_token');
+  const idToken = params.get('id_token');
+
+  if (!accessToken && !idToken) {
+    console.log('No OAuth tokens in hash');
+    return;
+  }
+
   try {
-    const params = new URLSearchParams(hash.substring(1));
-    const accessToken = params.get('access_token');
-    if (!accessToken) { console.log('No access_token in hash'); return; }
-
-    console.log('Have access_token, creating credential');
-    const credential = firebase.auth.GoogleAuthProvider.credential(null, accessToken);
+    console.log('Creating credential with', accessToken ? 'access_token' : 'id_token');
+    const credential = firebase.auth.GoogleAuthProvider.credential(idToken || null, accessToken || null);
     const result = await auth.signInWithCredential(credential);
-    console.log('signInWithCredential success:', result.user.uid);
+    console.log('signInWithCredential success:', result.user.uid, result.user.email);
 
     // Clear the hash from URL
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
