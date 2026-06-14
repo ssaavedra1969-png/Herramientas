@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     registerError.classList.add('hidden');
     if (typeof registerUser !== 'function') return showRegisterError('Error al cargar la aplicación. Intente recargar la página.');
     try {
-      await registerUser(document.getElementById('reg-name').value.trim(), document.getElementById('reg-email').value.trim(), document.getElementById('reg-password').value);
+      await registerUser(document.getElementById('reg-email').value.trim(), document.getElementById('reg-password').value, document.getElementById('reg-name').value.trim());
     } catch (e) {
       const msg = friendlyError(e);
       showRegisterError(msg);

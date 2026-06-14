@@ -7,6 +7,10 @@ let currentUserData = null;
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
+auth.getRedirectResult().catch(error => {
+  console.warn('Redirect sign-in error:', error.code, error.message);
+});
+
 auth.onAuthStateChanged(async (user) => {
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
@@ -15,11 +19,12 @@ auth.onAuthStateChanged(async (user) => {
     try {
       if (!sessionStorage.getItem('sessionInit') || loginPage) {
         const token = await user.getIdToken();
-        await fetch('/api/auth/session', {
+        const res = await fetch('/api/auth/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ idToken: token })
         });
+        if (!res.ok) throw new Error('Error al crear sesión');
         sessionStorage.setItem('sessionInit', '1');
       }
 
@@ -41,8 +46,9 @@ auth.onAuthStateChanged(async (user) => {
         window.location.href = '/dashboard';
       }
     } catch (e) {
-      console.warn('Error loading user data:', e.message);
+      console.warn('Error loading user data:', e.code || e.message, e);
       currentUserData = { role: 'Usuario', displayName: user.displayName || user.email?.split('@')[0] };
+      showToast('Error al iniciar sesión: ' + (e.message || 'desconocido'), 'error');
     }
   } else {
     currentUserData = null;
@@ -70,6 +76,7 @@ async function loginUser(email, password) {
 }
 
 async function loginGoogle() {
+  clearSession();
   await auth.signInWithRedirect(googleProvider);
 }
 
