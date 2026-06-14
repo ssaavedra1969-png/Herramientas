@@ -10,6 +10,7 @@ const googleProvider = new firebase.auth.GoogleAuthProvider();
 let redirectProcessing = false;
 
 async function completeSignIn(user) {
+  console.log('completeSignIn called, uid:', user.uid, 'email:', user.email);
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
   try {
     if (!sessionStorage.getItem('sessionInit')) {
@@ -47,26 +48,31 @@ async function completeSignIn(user) {
 }
 
 auth.getRedirectResult().then(async (result) => {
-  if (result.user) {
+  console.log('getRedirectResult resolved:', result ? 'has result' : 'null');
+  if (result && result.user) {
+    console.log('Redirect user found:', result.user.uid);
     redirectProcessing = true;
     await completeSignIn(result.user);
+  } else {
+    console.log('No redirect user available');
   }
 }).catch(error => {
+  console.warn('getRedirectResult error:', error.code || error.message || error);
   if (error.code !== 'auth/no-redirect-result') {
-    console.warn('Redirect sign-in error:', error.code, error.message);
     if (window.location.pathname === '/login' || window.location.pathname === '/') {
       const fn = typeof showLoginError === 'function' ? showLoginError : showToast;
-      fn('Error de Google: ' + (error.message || error.code || 'desconocido'));
+      fn('Error de Google: ' + (error.message || error.code || 'Error de redirección'));
     }
   }
 });
 
 auth.onAuthStateChanged(async (user) => {
+  console.log('onAuthStateChanged:', user ? 'user:' + user.uid : 'null');
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
   if (user) {
-    if (redirectProcessing) return;
+    if (redirectProcessing) { console.log('Skipping onAuthStateChanged, redirect in progress'); return; }
 
     await completeSignIn(user);
   } else {

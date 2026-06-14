@@ -166,11 +166,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-register-submit')?.addEventListener('click', doRegister);
 
   document.getElementById('btn-google')?.addEventListener('click', async () => {
+    console.log('Google button clicked');
     if (typeof loginGoogle !== 'function') return showLoginError('Error al cargar la aplicación. Intente recargar la página.');
     loginError.classList.add('hidden');
     try {
       await loginGoogle();
+      console.log('loginGoogle completed (page will redirect or redirect completed)');
     } catch (error) {
+      console.error('Google login outer error:', error);
       const msg = friendlyError(error);
       showLoginError(msg);
       if (typeof showToast === 'function') showToast(msg, 'error');
