@@ -3,32 +3,32 @@ const currentPage = typeof page !== 'undefined' ? page : '';
 const isAdmin = currentUserData?.role === 'Admin';
 %>
 <aside id="mobile-menu" class="fixed inset-0 z-50 hidden">
-  <div class="absolute inset-0 bg-black opacity-50" id="mobile-menu-backdrop"></div>
-  <div class="absolute left-0 top-0 bottom-0 w-64 bg-blue-900 text-white overflow-y-auto">
-    <div class="p-4 border-b border-blue-700">
-      <span class="text-lg font-bold">Falpat SRL</span>
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="mobile-menu-backdrop"></div>
+  <div class="absolute left-0 top-0 bottom-0 w-64 mobile-menu-glass text-[#F1F3F8] overflow-y-auto">
+    <div class="p-4 border-b border-[#FF6B35]/10">
+      <span class="text-lg font-bold text-gradient-primary">Falpat SRL</span>
     </div>
     <nav class="px-2 py-4 space-y-1">
-      <a href="/dashboard" class="flex items-center px-4 py-2 text-sm rounded-lg <%= currentPage === 'dashboard' ? 'bg-blue-700' : 'hover:bg-blue-700' %>">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>Dashboard
+      <a href="/dashboard" class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>">
+        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>Dashboard
       </a>
-      <a href="/vehicles" class="flex items-center px-4 py-2 text-sm rounded-lg <%= currentPage === 'vehicles' ? 'bg-blue-700' : 'hover:bg-blue-700' %>">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>Vehículos
+      <a href="/vehicles" class="nav-link <%= currentPage === 'vehicles' ? 'active' : '' %>">
+        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>Vehículos
       </a>
-      <a href="/tools" class="flex items-center px-4 py-2 text-sm rounded-lg <%= currentPage === 'tools' ? 'bg-blue-700' : 'hover:bg-blue-700' %>">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11.42 15.17l-7.5 7.5a2 2 0 01-2.83 0L.75 19.93a2 2 0 010-2.83l7.5-7.5"/><path d="M16.24 7.76a3 3 0 00-4.24-4.24l-1.5 1.5 6 6 1.5-1.5a3 3 0 000-4.24z"/></svg>Herramientas
+      <a href="/tools" class="nav-link <%= currentPage === 'tools' ? 'active' : '' %>">
+        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11.42 15.17l-7.5 7.5a2 2 0 01-2.83 0L.75 19.93a2 2 0 010-2.83l7.5-7.5"/><path d="M16.24 7.76a3 3 0 00-4.24-4.24l-1.5 1.5 6 6 1.5-1.5a3 3 0 000-4.24z"/></svg>Herramientas
       </a>
-      <a href="/maintenance" class="flex items-center px-4 py-2 text-sm rounded-lg <%= currentPage === 'maintenance' ? 'bg-blue-700' : 'hover:bg-blue-700' %>">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>Mantenimiento
+      <a href="/maintenance" class="nav-link <%= currentPage === 'maintenance' ? 'active' : '' %>">
+        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>Mantenimiento
       </a>
       <% if (isAdmin) { %>
-      <a href="/admin" class="flex items-center px-4 py-2 text-sm rounded-lg <%= currentPage === 'admin' ? 'bg-blue-700' : 'hover:bg-blue-700' %>">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>Usuarios
+      <a href="/admin" class="nav-link <%= currentPage === 'admin' ? 'active' : '' %>">
+        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>Usuarios
       </a>
       <% } %>
     </nav>
-    <div class="p-4 border-t border-blue-700">
-      <button onclick="handleLogout()" class="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-red-600 transition">
+    <div class="p-4 border-t border-[#FF6B35]/10">
+      <button onclick="handleLogout()" class="flex items-center w-full px-3 py-2 text-sm rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all">
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>Cerrar sesión
       </button>
     </div>

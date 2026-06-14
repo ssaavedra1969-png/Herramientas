@@ -2,57 +2,57 @@
 <div class="flex h-screen overflow-hidden">
   <%- include('partials/sidebar', { page: 'vehicles' }) %>
   <div class="flex-1 flex flex-col overflow-hidden">
-    <div class="lg:hidden bg-blue-900 text-white p-3 flex items-center justify-between">
-      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-blue-800">
+    <div class="lg:hidden header-glass text-[#F1F3F8] p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#FF6B35]/10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <span class="font-bold">Grupo Falpat SRL</span>
-      <span class="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center text-sm font-bold"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+      <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#FF6B35] to-[#FF3366] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
     </div>
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">Vehículos</h1>
-          <p class="text-gray-500 text-sm">Gestión de flota vehicular</p>
+          <h1 class="text-2xl font-bold text-gradient-primary">Vehículos</h1>
+          <p class="text-[#8E94A8] text-sm">Gestión de flota vehicular</p>
         </div>
         <% if (currentUserData?.role === 'Admin') { %>
         <div class="flex gap-2">
           <div class="relative" id="import-dropdown">
-            <button onclick="toggleImportMenu()" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition flex items-center gap-1">
+            <button onclick="toggleImportMenu()" class="btn-primary text-sm flex items-center gap-1 px-4 py-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg> Importar
             </button>
-            <div id="import-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-              <button onclick="openCsvImport()" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Desde CSV
+            <div id="import-menu" class="hidden absolute right-0 mt-2 w-48 glass-card rounded-lg shadow-xl border border-[#FF6B35]/10 z-10">
+              <button onclick="openCsvImport()" class="w-full text-left px-4 py-3 text-sm text-[#F1F3F8] hover:bg-[#FF6B35]/10 flex items-center gap-2 rounded-lg">
+                <svg class="w-4 h-4 text-[#8E94A8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Desde CSV
               </button>
             </div>
           </div>
-          <button onclick="openVehicleModal()" class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition flex items-center gap-1">
+          <button onclick="openVehicleModal()" class="btn-primary text-sm flex items-center gap-1 px-4 py-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Nuevo
           </button>
         </div>
         <% } %>
       </div>
 
-      <div class="mt-6 bg-white rounded-xl shadow-sm">
-        <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+      <div class="mt-6 glass-card rounded-xl">
+        <div class="p-4 border-b border-[#FF6B35]/10 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <div class="flex gap-2 flex-wrap">
-            <input type="text" id="search-vehiculo" placeholder="Buscar por patente, marca..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm w-64 focus:ring-2 focus:ring-blue-500">
-            <select id="filter-estado" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
-              <option value="">Todos los estados</option>
-              <option value="Excelente">Excelente</option>
-              <option value="Bueno">Bueno</option>
-              <option value="Regular">Regular</option>
-              <option value="Taller">Taller</option>
-              <option value="Baja">Baja</option>
+            <input type="text" id="search-vehiculo" placeholder="Buscar por patente, marca..." class="px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm w-64 text-[#F1F3F8] placeholder-[#5C6378] input-neon">
+            <select id="filter-estado" class="px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Todos los estados</option>
+              <option value="Excelente" class="bg-[#0B0E17]">Excelente</option>
+              <option value="Bueno" class="bg-[#0B0E17]">Bueno</option>
+              <option value="Regular" class="bg-[#0B0E17]">Regular</option>
+              <option value="Taller" class="bg-[#0B0E17]">Taller</option>
+              <option value="Baja" class="bg-[#0B0E17]">Baja</option>
             </select>
-            <button onclick="applyFilters()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">Filtrar</button>
+            <button onclick="applyFilters()" class="btn-secondary text-sm px-4 py-2">Filtrar</button>
           </div>
         </div>
         <div class="table-container p-4">
           <table class="w-full text-sm">
             <thead>
-              <tr class="text-left text-gray-500 border-b border-gray-200">
+              <tr class="text-left text-[#8E94A8] border-b border-[#FF6B35]/10">
                 <th class="pb-3 font-medium">Interno</th>
                 <th class="pb-3 font-medium">Patente</th>
                 <th class="pb-3 font-medium">Marca / Modelo</th>
@@ -65,7 +65,7 @@
               </tr>
             </thead>
             <tbody id="vehiculos-table-body">
-              <tr><td colspan="9" class="text-center py-8 text-gray-400">Cargando vehículos...</td></tr>
+              <tr><td colspan="9" class="text-center py-8 text-[#5C6378]">Cargando vehículos...</td></tr>
             </tbody>
           </table>
         </div>
@@ -78,10 +78,10 @@
 
 <!-- Modal Formulario Vehículo -->
 <div id="modal-vehiculo" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-      <h3 class="text-lg font-bold text-gray-800" id="modal-vehiculo-title">Nuevo Vehículo</h3>
-      <button onclick="closeVehicleModal()" class="text-gray-400 hover:text-gray-600">
+  <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
+    <div class="flex items-center justify-between p-6 border-b border-[#FF6B35]/10 sticky top-0 z-10" style="background: #141e2d;">
+      <h3 class="text-lg font-bold text-[#F1F3F8]" id="modal-vehiculo-title">Nuevo Vehículo</h3>
+      <button onclick="closeVehicleModal()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
@@ -90,48 +90,48 @@
 
       <!-- Sección: Datos Generales -->
       <div>
-        <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           Datos Generales
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Patente *</label>
-            <input type="text" id="v-patente" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="ABC123" maxlength="10" style="text-transform:uppercase">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Patente *</label>
+            <input type="text" id="v-patente" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="ABC123" maxlength="10" style="text-transform:uppercase">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">N° Interno *</label>
-            <input type="text" id="v-interno" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="001">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° Interno *</label>
+            <input type="text" id="v-interno" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="001">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
-            <select id="v-tipo" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-              <option value="">Seleccionar...</option>
-              <option value="Camión volcador">Camión volcador</option>
-              <option value="Camión mixer">Camión mixer</option>
-              <option value="Camión hormigonera">Camión hormigonera</option>
-              <option value="Camión cisterna">Camión cisterna</option>
-              <option value="Camión jaula">Camión jaula</option>
-              <option value="Camión playo">Camión playo</option>
-              <option value="Camión regador">Camión regador</option>
-              <option value="Camión chasis">Camión chasis</option>
-              <option value="Auto">Auto</option>
-              <option value="Camioneta">Camioneta</option>
-              <option value="Utilitario">Utilitario</option>
-              <option value="Cargadora frontal">Cargadora frontal</option>
-              <option value="Retroexcavadora">Retroexcavadora</option>
-              <option value="Motoniveladora">Motoniveladora</option>
-              <option value="Excavadora">Excavadora</option>
-              <option value="Minicargadora">Minicargadora</option>
-              <option value="Rodillo vibratorio">Rodillo vibratorio</option>
-              <option value="Acoplado">Acoplado</option>
-              <option value="Semirremolque">Semirremolque</option>
-              <option value="Otro">Otro</option>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo *</label>
+            <select id="v-tipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
+              <option value="Camión volcador" class="bg-[#0B0E17]">Camión volcador</option>
+              <option value="Camión mixer" class="bg-[#0B0E17]">Camión mixer</option>
+              <option value="Camión hormigonera" class="bg-[#0B0E17]">Camión hormigonera</option>
+              <option value="Camión cisterna" class="bg-[#0B0E17]">Camión cisterna</option>
+              <option value="Camión jaula" class="bg-[#0B0E17]">Camión jaula</option>
+              <option value="Camión playo" class="bg-[#0B0E17]">Camión playo</option>
+              <option value="Camión regador" class="bg-[#0B0E17]">Camión regador</option>
+              <option value="Camión chasis" class="bg-[#0B0E17]">Camión chasis</option>
+              <option value="Auto" class="bg-[#0B0E17]">Auto</option>
+              <option value="Camioneta" class="bg-[#0B0E17]">Camioneta</option>
+              <option value="Utilitario" class="bg-[#0B0E17]">Utilitario</option>
+              <option value="Cargadora frontal" class="bg-[#0B0E17]">Cargadora frontal</option>
+              <option value="Retroexcavadora" class="bg-[#0B0E17]">Retroexcavadora</option>
+              <option value="Motoniveladora" class="bg-[#0B0E17]">Motoniveladora</option>
+              <option value="Excavadora" class="bg-[#0B0E17]">Excavadora</option>
+              <option value="Minicargadora" class="bg-[#0B0E17]">Minicargadora</option>
+              <option value="Rodillo vibratorio" class="bg-[#0B0E17]">Rodillo vibratorio</option>
+              <option value="Acoplado" class="bg-[#0B0E17]">Acoplado</option>
+              <option value="Semirremolque" class="bg-[#0B0E17]">Semirremolque</option>
+              <option value="Otro" class="bg-[#0B0E17]">Otro</option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Marca *</label>
-            <input type="text" id="v-marca" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Marca" list="marca-suggestions">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Marca *</label>
+            <input type="text" id="v-marca" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Marca" list="marca-suggestions">
             <datalist id="marca-suggestions">
               <option value="Mercedes Benz">
               <option value="Scania">
@@ -156,175 +156,175 @@
             </datalist>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
-            <input type="text" id="v-modelo" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Modelo">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Modelo</label>
+            <input type="text" id="v-modelo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Modelo">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Año</label>
-            <input type="number" id="v-anio" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="2024" min="1980" max="2026">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Año</label>
+            <input type="number" id="v-anio" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="2024" min="1980" max="2026">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Chasis (N° de serie)</label>
-            <input type="text" id="v-chasis" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="9BM1234567890ABC">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Chasis (N° de serie)</label>
+            <input type="text" id="v-chasis" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="9BM1234567890ABC">
           </div>
         </div>
       </div>
 
-      <hr class="border-gray-200">
+      <hr class="border-[#FF6B35]/10">
 
       <!-- Sección: Estado y Mediciones -->
       <div>
-        <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Estado y Mediciones
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Kilometraje</label>
-            <input type="number" id="v-kilometraje" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Kilometraje</label>
+            <input type="number" id="v-kilometraje" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Horómetro (hs)</label>
-            <input type="number" id="v-horometro" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Horómetro (hs)</label>
+            <input type="number" id="v-horometro" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Estado General *</label>
-            <select id="v-estadoGeneral" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-              <option value="Bueno">Bueno</option>
-              <option value="Excelente">Excelente</option>
-              <option value="Regular">Regular</option>
-              <option value="Taller">Taller</option>
-              <option value="Baja">Baja</option>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Estado General *</label>
+            <select id="v-estadoGeneral" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="Bueno" class="bg-[#0B0E17]">Bueno</option>
+              <option value="Excelente" class="bg-[#0B0E17]">Excelente</option>
+              <option value="Regular" class="bg-[#0B0E17]">Regular</option>
+              <option value="Taller" class="bg-[#0B0E17]">Taller</option>
+              <option value="Baja" class="bg-[#0B0E17]">Baja</option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha última revisión</label>
-            <input type="date" id="v-fechaUltimaRevision" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Fecha última revisión</label>
+            <input type="date" id="v-fechaUltimaRevision" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Vencimiento VTV *</label>
-            <input type="date" id="v-vencimientoVTV" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Vencimiento VTV *</label>
+            <input type="date" id="v-vencimientoVTV" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
           </div>
         </div>
       </div>
 
-      <hr class="border-gray-200">
+      <hr class="border-[#FF6B35]/10">
 
       <!-- Sección: Seguro -->
       <div>
-        <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
           Seguro
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Compañía</label>
-            <input type="text" id="v-seguroCompania" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Rivadavia Seguros">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Compañía</label>
+            <input type="text" id="v-seguroCompania" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Rivadavia Seguros">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">N° Póliza</label>
-            <input type="text" id="v-seguroPoliza" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="POL-2024-12345">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° Póliza</label>
+            <input type="text" id="v-seguroPoliza" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="POL-2024-12345">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Vencimiento del seguro</label>
-            <input type="date" id="v-seguroVencimiento" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Vencimiento del seguro</label>
+            <input type="date" id="v-seguroVencimiento" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
           </div>
         </div>
       </div>
 
-      <hr class="border-gray-200">
+      <hr class="border-[#FF6B35]/10">
 
       <!-- Sección: Service -->
       <div>
-        <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           Service
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Próximo service (km)</label>
-            <input type="number" id="v-proximoServiceKm" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="10000">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Próximo service (km)</label>
+            <input type="number" id="v-proximoServiceKm" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="10000">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Próximo service (fecha)</label>
-            <input type="date" id="v-proximoServiceFecha" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Próximo service (fecha)</label>
+            <input type="date" id="v-proximoServiceFecha" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
           </div>
         </div>
       </div>
 
-      <hr class="border-gray-200">
+      <hr class="border-[#FF6B35]/10">
 
       <!-- Sección: Ubicación y Conductor -->
       <div>
-        <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           Ubicación y Conductor
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Centro de Trabajo *</label>
-            <select id="v-centroTrabajo" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-              <option value="">Seleccionar...</option>
-              <option value="Planta Central">Planta Central</option>
-              <option value="Cantera Los Ángeles">Cantera Los Ángeles</option>
-              <option value="Planta Norte">Planta Norte</option>
-              <option value="Obra RN33">Obra RN33</option>
-              <option value="Taller Central">Taller Central</option>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Centro de Trabajo *</label>
+            <select id="v-centroTrabajo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
+              <option value="Planta Central" class="bg-[#0B0E17]">Planta Central</option>
+              <option value="Cantera Los Ángeles" class="bg-[#0B0E17]">Cantera Los Ángeles</option>
+              <option value="Planta Norte" class="bg-[#0B0E17]">Planta Norte</option>
+              <option value="Obra RN33" class="bg-[#0B0E17]">Obra RN33</option>
+              <option value="Taller Central" class="bg-[#0B0E17]">Taller Central</option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Conductor habitual</label>
-            <input type="text" id="v-conductorHabitual" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Juan Pérez">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Conductor habitual</label>
+            <input type="text" id="v-conductorHabitual" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Juan Pérez">
           </div>
         </div>
       </div>
 
       <!-- Sección: Multas -->
       <div>
-        <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
           Multas
         </h4>
         <div id="multas-container" class="space-y-2">
-          <div class="text-sm text-gray-400 italic">Sin multas registradas</div>
+          <div class="text-sm text-[#5C6378] italic">Sin multas registradas</div>
         </div>
-        <button type="button" onclick="addMultaRow()" class="mt-2 px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">+ Agregar multa</button>
+        <button type="button" onclick="addMultaRow()" class="mt-2 px-3 py-1.5 text-xs bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition">+ Agregar multa</button>
       </div>
 
-      <hr class="border-gray-200">
+      <hr class="border-[#FF6B35]/10">
 
       <!-- Sección: Documentos -->
       <div>
-        <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           Documentos
         </h4>
         <div id="documentos-container" class="space-y-2">
-          <div class="text-sm text-gray-400 italic">Sin documentos adjuntos</div>
+          <div class="text-sm text-[#5C6378] italic">Sin documentos adjuntos</div>
         </div>
-        <button type="button" onclick="addDocumentoRow()" class="mt-2 px-3 py-1.5 text-xs bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition">+ Agregar documento</button>
+        <button type="button" onclick="addDocumentoRow()" class="mt-2 px-3 py-1.5 text-xs bg-teal-500/10 text-teal-400 rounded-lg hover:bg-teal-500/20 transition">+ Agregar documento</button>
       </div>
 
-      <hr class="border-gray-200">
+      <hr class="border-[#FF6B35]/10">
 
       <!-- Sección: Observaciones -->
       <div>
-        <h4 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-[#8E94A8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
           Observaciones
         </h4>
-        <textarea id="v-observaciones" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Notas adicionales..."></textarea>
+        <textarea id="v-observaciones" rows="3" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Notas adicionales..."></textarea>
       </div>
 
       <!-- Sección: Foto -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Foto (URL)</label>
-        <input type="url" id="v-foto" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://storage.googleapis.com/...">
+        <label class="block text-sm font-medium text-[#8E94A8] mb-1">Foto (URL)</label>
+        <input type="url" id="v-foto" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="https://storage.googleapis.com/...">
       </div>
 
-      <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-        <button type="button" onclick="closeVehicleModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm">Cancelar</button>
-        <button type="submit" class="px-6 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">Guardar</button>
+      <div class="flex justify-end gap-3 pt-4 border-t border-[#FF6B35]/10">
+        <button type="button" onclick="closeVehicleModal()" class="px-4 py-2 text-[#8E94A8] hover:text-[#F1F3F8] text-sm transition-colors">Cancelar</button>
+        <button type="submit" class="btn-primary text-sm px-6 py-2">Guardar</button>
       </div>
     </form>
   </div>
@@ -332,27 +332,27 @@
 
 <!-- Modal Importación CSV -->
 <div id="modal-csv-import" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-      <h3 class="text-lg font-bold text-gray-800">Importar desde CSV</h3>
-      <button onclick="closeCsvImport()" class="text-gray-400 hover:text-gray-600">
+  <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
+    <div class="flex items-center justify-between p-6 border-b border-[#FF6B35]/10 sticky top-0 z-10" style="background: #141e2d;">
+      <h3 class="text-lg font-bold text-[#F1F3F8]">Importar desde CSV</h3>
+      <button onclick="closeCsvImport()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="p-6 space-y-4">
-      <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
-        <span class="text-sm text-blue-800">1. Descargá la plantilla CSV →</span>
-        <button onclick="downloadCsvTemplate()" class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition">Descargar plantilla</button>
+      <div class="flex items-center gap-4 p-4 bg-[#FF6B35]/10 rounded-lg border border-[#FF6B35]/10">
+        <span class="text-sm text-[#F1F3F8]">1. Descargá la plantilla CSV →</span>
+        <button onclick="downloadCsvTemplate()" class="btn-secondary text-xs px-3 py-1.5">Descargar plantilla</button>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">2. Seleccioná el archivo CSV:</label>
-        <input type="file" id="csv-file-input" accept=".csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+        <label class="block text-sm font-medium text-[#8E94A8] mb-2">2. Seleccioná el archivo CSV:</label>
+        <input type="file" id="csv-file-input" accept=".csv" class="block w-full text-sm text-[#F1F3F8] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#FF6B35]/10 file:text-[#FF6B35] hover:file:bg-[#FF6B35]/20">
       </div>
       <div id="csv-import-preview"></div>
       <div class="flex justify-end gap-3">
-        <button type="button" onclick="closeCsvImport()" class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm">Cancelar</button>
-        <button type="button" onclick="validateCsvImport()" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition">Validar CSV</button>
-        <button type="button" id="btn-execute-csv" onclick="executeCsvImport()" class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition hidden">Importar</button>
+        <button type="button" onclick="closeCsvImport()" class="px-4 py-2 text-[#8E94A8] hover:text-[#F1F3F8] text-sm transition-colors">Cancelar</button>
+        <button type="button" onclick="validateCsvImport()" class="btn-secondary text-sm px-4 py-2">Validar CSV</button>
+        <button type="button" id="btn-execute-csv" onclick="executeCsvImport()" class="btn-primary text-sm px-4 py-2 hidden">Importar</button>
       </div>
     </div>
   </div>
@@ -360,14 +360,14 @@
 
 <!-- Modal Progreso -->
 <div id="modal-progress" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md modal-content p-6">
-    <h3 class="text-lg font-bold text-gray-800 mb-4">Importando vehículos...</h3>
-    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
-      <div id="progress-bar" class="bg-blue-600 h-4 rounded-full transition-all duration-300" style="width:0%"></div>
+  <div class="glass-card rounded-2xl w-full max-w-md modal-content p-6">
+    <h3 class="text-lg font-bold text-[#F1F3F8] mb-4">Importando vehículos...</h3>
+    <div class="progress-bar w-full mb-2">
+      <div id="progress-bar" class="progress-bar-fill" style="width:0%"></div>
     </div>
-    <p id="progress-text" class="text-sm text-gray-600 text-center">Preparando...</p>
-    <p id="progress-detail" class="text-xs text-gray-400 text-center mt-1"></p>
-    <button id="btn-progress-close" onclick="closeProgressModal()" class="mt-4 w-full px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition hidden">Cerrar</button>
+    <p id="progress-text" class="text-sm text-[#8E94A8] text-center">Preparando...</p>
+    <p id="progress-detail" class="text-xs text-[#5C6378] text-center mt-1"></p>
+    <button id="btn-progress-close" onclick="closeProgressModal()" class="mt-4 w-full px-4 py-2 bg-[#FF6B35]/10 text-[#FF6B35] text-sm rounded-lg hover:bg-[#FF6B35]/20 transition hidden">Cerrar</button>
   </div>
 </div>
 

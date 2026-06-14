@@ -2,46 +2,46 @@
 <div class="flex h-screen overflow-hidden">
   <%- include('partials/sidebar', { page: 'maintenance' }) %>
   <div class="flex-1 flex flex-col overflow-hidden">
-    <div class="lg:hidden bg-blue-900 text-white p-3 flex items-center justify-between">
-      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-blue-800">
+    <div class="lg:hidden header-glass text-[#F1F3F8] p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#FF6B35]/10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <span class="font-bold">Grupo Falpat SRL</span>
-      <span class="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center text-sm font-bold"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+      <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#FF6B35] to-[#FF3366] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
     </div>
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">Mantenimiento</h1>
-          <p class="text-gray-500 text-sm">Registro de mantenimientos mecánicos y legales</p>
+          <h1 class="text-2xl font-bold text-gradient-primary">Mantenimiento</h1>
+          <p class="text-[#8E94A8] text-sm">Registro de mantenimientos mecánicos y legales</p>
         </div>
-        <button onclick="openMaintenanceModal()" class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition flex items-center gap-1">
+        <button onclick="openMaintenanceModal()" class="btn-primary text-sm flex items-center gap-1 px-4 py-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Nuevo
         </button>
       </div>
 
-      <div class="mt-6 bg-white rounded-xl shadow-sm">
-        <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+      <div class="mt-6 glass-card rounded-xl">
+        <div class="p-4 border-b border-[#FF6B35]/10 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <div class="flex gap-2 flex-wrap">
-            <input type="text" id="search-mant" placeholder="Buscar..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm w-48 focus:ring-2 focus:ring-blue-500">
-            <select id="filter-tipo-mant" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
-              <option value="">Todos los tipos</option>
-              <option value="Mecánico">Mecánico</option>
-              <option value="Legal">Legal</option>
+            <input type="text" id="search-mant" placeholder="Buscar..." class="px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm w-48 text-[#F1F3F8] placeholder-[#5C6378] input-neon">
+            <select id="filter-tipo-mant" class="px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Todos los tipos</option>
+              <option value="Mecánico" class="bg-[#0B0E17]">Mecánico</option>
+              <option value="Legal" class="bg-[#0B0E17]">Legal</option>
             </select>
-            <select id="filter-estado-mant" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
-              <option value="">Todos los estados</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="Realizado">Realizado</option>
-              <option value="Vencido">Vencido</option>
+            <select id="filter-estado-mant" class="px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Todos los estados</option>
+              <option value="Pendiente" class="bg-[#0B0E17]">Pendiente</option>
+              <option value="Realizado" class="bg-[#0B0E17]">Realizado</option>
+              <option value="Vencido" class="bg-[#0B0E17]">Vencido</option>
             </select>
-            <button onclick="applyFilters()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">Filtrar</button>
+            <button onclick="applyFilters()" class="btn-secondary text-sm px-4 py-2">Filtrar</button>
           </div>
         </div>
         <div class="table-container p-4">
           <table class="w-full text-sm">
             <thead>
-              <tr class="text-left text-gray-500 border-b border-gray-200">
+              <tr class="text-left text-[#8E94A8] border-b border-[#FF6B35]/10">
                 <th class="pb-3 font-medium">Tipo</th>
                 <th class="pb-3 font-medium">Asociado a</th>
                 <th class="pb-3 font-medium">Descripción</th>
@@ -54,7 +54,7 @@
               </tr>
             </thead>
             <tbody id="maintenance-table-body">
-              <tr><td colspan="9" class="text-center py-8 text-gray-400">Cargando mantenimientos...</td></tr>
+              <tr><td colspan="9" class="text-center py-8 text-[#5C6378]">Cargando mantenimientos...</td></tr>
             </tbody>
           </table>
         </div>
@@ -66,10 +66,10 @@
 <%- include('partials/mobile-menu', { page: 'maintenance' }) %>
 
 <div id="modal-mantenimiento" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-6 border-b border-gray-200">
-      <h3 class="text-lg font-bold text-gray-800" id="modal-mant-title">Nuevo Mantenimiento</h3>
-      <button onclick="closeMaintenanceModal()" class="text-gray-400 hover:text-gray-600">
+  <div class="glass-card rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content">
+    <div class="flex items-center justify-between p-6 border-b border-[#FF6B35]/10 sticky top-0 z-10" style="background: #141e2d;">
+      <h3 class="text-lg font-bold text-[#F1F3F8]" id="modal-mant-title">Nuevo Mantenimiento</h3>
+      <button onclick="closeMaintenanceModal()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
@@ -77,67 +77,67 @@
       <input type="hidden" id="mant-id">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
-          <select id="m-tipo" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-            <option value="Mecánico">Mecánico</option>
-            <option value="Legal">Legal</option>
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo *</label>
+          <select id="m-tipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <option value="Mecánico" class="bg-[#0B0E17]">Mecánico</option>
+            <option value="Legal" class="bg-[#0B0E17]">Legal</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Asociado a *</label>
-          <select id="m-asociado-tipo" required onchange="toggleAsociado()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-            <option value="vehiculo">Vehículo</option>
-            <option value="herramienta">Herramienta</option>
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Asociado a *</label>
+          <select id="m-asociado-tipo" required onchange="toggleAsociado()" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <option value="vehiculo" class="bg-[#0B0E17]">Vehículo</option>
+            <option value="herramienta" class="bg-[#0B0E17]">Herramienta</option>
           </select>
         </div>
         <div id="m-vehiculo-group">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Vehículo *</label>
-          <select id="m-vehiculo" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"><option value="">Cargando...</option></select>
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Vehículo *</label>
+          <select id="m-vehiculo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon"><option value="" class="bg-[#0B0E17]">Cargando...</option></select>
         </div>
         <div id="m-herramienta-group" class="hidden">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Herramienta *</label>
-          <select id="m-herramienta" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"><option value="">Cargando...</option></select>
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Herramienta *</label>
+          <select id="m-herramienta" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon"><option value="" class="bg-[#0B0E17]">Cargando...</option></select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Realización *</label>
-          <input type="date" id="m-fecha" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Fecha de Realización *</label>
+          <input type="date" id="m-fecha" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Próx. Fecha Vencimiento *</label>
-          <input type="date" id="m-vencimiento" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Próx. Fecha Vencimiento *</label>
+          <input type="date" id="m-vencimiento" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Km / Horas</label>
-          <input type="number" id="m-km" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0">
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Km / Horas</label>
+          <input type="number" id="m-km" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Costo ($)</label>
-          <input type="number" id="m-costo" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0.00" step="0.01">
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Costo ($)</label>
+          <input type="number" id="m-costo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0.00" step="0.01">
         </div>
         <div class="sm:col-span-2">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
-          <textarea id="m-descripcion" required rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Describa el mantenimiento realizado..."></textarea>
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Descripción *</label>
+          <textarea id="m-descripcion" required rows="2" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Describa el mantenimiento realizado..."></textarea>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Responsable *</label>
-          <input type="text" id="m-responsable" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Nombre del responsable">
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Responsable *</label>
+          <input type="text" id="m-responsable" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Nombre del responsable">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
-          <select id="m-estado" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-            <option value="Pendiente">Pendiente</option>
-            <option value="Realizado">Realizado</option>
-            <option value="Vencido">Vencido</option>
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Estado *</label>
+          <select id="m-estado" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <option value="Pendiente" class="bg-[#0B0E17]">Pendiente</option>
+            <option value="Realizado" class="bg-[#0B0E17]">Realizado</option>
+            <option value="Vencido" class="bg-[#0B0E17]">Vencido</option>
           </select>
         </div>
         <div class="sm:col-span-2">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Comprobante (URL foto/PDF)</label>
-          <input type="url" id="m-comprobante" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://ejemplo.com/comprobante.pdf">
+          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Comprobante (URL foto/PDF)</label>
+          <input type="url" id="m-comprobante" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="https://ejemplo.com/comprobante.pdf">
         </div>
       </div>
-      <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-        <button type="button" onclick="closeMaintenanceModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm">Cancelar</button>
-        <button type="submit" class="px-6 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">Guardar</button>
+      <div class="flex justify-end gap-3 pt-4 border-t border-[#FF6B35]/10">
+        <button type="button" onclick="closeMaintenanceModal()" class="px-4 py-2 text-[#8E94A8] hover:text-[#F1F3F8] text-sm transition-colors">Cancelar</button>
+        <button type="submit" class="btn-primary text-sm px-6 py-2">Guardar</button>
       </div>
     </form>
   </div>
