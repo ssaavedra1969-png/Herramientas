@@ -5,8 +5,6 @@ const storage = firebase.storage();
 let currentUser = null;
 let currentUserData = null;
 
-const GOOGLE_CLIENT_ID = '909015450780-fopofcs2u4flv4ngja7his8029kdl080.apps.googleusercontent.com';
-
 async function completeSignIn(user) {
   console.log('completeSignIn called, uid:', user.uid, 'email:', user.email);
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
@@ -124,74 +122,33 @@ async function loginUser(email, password) {
   return auth.signInWithEmailAndPassword(email, password);
 }
 
-// Google login using Google Identity Services (GIS) Token Client
+// Google login using Firebase signInWithPopup, fallback to redirect
 async function loginGoogle() {
   clearSession();
-  return new Promise((resolve, reject) => {
-    // Wait for GIS library to be loaded
-    if (typeof google === 'undefined' || !google.accounts?.oauth2) {
-      const errMsg = 'La biblioteca de Google no se cargó. Recargá la página o intentá de nuevo.';
-      console.error(errMsg);
-      const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
-      fn(errMsg, 'error');
-      reject(new Error(errMsg));
-      return;
-    }
-    try {
-      const tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: 'email profile openid',
-        callback: async (response) => {
-          if (response.error) {
-            console.error('GIS error:', response.error);
-            const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
-            fn('Error de Google: ' + (response.error_description || response.error), 'error');
-            reject(response);
-            return;
-          }
-          if (response.access_token) {
-            try {
-              const credential = firebase.auth.GoogleAuthProvider.credential(null, response.access_token);
-              const result = await auth.signInWithCredential(credential);
-              console.log('GIS Google login success:', result.user.uid);
-              resolve(result);
-            } catch (e) {
-              console.error('Firebase signInWithCredential error:', e.code, e.message);
-              const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
-              fn('Error al iniciar sesión con Google: ' + (friendlyError(e) || e.message), 'error');
-              reject(e);
-            }
-          } else {
-            const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
-            fn('No se recibió el token de Google', 'error');
-            reject(new Error('No access token'));
-          }
-        },
-        error_callback: (err) => {
-          console.error('GIS error_callback:', err);
-          const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
-          fn('Error de autenticación: ' + (err.message || err.type || 'desconocido'), 'error');
-          reject(err);
-        }
-      });
-
-      // Try popup first, fallback to redirect
+  const googleProvider = new firebase.auth.GoogleAuthProvider();
+  googleProvider.setCustomParameters({ prompt: 'select_account' });
+  try {
+    const result = await auth.signInWithPopup(googleProvider);
+    console.log('signInWithPopup success:', result.user.uid);
+    return result;
+  } catch (e) {
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
+      console.log('Popup blocked/closed, falling back to redirect');
       try {
-        tokenClient.requestAccessToken({ prompt: 'select_account' });
-      } catch (popupErr) {
-        console.log('GIS popup failed, falling back to Firebase redirect');
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
-        googleProvider.setCustomParameters({ prompt: 'select_account' });
-        auth.signInWithRedirect(googleProvider).then(resolve).catch(reject);
+        await auth.signInWithRedirect(googleProvider);
+      } catch (redirectErr) {
+        console.error('Redirect error:', redirectErr.code, redirectErr.message);
+        const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
+        fn('Error al iniciar sesión con Google: ' + (friendlyError(redirectErr) || redirectErr.message), 'error');
+        throw redirectErr;
       }
-    } catch (e) {
-      console.error('GIS initialization error:', e);
-      // Fallback to Firebase redirect
-      const googleProvider = new firebase.auth.GoogleAuthProvider();
-      googleProvider.setCustomParameters({ prompt: 'select_account' });
-      auth.signInWithRedirect(googleProvider).then(resolve).catch(reject);
+    } else {
+      console.error('Google signInWithPopup error:', e.code, e.message);
+      const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
+      fn('Error al iniciar sesión con Google: ' + (friendlyError(e) || e.message), 'error');
+      throw e;
     }
-  });
+  }
 }
 
 async function handleLogout() {
