@@ -425,8 +425,8 @@ function validateCsvImport() {
             if (!marca) rowErrors.push('marca requerida');
             if (!tipo) rowErrors.push('tipo requerido');
 
-            if (pat && (patenteSet.has(pat) || seen.has(pat))) rowErrors.push('patente duplicada');
-            if (pat) seen.add(pat);
+            if (patente && (patenteSet.has(patente) || seen.has(patente))) rowErrors.push('patente duplicada');
+            if (patente) seen.add(patente);
 
             if (rowErrors.length) {
               errors.push({ fila: idx, patente: pat || '(sin patente)', errores: rowErrors.join(', ') });
