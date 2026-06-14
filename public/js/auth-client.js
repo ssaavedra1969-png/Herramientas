@@ -15,6 +15,12 @@ auth.getRedirectResult().catch(error => {
   }
 });
 
+auth.getRedirectResult().catch(e => {
+  if (e.code === 'auth/unauthorized-domain') {
+    console.warn('Redirect domain not authorized, use popup instead');
+  }
+});
+
 auth.onAuthStateChanged(async (user) => {
   if (!authCheckDone) {
     authCheckDone = true;
@@ -86,7 +92,15 @@ async function loginUser(email, password) {
 
 async function loginGoogle() {
   clearSession();
-  await auth.signInWithRedirect(googleProvider);
+  try {
+    await auth.signInWithPopup(googleProvider);
+  } catch (e) {
+    if (e.code === 'auth/popup-blocked') {
+      showToast('Popup bloqueado. Permití popups o usá email/contraseña.', 'error');
+    } else {
+      showToast('Error al iniciar sesión con Google: ' + e.message, 'error');
+    }
+  }
 }
 
 async function handleLogout() {
