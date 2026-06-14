@@ -6,92 +6,93 @@
   <title>Google Sign-In - Grupo Falpat SRL</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background: #0B0E17; color: #F1F3F8; font-family: system-ui, sans-serif; }
+    body { background: #0B0E17; color: #F1F3F8; font-family: monospace; }
     .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,107,53,0.2); border-top-color: #FF6B35; border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    #debug { display: none; text-align: left; font-size: 12px; word-break: break-all; max-width: 800px; margin: 20px auto; }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center">
-  <div class="text-center">
-    <div class="spinner mx-auto mb-4"></div>
-    <p class="text-[#8E94A8] text-sm" id="status">Iniciando sesión con Google...</p>
+<body class="min-h-screen flex items-center justify-center p-4">
+  <div class="text-center w-full">
+    <div id="loading">
+      <div class="spinner mx-auto mb-4"></div>
+      <p class="text-[#8E94A8] text-sm" id="status">Iniciando sesión con Google...</p>
+    </div>
+    <pre id="debug" class="bg-[#0a0e17] border border-[#FF6B35]/20 rounded-lg p-4 text-left text-xs overflow-auto max-h-[80vh]"></pre>
   </div>
   <script>
+    function showDebug(obj) {
+      const el = document.getElementById('debug');
+      el.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+      el.style.display = 'block';
+      document.getElementById('loading').style.display = 'none';
+    }
+
     const FIREBASE_CONFIG = <%- JSON.stringify(clientConfig) %>;
   </script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script>
     (async function() {
-      const statusEl = document.getElementById('status');
       try {
         firebase.initializeApp(FIREBASE_CONFIG);
         const auth = firebase.auth();
         const hash = window.location.hash;
+        const fullUrl = window.location.href;
 
-        // If there's a hash, we're back from the Firebase handler redirect
         if (hash && hash.length > 5) {
-          statusEl.textContent = 'Procesando inicio de sesión...';
+          // We're back from the redirect - debug mode
+          showDebug({
+            step: 'Redirect detected',
+            fullUrl: fullUrl,
+            hash: hash,
+            hashLength: hash.length
+          });
 
-          // Try Firebase SDK getRedirectResult first
-          let googleIdToken = null;
+          // Try getRedirectResult
           try {
-            const redirectResult = await auth.getRedirectResult();
-            if (redirectResult && redirectResult.credential) {
-              const cred = redirectResult.credential;
-              googleIdToken = cred.idToken || cred.accessToken;
+            const result = await auth.getRedirectResult();
+            showDebug({
+              step: 'getRedirectResult completed',
+              hasResult: !!result,
+              resultUser: result?.user ? { uid: result.user.uid, email: result.user.email } : null,
+              resultCredential: result?.credential ? { providerId: result.credential.providerId } : null,
+              resultError: null,
+              hash: hash
+            });
+            if (result?.user) {
+              const firebaseToken = await result.user.getIdToken();
+              const sessionRes = await fetch('/api/auth/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: firebaseToken })
+              });
+              if (sessionRes.ok) { window.location.href = '/dashboard'; return; }
             }
           } catch (e) {
-            console.log('getRedirectResult returned:', e.code || e.message);
-          }
-
-          // If getRedirectResult didn't work, parse the hash manually
-          if (!googleIdToken && hash.includes('firebase-auth-redirect')) {
-            try {
-              const raw = hash.split('firebase-auth-redirect=')[1].split('&')[0];
-              const decoded = decodeURIComponent(raw);
-              const json = JSON.parse(atob(decoded.replace(/-/g, '+').replace(/_/g, '/')));
-              console.log('Redirect data:', json);
-              // Try different formats
-              if (json.response) {
-                googleIdToken = json.response.oauthIdToken || json.response.oauthAccessToken || json.response.idToken;
-              }
-              if (!googleIdToken && json.oauthIdToken) googleIdToken = json.oauthIdToken;
-              if (!googleIdToken && json.postBody) {
-                const match = json.postBody.match(/id_token=([^&]+)/);
-                if (match) googleIdToken = match[1];
-              }
-            } catch (e) {
-              console.error('Manual hash parse error:', e);
-            }
-          }
-
-          if (googleIdToken) {
-            const credential = firebase.auth.GoogleAuthProvider.credential(googleIdToken);
-            const result = await auth.signInWithCredential(credential);
-            const firebaseToken = await result.user.getIdToken();
-            const sessionRes = await fetch('/api/auth/session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idToken: firebaseToken })
+            showDebug({
+              step: 'getRedirectResult error',
+              errorCode: e.code,
+              errorMessage: e.message,
+              hash: hash
             });
-            if (!sessionRes.ok) throw new Error('Error al crear sesión');
-            window.location.href = '/dashboard';
-          } else {
-            window.location.href = '/login?error=No+se+recibieron+credenciales+de+Google';
+            return;
           }
+
+          showDebug({
+            step: 'getRedirectResult returned null - trying manual parse',
+            hash: hash
+          });
           return;
         }
 
-        // No hash → initiate the redirect sign-in flow
-        statusEl.textContent = 'Redirigiendo a Google...';
+        // No hash → initiate redirect
+        document.getElementById('status').textContent = 'Redirigiendo a Google...';
         const googleProvider = new firebase.auth.GoogleAuthProvider();
         googleProvider.setCustomParameters({ prompt: 'select_account' });
         await auth.signInWithRedirect(googleProvider);
-        // signInWithRedirect redirects the page immediately, so we never reach here
       } catch (e) {
-        console.error('Google init error:', e);
-        window.location.href = '/login?error=' + encodeURIComponent(e.message || 'Error al iniciar sesión con Google');
+        showDebug({ step: 'Fatal error', error: e.message, stack: e.stack });
       }
     })();
   </script>
