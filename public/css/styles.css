@@ -62,7 +62,7 @@ body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
   font-weight: 600;
 }
 
-.status-badge.activo, .status-badge.bueno, .status-badge.realizado {
+.status-badge.excelente, .status-badge.activo, .status-badge.bueno, .status-badge.realizado {
   background-color: #D1FAE5; color: #065F46;
 }
 .status-badge.pendiente, .status-badge.regular {

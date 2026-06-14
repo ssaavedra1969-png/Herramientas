@@ -5,7 +5,7 @@ const { verifyToken, requireAdmin } = require('../middleware/auth');
 
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const snapshot = await db.collection('vehicles').orderBy('numeroInterno', 'asc').get();
+    const snapshot = await db.collection('vehicles').orderBy('interno', 'asc').get();
     const vehicles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     res.json(vehicles);
   } catch (error) {
@@ -25,25 +25,40 @@ router.get('/:id', verifyToken, async (req, res) => {
 
 router.post('/', verifyToken, requireAdmin, async (req, res) => {
   try {
+    const seguro = req.body.seguro || {};
     const data = {
       patente: req.body.patente?.toUpperCase().trim(),
-      numeroInterno: req.body.numeroInterno?.trim(),
+      interno: req.body.interno?.trim(),
+      tipo: req.body.tipo,
       marca: req.body.marca?.trim(),
       modelo: req.body.modelo?.trim(),
-      anio: req.body.anio ? parseInt(req.body.anio) : null,
-      tipo: req.body.tipo,
+      año: req.body.año ? parseInt(req.body.año) : null,
+      chasis: req.body.chasis?.trim() || '',
       kilometraje: parseInt(req.body.kilometraje) || 0,
-      estado: req.body.estado || 'Activo',
+      horometro: parseInt(req.body.horometro) || 0,
+      estadoGeneral: req.body.estadoGeneral || 'Bueno',
+      fechaUltimaRevision: req.body.fechaUltimaRevision ? new Date(req.body.fechaUltimaRevision) : null,
+      vencimientoVTV: req.body.vencimientoVTV ? new Date(req.body.vencimientoVTV) : null,
+      seguro: {
+        compañía: seguro.compañía || '',
+        poliza: seguro.poliza || '',
+        fechaVencimiento: seguro.fechaVencimiento ? new Date(seguro.fechaVencimiento) : null
+      },
       proximoServiceKm: parseInt(req.body.proximoServiceKm) || null,
       proximoServiceFecha: req.body.proximoServiceFecha ? new Date(req.body.proximoServiceFecha) : null,
+      centroTrabajo: req.body.centroTrabajo || '',
+      conductorHabitual: req.body.conductorHabitual?.trim() || '',
+      observaciones: req.body.observaciones?.trim() || '',
       fotoURL: req.body.fotoURL?.trim() || '',
+      multas: req.body.multas || [],
+      documentos: req.body.documentos || [],
       fechaAlta: new Date(),
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
-    if (!data.patente || !data.numeroInterno || !data.marca || !data.modelo || !data.tipo) {
-      return res.status(400).json({ error: 'Campos obligatorios: patente, interno, marca, modelo, tipo' });
+    if (!data.patente || !data.interno || !data.marca || !data.tipo) {
+      return res.status(400).json({ error: 'Campos obligatorios: patente, interno, marca, tipo' });
     }
 
     const existing = await db.collection('vehicles').where('patente', '==', data.patente).get();
@@ -63,18 +78,33 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
     const doc = await db.collection('vehicles').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
 
+    const seguro = req.body.seguro || {};
     const data = {
       patente: req.body.patente?.toUpperCase().trim(),
-      numeroInterno: req.body.numeroInterno?.trim(),
+      interno: req.body.interno?.trim(),
+      tipo: req.body.tipo,
       marca: req.body.marca?.trim(),
       modelo: req.body.modelo?.trim(),
-      anio: req.body.anio ? parseInt(req.body.anio) : null,
-      tipo: req.body.tipo,
+      año: req.body.año ? parseInt(req.body.año) : null,
+      chasis: req.body.chasis?.trim() || '',
       kilometraje: parseInt(req.body.kilometraje) || 0,
-      estado: req.body.estado || 'Activo',
+      horometro: parseInt(req.body.horometro) || 0,
+      estadoGeneral: req.body.estadoGeneral || 'Bueno',
+      fechaUltimaRevision: req.body.fechaUltimaRevision ? new Date(req.body.fechaUltimaRevision) : null,
+      vencimientoVTV: req.body.vencimientoVTV ? new Date(req.body.vencimientoVTV) : null,
+      seguro: {
+        compañía: seguro.compañía || '',
+        poliza: seguro.poliza || '',
+        fechaVencimiento: seguro.fechaVencimiento ? new Date(seguro.fechaVencimiento) : null
+      },
       proximoServiceKm: parseInt(req.body.proximoServiceKm) || null,
       proximoServiceFecha: req.body.proximoServiceFecha ? new Date(req.body.proximoServiceFecha) : null,
+      centroTrabajo: req.body.centroTrabajo || '',
+      conductorHabitual: req.body.conductorHabitual?.trim() || '',
+      observaciones: req.body.observaciones?.trim() || '',
       fotoURL: req.body.fotoURL?.trim() || '',
+      multas: req.body.multas || [],
+      documentos: req.body.documentos || [],
       updatedAt: new Date()
     };
 
