@@ -12,6 +12,9 @@
     </div>
 
     <div class="glass-card rounded-2xl p-8">
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="mb-4 px-4 py-3 rounded-lg border border-red-500/30 bg-red-900/50 text-red-400 text-sm text-center"><%= error %></div>
+      <% } %>
       <div class="flex mb-6 bg-[#0B0E17]/50 rounded-lg p-1 border border-[#FF6B35]/10">
         <button id="tab-login" class="flex-1 py-2 text-center rounded-md text-sm font-medium transition text-[#FF6B35] bg-[#FF6B35]/10 shadow-sm">Iniciar Sesión</button>
         <button id="tab-register" class="flex-1 py-2 text-center rounded-md text-sm font-medium transition text-[#8E94A8] hover:text-[#F1F3F8]">Registrarse</button>

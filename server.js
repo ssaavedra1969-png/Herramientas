@@ -47,11 +47,53 @@ app.use('/api/admin', adminRoutes);
 
 app.get('/login', (req, res) => {
   if (res.locals.currentUser) return res.redirect('/dashboard');
+  const error = req.query.error;
   res.render('login', {
     title: 'Iniciar Sesión',
     clientConfig: res.locals.clientConfig,
     currentUser: null,
-    currentUserData: null
+    currentUserData: null,
+    error: error || null
+  });
+});
+
+app.get('/auth/google/init', async (req, res) => {
+  try {
+    const apiKey = require('./config/firebase').clientConfig.apiKey;
+    const host = req.get('host'); // includes port for non-standard ports
+    const continueUri = `${req.protocol}://${host}/auth/google/callback`;
+
+    const authUriResp = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          providerId: 'google.com',
+          continueUri,
+          customParameter: { prompt: 'select_account' }
+        })
+      }
+    );
+
+    const authUriData = await authUriResp.json();
+
+    if (!authUriResp.ok || !authUriData.authUri) {
+      console.error('createAuthUri error:', authUriData.error?.message || JSON.stringify(authUriData));
+      return res.redirect('/login?error=Error+al+iniciar+sesión+con+Google');
+    }
+
+    res.redirect(authUriData.authUri);
+  } catch (err) {
+    console.error('Google init error:', err.message);
+    res.redirect('/login?error=Error+de+conexión');
+  }
+});
+
+app.get('/auth/google/callback', (req, res) => {
+  res.render('auth/google-callback', {
+    title: 'Verificando',
+    clientConfig: res.locals.clientConfig
   });
 });
 

@@ -93,9 +93,9 @@ async function initAuthResult() {
 }
 
 auth.onAuthStateChanged(async (user) => {
-  console.log('onAuthStateChanged:', user ? 'user:' + user.uid : 'null', 'loginPage:', window.location.pathname);
+  console.log('onAuthStateChanged:', user ? 'user:' + user.uid : 'null', 'path:', window.location.pathname);
   currentUser = user;
-  const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
+  const publicPage = window.location.pathname === '/login' || window.location.pathname === '/' || window.location.pathname.startsWith('/auth/');
 
   if (user) {
     await completeSignIn(user);
@@ -103,7 +103,7 @@ auth.onAuthStateChanged(async (user) => {
     currentUserData = null;
     sessionStorage.removeItem('sessionInit');
     await fetch('/api/auth/logout', { method: 'POST' });
-    if (!loginPage) window.location.href = '/login';
+    if (!publicPage) window.location.href = '/login';
   }
 });
 
@@ -122,33 +122,10 @@ async function loginUser(email, password) {
   return auth.signInWithEmailAndPassword(email, password);
 }
 
-// Google login using Firebase signInWithPopup, fallback to redirect
+// Google login using server-side OAuth redirect flow
 async function loginGoogle() {
   clearSession();
-  const googleProvider = new firebase.auth.GoogleAuthProvider();
-  googleProvider.setCustomParameters({ prompt: 'select_account' });
-  try {
-    const result = await auth.signInWithPopup(googleProvider);
-    console.log('signInWithPopup success:', result.user.uid);
-    return result;
-  } catch (e) {
-    if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
-      console.log('Popup blocked/closed, falling back to redirect');
-      try {
-        await auth.signInWithRedirect(googleProvider);
-      } catch (redirectErr) {
-        console.error('Redirect error:', redirectErr.code, redirectErr.message);
-        const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
-        fn('Error al iniciar sesión con Google: ' + (friendlyError(redirectErr) || redirectErr.message), 'error');
-        throw redirectErr;
-      }
-    } else {
-      console.error('Google signInWithPopup error:', e.code, e.message);
-      const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
-      fn('Error al iniciar sesión con Google: ' + (friendlyError(e) || e.message), 'error');
-      throw e;
-    }
-  }
+  window.location.href = '/auth/google/init';
 }
 
 async function handleLogout() {
