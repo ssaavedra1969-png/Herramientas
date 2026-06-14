@@ -7,26 +7,17 @@ let currentUserData = null;
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-let authCheckDone = false;
-
-auth.getRedirectResult().catch(error => {
-  if (error.code !== 'auth/no-redirect-result') {
-    console.warn('Redirect sign-in error:', error.code, error.message);
-  }
-});
+let googleLoginInProgress = false;
 
 auth.onAuthStateChanged(async (user) => {
-  if (!authCheckDone) {
-    authCheckDone = true;
-    if (!user) return;
-  }
-
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
   if (user) {
+    if (googleLoginInProgress) return;
+
     try {
-      if (!sessionStorage.getItem('sessionInit') || loginPage) {
+      if (!sessionStorage.getItem('sessionInit')) {
         const token = await user.getIdToken();
         const res = await fetch('/api/auth/session', {
           method: 'POST',
@@ -87,7 +78,35 @@ async function loginUser(email, password) {
 async function loginGoogle() {
   clearSession();
   try {
-    await auth.signInWithPopup(googleProvider);
+    googleLoginInProgress = true;
+    const result = await auth.signInWithPopup(googleProvider);
+    const user = result.user;
+
+    const token = await user.getIdToken();
+    const res = await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: token })
+    });
+    if (!res.ok) throw new Error('Error al crear sesión');
+    sessionStorage.setItem('sessionInit', '1');
+
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    if (userDoc.exists) {
+      currentUserData = userDoc.data();
+    } else {
+      const newUser = {
+        email: user.email,
+        displayName: user.displayName || user.email.split('@')[0],
+        role: 'Usuario',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await db.collection('users').doc(user.uid).set(newUser);
+      currentUserData = newUser;
+    }
+
+    currentUser = user;
+    window.location.href = '/dashboard';
   } catch (e) {
     const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
     if (e.code === 'auth/popup-blocked') {
@@ -97,6 +116,8 @@ async function loginGoogle() {
     } else {
       fn(friendlyError(e));
     }
+  } finally {
+    googleLoginInProgress = false;
   }
 }
 
