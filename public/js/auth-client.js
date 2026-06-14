@@ -54,6 +54,10 @@ auth.getRedirectResult().then(async (result) => {
 }).catch(error => {
   if (error.code !== 'auth/no-redirect-result') {
     console.warn('Redirect sign-in error:', error.code, error.message);
+    if (window.location.pathname === '/login' || window.location.pathname === '/') {
+      const fn = typeof showLoginError === 'function' ? showLoginError : showToast;
+      fn('Error de Google: ' + (error.message || error.code || 'desconocido'));
+    }
   }
 });
 
@@ -95,6 +99,7 @@ async function loginGoogle() {
   } catch (e) {
     const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
     fn('Error al iniciar sesión con Google: ' + (friendlyError(e) || e.message));
+    console.error('signInWithRedirect error:', e.code, e.message);
   }
 }
 
