@@ -32,7 +32,7 @@ async function loadUser(req, res, next) {
   const token = req.cookies?.__session;
   if (token) {
     try {
-      const decoded = await adminAuth.verifySessionCookie(token, true);
+      const decoded = await adminAuth.verifySessionCookie(token, false);
       res.locals.currentUser = decoded;
 
       const userDoc = await db.collection('users').doc(decoded.uid).get();

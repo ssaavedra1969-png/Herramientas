@@ -7,11 +7,20 @@ let currentUserData = null;
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
+let authCheckDone = false;
+
 auth.getRedirectResult().catch(error => {
-  console.warn('Redirect sign-in error:', error.code, error.message);
+  if (error.code !== 'auth/no-redirect-result') {
+    console.warn('Redirect sign-in error:', error.code, error.message);
+  }
 });
 
 auth.onAuthStateChanged(async (user) => {
+  if (!authCheckDone) {
+    authCheckDone = true;
+    if (!user) return;
+  }
+
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
