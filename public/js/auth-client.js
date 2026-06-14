@@ -7,8 +7,6 @@ let currentUserData = null;
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-let redirectProcessing = false;
-
 async function completeSignIn(user) {
   console.log('completeSignIn called, uid:', user.uid, 'email:', user.email);
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
@@ -47,46 +45,39 @@ async function completeSignIn(user) {
   }
 }
 
-auth.getRedirectResult().then(async (result) => {
-  console.log('getRedirectResult resolved:', result ? 'has result' : 'null');
-  if (result) {
-    console.log('Result type:', typeof result, 'proto:', Object.prototype.toString.call(result));
-    console.log('Result keys:', Object.keys(result));
-    console.log('Has user:', !!result.user, 'Has credential:', !!result.credential);
-    if (result.error) console.log('Result has error:', result.error);
-    if (result.operationType) console.log('Operation type:', result.operationType);
-    if (result.user) {
-      console.log('Redirect user found:', result.user.uid, result.user.email);
-      redirectProcessing = true;
-      await completeSignIn(result.user);
-    } else {
-      console.log('Result has no user. Full result:', JSON.stringify(result, (key, value) => {
-        if (key === '_lat' || key === '_lng') return undefined;
-        if (typeof value === 'object' && value !== null && Object.keys(value).length > 20) return '[Object]';
-        return value;
-      }, 2));
-    }
-  } else {
-    console.log('No redirect result available');
+// Process Google OAuth redirect result from URL hash
+async function processGoogleRedirect() {
+  const hash = window.location.hash;
+  if (!hash || !hash.includes('access_token=')) return;
+
+  console.log('Found redirect hash, processing...');
+  try {
+    const params = new URLSearchParams(hash.substring(1));
+    const accessToken = params.get('access_token');
+    if (!accessToken) { console.log('No access_token in hash'); return; }
+
+    console.log('Have access_token, creating credential');
+    const credential = firebase.auth.GoogleAuthProvider.credential(null, accessToken);
+    const result = await auth.signInWithCredential(credential);
+    console.log('signInWithCredential success:', result.user.uid);
+
+    // Clear the hash from URL
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+
+    await completeSignIn(result.user);
+  } catch (e) {
+    console.error('Google redirect processing error:', e.code || e.message, e);
+    const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
+    fn('Error al iniciar sesión con Google: ' + (friendlyError(e) || e.message));
   }
-}).catch(error => {
-  console.warn('getRedirectResult error:', error.code || error.message || error);
-  if (error.code !== 'auth/no-redirect-result') {
-    if (window.location.pathname === '/login' || window.location.pathname === '/') {
-      const fn = typeof showLoginError === 'function' ? showLoginError : showToast;
-      fn('Error de Google: ' + (error.message || error.code || 'Error de redirección'));
-    }
-  }
-});
+}
 
 auth.onAuthStateChanged(async (user) => {
-  console.log('onAuthStateChanged:', user ? 'user:' + user.uid : 'null', 'loginPage:', window.location.pathname, 'redirectProcessing:', redirectProcessing);
+  console.log('onAuthStateChanged:', user ? 'user:' + user.uid : 'null', 'loginPage:', window.location.pathname);
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
   if (user) {
-    if (redirectProcessing) { console.log('Skipping onAuthStateChanged, redirect in progress'); return; }
-
     await completeSignIn(user);
   } else {
     currentUserData = null;

@@ -165,6 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-register-submit')?.addEventListener('click', doRegister);
 
+  if (typeof processGoogleRedirect === 'function') {
+    processGoogleRedirect();
+  }
+
   document.getElementById('btn-google')?.addEventListener('click', async () => {
     console.log('Google button clicked');
     if (typeof loginGoogle !== 'function') return showLoginError('Error al cargar la aplicación. Intente recargar la página.');
