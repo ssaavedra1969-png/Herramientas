@@ -7,56 +7,69 @@ let currentUserData = null;
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-let googleLoginInProgress = false;
+let redirectProcessing = false;
+
+async function completeSignIn(user) {
+  const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
+  try {
+    if (!sessionStorage.getItem('sessionInit')) {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: token })
+      });
+      if (!res.ok) throw new Error('Error al crear sesión');
+      sessionStorage.setItem('sessionInit', '1');
+    }
+
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    if (userDoc.exists) {
+      currentUserData = userDoc.data();
+    } else {
+      const newUser = {
+        email: user.email,
+        role: 'Usuario',
+        displayName: user.displayName || user.email.split('@')[0],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await db.collection('users').doc(user.uid).set(newUser);
+      currentUserData = newUser;
+    }
+    currentUser = user;
+
+    if (loginPage) window.location.href = '/dashboard';
+  } catch (e) {
+    console.warn('Error loading user data:', e.code || e.message, e);
+    currentUserData = { role: 'Usuario', displayName: user.displayName || user.email?.split('@')[0] };
+    showToast('Error al iniciar sesión: ' + (e.message || 'desconocido'), 'error');
+  }
+}
+
+auth.getRedirectResult().then(async (result) => {
+  if (result.user) {
+    redirectProcessing = true;
+    await completeSignIn(result.user);
+  }
+}).catch(error => {
+  if (error.code !== 'auth/no-redirect-result') {
+    console.warn('Redirect sign-in error:', error.code, error.message);
+  }
+});
 
 auth.onAuthStateChanged(async (user) => {
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
   if (user) {
-    if (googleLoginInProgress) return;
+    if (redirectProcessing) return;
 
-    try {
-      if (!sessionStorage.getItem('sessionInit')) {
-        const token = await user.getIdToken();
-        const res = await fetch('/api/auth/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken: token })
-        });
-        if (!res.ok) throw new Error('Error al crear sesión');
-        sessionStorage.setItem('sessionInit', '1');
-      }
-
-      const userDoc = await db.collection('users').doc(user.uid).get();
-      if (userDoc.exists) {
-        currentUserData = userDoc.data();
-      } else {
-        const newUser = {
-          email: user.email,
-          role: 'Usuario',
-          displayName: user.displayName || user.email.split('@')[0],
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        await db.collection('users').doc(user.uid).set(newUser);
-        currentUserData = newUser;
-      }
-
-      if (loginPage) {
-        window.location.href = '/dashboard';
-      }
-    } catch (e) {
-      console.warn('Error loading user data:', e.code || e.message, e);
-      currentUserData = { role: 'Usuario', displayName: user.displayName || user.email?.split('@')[0] };
-      showToast('Error al iniciar sesión: ' + (e.message || 'desconocido'), 'error');
-    }
+    await completeSignIn(user);
   } else {
     currentUserData = null;
     sessionStorage.removeItem('sessionInit');
     await fetch('/api/auth/logout', { method: 'POST' });
-    if (!loginPage) {
-      window.location.href = '/login';
-    }
+    if (!loginPage) window.location.href = '/login';
   }
 });
 
@@ -78,46 +91,10 @@ async function loginUser(email, password) {
 async function loginGoogle() {
   clearSession();
   try {
-    googleLoginInProgress = true;
-    const result = await auth.signInWithPopup(googleProvider);
-    const user = result.user;
-
-    const token = await user.getIdToken();
-    const res = await fetch('/api/auth/session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken: token })
-    });
-    if (!res.ok) throw new Error('Error al crear sesión');
-    sessionStorage.setItem('sessionInit', '1');
-
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    if (userDoc.exists) {
-      currentUserData = userDoc.data();
-    } else {
-      const newUser = {
-        email: user.email,
-        displayName: user.displayName || user.email.split('@')[0],
-        role: 'Usuario',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      await db.collection('users').doc(user.uid).set(newUser);
-      currentUserData = newUser;
-    }
-
-    currentUser = user;
-    window.location.href = '/dashboard';
+    await auth.signInWithRedirect(googleProvider);
   } catch (e) {
     const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
-    if (e.code === 'auth/popup-blocked') {
-      fn('Pop-up bloqueado. Permití popups para este sitio o usá email/contraseña.');
-    } else if (e.code === 'auth/popup-closed-by-user') {
-      fn('La ventana se cerró antes de completar. Volvé a intentar.');
-    } else {
-      fn(friendlyError(e));
-    }
-  } finally {
-    googleLoginInProgress = false;
+    fn('Error al iniciar sesión con Google: ' + (friendlyError(e) || e.message));
   }
 }
 
