@@ -86,7 +86,18 @@ async function loginUser(email, password) {
 
 async function loginGoogle() {
   clearSession();
-  await auth.signInWithRedirect(googleProvider);
+  try {
+    await auth.signInWithPopup(googleProvider);
+  } catch (e) {
+    const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
+    if (e.code === 'auth/popup-blocked') {
+      fn('Pop-up bloqueado. Permití popups para este sitio o usá email/contraseña.');
+    } else if (e.code === 'auth/popup-closed-by-user') {
+      fn('La ventana se cerró antes de completar. Volvé a intentar.');
+    } else {
+      fn(friendlyError(e));
+    }
+  }
 }
 
 async function handleLogout() {
