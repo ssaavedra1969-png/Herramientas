@@ -1,7 +1,5 @@
 let allVehicles = [];
 let editingVehicleId = null;
-let importMenuOpen = false;
-let jsonValidatedData = [];
 let csvValidatedData = [];
 let patenteSet = new Set();
 
@@ -10,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initRealtimeListener();
   document.getElementById('form-vehiculo')?.addEventListener('submit', saveVehicle);
   setupModalClose('modal-vehiculo');
-  setupModalClose('modal-json-import');
   setupModalClose('modal-csv-import');
   setupModalClose('modal-progress');
   document.getElementById('search-vehiculo')?.addEventListener('input', applyFilters);
@@ -33,7 +30,7 @@ function setupModalClose(modalId) {
 }
 
 function initRealtimeListener() {
-  const unsub = db.collection('vehicles').orderBy('interno').onSnapshot((snapshot) => {
+  db.collection('vehicles').orderBy('interno').onSnapshot((snapshot) => {
     allVehicles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     patenteSet = new Set(allVehicles.map(v => (v.patente || '').toUpperCase()));
     renderVehicles(allVehicles);
@@ -335,18 +332,6 @@ function addDocumentoRow(doc) {
   container.appendChild(row);
 }
 
-function toggleImportMenu() {
-  importMenuOpen = !importMenuOpen;
-  document.getElementById('import-menu').classList.toggle('hidden', !importMenuOpen);
-}
-
-document.addEventListener('click', (e) => {
-  if (importMenuOpen && !e.target.closest('#import-dropdown')) {
-    importMenuOpen = false;
-    document.getElementById('import-menu')?.classList.add('hidden');
-  }
-});
-
 async function editVehicle(id) { openVehicleModal(id); }
 
 async function deleteVehicle(id) {
@@ -363,103 +348,9 @@ async function deleteVehicle(id) {
   }
 }
 
-/* ───────── JSON Import ───────── */
-
-function openJsonImport() {
-  importMenuOpen = false;
-  document.getElementById('import-menu')?.classList.add('hidden');
-  jsonValidatedData = [];
-  document.getElementById('json-import-textarea').value = '';
-  document.getElementById('json-import-preview').innerHTML = '';
-  document.getElementById('btn-execute-json').classList.add('hidden');
-  showModal('modal-json-import');
-}
-
-function closeJsonImport() {
-  hideModal('modal-json-import');
-}
-
-function validateJsonImport() {
-  const text = document.getElementById('json-import-textarea').value.trim();
-  if (!text) { showToast('Pegá el JSON primero', 'error'); return; }
-
-  let parsed;
-  try { parsed = JSON.parse(text); } catch (e) { showToast('JSON inválido: ' + e.message, 'error'); return; }
-  if (!Array.isArray(parsed)) { showToast('Debe ser un array de vehículos', 'error'); return; }
-  if (!parsed.length) { showToast('El array está vacío', 'error'); return; }
-
-  const errors = [];
-  const valid = [];
-  const seen = new Set();
-
-  for (let i = 0; i < parsed.length; i++) {
-    const item = parsed[i];
-    const idx = i + 1;
-    const rowErrors = [];
-
-    if (!item.patente || !item.patente.trim()) rowErrors.push('patente requerida');
-    if (!item.interno || !item.interno.trim()) rowErrors.push('interno requerido');
-    if (!item.marca || !item.marca.trim()) rowErrors.push('marca requerida');
-    if (!item.tipo || !item.tipo.trim()) rowErrors.push('tipo requerido');
-
-    const pat = (item.patente || '').trim().toUpperCase();
-    if (pat && (patenteSet.has(pat) || seen.has(pat))) {
-      rowErrors.push('patente duplicada');
-    }
-    if (pat) seen.add(pat);
-
-    if (rowErrors.length) {
-      errors.push({ fila: idx, patente: item.patente || '(sin patente)', errores: rowErrors.join(', ') });
-    } else {
-      valid.push(item);
-    }
-  }
-
-  const preview = document.getElementById('json-import-preview');
-  if (errors.length) {
-    preview.innerHTML = `<div class="p-3 bg-red-50 rounded-lg text-sm text-red-700 mb-3">
-      <strong>${errors.length} error(es):</strong>
-      <ul class="mt-1 list-disc pl-4">${errors.map(e => `<li>Fila ${e.fila} (${e.patente}): ${e.errores}</li>`).join('')}</ul>
-    </div>`;
-  }
-
-  if (valid.length) {
-    jsonValidatedData = valid;
-    preview.innerHTML += `<div class="p-3 bg-green-50 rounded-lg text-sm text-green-700 mb-3">
-      <strong>${valid.length} vehículo(s) válido(s) listos para importar</strong>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-xs">
-        <thead><tr class="text-left text-gray-500 border-b">${['Patente','Interno','Marca','Modelo','Tipo'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
-        <tbody>${valid.slice(0,20).map(v => `<tr class="border-b border-gray-100">
-          <td class="py-1.5 pr-2">${v.patente}</td>
-          <td class="py-1.5 pr-2">${v.interno}</td>
-          <td class="py-1.5 pr-2">${v.marca}</td>
-          <td class="py-1.5 pr-2">${v.modelo || ''}</td>
-          <td class="py-1.5 pr-2">${v.tipo}</td>
-        </tr>`).join('')}${valid.length > 20 ? `<tr><td colspan="5" class="py-2 text-gray-400">... y ${valid.length - 20} más</td></tr>` : ''}</tbody>
-      </table>
-    </div>`;
-    document.getElementById('btn-execute-json').classList.remove('hidden');
-  } else {
-    document.getElementById('btn-execute-json').classList.add('hidden');
-  }
-}
-
-async function executeJsonImport() {
-  if (!jsonValidatedData.length) return;
-  const items = jsonValidatedData.map(mapJsonItem);
-  await batchImport(items, 'json');
-  jsonValidatedData = [];
-  document.getElementById('btn-execute-json').classList.add('hidden');
-  document.getElementById('json-import-preview').innerHTML = '';
-  closeJsonImport();
-}
-
 /* ───────── CSV Import ───────── */
 
 function openCsvImport() {
-  importMenuOpen = false;
   document.getElementById('import-menu')?.classList.add('hidden');
   csvValidatedData = [];
   document.getElementById('csv-file-input').value = '';
@@ -486,102 +377,130 @@ function downloadCsvTemplate() {
 }
 
 function validateCsvImport() {
-  const fileInput = document.getElementById('csv-file-input');
-  if (!fileInput.files.length) { showToast('Seleccioná un archivo CSV', 'error'); return; }
-
-  Papa.parse(fileInput.files[0], {
-    header: true,
-    skipEmptyLines: true,
-    encoding: 'UTF-8',
-    complete: function(results) {
-      if (results.errors.length) {
-        showToast('Error al leer CSV: ' + results.errors[0].message, 'error');
-        return;
-      }
-      if (!results.data.length) { showToast('El CSV está vacío', 'error'); return; }
-
-      const errors = [];
-      const valid = [];
-      const seen = new Set();
-
-      for (let i = 0; i < results.data.length; i++) {
-        const row = results.data[i];
-        const idx = i + 2;
-        const rowErrors = [];
-
-        const patente = (row.patente || '').trim().toUpperCase();
-        const interno = (row.interno || '').trim();
-        const marca = (row.marca || '').trim();
-        const tipo = (row.tipo || '').trim();
-
-        if (!patente) rowErrors.push('patente requerida');
-        if (!interno) rowErrors.push('interno requerido');
-        if (!marca) rowErrors.push('marca requerida');
-        if (!tipo) rowErrors.push('tipo requerido');
-
-        if (pat && (patenteSet.has(pat) || seen.has(pat))) rowErrors.push('patente duplicada');
-        if (pat) seen.add(pat);
-
-        if (rowErrors.length) {
-          errors.push({ fila: idx, patente: pat || '(sin patente)', errores: rowErrors.join(', ') });
-        } else {
-          const item = {
-            patente,
-            interno,
-            tipo,
-            marca,
-            modelo: (row.modelo || '').trim(),
-            año: parseInt(row.año) || null,
-            chasis: (row.chasis || '').trim(),
-            kilometraje: parseFloat(row.kilometraje) || 0,
-            horometro: parseFloat(row.horometro) || 0,
-            estadoGeneral: row.estadoGeneral || 'Bueno',
-            fechaUltimaRevision: row.fechaUltimaRevision || '',
-            vencimientoVTV: row.vencimientoVTV || '',
-            seguroCompania: (row.seguroCompania || '').trim(),
-            seguroPoliza: (row.seguroPoliza || '').trim(),
-            seguroVencimiento: row.seguroVencimiento || '',
-            proximoServiceKm: parseFloat(row.proximoServiceKm) || null,
-            proximoServiceFecha: row.proximoServiceFecha || '',
-            conductorHabitual: (row.conductorHabitual || '').trim(),
-            centroTrabajo: (row.centroTrabajo || '').trim(),
-            observaciones: (row.observaciones || '').trim()
-          };
-          valid.push(item);
-        }
-      }
-
-      const preview = document.getElementById('csv-import-preview');
-      if (errors.length) {
-        preview.innerHTML = `<div class="p-3 bg-red-50 rounded-lg text-sm text-red-700 mb-3">
-          <strong>${errors.length} error(es):</strong>
-          <ul class="mt-1 list-disc pl-4">${errors.map(e => `<li>Fila ${e.fila} (${e.patente}): ${e.errores}</li>`).join('')}</ul>
-        </div>`;
-      }
-
-      if (valid.length) {
-        csvValidatedData = valid;
-        preview.innerHTML += `<div class="p-3 bg-green-50 rounded-lg text-sm text-green-700 mb-3">
-          <strong>${valid.length} vehículo(s) válido(s) listos para importar</strong>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-xs">
-            <thead><tr class="text-left text-gray-500 border-b">${['Patente','Interno','Marca','Modelo','Tipo'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
-            <tbody>${valid.slice(0,20).map(v => `<tr class="border-b border-gray-100">
-              <td class="py-1.5 pr-2">${v.patente}</td>
-              <td class="py-1.5 pr-2">${v.interno}</td>
-              <td class="py-1.5 pr-2">${v.marca}</td>
-              <td class="py-1.5 pr-2">${v.modelo || ''}</td>
-              <td class="py-1.5 pr-2">${v.tipo}</td>
-            </tr>`).join('')}${valid.length > 20 ? `<tr><td colspan="5" class="py-2 text-gray-400">... y ${valid.length - 20} más</td></tr>` : ''}</tbody>
-          </table>
-        </div>`;
-        document.getElementById('btn-execute-csv').classList.remove('hidden');
-      } else {
-        document.getElementById('btn-execute-csv').classList.add('hidden');
-      }
+  try {
+    const fileInput = document.getElementById('csv-file-input');
+    if (!fileInput || !fileInput.files || !fileInput.files.length) {
+      showToast('Seleccioná un archivo CSV primero', 'error');
+      return;
     }
-  });
+
+    const file = fileInput.files[0];
+    console.log('CSV file selected:', file.name, file.size, 'bytes');
+
+    if (typeof Papa === 'undefined') {
+      showToast('Error: PapaParse no está cargado. Recargá la página.', 'error');
+      return;
+    }
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      encoding: 'UTF-8',
+      complete: function(results) {
+        try {
+          if (results.errors && results.errors.length) {
+            console.warn('CSV parse warnings:', results.errors);
+          }
+          if (!results.data || !results.data.length) {
+            showToast('El CSV está vacío o no tiene datos válidos', 'error');
+            return;
+          }
+
+          const errors = [];
+          const valid = [];
+          const seen = new Set();
+
+          for (let i = 0; i < results.data.length; i++) {
+            const row = results.data[i];
+            const idx = i + 2;
+            const rowErrors = [];
+
+            const patente = (row.patente || '').trim().toUpperCase();
+            const interno = (row.interno || '').trim();
+            const marca = (row.marca || '').trim();
+            const tipo = (row.tipo || '').trim();
+
+            if (!patente) rowErrors.push('patente requerida');
+            if (!interno) rowErrors.push('interno requerido');
+            if (!marca) rowErrors.push('marca requerida');
+            if (!tipo) rowErrors.push('tipo requerido');
+
+            if (pat && (patenteSet.has(pat) || seen.has(pat))) rowErrors.push('patente duplicada');
+            if (pat) seen.add(pat);
+
+            if (rowErrors.length) {
+              errors.push({ fila: idx, patente: pat || '(sin patente)', errores: rowErrors.join(', ') });
+            } else {
+              valid.push({
+                patente, interno, tipo, marca,
+                modelo: (row.modelo || '').trim(),
+                año: parseInt(row.año) || null,
+                chasis: (row.chasis || '').trim(),
+                kilometraje: parseFloat(row.kilometraje) || 0,
+                horometro: parseFloat(row.horometro) || 0,
+                estadoGeneral: row.estadoGeneral || 'Bueno',
+                fechaUltimaRevision: row.fechaUltimaRevision || '',
+                vencimientoVTV: row.vencimientoVTV || '',
+                seguroCompania: (row.seguroCompania || '').trim(),
+                seguroPoliza: (row.seguroPoliza || '').trim(),
+                seguroVencimiento: row.seguroVencimiento || '',
+                proximoServiceKm: parseFloat(row.proximoServiceKm) || null,
+                proximoServiceFecha: row.proximoServiceFecha || '',
+                conductorHabitual: (row.conductorHabitual || '').trim(),
+                centroTrabajo: (row.centroTrabajo || '').trim(),
+                observaciones: (row.observaciones || '').trim()
+              });
+            }
+          }
+
+          const preview = document.getElementById('csv-import-preview');
+          let html = '';
+
+          if (errors.length) {
+            html += `<div class="p-3 bg-red-50 rounded-lg text-sm text-red-700 mb-3">
+              <strong>${errors.length} error(es):</strong>
+              <ul class="mt-1 list-disc pl-4">${errors.map(e => `<li>Fila ${e.fila} (${e.patente}): ${e.errores}</li>`).join('')}</ul>
+            </div>`;
+          }
+
+          if (valid.length) {
+            csvValidatedData = valid;
+            html += `<div class="p-3 bg-green-50 rounded-lg text-sm text-green-700 mb-3">
+              <strong>${valid.length} vehículo(s) válido(s) listos para importar</strong>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead><tr class="text-left text-gray-500 border-b">${['Patente','Interno','Marca','Modelo','Tipo'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
+                <tbody>${valid.slice(0,20).map(v => `<tr class="border-b border-gray-100">
+                  <td class="py-1.5 pr-2">${v.patente}</td>
+                  <td class="py-1.5 pr-2">${v.interno}</td>
+                  <td class="py-1.5 pr-2">${v.marca}</td>
+                  <td class="py-1.5 pr-2">${v.modelo || ''}</td>
+                  <td class="py-1.5 pr-2">${v.tipo}</td>
+                </tr>`).join('')}${valid.length > 20 ? `<tr><td colspan="5" class="py-2 text-gray-400">... y ${valid.length - 20} más</td></tr>` : ''}</tbody>
+              </table>
+            </div>`;
+            document.getElementById('btn-execute-csv').classList.remove('hidden');
+          } else {
+            document.getElementById('btn-execute-csv').classList.add('hidden');
+          }
+
+          if (!html) html = '<div class="p-3 bg-yellow-50 rounded-lg text-sm text-yellow-700">No se encontraron datos válidos en el CSV</div>';
+          preview.innerHTML = html;
+        } catch (callbackErr) {
+          console.error('CSV callback error:', callbackErr);
+          showToast('Error al procesar CSV: ' + callbackErr.message, 'error');
+        }
+      },
+      error: function(err) {
+        console.error('PapaParse error:', err);
+        showToast('Error al leer el archivo CSV: ' + err.message, 'error');
+      }
+    });
+  } catch (e) {
+    console.error('validateCsvImport error:', e);
+    showToast('Error: ' + e.message, 'error');
+  }
 }
 
 async function executeCsvImport() {
@@ -629,66 +548,9 @@ async function executeCsvImport() {
 
 /* ───────── Batch Import Engine ───────── */
 
-function mapJsonItem(item) {
-  const seguro = {};
-  if (item.seguro) {
-    seguro.compañía = item.seguro.compañía || item.seguro.compañia || '';
-    seguro.poliza = item.seguro.poliza || '';
-    seguro.fechaVencimiento = item.seguro.fechaVencimiento
-      ? firebase.firestore.Timestamp.fromDate(new Date(item.seguro.fechaVencimiento + 'T00:00:00'))
-      : null;
-  }
-
-  const multas = (item.multas || []).map(m => ({
-    fecha: m.fecha || '',
-    importe: m.importe || 0,
-    concepto: m.concepto || '',
-    pagado: !!m.pagado
-  }));
-
-  const documentos = (item.documentos || []).map(d => ({
-    tipo: d.tipo || '',
-    fechaVencimiento: d.fechaVencimiento || '',
-    archivoURL: d.archivoURL || ''
-  }));
-
-  return {
-    patente: (item.patente || '').trim().toUpperCase(),
-    interno: (item.interno || '').trim(),
-    tipo: item.tipo || '',
-    marca: (item.marca || '').trim(),
-    modelo: (item.modelo || '').trim(),
-    año: item.año || null,
-    chasis: (item.chasis || '').trim(),
-    kilometraje: item.kilometraje || 0,
-    horometro: item.horometro || 0,
-    estadoGeneral: item.estadoGeneral || 'Bueno',
-    fechaUltimaRevision: item.fechaUltimaRevision
-      ? firebase.firestore.Timestamp.fromDate(new Date(item.fechaUltimaRevision + 'T00:00:00'))
-      : null,
-    vencimientoVTV: item.vencimientoVTV
-      ? firebase.firestore.Timestamp.fromDate(new Date(item.vencimientoVTV + 'T00:00:00'))
-      : null,
-    seguro,
-    proximoServiceKm: item.proximoServiceKm || null,
-    proximoServiceFecha: item.proximoServiceFecha
-      ? firebase.firestore.Timestamp.fromDate(new Date(item.proximoServiceFecha + 'T00:00:00'))
-      : null,
-    centroTrabajo: item.centroTrabajo || '',
-    conductorHabitual: (item.conductorHabitual || '').trim(),
-    observaciones: (item.observaciones || '').trim(),
-    fotoURL: item.fotoURL || '',
-    multas,
-    documentos,
-    fechaAlta: firebase.firestore.FieldValue.serverTimestamp(),
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-}
-
 async function batchImport(items, source) {
   const total = items.length;
-  showProgress(0, total, `Importando desde ${source.toUpperCase()}...`);
+  showProgress(0, total, `Importando ${total} vehículos...`);
   document.getElementById('modal-progress').classList.remove('hidden');
 
   const BATCH_LIMIT = 500;
@@ -706,7 +568,7 @@ async function batchImport(items, source) {
 
       await batch.commit();
       completed += chunk.length;
-      showProgress(completed, total, `Importando desde ${source.toUpperCase()}...`);
+      showProgress(completed, total, `Importando ${total} vehículos...`);
     }
 
     document.getElementById('progress-text').textContent = `¡Importación completada! ${total} vehículo(s) agregado(s).`;
@@ -736,4 +598,18 @@ function closeProgressModal() {
   document.getElementById('btn-progress-close').classList.add('hidden');
   document.getElementById('progress-bar').style.width = '0%';
   document.getElementById('progress-detail').textContent = '';
+}
+
+/* ───────── Import Menu toggle ───────── */
+
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('import-menu');
+  if (menu && !menu.classList.contains('hidden') && !e.target.closest('#import-dropdown')) {
+    menu.classList.add('hidden');
+  }
+});
+
+function toggleImportMenu() {
+  const menu = document.getElementById('import-menu');
+  if (menu) menu.classList.toggle('hidden');
 }
