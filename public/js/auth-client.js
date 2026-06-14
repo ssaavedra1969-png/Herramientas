@@ -6,6 +6,7 @@ let currentUser = null;
 let currentUserData = null;
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 async function completeSignIn(user) {
   console.log('completeSignIn called, uid:', user.uid, 'email:', user.email);
@@ -45,28 +46,41 @@ async function completeSignIn(user) {
   }
 }
 
-// Process Google OAuth redirect result from URL hash
+// Process redirect result properly via Firebase SDK
+async function handleRedirectResult() {
+  try {
+    const result = await auth.getRedirectResult();
+    if (result && result.user) {
+      console.log('getRedirectResult success:', result.user.uid, result.user.email);
+      await completeSignIn(result.user);
+      return true;
+    }
+    console.log('getRedirectResult: no user (expected on first load)');
+    return false;
+  } catch (e) {
+    console.error('getRedirectResult error:', e.code || e.message, e);
+    const fn = typeof showToast === 'function' ? showToast : alert;
+    fn('Error al procesar redirect: ' + (friendlyError(e) || e.message), 'error');
+    return false;
+  }
+}
+
+// Fallback: manual hash processing
 async function processGoogleRedirect() {
   const hash = window.location.hash;
   if (!hash || hash.length < 5) {
     console.log('No hash found in URL');
-    return;
+    return false;
   }
 
-  console.log('Hash found in URL, length:', hash.length, 'prefix:', hash.substring(0, 50));
+  console.log('Hash found in URL, length:', hash.length, 'prefix:', hash.substring(0, 100));
   const params = new URLSearchParams(hash.substring(1));
-  const hasAccessToken = params.has('access_token');
-  const hasIdToken = params.has('id_token');
-  const hasFirebaseAuth = hash.includes('firebase-auth-redirect');
-  console.log('Hash params: access_token:', hasAccessToken, 'id_token:', hasIdToken, 'firebase-auth-redirect:', hasFirebaseAuth);
-  if (hasFirebaseAuth) console.log('Firebase auth redirect param:', params.get('firebase-auth-redirect'));
-
   const accessToken = params.get('access_token');
   const idToken = params.get('id_token');
 
   if (!accessToken && !idToken) {
     console.log('No OAuth tokens in hash');
-    return;
+    return false;
   }
 
   try {
@@ -75,14 +89,22 @@ async function processGoogleRedirect() {
     const result = await auth.signInWithCredential(credential);
     console.log('signInWithCredential success:', result.user.uid, result.user.email);
 
-    // Clear the hash from URL
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
-
     await completeSignIn(result.user);
+    return true;
   } catch (e) {
     console.error('Google redirect processing error:', e.code || e.message, e);
-    const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
-    fn('Error al iniciar sesión con Google: ' + (friendlyError(e) || e.message));
+    const fn = typeof showToast === 'function' ? showToast : alert;
+    fn('Error al iniciar sesión con Google: ' + (friendlyError(e) || e.message), 'error');
+    return false;
+  }
+}
+
+// Try to handle redirect/fallback on init
+async function initAuthResult() {
+  const processed = await handleRedirectResult();
+  if (!processed) {
+    await processGoogleRedirect();
   }
 }
 
@@ -119,11 +141,25 @@ async function loginUser(email, password) {
 async function loginGoogle() {
   clearSession();
   try {
-    await auth.signInWithRedirect(googleProvider);
+    // First try popup (works on most browsers)
+    const result = await auth.signInWithPopup(googleProvider);
+    console.log('signInWithPopup success:', result.user.uid);
+    // completeSignIn will be called by onAuthStateChanged
   } catch (e) {
-    const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
-    fn('Error al iniciar sesión con Google: ' + (friendlyError(e) || e.message));
-    console.error('signInWithRedirect error:', e.code, e.message);
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
+      console.log('Popup blocked or closed, falling back to redirect');
+      try {
+        await auth.signInWithRedirect(googleProvider);
+      } catch (redirectErr) {
+        console.error('Redirect error:', redirectErr.code, redirectErr.message);
+        const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
+        fn('Error al iniciar sesión con Google: ' + (friendlyError(redirectErr) || redirectErr.message));
+      }
+    } else {
+      console.error('Google popup error:', e.code, e.message);
+      const fn = typeof showLoginError === 'function' ? showLoginError : (typeof showToast === 'function' ? showToast : alert);
+      fn('Error al iniciar sesión con Google: ' + (friendlyError(e) || e.message));
+    }
   }
 }
 
@@ -199,6 +235,25 @@ function showLoading(show = true) {
 function showModal(modalId) { document.getElementById(modalId)?.classList.remove('hidden'); }
 function hideModal(modalId) { document.getElementById(modalId)?.classList.add('hidden'); }
 
+function friendlyError(e) {
+  const map = {
+    'auth/invalid-credential': 'Credenciales incorrectas.',
+    'auth/user-not-found': 'Credenciales incorrectas.',
+    'auth/wrong-password': 'Credenciales incorrectas.',
+    'auth/operation-not-allowed': 'El registro con email está deshabilitado.',
+    'auth/admin-restricted-operation': 'El registro con email está deshabilitado.',
+    'auth/email-already-in-use': 'Este email ya está registrado.',
+    'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+    'auth/too-many-requests': 'Demasiados intentos. Esperá un momento.',
+    'auth/network-request-failed': 'Error de conexión. Revisá tu internet.',
+    'auth/invalid-email': 'El email ingresado no es válido.',
+    'auth/popup-blocked': 'El navegador bloqueó la ventana emergente. Hacé clic de nuevo o permití popups para este sitio.',
+    'auth/popup-closed-by-user': 'Cerraste la ventana de Google. Intentá de nuevo.',
+    'auth/cancelled-popup-request': 'Ventana emergente cancelada. Intentá de nuevo.'
+  };
+  return map[e.code] || e.message;
+}
+
 function createActionButtons(editFn, deleteFn, viewFn) {
   const viewBtn = viewFn ? `<button onclick="${viewFn}" class="text-green-600 hover:text-green-800 mr-2" title="Ver">
     <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,6 +275,8 @@ function createActionButtons(editFn, deleteFn, viewFn) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initAuthResult();
+
   document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
     document.getElementById('mobile-menu')?.classList.remove('hidden');
   });

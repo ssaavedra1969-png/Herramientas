@@ -110,21 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     registerError.classList.add('hidden');
   });
 
-  function friendlyError(e) {
-    const map = {
-      'auth/invalid-credential': 'Credenciales incorrectas. Si no tenés cuenta, registrate primero.',
-      'auth/user-not-found': 'Credenciales incorrectas. Si no tenés cuenta, registrate primero.',
-      'auth/wrong-password': 'Credenciales incorrectas. Si no tenés cuenta, registrate primero.',
-      'auth/operation-not-allowed': 'El registro con email está deshabilitado. Activá Identity Toolkit API en Google Cloud o usá Google.',
-      'auth/admin-restricted-operation': 'El registro con email está deshabilitado. Activá Identity Toolkit API en Google Cloud o usá Google.',
-      'auth/email-already-in-use': 'Este email ya está registrado. Iniciá sesión.',
-      'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
-      'auth/too-many-requests': 'Demasiados intentos. Esperá un momento y volvé a intentar.',
-      'auth/network-request-failed': 'Error de conexión. Revisá tu internet.',
-      'auth/invalid-email': 'El email ingresado no es válido. Revisá que no tenga espacios.'
-    };
-    return map[e.code] || e.message;
-  }
+
 
   async function doLogin() {
     loginError.classList.add('hidden');
@@ -165,8 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-register-submit')?.addEventListener('click', doRegister);
 
-  if (typeof processGoogleRedirect === 'function') {
-    processGoogleRedirect();
+  if (typeof initAuthResult === 'function') {
+    initAuthResult();
   }
 
   document.getElementById('btn-google')?.addEventListener('click', async () => {
