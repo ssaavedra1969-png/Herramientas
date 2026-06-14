@@ -49,12 +49,25 @@ async function completeSignIn(user) {
 
 auth.getRedirectResult().then(async (result) => {
   console.log('getRedirectResult resolved:', result ? 'has result' : 'null');
-  if (result && result.user) {
-    console.log('Redirect user found:', result.user.uid);
-    redirectProcessing = true;
-    await completeSignIn(result.user);
+  if (result) {
+    console.log('Result type:', typeof result, 'proto:', Object.prototype.toString.call(result));
+    console.log('Result keys:', Object.keys(result));
+    console.log('Has user:', !!result.user, 'Has credential:', !!result.credential);
+    if (result.error) console.log('Result has error:', result.error);
+    if (result.operationType) console.log('Operation type:', result.operationType);
+    if (result.user) {
+      console.log('Redirect user found:', result.user.uid, result.user.email);
+      redirectProcessing = true;
+      await completeSignIn(result.user);
+    } else {
+      console.log('Result has no user. Full result:', JSON.stringify(result, (key, value) => {
+        if (key === '_lat' || key === '_lng') return undefined;
+        if (typeof value === 'object' && value !== null && Object.keys(value).length > 20) return '[Object]';
+        return value;
+      }, 2));
+    }
   } else {
-    console.log('No redirect user available');
+    console.log('No redirect result available');
   }
 }).catch(error => {
   console.warn('getRedirectResult error:', error.code || error.message || error);
@@ -67,7 +80,7 @@ auth.getRedirectResult().then(async (result) => {
 });
 
 auth.onAuthStateChanged(async (user) => {
-  console.log('onAuthStateChanged:', user ? 'user:' + user.uid : 'null');
+  console.log('onAuthStateChanged:', user ? 'user:' + user.uid : 'null', 'loginPage:', window.location.pathname, 'redirectProcessing:', redirectProcessing);
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
