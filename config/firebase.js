@@ -2,21 +2,35 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 
+function parseJSON(str) {
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    console.error('Error parsing JSON (will try without service account):', e.message.slice(0, 100));
+    return null;
+  }
+}
+
 function getServiceAccount() {
   if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
     const filePath = path.resolve(process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
     if (fs.existsSync(filePath)) {
-      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      const result = parseJSON(fs.readFileSync(filePath, 'utf8'));
+      if (result) return result;
     }
   }
 
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    return JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const cleaned = process.env.FIREBASE_SERVICE_ACCOUNT
+      .replace(/^['"]/, '').replace(/['"]$/, '');
+    const result = parseJSON(cleaned);
+    if (result) return result;
   }
 
   const localFile = path.join(__dirname, '..', 'engaged-card-450213-d7-firebase-adminsdk-fbsvc-a956702c95.json');
   if (fs.existsSync(localFile)) {
-    return JSON.parse(fs.readFileSync(localFile, 'utf8'));
+    const result = parseJSON(fs.readFileSync(localFile, 'utf8'));
+    if (result) return result;
   }
 
   return null;
@@ -26,10 +40,14 @@ function initializeFirebase() {
   const serviceAccount = getServiceAccount();
 
   if (serviceAccount) {
-    return admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      storageBucket: process.env.FIREBASE_STORAGE_BUCKET
-    });
+    try {
+      return admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET
+      });
+    } catch (e) {
+      console.error('Error initializing Firebase with service account:', e.message);
+    }
   }
 
   return admin.initializeApp({
