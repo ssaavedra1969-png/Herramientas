@@ -149,110 +149,134 @@ function downloadCsvTemplate() {
   link.click();
 }
 
+function parseFileData(rows, preview, file) {
+  const valid = [];
+  const errors = [];
+  const existingCodigos = new Set(allTools.map(t => (t.codigoInterno || '').toUpperCase()));
+
+  rows.forEach((row, i) => {
+    const rowErrors = [];
+    const codigoInterno = (row.codigoInterno || '').toString().trim().toUpperCase();
+    const nombre = (row.nombre || '').toString().trim();
+    const tipoHerramienta = (row.tipoHerramienta || '').toString().trim();
+    const categoria = (row.categoria || '').toString().trim();
+
+    if (!codigoInterno) rowErrors.push('codigoInterno requerido');
+    if (!nombre) rowErrors.push('nombre requerido');
+    if (!tipoHerramienta) rowErrors.push('tipoHerramienta requerido');
+
+    if (codigoInterno && existingCodigos.has(codigoInterno)) rowErrors.push(`El código ${codigoInterno} ya existe`);
+    if (codigoInterno && !existingCodigos.has(codigoInterno)) existingCodigos.add(codigoInterno);
+
+    const valorCompra = parseFloat(row.valorCompra) || 0;
+    const tiempoUso = parseInt(row.tiempoUsoAcumulado) || 0;
+
+    if (rowErrors.length) {
+      errors.push({ fila: i + 2, codigoInterno, errores: rowErrors });
+    } else {
+      valid.push({
+        codigoInterno,
+        nombre,
+        tipoHerramienta,
+        categoria,
+        marca: (row.marca || '').toString().trim(),
+        modelo: (row.modelo || '').toString().trim(),
+        numeroSerie: (row.numeroSerie || '').toString().trim(),
+        valorCompra,
+        fechaCompra: row.fechaCompra || '',
+        proveedor: (row.proveedor || '').toString().trim(),
+        garantiaVence: row.garantiaVence || '',
+        estadoGeneral: (row.estadoGeneral || 'Bueno').toString().trim(),
+        ubicacionActual: (row.ubicacionActual || '').toString().trim(),
+        responsableActual: (row.responsableActual || '').toString().trim(),
+        fechaUltimoControl: row.fechaUltimoControl || '',
+        proximoControl: row.proximoControl || '',
+        tiempoUsoAcumulado: tiempoUso,
+        observaciones: (row.observaciones || '').toString().trim()
+      });
+    }
+  });
+
+  let html = '';
+  if (errors.length) {
+    html += `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400 mb-3"><strong>${errors.length} fila(s) con errores</strong></div>`;
+    html += `<div class="max-h-40 overflow-y-auto mb-3 space-y-1">${errors.slice(0,20).map(e =>
+      `<div class="text-xs text-red-400">Fila ${e.fila}: ${e.codigoInterno || '(sin código)'} — ${e.errores.join(', ')}</div>`
+    ).join('')}</div>`;
+  }
+
+  if (valid.length) {
+    csvValidatedData = valid;
+    html += `<div class="p-3 bg-green-900/30 rounded-lg text-sm text-green-400 mb-3">
+      <strong>${valid.length} herramienta(s) válida(s) listas para importar</strong>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs">
+        <thead><tr class="text-left text-[#8E94A8] border-b border-white/10">${['Código','Nombre','Tipo','Estado','Ubicación'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
+        <tbody>${valid.slice(0,20).map(t => `<tr class="border-b border-white/5">
+          <td class="py-1.5 pr-2">${t.codigoInterno}</td>
+          <td class="py-1.5 pr-2">${t.nombre}</td>
+          <td class="py-1.5 pr-2">${t.tipoHerramienta}</td>
+          <td class="py-1.5 pr-2">${t.estadoGeneral}</td>
+          <td class="py-1.5 pr-2">${t.ubicacionActual || '—'}</td>
+        </tr>`).join('')}${valid.length > 20 ? `<tr><td colspan="5" class="py-2 text-[#5C6378]">... y ${valid.length - 20} más</td></tr>` : ''}</tbody>
+      </table>
+    </div>`;
+    document.getElementById('btn-execute-csv').classList.remove('hidden');
+  } else {
+    document.getElementById('btn-execute-csv').classList.add('hidden');
+  }
+
+  if (!html) html = '<div class="p-3 bg-yellow-900/30 rounded-lg text-sm text-yellow-400">No se encontraron datos válidos en el archivo</div>';
+  preview.innerHTML = html;
+}
+
 function validateCsvImport() {
   const fileInput = document.getElementById('csv-file-input');
   const preview = document.getElementById('csv-import-preview');
   const file = fileInput?.files?.[0];
-  if (!file) { preview.innerHTML = '<div class="p-3 bg-yellow-900/30 rounded-lg text-sm text-yellow-400">Seleccioná un archivo CSV</div>'; return; }
+  if (!file) { preview.innerHTML = '<div class="p-3 bg-yellow-900/30 rounded-lg text-sm text-yellow-400">Seleccioná un archivo CSV o Excel</div>'; return; }
 
-  preview.innerHTML = '<div class="text-sm text-[#8E94A8]">Analizando CSV...</div>';
+  preview.innerHTML = '<div class="text-sm text-[#8E94A8]">Analizando archivo...</div>';
   document.getElementById('btn-execute-csv').classList.add('hidden');
+  csvValidatedData = [];
 
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    encoding: 'UTF-8',
-    complete: (results) => {
-      try {
-        if (results.errors?.length) {
-          preview.innerHTML = `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400">Error al leer CSV: ${results.errors[0].message}</div>`;
-          return;
-        }
+  const ext = file.name.split('.').pop().toLowerCase();
 
-        const valid = [];
-        const errors = [];
-        const existingCodigos = new Set(allTools.map(t => (t.codigoInterno || '').toUpperCase()));
-
-        results.data.forEach((row, i) => {
-          const rowErrors = [];
-          const codigoInterno = (row.codigoInterno || '').trim().toUpperCase();
-          const nombre = (row.nombre || '').trim();
-          const tipoHerramienta = (row.tipoHerramienta || '').trim();
-          const categoria = (row.categoria || '').trim();
-
-          if (!codigoInterno) rowErrors.push('codigoInterno requerido');
-          if (!nombre) rowErrors.push('nombre requerido');
-          if (!tipoHerramienta) rowErrors.push('tipoHerramienta requerido');
-
-          if (codigoInterno && existingCodigos.has(codigoInterno)) rowErrors.push(`El código ${codigoInterno} ya existe`);
-          if (codigoInterno && !existingCodigos.has(codigoInterno)) existingCodigos.add(codigoInterno);
-
-          const valorCompra = parseFloat(row.valorCompra) || 0;
-          const tiempoUso = parseInt(row.tiempoUsoAcumulado) || 0;
-
-          if (rowErrors.length) {
-            errors.push({ fila: i + 2, codigoInterno, errores: rowErrors });
-          } else {
-            valid.push({
-              codigoInterno,
-              nombre,
-              tipoHerramienta,
-              categoria,
-              marca: (row.marca || '').trim(),
-              modelo: (row.modelo || '').trim(),
-              numeroSerie: (row.numeroSerie || '').trim(),
-              valorCompra,
-              fechaCompra: row.fechaCompra || '',
-              proveedor: (row.proveedor || '').trim(),
-              garantiaVence: row.garantiaVence || '',
-              estadoGeneral: (row.estadoGeneral || 'Bueno').trim(),
-              ubicacionActual: (row.ubicacionActual || '').trim(),
-              responsableActual: (row.responsableActual || '').trim(),
-              fechaUltimoControl: row.fechaUltimoControl || '',
-              proximoControl: row.proximoControl || '',
-              tiempoUsoAcumulado: tiempoUso,
-              observaciones: (row.observaciones || '').trim()
-            });
+  if (ext === 'csv') {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      encoding: 'UTF-8',
+      complete: (results) => {
+        try {
+          if (results.errors?.length) {
+            preview.innerHTML = `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400">Error al leer CSV: ${results.errors[0].message}</div>`;
+            return;
           }
-        });
-
-        let html = '';
-        if (errors.length) {
-          html += `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400 mb-3"><strong>${errors.length} fila(s) con errores</strong></div>`;
-          html += `<div class="max-h-40 overflow-y-auto mb-3 space-y-1">${errors.slice(0,20).map(e =>
-            `<div class="text-xs text-red-400">Fila ${e.fila}: ${e.codigoInterno || '(sin código)'} — ${e.errores.join(', ')}</div>`
-          ).join('')}</div>`;
+          parseFileData(results.data, preview, file);
+        } catch (callbackErr) {
+          preview.innerHTML = `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400">Error al procesar: ${callbackErr.message}</div>`;
         }
-
-        if (valid.length) {
-          csvValidatedData = valid;
-          html += `<div class="p-3 bg-green-900/30 rounded-lg text-sm text-green-400 mb-3">
-            <strong>${valid.length} herramienta(s) válida(s) listas para importar</strong>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-xs">
-              <thead><tr class="text-left text-[#8E94A8] border-b border-white/10">${['Código','Nombre','Tipo','Estado','Ubicación'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
-              <tbody>${valid.slice(0,20).map(t => `<tr class="border-b border-white/5">
-                <td class="py-1.5 pr-2">${t.codigoInterno}</td>
-                <td class="py-1.5 pr-2">${t.nombre}</td>
-                <td class="py-1.5 pr-2">${t.tipoHerramienta}</td>
-                <td class="py-1.5 pr-2">${t.estadoGeneral}</td>
-                <td class="py-1.5 pr-2">${t.ubicacionActual || '—'}</td>
-              </tr>`).join('')}${valid.length > 20 ? `<tr><td colspan="5" class="py-2 text-[#5C6378]">... y ${valid.length - 20} más</td></tr>` : ''}</tbody>
-            </table>
-          </div>`;
-          document.getElementById('btn-execute-csv').classList.remove('hidden');
-        } else {
-          document.getElementById('btn-execute-csv').classList.add('hidden');
-        }
-
-        if (!html) html = '<div class="p-3 bg-yellow-900/30 rounded-lg text-sm text-yellow-400">No se encontraron datos válidos en el CSV</div>';
-        preview.innerHTML = html;
-      } catch (callbackErr) {
-        preview.innerHTML = `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400">Error al procesar: ${callbackErr.message}</div>`;
       }
-    }
-  });
+    });
+  } else if (['xlsx', 'xls'].includes(ext)) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        parseFileData(rows, preview, file);
+      } catch (err) {
+        preview.innerHTML = `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400">Error al leer Excel: ${err.message}</div>`;
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    preview.innerHTML = '<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400">Formato no soportado. Usá archivos .csv, .xlsx o .xls</div>';
+  }
 }
 
 async function executeCsvImport() {

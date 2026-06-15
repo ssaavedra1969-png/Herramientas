@@ -375,130 +375,162 @@ function downloadCsvTemplate() {
   link.click();
   URL.revokeObjectURL(link.href);
 }
+function parseVehicleRows(rows) {
+  const errors = [];
+  const valid = [];
+  const seen = new Set();
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const idx = i + 2;
+    const rowErrors = [];
+
+    const patente = (row.patente || '').toString().trim().toUpperCase();
+    const interno = (row.interno || '').toString().trim();
+    const marca = (row.marca || '').toString().trim();
+    const tipo = (row.tipo || '').toString().trim();
+
+    if (!patente) rowErrors.push('patente requerida');
+    if (!interno) rowErrors.push('interno requerido');
+    if (!marca) rowErrors.push('marca requerida');
+    if (!tipo) rowErrors.push('tipo requerido');
+
+    if (patente && (patenteSet.has(patente) || seen.has(patente))) rowErrors.push('patente duplicada');
+    if (patente) seen.add(patente);
+
+    if (rowErrors.length) {
+      errors.push({ fila: idx, patente: patente || '(sin patente)', errores: rowErrors.join(', ') });
+    } else {
+      valid.push({
+        patente, interno, tipo, marca,
+        modelo: (row.modelo || '').toString().trim(),
+        año: parseInt(row.año) || null,
+        chasis: (row.chasis || '').toString().trim(),
+        kilometraje: parseFloat(row.kilometraje) || 0,
+        horometro: parseFloat(row.horometro) || 0,
+        estadoGeneral: (row.estadoGeneral || 'Bueno').toString().trim(),
+        fechaUltimaRevision: row.fechaUltimaRevision || '',
+        vencimientoVTV: row.vencimientoVTV || '',
+        seguroCompania: (row.seguroCompania || '').toString().trim(),
+        seguroPoliza: (row.seguroPoliza || '').toString().trim(),
+        seguroVencimiento: row.seguroVencimiento || '',
+        proximoServiceKm: parseFloat(row.proximoServiceKm) || null,
+        proximoServiceFecha: row.proximoServiceFecha || '',
+        conductorHabitual: (row.conductorHabitual || '').toString().trim(),
+        centroTrabajo: (row.centroTrabajo || '').toString().trim(),
+        observaciones: (row.observaciones || '').toString().trim()
+      });
+    }
+  }
+  return { errors, valid };
+}
+
+function showVehicleImportResult(result) {
+  const { errors, valid } = result;
+  const preview = document.getElementById('csv-import-preview');
+  let html = '';
+
+  if (errors.length) {
+    html += `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400 mb-3">
+      <strong>${errors.length} error(es):</strong>
+      <ul class="mt-1 list-disc pl-4">${errors.map(e => `<li>Fila ${e.fila} (${e.patente}): ${e.errores}</li>`).join('')}</ul>
+    </div>`;
+  }
+
+  if (valid.length) {
+    csvValidatedData = valid;
+    html += `<div class="p-3 bg-green-900/30 rounded-lg text-sm text-green-400 mb-3">
+      <strong>${valid.length} vehículo(s) válido(s) listos para importar</strong>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs">
+        <thead><tr class="text-left text-[#8E94A8] border-b border-white/10">${['Patente','Interno','Marca','Modelo','Tipo'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
+        <tbody>${valid.slice(0,20).map(v => `<tr class="border-b border-white/5">
+          <td class="py-1.5 pr-2">${v.patente}</td>
+          <td class="py-1.5 pr-2">${v.interno}</td>
+          <td class="py-1.5 pr-2">${v.marca}</td>
+          <td class="py-1.5 pr-2">${v.modelo || ''}</td>
+          <td class="py-1.5 pr-2">${v.tipo}</td>
+        </tr>`).join('')}${valid.length > 20 ? `<tr><td colspan="5" class="py-2 text-[#5C6378]">... y ${valid.length - 20} más</td></tr>` : ''}</tbody>
+      </table>
+    </div>`;
+    document.getElementById('btn-execute-csv').classList.remove('hidden');
+  } else {
+    document.getElementById('btn-execute-csv').classList.add('hidden');
+  }
+
+  if (!html) html = '<div class="p-3 bg-yellow-900/30 rounded-lg text-sm text-yellow-400">No se encontraron datos válidos en el archivo</div>';
+  preview.innerHTML = html;
+}
 
 function validateCsvImport() {
   try {
     const fileInput = document.getElementById('csv-file-input');
     if (!fileInput || !fileInput.files || !fileInput.files.length) {
-      showToast('Seleccioná un archivo CSV primero', 'error');
+      showToast('Seleccioná un archivo CSV o Excel primero', 'error');
       return;
     }
 
     const file = fileInput.files[0];
-    console.log('CSV file selected:', file.name, file.size, 'bytes');
+    const ext = file.name.split('.').pop().toLowerCase();
 
-    if (typeof Papa === 'undefined') {
+    if (typeof Papa === 'undefined' && ext === 'csv') {
       showToast('Error: PapaParse no está cargado. Recargá la página.', 'error');
       return;
     }
+    if (typeof XLSX === 'undefined' && ['xlsx', 'xls'].includes(ext)) {
+      showToast('Error: La librería XLSX no está cargada. Recargá la página.', 'error');
+      return;
+    }
 
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      encoding: 'UTF-8',
-      complete: function(results) {
-        try {
-          if (results.errors && results.errors.length) {
-            console.warn('CSV parse warnings:', results.errors);
+    document.getElementById('csv-import-preview').innerHTML = '<div class="text-sm text-[#8E94A8]">Analizando archivo...</div>';
+    document.getElementById('btn-execute-csv').classList.add('hidden');
+    csvValidatedData = [];
+
+    if (ext === 'csv') {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        encoding: 'UTF-8',
+        complete: (results) => {
+          try {
+            if (!results.data || !results.data.length) {
+              showToast('El CSV está vacío o no tiene datos válidos', 'error');
+              return;
+            }
+            const result = parseVehicleRows(results.data);
+            showVehicleImportResult(result);
+          } catch (callbackErr) {
+            showToast('Error al procesar CSV: ' + callbackErr.message, 'error');
           }
-          if (!results.data || !results.data.length) {
-            showToast('El CSV está vacío o no tiene datos válidos', 'error');
+        },
+        error: (err) => {
+          showToast('Error al leer el archivo CSV: ' + err.message, 'error');
+        }
+      });
+    } else if (['xlsx', 'xls'].includes(ext)) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+          if (!rows.length) {
+            showToast('El Excel está vacío o no tiene datos válidos', 'error');
             return;
           }
-
-          const errors = [];
-          const valid = [];
-          const seen = new Set();
-
-          for (let i = 0; i < results.data.length; i++) {
-            const row = results.data[i];
-            const idx = i + 2;
-            const rowErrors = [];
-
-            const patente = (row.patente || '').trim().toUpperCase();
-            const interno = (row.interno || '').trim();
-            const marca = (row.marca || '').trim();
-            const tipo = (row.tipo || '').trim();
-
-            if (!patente) rowErrors.push('patente requerida');
-            if (!interno) rowErrors.push('interno requerido');
-            if (!marca) rowErrors.push('marca requerida');
-            if (!tipo) rowErrors.push('tipo requerido');
-
-            if (patente && (patenteSet.has(patente) || seen.has(patente))) rowErrors.push('patente duplicada');
-            if (patente) seen.add(patente);
-
-            if (rowErrors.length) {
-              errors.push({ fila: idx, patente: pat || '(sin patente)', errores: rowErrors.join(', ') });
-            } else {
-              valid.push({
-                patente, interno, tipo, marca,
-                modelo: (row.modelo || '').trim(),
-                año: parseInt(row.año) || null,
-                chasis: (row.chasis || '').trim(),
-                kilometraje: parseFloat(row.kilometraje) || 0,
-                horometro: parseFloat(row.horometro) || 0,
-                estadoGeneral: row.estadoGeneral || 'Bueno',
-                fechaUltimaRevision: row.fechaUltimaRevision || '',
-                vencimientoVTV: row.vencimientoVTV || '',
-                seguroCompania: (row.seguroCompania || '').trim(),
-                seguroPoliza: (row.seguroPoliza || '').trim(),
-                seguroVencimiento: row.seguroVencimiento || '',
-                proximoServiceKm: parseFloat(row.proximoServiceKm) || null,
-                proximoServiceFecha: row.proximoServiceFecha || '',
-                conductorHabitual: (row.conductorHabitual || '').trim(),
-                centroTrabajo: (row.centroTrabajo || '').trim(),
-                observaciones: (row.observaciones || '').trim()
-              });
-            }
-          }
-
-          const preview = document.getElementById('csv-import-preview');
-          let html = '';
-
-          if (errors.length) {
-            html += `<div class="p-3 bg-red-50 rounded-lg text-sm text-red-700 mb-3">
-              <strong>${errors.length} error(es):</strong>
-              <ul class="mt-1 list-disc pl-4">${errors.map(e => `<li>Fila ${e.fila} (${e.patente}): ${e.errores}</li>`).join('')}</ul>
-            </div>`;
-          }
-
-          if (valid.length) {
-            csvValidatedData = valid;
-            html += `<div class="p-3 bg-green-900/30 rounded-lg text-sm text-green-400 mb-3">
-              <strong>${valid.length} vehículo(s) válido(s) listos para importar</strong>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-xs">
-                <thead><tr class="text-left text-[#8E94A8] border-b border-white/10">${['Patente','Interno','Marca','Modelo','Tipo'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
-                <tbody>${valid.slice(0,20).map(v => `<tr class="border-b border-white/5">
-                  <td class="py-1.5 pr-2">${v.patente}</td>
-                  <td class="py-1.5 pr-2">${v.interno}</td>
-                  <td class="py-1.5 pr-2">${v.marca}</td>
-                  <td class="py-1.5 pr-2">${v.modelo || ''}</td>
-                  <td class="py-1.5 pr-2">${v.tipo}</td>
-                </tr>`).join('')}${valid.length > 20 ? `<tr><td colspan="5" class="py-2 text-gray-400">... y ${valid.length - 20} más</td></tr>` : ''}</tbody>
-              </table>
-            </div>`;
-            document.getElementById('btn-execute-csv').classList.remove('hidden');
-          } else {
-            document.getElementById('btn-execute-csv').classList.add('hidden');
-          }
-
-          if (!html) html = '<div class="p-3 bg-yellow-900/30 rounded-lg text-sm text-yellow-400">No se encontraron datos válidos en el CSV</div>';
-          preview.innerHTML = html;
-        } catch (callbackErr) {
-          console.error('CSV callback error:', callbackErr);
-          showToast('Error al procesar CSV: ' + callbackErr.message, 'error');
+          const result = parseVehicleRows(rows);
+          showVehicleImportResult(result);
+        } catch (err) {
+          showToast('Error al leer Excel: ' + err.message, 'error');
         }
-      },
-      error: function(err) {
-        console.error('PapaParse error:', err);
-        showToast('Error al leer el archivo CSV: ' + err.message, 'error');
-      }
-    });
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      document.getElementById('csv-import-preview').innerHTML = '<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400">Formato no soportado. Usá archivos .csv, .xlsx o .xls</div>';
+    }
   } catch (e) {
-    console.error('validateCsvImport error:', e);
     showToast('Error: ' + e.message, 'error');
   }
 }

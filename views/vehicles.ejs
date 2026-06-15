@@ -346,7 +346,7 @@
       </div>
       <div>
         <label class="block text-sm font-medium text-[#8E94A8] mb-2">2. Seleccioná el archivo CSV:</label>
-        <input type="file" id="csv-file-input" accept=".csv" class="block w-full text-sm text-[#F1F3F8] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#FF6B35]/10 file:text-[#FF6B35] hover:file:bg-[#FF6B35]/20">
+        <input type="file" id="csv-file-input" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-[#F1F3F8] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#FF6B35]/10 file:text-[#FF6B35] hover:file:bg-[#FF6B35]/20">
       </div>
       <div id="csv-import-preview"></div>
       <div class="flex justify-end gap-3">
@@ -372,5 +372,6 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="/js/vehicles.js"></script>
 <%- include('partials/footer') %>

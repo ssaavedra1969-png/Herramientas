@@ -1,0 +1,28 @@
+codigoInterno,nombre,tipoHerramienta,categoria,marca,modelo,numeroSerie,valorCompra,fechaCompra,proveedor,garantiaVence,estadoGeneral,ubicacionActual,responsableActual,fechaUltimoControl,proximoControl,tiempoUsoAcumulado,observaciones
+TAL-001,Taladro percutor,Taladro,Eléctrica,Bosch,GBH 2-26,901234567,89500,2023-03-15,Distribuidora XYZ,2025-03-15,Bueno,Depósito central,Carlos López,2024-06-10,2024-12-10,320,
+TAL-002,Taladro inalámbrico,Taladro,Eléctrica,Makita,HP457DWE,789012345,65000,2023-07-20,Ferrotools SA,2025-07-20,Bueno,Taller,Pedro Gómez,2024-05-12,2024-11-12,180,
+ESL-001,Esmeril angular,Esmeril angular,Eléctrica,DeWalt,DWE402,456789012,42000,2023-01-10,Distribuidora XYZ,2025-01-10,Excelente,Depósito central,Carlos López,2024-04-05,2024-10-05,250,
+ESL-002,Esmeril angular grande,Esmeril angular,Eléctrica,Bosch,GWS 22-180,567890123,55000,2023-05-18,Mundo Industrial,2025-05-18,Bueno,Cantera Los Ángeles,Miguel Sánchez,2024-07-01,2025-01-01,410,
+LLI-001,Llave de impacto 1/2",Llave de impacto,Neumática,Ingersoll Rand,231HA,678901234,158000,2023-02-28,Neumática Centro,2025-02-28,Bueno,Taller,Pedro Gómez,2024-06-20,2024-12-20,150,
+LLI-002,Llave de impacto 3/4",Llave de impacto,Neumática,Atlas Copco,LMS-76,789012346,195000,2023-09-12,Neumática Centro,2025-09-12,Excelente,Taller,Pedro Gómez,2024-08-15,2025-02-15,90,
+COM-001,Compresor de 200L,Compresor,Neumática,Atlas Copco,GX-7,890123456,485000,2022-11-20,Neumática Centro,2024-11-20,Regular,Taller,Pedro Gómez,2024-03-01,2024-09-01,1200,Requiere cambio de aceite
+COM-002,Compresor portátil,Compresor,Eléctrica,Makita,AC001G,901234568,320000,2023-06-01,Mundo Industrial,2026-06-01,Bueno,Planta Central,Jorge Rodríguez,2024-07-20,2025-01-20,450,
+AND-001,Andamio metálico 3m,Andamio,Manual,Skandia,AM-300,123456789,280000,2023-04-10,Skandia Argentina,2026-04-10,Bueno,Depósito central,Carlos López,2024-05-30,2024-11-30,0,Sin novedad
+AND-002,Andamio metálico 6m,Andamio,Manual,Skandia,AM-600,234567890,520000,2023-04-10,Skandia Argentina,2026-04-10,Regular,Depósito central,Carlos López,2024-05-30,2024-11-30,0,Falta un tensor
+HOR-001,Hormigonera 180L,Hormigonera,Eléctrica,Tramontina,TR-180,345678901,185000,2023-08-15,Agroconstruir,2025-08-15,Bueno,Planta Central,Jorge Rodríguez,2024-06-25,2024-12-25,600,
+HOR-002,Hormigonera 350L,Hormigonera,Equipo pesado portátil,Lusqtoff,HM-350,456789013,295000,2023-10-01,Agroconstruir,2025-10-01,En reparación,Taller,Pedro Gómez,2024-09-01,2024-11-01,800,Rectificar tambor
+VIB-001,Vibrador para hormigón,Vibrador para hormigón,Eléctrica,Würth,WV-50,567890124,98000,2023-11-20,Würth Argentina,2025-11-20,Bueno,Planta Central,Jorge Rodríguez,2024-08-10,2025-02-10,200,
+CIN-001,Cinta métrica láser,Cinta métrica láser,Equipo de medición,Bosch,GLM 50-23,678901235,75000,2024-01-15,Distribuidora XYZ,2026-01-15,Excelente,Depósito central,Carlos López,2024-09-01,2025-03-01,50,
+CIN-002,Medidor láser 100m,Cinta métrica láser,Equipo de medición,DeWalt,DW030,789012347,125000,2024-02-20,Mundo Industrial,2026-02-20,Bueno,Obra RN33,Martín Fernández,2024-09-15,2025-03-15,30,
+NIV-001,Nivel láser rotativo,Nivel láser,Equipo de medición,Hilti,PR 30-HVS,890123457,420000,2023-12-05,Hilti Argentina,2025-12-05,Excelente,Depósito central,Carlos López,2024-08-20,2025-02-20,100,Con trípode y receptor
+SIE-001,Sierra circular 7 1/4",Sierra circular,Eléctrica,DeWalt,DCS575,901234569,165000,2023-03-30,Ferrotools SA,2025-03-30,Bueno,Taller,Pedro Gómez,2024-07-05,2025-01-05,280,
+SIE-002,Sierra circular de mesa,Sierra circular,Eléctrica,Skil,3410-01,123456780,310000,2023-06-15,Mundo Industrial,2025-06-15,Bueno,Depósito central,Carlos López,2024-06-30,2024-12-30,150,
+PUL-001,Pulidora 4 1/2",Pulidora,Eléctrica,Makita,GA4530,234567801,38000,2024-04-01,Ferrotools SA,2026-04-01,Excelente,Taller,Pedro Gómez,2024-09-10,2025-03-10,60,
+PUL-002,Pulidora angular grande,Pulidora,Eléctrica,Bosch,GWS 22-230,345678902,58000,2023-09-25,Distribuidora XYZ,2025-09-25,Roto,Taller,Pedro Gómez,2024-08-01,2024-10-01,500,Eje dañado, pendiente reparación
+SOL-001,Soldadora eléctrica 180A,Otro,Eléctrica,Skandia,SOL-180,456789014,215000,2023-07-01,Skandia Argentina,2025-07-01,Bueno,Taller,Pedro Gómez,2024-07-20,2025-01-20,350,
+SOL-002,Soldadora inverter 250A,Otro,Eléctrica,Lusqtoff,INV-250,567890125,345000,2024-03-15,Agroconstruir,2026-03-15,Excelente,Obra RN33,Martín Fernández,2024-09-05,2025-03-05,120,Equipo nuevo
+GEN-001,Grupo electrógeno 5kVA,Otro,Equipo pesado portátil,Generac,GP5500,678901236,650000,2023-05-20,Generac Argentina,2026-05-20,Bueno,Planta Central,Jorge Rodríguez,2024-08-15,2025-02-15,400,
+GEN-002,Grupo electrógeno 10kVA,Otro,Equipo pesado portátil,Motomel,MG-10000,789012348,980000,2022-12-10,Motomel SA,2025-12-10,Regular,Cantera Los Ángeles,Miguel Sánchez,2024-07-10,2024-10-10,900,Mantenimiento de motor pendiente
+COR-001,Cortadora de césped naftera,Otro,Manual,Stihl,FS-55,890123458,185000,2024-01-20,Stihl Argentina,2026-01-20,Bueno,Planta Central,Jorge Rodríguez,2024-08-30,2025-02-28,80,
+MOT-001,Motobomba 2",Otro,Equipo pesado portátil,Bosch,GP-1200,901234570,175000,2023-10-10,Distribuidora XYZ,2025-10-10,Bueno,Cantera Los Ángeles,Miguel Sánchez,2024-09-01,2025-03-01,200,
+MAR-001,Martillo demoledor 35kg,Otro,Eléctrica,Bosch,GSH 35,123456781,520000,2023-04-15,Hilti Argentina,2025-04-15,Bueno,Depósito central,Carlos López,2024-06-15,2024-12-15,600,
