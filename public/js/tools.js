@@ -1,13 +1,18 @@
 let allTools = [];
 let editingToolId = null;
+let csvValidatedData = [];
+let codigoSet = new Set();
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initRealtimeListener();
   document.getElementById('form-herramienta')?.addEventListener('submit', saveTool);
   setupModalClose('modal-herramienta');
+  setupModalClose('modal-csv-import');
+  setupModalClose('modal-progress');
   document.getElementById('search-herramienta')?.addEventListener('input', applyFilters);
   document.getElementById('filter-estado-herramienta')?.addEventListener('change', applyFilters);
+  document.getElementById('csv-file-input')?.addEventListener('change', validateCsvImport);
 });
 
 function initMobileMenu() {
@@ -28,12 +33,40 @@ function setupModalClose(modalId) {
 function initRealtimeListener() {
   db.collection('tools').orderBy('codigoInterno').onSnapshot((snapshot) => {
     allTools = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    codigoSet = new Set(allTools.map(t => (t.codigoInterno || '').toUpperCase()));
     renderTools(allTools);
   }, (error) => {
     console.error('Error loading tools:', error);
     document.getElementById('tools-table-body').innerHTML =
       '<tr><td colspan="8" class="text-center py-8 text-red-500">Error al cargar herramientas</td></tr>';
   });
+}
+
+function fmap(t) {
+  return {
+    id: t.id,
+    nombre: t.nombre || '',
+    codigoInterno: t.codigoInterno || t.codigo || '',
+    tipoHerramienta: t.tipoHerramienta || t.tipo || '',
+    categoria: t.categoria || '',
+    marca: t.marca || '',
+    modelo: t.modelo || '',
+    numeroSerie: t.numeroSerie || '',
+    valorCompra: t.valorCompra || 0,
+    fechaCompra: t.fechaCompra || null,
+    proveedor: t.proveedor || '',
+    garantiaVence: t.garantiaVence || null,
+    estadoGeneral: t.estadoGeneral || t.estado || 'Bueno',
+    ubicacionActual: t.ubicacionActual || t.ubicacion || '',
+    responsableActual: t.responsableActual || '',
+    fechaUltimoControl: t.fechaUltimoControl || null,
+    proximoControl: t.proximoControl || null,
+    tiempoUsoAcumulado: t.tiempoUsoAcumulado || 0,
+    observaciones: t.observaciones || '',
+    fotoURL: t.fotoURL || '',
+    documentoURL: t.documentoURL || '',
+    fechaAlta: t.fechaAlta || null
+  };
 }
 
 function renderTools(tools) {
@@ -46,23 +79,25 @@ function renderTools(tools) {
   }
 
   tbody.innerHTML = tools.map(t => {
-    const controlAlert = t.proximoControl ? (() => {
-      const days = daysUntil(t.proximoControl);
+    const mt = fmap(t);
+    const tipoCategoria = mt.tipoHerramienta + (mt.categoria ? ` (${mt.categoria})` : '');
+    const controlAlert = mt.proximoControl ? (() => {
+      const days = daysUntil(mt.proximoControl);
       if (days <= 1) return ' 🔴';
       if (days <= 7) return ' 🟡';
       if (days <= 15) return ' 🔵';
       return '';
     })() : '';
-    const estadoClass = (t.estado || '').toLowerCase().replace(/\s+/g, '');
+    const estadoClass = (mt.estadoGeneral || '').toLowerCase().replace(/\s+/g, '');
     return `
       <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10">
-        <td class="py-3 pr-3 font-medium">${t.codigoInterno || '—'}</td>
-        <td class="py-3 pr-3">${t.nombre || '—'}</td>
-        <td class="py-3 pr-3">${t.tipo || '—'}</td>
-        <td class="py-3 pr-3"><span class="status-badge ${estadoClass}">${t.estado || '—'}</span></td>
-        <td class="py-3 pr-3">${t.ubicacion || '—'}</td>
-        <td class="py-3 pr-3 text-xs">${formatDate(t.fechaUltimoControl)}</td>
-        <td class="py-3 pr-3 text-xs">${formatDate(t.proximoControl)}${controlAlert}</td>
+        <td class="py-3 pr-3 font-medium">${mt.codigoInterno || '—'}</td>
+        <td class="py-3 pr-3">${mt.nombre || '—'}</td>
+        <td class="py-3 pr-3 text-xs">${tipoCategoria}</td>
+        <td class="py-3 pr-3"><span class="status-badge ${estadoClass}">${mt.estadoGeneral || '—'}</span></td>
+        <td class="py-3 pr-3">${mt.ubicacionActual || '—'}</td>
+        <td class="py-3 pr-3 text-xs">${formatDate(mt.fechaUltimoControl)}</td>
+        <td class="py-3 pr-3 text-xs">${formatDate(mt.proximoControl)}${controlAlert}</td>
         <td class="py-3 no-print">${isAdmin() ? createActionButtons(`editTool('${t.id}')`, `deleteTool('${t.id}')`) : '—'}</td>
       </tr>`;
   }).join('');
@@ -76,12 +111,197 @@ function applyFilters() {
   if (search) {
     filtered = filtered.filter(t =>
       (t.nombre || '').toLowerCase().includes(search) ||
-      (t.codigoInterno || '').toLowerCase().includes(search)
+      (t.codigoInterno || '').toLowerCase().includes(search) ||
+      (t.marca || '').toLowerCase().includes(search)
     );
   }
-  if (estado) filtered = filtered.filter(t => t.estado === estado);
+  if (estado) filtered = filtered.filter(t => (t.estadoGeneral || t.estado) === estado);
 
   renderTools(filtered);
+}
+
+function toggleImportMenu() {
+  document.getElementById('import-menu')?.classList.toggle('hidden');
+}
+
+function openCsvImport() {
+  document.getElementById('import-menu')?.classList.add('hidden');
+  document.getElementById('csv-file-input').value = '';
+  document.getElementById('csv-import-preview').innerHTML = '';
+  document.getElementById('btn-execute-csv').classList.add('hidden');
+  csvValidatedData = [];
+  showModal('modal-csv-import');
+}
+
+function closeCsvImport() {
+  hideModal('modal-csv-import');
+}
+
+function downloadCsvTemplate() {
+  const headers = ['codigoInterno','nombre','tipoHerramienta','categoria','marca','modelo','numeroSerie','valorCompra','fechaCompra','proveedor','garantiaVence','estadoGeneral','ubicacionActual','responsableActual','fechaUltimoControl','proximoControl','tiempoUsoAcumulado','observaciones'];
+  const example = ['TAL-001','Taladro percutor','Taladro','Eléctrica','Bosch','GBH 2-26','123456789','45000','2024-01-15','Distribuidora XYZ','2025-01-15','Bueno','Depósito central','Juan Pérez','2024-06-01','2024-12-01','120','Sin observaciones'];
+  const csv = [headers.join(','), example.join(',')].join('\n');
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'plantilla_herramientas.csv';
+  link.click();
+}
+
+function validateCsvImport() {
+  const fileInput = document.getElementById('csv-file-input');
+  const preview = document.getElementById('csv-import-preview');
+  const file = fileInput?.files?.[0];
+  if (!file) { preview.innerHTML = '<div class="p-3 bg-yellow-900/30 rounded-lg text-sm text-yellow-400">Seleccioná un archivo CSV</div>'; return; }
+
+  preview.innerHTML = '<div class="text-sm text-[#8E94A8]">Analizando CSV...</div>';
+  document.getElementById('btn-execute-csv').classList.add('hidden');
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    encoding: 'UTF-8',
+    complete: (results) => {
+      try {
+        if (results.errors?.length) {
+          preview.innerHTML = `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400">Error al leer CSV: ${results.errors[0].message}</div>`;
+          return;
+        }
+
+        const valid = [];
+        const errors = [];
+        const existingCodigos = new Set(allTools.map(t => (t.codigoInterno || '').toUpperCase()));
+
+        results.data.forEach((row, i) => {
+          const rowErrors = [];
+          const codigoInterno = (row.codigoInterno || '').trim().toUpperCase();
+          const nombre = (row.nombre || '').trim();
+          const tipoHerramienta = (row.tipoHerramienta || '').trim();
+          const categoria = (row.categoria || '').trim();
+
+          if (!codigoInterno) rowErrors.push('codigoInterno requerido');
+          if (!nombre) rowErrors.push('nombre requerido');
+          if (!tipoHerramienta) rowErrors.push('tipoHerramienta requerido');
+
+          if (codigoInterno && existingCodigos.has(codigoInterno)) rowErrors.push(`El código ${codigoInterno} ya existe`);
+          if (codigoInterno && !existingCodigos.has(codigoInterno)) existingCodigos.add(codigoInterno);
+
+          const valorCompra = parseFloat(row.valorCompra) || 0;
+          const tiempoUso = parseInt(row.tiempoUsoAcumulado) || 0;
+
+          if (rowErrors.length) {
+            errors.push({ fila: i + 2, codigoInterno, errores: rowErrors });
+          } else {
+            valid.push({
+              codigoInterno,
+              nombre,
+              tipoHerramienta,
+              categoria,
+              marca: (row.marca || '').trim(),
+              modelo: (row.modelo || '').trim(),
+              numeroSerie: (row.numeroSerie || '').trim(),
+              valorCompra,
+              fechaCompra: row.fechaCompra || '',
+              proveedor: (row.proveedor || '').trim(),
+              garantiaVence: row.garantiaVence || '',
+              estadoGeneral: (row.estadoGeneral || 'Bueno').trim(),
+              ubicacionActual: (row.ubicacionActual || '').trim(),
+              responsableActual: (row.responsableActual || '').trim(),
+              fechaUltimoControl: row.fechaUltimoControl || '',
+              proximoControl: row.proximoControl || '',
+              tiempoUsoAcumulado: tiempoUso,
+              observaciones: (row.observaciones || '').trim()
+            });
+          }
+        });
+
+        let html = '';
+        if (errors.length) {
+          html += `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400 mb-3"><strong>${errors.length} fila(s) con errores</strong></div>`;
+          html += `<div class="max-h-40 overflow-y-auto mb-3 space-y-1">${errors.slice(0,20).map(e =>
+            `<div class="text-xs text-red-400">Fila ${e.fila}: ${e.codigoInterno || '(sin código)'} — ${e.errores.join(', ')}</div>`
+          ).join('')}</div>`;
+        }
+
+        if (valid.length) {
+          csvValidatedData = valid;
+          html += `<div class="p-3 bg-green-900/30 rounded-lg text-sm text-green-400 mb-3">
+            <strong>${valid.length} herramienta(s) válida(s) listas para importar</strong>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead><tr class="text-left text-[#8E94A8] border-b border-white/10">${['Código','Nombre','Tipo','Estado','Ubicación'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
+              <tbody>${valid.slice(0,20).map(t => `<tr class="border-b border-white/5">
+                <td class="py-1.5 pr-2">${t.codigoInterno}</td>
+                <td class="py-1.5 pr-2">${t.nombre}</td>
+                <td class="py-1.5 pr-2">${t.tipoHerramienta}</td>
+                <td class="py-1.5 pr-2">${t.estadoGeneral}</td>
+                <td class="py-1.5 pr-2">${t.ubicacionActual || '—'}</td>
+              </tr>`).join('')}${valid.length > 20 ? `<tr><td colspan="5" class="py-2 text-[#5C6378]">... y ${valid.length - 20} más</td></tr>` : ''}</tbody>
+            </table>
+          </div>`;
+          document.getElementById('btn-execute-csv').classList.remove('hidden');
+        } else {
+          document.getElementById('btn-execute-csv').classList.add('hidden');
+        }
+
+        if (!html) html = '<div class="p-3 bg-yellow-900/30 rounded-lg text-sm text-yellow-400">No se encontraron datos válidos en el CSV</div>';
+        preview.innerHTML = html;
+      } catch (callbackErr) {
+        preview.innerHTML = `<div class="p-3 bg-red-900/30 rounded-lg text-sm text-red-400">Error al procesar: ${callbackErr.message}</div>`;
+      }
+    }
+  });
+}
+
+async function executeCsvImport() {
+  if (!csvValidatedData.length) return;
+  showModal('modal-progress');
+  document.getElementById('btn-progress-close')?.classList.add('hidden');
+  const bar = document.getElementById('progress-bar');
+  const text = document.getElementById('progress-text');
+  const detail = document.getElementById('progress-detail');
+
+  const BATCH_SIZE = 500;
+  let imported = 0;
+  const total = csvValidatedData.length;
+
+  try {
+    for (let i = 0; i < total; i += BATCH_SIZE) {
+      const batch = db.batch();
+      const chunk = csvValidatedData.slice(i, i + BATCH_SIZE);
+      chunk.forEach(t => {
+        const doc = db.collection('tools').doc();
+        batch.set(doc, {
+          ...t,
+          fechaCompra: t.fechaCompra ? firebase.firestore.Timestamp.fromDate(new Date(t.fechaCompra + 'T12:00:00')) : null,
+          garantiaVence: t.garantiaVence ? firebase.firestore.Timestamp.fromDate(new Date(t.garantiaVence + 'T12:00:00')) : null,
+          fechaUltimoControl: t.fechaUltimoControl ? firebase.firestore.Timestamp.fromDate(new Date(t.fechaUltimoControl + 'T12:00:00')) : null,
+          proximoControl: t.proximoControl ? firebase.firestore.Timestamp.fromDate(new Date(t.proximoControl + 'T12:00:00')) : null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+      await batch.commit();
+      imported += chunk.length;
+      const pct = Math.round((imported / total) * 100);
+      bar.style.width = pct + '%';
+      text.textContent = `Importando... ${pct}%`;
+      detail.textContent = `${imported} de ${total} herramientas`;
+    }
+    bar.style.width = '100%';
+    text.textContent = '¡Importación completada!';
+    detail.textContent = `${total} herramientas importadas exitosamente`;
+    showToast(`${total} herramienta(s) importadas exitosamente`);
+  } catch (e) {
+    text.textContent = 'Error durante la importación';
+    detail.textContent = e.message;
+    showToast('Error al importar: ' + e.message, 'error');
+  }
+
+  document.getElementById('btn-progress-close')?.classList.remove('hidden');
+  csvValidatedData = [];
 }
 
 function openToolModal(toolId = null) {
@@ -90,25 +310,51 @@ function openToolModal(toolId = null) {
   document.getElementById('form-herramienta').reset();
   document.getElementById('herramienta-id').value = '';
   document.getElementById('modal-herramienta-title').textContent = 'Nueva Herramienta';
+  document.getElementById('h-documentoURL-container')?.classList.add('hidden');
 
   if (toolId) {
     const t = allTools.find(x => x.id === toolId);
     if (!t) return;
+    const mt = fmap(t);
     document.getElementById('modal-herramienta-title').textContent = 'Editar Herramienta';
     document.getElementById('herramienta-id').value = toolId;
-    document.getElementById('h-nombre').value = t.nombre || '';
-    document.getElementById('h-codigo').value = t.codigoInterno || '';
-    document.getElementById('h-tipo').value = t.tipo || '';
-    document.getElementById('h-estado').value = t.estado || 'Bueno';
-    document.getElementById('h-ubicacion').value = t.ubicacion || 'Taller';
-    if (t.fechaUltimoControl) {
-      const d = t.fechaUltimoControl.toDate ? t.fechaUltimoControl.toDate() : new Date(t.fechaUltimoControl);
-      document.getElementById('h-ult-control').value = d.toISOString().split('T')[0];
+    document.getElementById('h-nombre').value = mt.nombre;
+    document.getElementById('h-codigo').value = mt.codigoInterno;
+    document.getElementById('h-tipoHerramienta').value = mt.tipoHerramienta;
+    document.getElementById('h-categoria').value = mt.categoria;
+    document.getElementById('h-marca').value = mt.marca;
+    document.getElementById('h-modelo').value = mt.modelo;
+    document.getElementById('h-numeroSerie').value = mt.numeroSerie;
+    document.getElementById('h-valorCompra').value = mt.valorCompra || '';
+    document.getElementById('h-proveedor').value = mt.proveedor;
+    if (mt.fechaCompra) {
+      const d = mt.fechaCompra.toDate ? mt.fechaCompra.toDate() : new Date(mt.fechaCompra);
+      document.getElementById('h-fechaCompra').value = d.toISOString().split('T')[0];
     }
-    if (t.proximoControl) {
-      const d = t.proximoControl.toDate ? t.proximoControl.toDate() : new Date(t.proximoControl);
-      document.getElementById('h-prox-control').value = d.toISOString().split('T')[0];
+    if (mt.garantiaVence) {
+      const d = mt.garantiaVence.toDate ? mt.garantiaVence.toDate() : new Date(mt.garantiaVence);
+      document.getElementById('h-garantiaVence').value = d.toISOString().split('T')[0];
     }
+    document.getElementById('h-estadoGeneral').value = mt.estadoGeneral;
+    document.getElementById('h-ubicacionActual').value = mt.ubicacionActual;
+    document.getElementById('h-responsableActual').value = mt.responsableActual;
+    if (mt.fechaUltimoControl) {
+      const d = mt.fechaUltimoControl.toDate ? mt.fechaUltimoControl.toDate() : new Date(mt.fechaUltimoControl);
+      document.getElementById('h-fechaUltimoControl').value = d.toISOString().split('T')[0];
+    }
+    if (mt.proximoControl) {
+      const d = mt.proximoControl.toDate ? mt.proximoControl.toDate() : new Date(mt.proximoControl);
+      document.getElementById('h-proximoControl').value = d.toISOString().split('T')[0];
+    }
+    document.getElementById('h-tiempoUso').value = mt.tiempoUsoAcumulado || '';
+    document.getElementById('h-observaciones').value = mt.observaciones;
+    document.getElementById('h-fotoURL').value = mt.fotoURL;
+    document.getElementById('h-documentoURL').value = mt.documentoURL;
+  } else {
+    document.getElementById('h-tipoHerramienta').value = '';
+    document.getElementById('h-categoria').value = '';
+    document.getElementById('h-estadoGeneral').value = 'Bueno';
+    document.getElementById('h-ubicacionActual').value = '';
   }
 
   showModal('modal-herramienta');
@@ -119,25 +365,58 @@ function closeToolModal() {
   editingToolId = null;
 }
 
+function getToolFormData() {
+  return {
+    nombre: document.getElementById('h-nombre').value.trim(),
+    codigoInterno: document.getElementById('h-codigo').value.trim().toUpperCase(),
+    tipoHerramienta: document.getElementById('h-tipoHerramienta').value,
+    categoria: document.getElementById('h-categoria').value,
+    marca: document.getElementById('h-marca').value.trim(),
+    modelo: document.getElementById('h-modelo').value.trim(),
+    numeroSerie: document.getElementById('h-numeroSerie').value.trim(),
+    valorCompra: parseFloat(document.getElementById('h-valorCompra').value) || 0,
+    fechaCompra: document.getElementById('h-fechaCompra').value
+      ? firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('h-fechaCompra').value + 'T12:00:00'))
+      : null,
+    proveedor: document.getElementById('h-proveedor').value.trim(),
+    garantiaVence: document.getElementById('h-garantiaVence').value
+      ? firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('h-garantiaVence').value + 'T12:00:00'))
+      : null,
+    estadoGeneral: document.getElementById('h-estadoGeneral').value,
+    ubicacionActual: document.getElementById('h-ubicacionActual').value,
+    responsableActual: document.getElementById('h-responsableActual').value.trim(),
+    fechaUltimoControl: document.getElementById('h-fechaUltimoControl').value
+      ? firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('h-fechaUltimoControl').value + 'T12:00:00'))
+      : null,
+    proximoControl: document.getElementById('h-proximoControl').value
+      ? firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('h-proximoControl').value + 'T12:00:00'))
+      : null,
+    tiempoUsoAcumulado: parseInt(document.getElementById('h-tiempoUso').value) || 0,
+    observaciones: document.getElementById('h-observaciones').value.trim(),
+    fotoURL: document.getElementById('h-fotoURL').value.trim(),
+    documentoURL: document.getElementById('h-documentoURL').value.trim()
+  };
+}
+
 async function saveTool(e) {
   e.preventDefault();
   if (!isAdmin()) return;
 
   const id = document.getElementById('herramienta-id').value;
-  const data = {
-    nombre: document.getElementById('h-nombre').value.trim(),
-    codigoInterno: document.getElementById('h-codigo').value.trim().toUpperCase(),
-    tipo: document.getElementById('h-tipo').value,
-    estado: document.getElementById('h-estado').value,
-    ubicacion: document.getElementById('h-ubicacion').value,
-    fechaUltimoControl: document.getElementById('h-ult-control').value
-      ? firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('h-ult-control').value))
-      : null,
-    proximoControl: document.getElementById('h-prox-control').value
-      ? firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('h-prox-control').value))
-      : null,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
+  const data = getToolFormData();
+
+  if (!data.nombre) { showToast('El nombre es obligatorio', 'error'); return; }
+  if (!data.codigoInterno) { showToast('El código interno es obligatorio', 'error'); return; }
+  if (!data.tipoHerramienta) { showToast('El tipo de herramienta es obligatorio', 'error'); return; }
+  if (!data.estadoGeneral) { showToast('El estado es obligatorio', 'error'); return; }
+  if (!data.ubicacionActual) { showToast('La ubicación es obligatoria', 'error'); return; }
+
+  const isDuplicate = allTools.some(t =>
+    t.id !== id && (t.codigoInterno || '').toUpperCase() === data.codigoInterno
+  );
+  if (isDuplicate) { showToast(`El código ${data.codigoInterno} ya existe`, 'error'); return; }
+
+  data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
 
   try {
     showLoading(true);
@@ -158,6 +437,13 @@ async function saveTool(e) {
 }
 
 async function editTool(id) { openToolModal(id); }
+
+function closeProgressModal() {
+  hideModal('modal-progress');
+  document.getElementById('btn-progress-close')?.classList.add('hidden');
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('progress-detail').textContent = '';
+}
 
 async function deleteTool(id) {
   if (!isAdmin()) return;
