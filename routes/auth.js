@@ -51,54 +51,6 @@ router.post('/logout', (req, res) => {
   res.json({ success: true });
 });
 
-// Exchange a Google ID token (from implicit OAuth flow) for a Firebase session cookie
-router.post('/google/exchange', async (req, res) => {
-  try {
-    const { idToken, state } = req.body;
-    if (!idToken) return res.status(400).json({ error: 'ID Token requerido' });
-
-    const apiKey = require('../config/firebase').clientConfig.apiKey;
-
-    const signInResp = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          postBody: `id_token=${idToken}&providerId=google.com`,
-          requestUri: `${req.protocol}://${req.get('host')}/auth/google/callback`,
-          returnSecureToken: true
-        })
-      }
-    );
-
-    const signInData = await signInResp.json();
-
-    if (!signInResp.ok || signInData.error) {
-      console.error('signInWithIdp error:', signInData.error?.message || JSON.stringify(signInData));
-      return res.status(401).json({ error: 'Error al verificar credenciales de Google' });
-    }
-
-    const firebaseIdToken = signInData.idToken;
-    if (!firebaseIdToken) return res.status(401).json({ error: 'No se recibió token de Firebase' });
-
-    const expiresIn = 60 * 60 * 24 * 14 * 1000;
-    const sessionCookie = await adminAuth.createSessionCookie(firebaseIdToken, { expiresIn });
-
-    res.cookie('__session', sessionCookie, {
-      maxAge: expiresIn,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
-    });
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Google exchange error:', error.code || error.message, error);
-    res.status(500).json({ error: 'Error interno al procesar inicio de sesión con Google' });
-  }
-});
-
 router.get('/debug', (req, res) => {
   res.json({
     hasServiceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT,

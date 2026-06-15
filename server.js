@@ -57,20 +57,6 @@ app.get('/login', (req, res) => {
   });
 });
 
-app.get('/auth/google/init', (req, res) => {
-  res.render('auth/google-init', {
-    title: 'Google Sign-In',
-    clientConfig: res.locals.clientConfig
-  });
-});
-
-app.get('/auth/google/callback', (req, res) => {
-  res.render('auth/google-callback', {
-    title: 'Verificando',
-    clientConfig: res.locals.clientConfig
-  });
-});
-
 app.get('/', (req, res) => res.redirect('/dashboard'));
 
 app.get('/dashboard', requireAuth, (req, res) => {

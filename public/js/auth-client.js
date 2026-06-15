@@ -43,59 +43,13 @@ async function completeSignIn(user) {
   }
 }
 
-// Process redirect result via Firebase SDK
-async function handleRedirectResult() {
-  try {
-    const result = await auth.getRedirectResult();
-    if (result && result.user) {
-      console.log('getRedirectResult success:', result.user.uid, result.user.email);
-      await completeSignIn(result.user);
-      return true;
-    }
-    console.log('getRedirectResult: no user');
-    return false;
-  } catch (e) {
-    console.error('getRedirectResult error:', e.code || e.message, e);
-    return false;
-  }
-}
-
-// Process Google OAuth redirect result from URL hash (fallback manual)
-async function processGoogleRedirect() {
-  const hash = window.location.hash;
-  if (!hash || hash.length < 5) return false;
-
-  const params = new URLSearchParams(hash.substring(1));
-  const accessToken = params.get('access_token');
-  const idToken = params.get('id_token');
-
-  if (!accessToken && !idToken) return false;
-
-  try {
-    const credential = firebase.auth.GoogleAuthProvider.credential(idToken || null, accessToken || null);
-    const result = await auth.signInWithCredential(credential);
-    console.log('signInWithCredential success:', result.user.uid, result.user.email);
-    window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    await completeSignIn(result.user);
-    return true;
-  } catch (e) {
-    console.error('Google redirect processing error:', e.code || e.message, e);
-    return false;
-  }
-}
-
-// Try all redirect/fallback methods on init
 async function initAuthResult() {
-  const processed = await handleRedirectResult();
-  if (!processed) {
-    await processGoogleRedirect();
-  }
 }
 
 auth.onAuthStateChanged(async (user) => {
   console.log('onAuthStateChanged:', user ? 'user:' + user.uid : 'null', 'path:', window.location.pathname);
   currentUser = user;
-  const publicPage = window.location.pathname === '/login' || window.location.pathname === '/' || window.location.pathname.startsWith('/auth/');
+  const publicPage = window.location.pathname === '/login' || window.location.pathname === '/';
 
   if (user) {
     await completeSignIn(user);
@@ -120,12 +74,6 @@ async function registerUser(email, password, displayName) {
 
 async function loginUser(email, password) {
   return auth.signInWithEmailAndPassword(email, password);
-}
-
-// Google login using server-side OAuth redirect flow
-async function loginGoogle() {
-  clearSession();
-  window.location.href = '/auth/google/init';
 }
 
 async function handleLogout() {
