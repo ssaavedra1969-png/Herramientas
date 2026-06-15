@@ -9,7 +9,7 @@
     body { background: #0B0E17; color: #F1F3F8; font-family: monospace; }
     .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,107,53,0.2); border-top-color: #FF6B35; border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    #debug { display: none; text-align: left; font-size: 12px; word-break: break-all; max-width: 800px; margin: 20px auto; }
+    #debug { text-align: left; font-size: 12px; word-break: break-all; max-width: 900px; margin: 20px auto; }
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -18,14 +18,14 @@
       <div class="spinner mx-auto mb-4"></div>
       <p class="text-[#8E94A8] text-sm" id="status">Iniciando sesión con Google...</p>
     </div>
-    <pre id="debug" class="bg-[#0a0e17] border border-[#FF6B35]/20 rounded-lg p-4 text-left text-xs overflow-auto max-h-[80vh]"></pre>
+    <pre id="debug" class="hidden bg-[#0a0e17] border border-[#FF6B35]/20 rounded-lg p-4 text-left text-xs overflow-auto max-h-[80vh]"></pre>
   </div>
   <script>
     function showDebug(obj) {
-      const el = document.getElementById('debug');
-      el.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
-      el.style.display = 'block';
       document.getElementById('loading').style.display = 'none';
+      const el = document.getElementById('debug');
+      el.classList.remove('hidden');
+      el.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
     }
 
     const FIREBASE_CONFIG = <%- JSON.stringify(clientConfig) %>;
@@ -37,62 +37,87 @@
       try {
         firebase.initializeApp(FIREBASE_CONFIG);
         const auth = firebase.auth();
-        const hash = window.location.hash;
+        const hash = window.location.hash || '';
         const fullUrl = window.location.href;
 
+        // If there's a hash, we're back from the redirect
         if (hash && hash.length > 5) {
-          // We're back from the redirect - debug mode
-          showDebug({
-            step: 'Redirect detected',
-            fullUrl: fullUrl,
-            hash: hash,
-            hashLength: hash.length
-          });
+          showDebug({ step: 'Redirect detected', fullUrl, hash, hashLength: hash.length });
 
           // Try getRedirectResult
           try {
-            const result = await auth.getRedirectResult();
-            showDebug({
-              step: 'getRedirectResult completed',
-              hasResult: !!result,
-              resultUser: result?.user ? { uid: result.user.uid, email: result.user.email } : null,
-              resultCredential: result?.credential ? { providerId: result.credential.providerId } : null,
-              resultError: null,
-              hash: hash
-            });
-            if (result?.user) {
-              const firebaseToken = await result.user.getIdToken();
+            const redirectResult = await auth.getRedirectResult();
+            if (redirectResult && redirectResult.user) {
+              const firebaseToken = await redirectResult.user.getIdToken();
               const sessionRes = await fetch('/api/auth/session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ idToken: firebaseToken })
               });
               if (sessionRes.ok) { window.location.href = '/dashboard'; return; }
+              throw new Error('Session creation failed');
             }
           } catch (e) {
             showDebug({
-              step: 'getRedirectResult error',
-              errorCode: e.code,
-              errorMessage: e.message,
-              hash: hash
+              step: 'getRedirectResult failed',
+              error: e.code || e.message,
+              hash
             });
             return;
           }
 
-          showDebug({
-            step: 'getRedirectResult returned null - trying manual parse',
-            hash: hash
-          });
+          // getRedirectResult returned null → manual parse
+          const raw = hash.split('firebase-auth-redirect=')[1]?.split('&')[0];
+          if (!raw) {
+            showDebug({ step: 'No firebase-auth-redirect in hash', hash, fullUrl });
+            return;
+          }
+
+          try {
+            const decoded = decodeURIComponent(raw);
+            const base64 = decoded.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonStr = atob(base64);
+            const json = JSON.parse(jsonStr);
+
+            // Extract Google credential
+            let googleIdToken = json.response?.oauthIdToken
+              || json.response?.oauthAccessToken
+              || json.response?.idToken
+              || json.oauthIdToken;
+
+            if (!googleIdToken && json.postBody) {
+              const m = json.postBody.match(/id_token=([^&]+)/);
+              if (m) googleIdToken = m[1];
+            }
+
+            if (!googleIdToken) {
+              showDebug({ step: 'Could not extract Google token', json, hash });
+              return;
+            }
+
+            const credential = firebase.auth.GoogleAuthProvider.credential(googleIdToken);
+            const result = await auth.signInWithCredential(credential);
+            const firebaseToken = await result.user.getIdToken();
+            const sessionRes = await fetch('/api/auth/session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ idToken: firebaseToken })
+            });
+            if (!sessionRes.ok) throw new Error('Session creation failed');
+            window.location.href = '/dashboard';
+          } catch (e) {
+            showDebug({ step: 'Manual parse error', error: e.message, hash });
+          }
           return;
         }
 
-        // No hash → initiate redirect
+        // No hash → initiate the redirect
         document.getElementById('status').textContent = 'Redirigiendo a Google...';
         const googleProvider = new firebase.auth.GoogleAuthProvider();
         googleProvider.setCustomParameters({ prompt: 'select_account' });
         await auth.signInWithRedirect(googleProvider);
       } catch (e) {
-        showDebug({ step: 'Fatal error', error: e.message, stack: e.stack });
+        showDebug({ step: 'Fatal error', error: e.message });
       }
     })();
   </script>
