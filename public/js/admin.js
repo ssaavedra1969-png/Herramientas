@@ -48,16 +48,16 @@ function renderUsers(users) {
   tbody.innerHTML = users.map(u => {
     const isCurrentUser = u.id === (currentUser?.uid || '');
     const roleStyle = u.role === 'Admin'
-      ? 'background-color:#D1FAE5;color:#065F46'
-      : 'background-color:#DBEAFE;color:#1E40AF';
+      ? 'background-color:rgba(52,211,153,0.15);color:#34D399'
+      : 'background-color:rgba(96,165,250,0.15);color:#60A5FA';
     return `
-      <tr class="border-b border-gray-100 hover:bg-gray-50">
+      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10">
         <td class="py-3 pr-3 font-medium">${u.displayName || '—'} ${isCurrentUser ? '<span class="text-xs text-blue-500 ml-1">(tú)</span>' : ''}</td>
         <td class="py-3 pr-3">${u.email || '—'}</td>
         <td class="py-3 pr-3"><span class="status-badge" style="${roleStyle}">${u.role || 'Usuario'}</span></td>
         <td class="py-3 pr-3 text-xs">${formatDate(u.createdAt)}</td>
         <td class="py-3 no-print">
-          <button onclick="openUserModal('${u.id}')" class="text-blue-600 hover:text-blue-800" title="Editar rol">
+          <button onclick="openUserModal('${u.id}')" class="text-blue-400 hover:text-blue-300" title="Editar rol">
             <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>

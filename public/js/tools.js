@@ -55,7 +55,7 @@ function renderTools(tools) {
     })() : '';
     const estadoClass = (t.estado || '').toLowerCase().replace(/\s+/g, '');
     return `
-      <tr class="border-b border-gray-100 hover:bg-gray-50">
+      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10">
         <td class="py-3 pr-3 font-medium">${t.codigoInterno || '—'}</td>
         <td class="py-3 pr-3">${t.nombre || '—'}</td>
         <td class="py-3 pr-3">${t.tipo || '—'}</td>

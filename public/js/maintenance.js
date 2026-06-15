@@ -102,7 +102,7 @@ function renderMaintenance(items) {
       : '';
 
     return `
-      <tr class="border-b border-gray-100 hover:bg-gray-50 ${rowClass}">
+      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10 ${rowClass}">
         <td class="py-3 pr-3"><span class="status-badge" ${tipoStyle}>${m.tipo}</span></td>
         <td class="py-3 pr-3 font-medium">${asociado}</td>
         <td class="py-3 pr-3 max-w-[200px] truncate" title="${m.descripcion || ''}">${m.descripcion || '—'}</td>

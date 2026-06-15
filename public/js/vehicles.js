@@ -86,7 +86,7 @@ function renderVehicles(vehicles) {
     const estadoClass = (mv.estadoGeneral || '').toLowerCase().replace(/\s+/g, '');
     const kmHs = mv.horometro ? `${mv.kilometraje?.toLocaleString() || '—'} km / ${mv.horometro} hs` : `${mv.kilometraje?.toLocaleString() || '—'} km`;
     return `
-      <tr class="border-b border-gray-100 hover:bg-gray-50">
+      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10">
         <td class="py-3 pr-3">${mv.interno || '—'}</td>
         <td class="py-3 pr-3 font-medium">${mv.patente || '—'}</td>
         <td class="py-3 pr-3">${mv.marca || ''} ${mv.modelo || ''}</td>
@@ -273,25 +273,25 @@ function addMultaRow(multa) {
   if (emptyMsg) emptyMsg.remove();
 
   const row = document.createElement('div');
-  row.className = 'multa-row flex flex-wrap items-end gap-2 p-2 bg-red-50 rounded-lg';
+  row.className = 'multa-row flex flex-wrap items-end gap-2 p-2 bg-red-900/20 rounded-lg';
   row.innerHTML = `
     <div class="flex-1 min-w-[120px]">
-      <label class="block text-xs text-gray-500 mb-1">Fecha</label>
-      <input type="date" class="multa-fecha w-full px-2 py-1.5 border border-gray-300 rounded text-sm" value="${multa?.fecha || ''}">
+      <label class="block text-xs text-[#8E94A8] mb-1">Fecha</label>
+      <input type="date" class="multa-fecha w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0B0E17]/50 border border-[#FF6B35]/20 text-[#F1F3F8]" value="${multa?.fecha || ''}">
     </div>
     <div class="w-28">
-      <label class="block text-xs text-gray-500 mb-1">Importe ($)</label>
-      <input type="number" class="multa-importe w-full px-2 py-1.5 border border-gray-300 rounded text-sm" value="${multa?.importe || ''}" step="0.01">
+      <label class="block text-xs text-[#8E94A8] mb-1">Importe ($)</label>
+      <input type="number" class="multa-importe w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0B0E17]/50 border border-[#FF6B35]/20 text-[#F1F3F8]" value="${multa?.importe || ''}" step="0.01">
     </div>
     <div class="flex-[2] min-w-[150px]">
-      <label class="block text-xs text-gray-500 mb-1">Concepto</label>
-      <input type="text" class="multa-concepto w-full px-2 py-1.5 border border-gray-300 rounded text-sm" value="${multa?.concepto || ''}" placeholder="Exceso de velocidad">
+      <label class="block text-xs text-[#8E94A8] mb-1">Concepto</label>
+      <input type="text" class="multa-concepto w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0B0E17]/50 border border-[#FF6B35]/20 text-[#F1F3F8]" value="${multa?.concepto || ''}" placeholder="Exceso de velocidad">
     </div>
     <div class="flex items-center gap-1 pb-1.5">
       <input type="checkbox" class="multa-pagado" ${multa?.pagado ? 'checked' : ''}>
-      <label class="text-xs text-gray-500">Pagado</label>
+      <label class="text-xs text-[#8E94A8]">Pagado</label>
     </div>
-    <button type="button" onclick="this.closest('.multa-row').remove()" class="pb-1.5 text-red-500 hover:text-red-700">
+    <button type="button" onclick="this.closest('.multa-row').remove()" class="pb-1.5 text-red-400 hover:text-red-300">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
     </button>`;
 
@@ -304,11 +304,11 @@ function addDocumentoRow(doc) {
   if (emptyMsg) emptyMsg.remove();
 
   const row = document.createElement('div');
-  row.className = 'documento-row flex flex-wrap items-end gap-2 p-2 bg-teal-50 rounded-lg';
+  row.className = 'documento-row flex flex-wrap items-end gap-2 p-2 bg-teal-900/20 rounded-lg';
   row.innerHTML = `
     <div class="flex-1 min-w-[120px]">
-      <label class="block text-xs text-gray-500 mb-1">Tipo</label>
-      <select class="doc-tipo w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+      <label class="block text-xs text-[#8E94A8] mb-1">Tipo</label>
+      <select class="doc-tipo w-full px-2 py-1.5 border border-[#FF6B35]/20 rounded text-sm bg-[#0B0E17]/50 text-[#F1F3F8]">
         <option value="">Seleccionar...</option>
         <option value="VTV" ${doc?.tipo === 'VTV' ? 'selected' : ''}>VTV</option>
         <option value="Cédula" ${doc?.tipo === 'Cédula' ? 'selected' : ''}>Cédula</option>
@@ -318,14 +318,14 @@ function addDocumentoRow(doc) {
       </select>
     </div>
     <div class="w-36">
-      <label class="block text-xs text-gray-500 mb-1">Vencimiento</label>
-      <input type="date" class="doc-fecha w-full px-2 py-1.5 border border-gray-300 rounded text-sm" value="${doc?.fechaVencimiento || ''}">
+      <label class="block text-xs text-[#8E94A8] mb-1">Vencimiento</label>
+      <input type="date" class="doc-fecha w-full px-2 py-1.5 border border-[#FF6B35]/20 rounded text-sm bg-[#0B0E17]/50 text-[#F1F3F8]" value="${doc?.fechaVencimiento || ''}">
     </div>
     <div class="flex-[2] min-w-[180px]">
-      <label class="block text-xs text-gray-500 mb-1">Archivo URL</label>
-      <input type="url" class="doc-url w-full px-2 py-1.5 border border-gray-300 rounded text-sm" value="${doc?.archivoURL || ''}" placeholder="https://storage.googleapis.com/...">
+      <label class="block text-xs text-[#8E94A8] mb-1">Archivo URL</label>
+      <input type="url" class="doc-url w-full px-2 py-1.5 border border-[#FF6B35]/20 rounded text-sm bg-[#0B0E17]/50 text-[#F1F3F8]" value="${doc?.archivoURL || ''}" placeholder="https://storage.googleapis.com/...">
     </div>
-    <button type="button" onclick="this.closest('.documento-row').remove()" class="pb-1.5 text-red-500 hover:text-red-700">
+    <button type="button" onclick="this.closest('.documento-row').remove()" class="pb-1.5 text-red-400 hover:text-red-300">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
     </button>`;
 
@@ -465,13 +465,13 @@ function validateCsvImport() {
 
           if (valid.length) {
             csvValidatedData = valid;
-            html += `<div class="p-3 bg-green-50 rounded-lg text-sm text-green-700 mb-3">
+            html += `<div class="p-3 bg-green-900/30 rounded-lg text-sm text-green-400 mb-3">
               <strong>${valid.length} vehículo(s) válido(s) listos para importar</strong>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-xs">
-                <thead><tr class="text-left text-gray-500 border-b">${['Patente','Interno','Marca','Modelo','Tipo'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
-                <tbody>${valid.slice(0,20).map(v => `<tr class="border-b border-gray-100">
+                <thead><tr class="text-left text-[#8E94A8] border-b border-white/10">${['Patente','Interno','Marca','Modelo','Tipo'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
+                <tbody>${valid.slice(0,20).map(v => `<tr class="border-b border-white/5">
                   <td class="py-1.5 pr-2">${v.patente}</td>
                   <td class="py-1.5 pr-2">${v.interno}</td>
                   <td class="py-1.5 pr-2">${v.marca}</td>
@@ -485,7 +485,7 @@ function validateCsvImport() {
             document.getElementById('btn-execute-csv').classList.add('hidden');
           }
 
-          if (!html) html = '<div class="p-3 bg-yellow-50 rounded-lg text-sm text-yellow-700">No se encontraron datos válidos en el CSV</div>';
+          if (!html) html = '<div class="p-3 bg-yellow-900/30 rounded-lg text-sm text-yellow-400">No se encontraron datos válidos en el CSV</div>';
           preview.innerHTML = html;
         } catch (callbackErr) {
           console.error('CSV callback error:', callbackErr);
