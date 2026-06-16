@@ -24,9 +24,11 @@ async function completeSignIn(user) {
     if (userDoc.exists) {
       currentUserData = userDoc.data();
     } else {
+      const allSnap = await db.collection('users').limit(1).get();
+      const isFirst = allSnap.empty;
       const newUser = {
         email: user.email,
-        role: 'Usuario',
+        role: isFirst ? 'Admin' : 'Usuario',
         displayName: user.displayName || user.email.split('@')[0],
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       };

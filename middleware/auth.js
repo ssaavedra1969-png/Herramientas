@@ -13,7 +13,13 @@ async function verifyToken(req, res, next) {
     req.user = decoded;
 
     const userDoc = await db.collection('users').doc(decoded.uid).get();
-    req.userData = userDoc.exists ? userDoc.data() : { role: 'Usuario', displayName: decoded.email?.split('@')[0] };
+    if (userDoc.exists) {
+      req.userData = userDoc.data();
+    } else {
+      const allSnap = await db.collection('users').limit(1).get();
+      const isFirst = allSnap.empty;
+      req.userData = { role: isFirst ? 'Admin' : 'Usuario', displayName: decoded.email?.split('@')[0] };
+    }
 
     next();
   } catch (error) {
@@ -36,7 +42,13 @@ async function loadUser(req, res, next) {
       res.locals.currentUser = decoded;
 
       const userDoc = await db.collection('users').doc(decoded.uid).get();
-      res.locals.currentUserData = userDoc.exists ? userDoc.data() : { role: 'Usuario', displayName: decoded.email?.split('@')[0] };
+      if (userDoc.exists) {
+        res.locals.currentUserData = userDoc.data();
+      } else {
+        const allSnap = await db.collection('users').limit(1).get();
+        const isFirst = allSnap.empty;
+        res.locals.currentUserData = { role: isFirst ? 'Admin' : 'Usuario', displayName: decoded.email?.split('@')[0] };
+      }
 
       res.locals.clientConfig = require('../config/firebase').clientConfig;
     } catch (e) {

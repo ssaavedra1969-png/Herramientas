@@ -5,7 +5,6 @@ let chartGastoVehiculos = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
-  showLoading(true);
   initRealtimeListeners();
 });
 
@@ -20,14 +19,6 @@ function switchTab(name) {
   if (activeBtn) {
     activeBtn.classList.add('tab-btn-active', 'text-[#FF6B35]', 'border-b-2', 'border-[#FF6B35]');
     activeBtn.classList.remove('text-[#8E94A8]');
-  }
-}
-
-let initialDataLoaded = { vehicles: false, tools: false, maintenance: false, financial: false };
-
-function checkAllLoaded() {
-  if (initialDataLoaded.vehicles && initialDataLoaded.tools && initialDataLoaded.maintenance && initialDataLoaded.financial) {
-    showLoading(false);
   }
 }
 
@@ -71,12 +62,8 @@ function initRealtimeListeners() {
         alertas.push({ id: d.id + '_service', level: getAlertLevel(daysServiceF), days: daysServiceF, label: 'Service', desc: v.patente, type: 'Service', date: v.proximoServiceFecha });
     });
     updateAlertasUI();
-    initialDataLoaded.vehicles = true;
-    checkAllLoaded();
   }, (error) => {
     console.error('Error en snapshot de vehículos:', error);
-    initialDataLoaded.vehicles = true;
-    checkAllLoaded();
   });
 
   db.collection('tools').onSnapshot((snapshot) => {
@@ -98,12 +85,8 @@ function initRealtimeListeners() {
     document.getElementById('card-prox-control').textContent = proxControl;
     renderToolsStatus(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
     updateAlertasUI();
-    initialDataLoaded.tools = true;
-    checkAllLoaded();
   }, (error) => {
     console.error('Error en snapshot de herramientas:', error);
-    initialDataLoaded.tools = true;
-    checkAllLoaded();
   });
 
   db.collection('maintenance').onSnapshot((snapshot) => {
@@ -134,12 +117,8 @@ function initRealtimeListeners() {
 
     updateAlertasUI();
     renderMantenimientosChart(mantenimientosPorMes);
-    initialDataLoaded.maintenance = true;
-    checkAllLoaded();
   }, (error) => {
     console.error('Error en snapshot de mantenimientos:', error);
-    initialDataLoaded.maintenance = true;
-    checkAllLoaded();
   });
 
   function updateAlertasUI() {
@@ -179,9 +158,6 @@ function initRealtimeListeners() {
       document.querySelectorAll('[id^="chart-"], #ultimos-movimientos').forEach(el => {
         if (el) el.innerHTML = '<p class="text-red-500 text-sm">Error al cargar datos financieros</p>';
       });
-    } finally {
-      initialDataLoaded.financial = true;
-      checkAllLoaded();
     }
   }
 
