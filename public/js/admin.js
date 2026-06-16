@@ -83,6 +83,30 @@ function closeUserModal() {
   hideModal('modal-usuario');
 }
 
+async function triggerBackup() {
+  const btn = document.getElementById('btn-backup');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Respaldando...';
+
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/admin/backup', { method: 'POST', headers });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('Backup completado exitosamente', 'success');
+    } else {
+      showToast('Error en backup: ' + (data.error || 'desconocido'), 'error');
+      console.error('Backup log:', data.log);
+    }
+  } catch (err) {
+    showToast('Error al conectar con el servidor: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Backup DB';
+  }
+}
+
 async function saveUserRole(e) {
   e.preventDefault();
 

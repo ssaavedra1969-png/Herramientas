@@ -79,6 +79,32 @@ router.get('/dashboard', verifyToken, async (req, res) => {
   }
 });
 
+router.post('/backup', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { spawn } = require('child_process');
+    const path = require('path');
+
+    const child = spawn('node', [path.join(__dirname, '..', 'scripts', 'export-firebase.js')], {
+      env: { ...process.env },
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+
+    let output = '';
+    child.stdout.on('data', d => output += d.toString());
+    child.stderr.on('data', d => output += d.toString());
+
+    child.on('close', code => {
+      if (code === 0) {
+        res.json({ success: true, message: 'Backup completado', log: output });
+      } else {
+        res.status(500).json({ error: 'Error en backup', log: output });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/alerts', verifyToken, async (req, res) => {
   try {
     const snapshot = await db.collection('maintenance').where('estado', '!=', 'Realizado').get();
