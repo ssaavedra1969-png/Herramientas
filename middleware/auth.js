@@ -14,11 +14,21 @@ async function verifyToken(req, res, next) {
 
     const userDoc = await db.collection('users').doc(decoded.uid).get();
     if (userDoc.exists) {
-      req.userData = userDoc.data();
+      const data = userDoc.data();
+      if (!data.role || data.role === 'Usuario') {
+        const adminSnap = await db.collection('users').where('role', '==', 'Admin').limit(1).get();
+        if (adminSnap.empty) {
+          await db.collection('users').doc(decoded.uid).update({ role: 'Admin' });
+          data.role = 'Admin';
+        }
+      }
+      req.userData = data;
     } else {
       const allSnap = await db.collection('users').limit(1).get();
       const isFirst = allSnap.empty;
-      req.userData = { role: isFirst ? 'Admin' : 'Usuario', displayName: decoded.email?.split('@')[0] };
+      const newUser = { role: isFirst ? 'Admin' : 'Usuario', displayName: decoded.email?.split('@')[0] };
+      if (isFirst) await db.collection('users').doc(decoded.uid).set(newUser);
+      req.userData = newUser;
     }
 
     next();
@@ -43,11 +53,21 @@ async function loadUser(req, res, next) {
 
       const userDoc = await db.collection('users').doc(decoded.uid).get();
       if (userDoc.exists) {
-        res.locals.currentUserData = userDoc.data();
+        const data = userDoc.data();
+        if (!data.role || data.role === 'Usuario') {
+          const adminSnap = await db.collection('users').where('role', '==', 'Admin').limit(1).get();
+          if (adminSnap.empty) {
+            await db.collection('users').doc(decoded.uid).update({ role: 'Admin' });
+            data.role = 'Admin';
+          }
+        }
+        res.locals.currentUserData = data;
       } else {
         const allSnap = await db.collection('users').limit(1).get();
         const isFirst = allSnap.empty;
-        res.locals.currentUserData = { role: isFirst ? 'Admin' : 'Usuario', displayName: decoded.email?.split('@')[0] };
+        const newUser = { role: isFirst ? 'Admin' : 'Usuario', displayName: decoded.email?.split('@')[0] };
+        if (isFirst) await db.collection('users').doc(decoded.uid).set(newUser);
+        res.locals.currentUserData = newUser;
       }
 
       res.locals.clientConfig = require('../config/firebase').clientConfig;
