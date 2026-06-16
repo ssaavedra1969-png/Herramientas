@@ -19,7 +19,13 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6" id="summary-cards">
+      <!-- ===== VEHÍCULOS ===== -->
+      <div class="mt-6 mb-3 flex items-center gap-3">
+        <div class="w-1 h-6 bg-[#FF6B35] rounded-full"></div>
+        <h2 class="text-lg font-bold text-[#F1F3F8]">Vehículos</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="summary-cards-vehiculos">
         <div class="glass-card rounded-xl p-5 card-3d">
           <div class="flex items-center justify-between">
             <div>
@@ -28,17 +34,6 @@
             </div>
             <div class="w-12 h-12 bg-[#FF6B35]/10 rounded-lg flex items-center justify-center">
               <svg class="w-6 h-6 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
-            </div>
-          </div>
-        </div>
-        <div class="glass-card rounded-xl p-5 card-3d">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-[#8E94A8] text-sm font-medium">Htas. en Mal Estado</p>
-              <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-herramientas">-</p>
-            </div>
-            <div class="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
-              <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
             </div>
           </div>
         </div>
@@ -76,6 +71,79 @@
           <div id="alertas-lista" class="space-y-2">
             <p class="text-[#5C6378] text-sm">Cargando alertas...</p>
           </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div class="lg:col-span-2 glass-card rounded-xl p-5">
+          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Consumo de Combustible</h3>
+          <canvas id="chart-combustible" height="250"></canvas>
+        </div>
+        <div class="glass-card rounded-xl p-5">
+          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Distribución de Gastos</h3>
+          <canvas id="chart-gastos-donut" height="250"></canvas>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div class="glass-card rounded-xl p-5">
+          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Gasto en Combustible por Vehículo</h3>
+          <canvas id="chart-gasto-vehiculos" height="250"></canvas>
+        </div>
+        <div class="glass-card rounded-xl p-5">
+          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Últimos Movimientos</h3>
+          <div id="ultimos-movimientos" class="space-y-1">
+            <p class="text-[#5C6378] text-sm">Cargando...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== HERRAMIENTAS ===== -->
+      <div class="mt-10 mb-3 flex items-center gap-3">
+        <div class="w-1 h-6 bg-[#10B981] rounded-full"></div>
+        <h2 class="text-lg font-bold text-[#F1F3F8]">Herramientas</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="summary-cards-herramientas">
+        <div class="glass-card rounded-xl p-5 card-3d">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-[#8E94A8] text-sm font-medium">Htas. en Mal Estado</p>
+              <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-herramientas">-</p>
+            </div>
+            <div class="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-5 card-3d">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-[#8E94A8] text-sm font-medium">Total Herramientas</p>
+              <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-total-herramientas">-</p>
+            </div>
+            <div class="w-12 h-12 bg-[#10B981]/10 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-5 card-3d">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-[#8E94A8] text-sm font-medium">Próximo Control</p>
+              <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-prox-control">-</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-xl p-5 mt-6">
+        <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Estado de Herramientas</h3>
+        <div id="tools-status-list" class="space-y-2">
+          <p class="text-[#5C6378] text-sm">Cargando...</p>
         </div>
       </div>
     </main>

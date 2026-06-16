@@ -47,6 +47,7 @@ function renderUsers(users) {
 
   tbody.innerHTML = users.map(u => {
     const isCurrentUser = u.id === (currentUser?.uid || '');
+    const isAdminUser = currentUserData?.role === 'Admin';
     const roleStyle = u.role === 'Admin'
       ? 'background-color:rgba(52,211,153,0.15);color:#34D399'
       : 'background-color:rgba(96,165,250,0.15);color:#60A5FA';
@@ -56,12 +57,19 @@ function renderUsers(users) {
         <td class="py-3 pr-3">${u.email || '—'}</td>
         <td class="py-3 pr-3"><span class="status-badge" style="${roleStyle}">${u.role || 'Usuario'}</span></td>
         <td class="py-3 pr-3 text-xs">${formatDate(u.createdAt)}</td>
-        <td class="py-3 no-print">
+        <td class="py-3 no-print flex gap-2">
+          <button onclick="viewUser('${u.id}')" class="text-[#8E94A8] hover:text-[#F1F3F8]" title="Ver detalle">
+            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </button>
+          ${isAdminUser ? `
           <button onclick="openUserModal('${u.id}')" class="text-blue-400 hover:text-blue-300" title="Editar rol">
             <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
-          </button>
+          </button>` : ''}
         </td>
       </tr>`;
   }).join('');
@@ -81,6 +89,38 @@ function openUserModal(userId) {
 
 function closeUserModal() {
   hideModal('modal-usuario');
+}
+
+function viewUser(userId) {
+  const user = allUsers.find(u => u.id === userId);
+  if (!user) return;
+
+  const info = [
+    { label: 'Nombre', value: user.displayName || '—' },
+    { label: 'Email', value: user.email || '—' },
+    { label: 'Rol', value: user.role || 'Usuario' },
+    { label: 'Registrado', value: formatDate(user.createdAt) },
+    { label: 'Último ingreso', value: formatDate(user.lastLoginAt) || '—' },
+    { label: 'UID', value: user.id }
+  ];
+
+  let html = '';
+  info.forEach(i => {
+    html += `<div class="flex justify-between py-2 border-b border-[#FF6B35]/10">
+      <span class="text-[#8E94A8] text-sm">${i.label}</span>
+      <span class="text-[#F1F3F8] text-sm font-medium text-right max-w-[200px] truncate">${i.value}</span>
+    </div>`;
+  });
+
+  Swal.fire({
+    title: 'Detalle del Usuario',
+    html: `<div class="text-left">${html}</div>`,
+    icon: 'info',
+    background: '#0F1220',
+    color: '#F1F3F8',
+    confirmButtonColor: '#FF6B35',
+    confirmButtonText: 'Cerrar'
+  });
 }
 
 async function triggerBackup() {

@@ -80,27 +80,19 @@ function renderVehicles(vehicles) {
   if (!tbody) return;
 
   if (vehicles.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-gray-400">No hay vehículos registrados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">No hay vehículos registrados</td></tr>';
     return;
   }
 
   tbody.innerHTML = vehicles.map(v => {
     const mv = fmap(v);
-    const serviceInfo = mv.proximoServiceKm
-      ? `${mv.proximoServiceKm?.toLocaleString() || ''} km`
-      : mv.proximoServiceFecha ? formatDate(mv.proximoServiceFecha) : '—';
-    const estadoClass = (mv.estadoGeneral || '').toLowerCase().replace(/\s+/g, '');
-    const kmHs = mv.horometro ? `${mv.kilometraje?.toLocaleString() || '—'} km / ${mv.horometro} hs` : `${mv.kilometraje?.toLocaleString() || '—'} km`;
     return `
-      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10">
+      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10 cursor-pointer" onclick="viewVehicle('${v.id}')">
         <td class="py-3 pr-3">${mv.interno || '—'}</td>
         <td class="py-3 pr-3 font-medium">${mv.patente || '—'}</td>
         <td class="py-3 pr-3">${mv.marca || ''} ${mv.modelo || ''}</td>
         <td class="py-3 pr-3">${mv.tipo || '—'}</td>
-        <td class="py-3 pr-3 text-xs">${kmHs}</td>
-        <td class="py-3 pr-3"><span class="status-badge ${estadoClass}">${mv.estadoGeneral || '—'}</span></td>
         <td class="py-3 pr-3 text-xs">${mv.centroTrabajo || '—'}</td>
-        <td class="py-3 pr-3 text-xs">${serviceInfo}</td>
         <td class="py-3 no-print">${createActionButtons(`editVehicle('${v.id}')`, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
       </tr>`;
   }).join('');
@@ -352,20 +344,13 @@ function addDocumentoRow(doc) {
   container.appendChild(row);
 }
 
-async function editVehicle(id) { openVehicleModal(id); }
+async function editVehicle(id) { window.location.href = `/vehicle/${id}`; }
 
 async function deleteVehicle(id) {
-  if (!isAdmin()) return;
-  if (!confirm('¿Estás seguro de eliminar este vehículo?')) return;
-  try {
-    showLoading(true);
-    await db.collection('vehicles').doc(id).delete();
-    showToast('Vehículo eliminado');
-  } catch (error) {
-    showToast('Error al eliminar: ' + error.message, 'error');
-  } finally {
-    showLoading(false);
-  }
+  await deleteWithBackup('vehicles', id, 'Vehículo', (docId) => ({
+    combustible: db.collection('vehicles').doc(docId).collection('combustible'),
+    repuestos: db.collection('vehicles').doc(docId).collection('repuestos')
+  }));
 }
 
 function viewVehicle(id) {

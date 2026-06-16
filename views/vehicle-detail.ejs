@@ -136,8 +136,14 @@
               <label class="block text-xs font-medium text-[#8E94A8] mb-1">Tipo</label>
               <select id="c-tipo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
                 <option value="Gasoil" class="bg-[#0B0E17]">Gasoil</option>
-                <option value="Nafta" class="bg-[#0B0E17]">Nafta</option>
+                <option value="Nafta Súper" class="bg-[#0B0E17]">Nafta Súper</option>
+                <option value="Nafta Premium" class="bg-[#0B0E17]">Nafta Premium</option>
                 <option value="GNC" class="bg-[#0B0E17]">GNC</option>
+                <option value="GLP" class="bg-[#0B0E17]">GLP</option>
+                <option value="Biodiesel" class="bg-[#0B0E17]">Biodiesel</option>
+                <option value="AdBlue" class="bg-[#0B0E17]">AdBlue (ARLA 32)</option>
+                <option value="Lubricentro" class="bg-[#0B0E17]">Lubricentro / Aceite</option>
+                <option value="Otro" class="bg-[#0B0E17]">Otro</option>
               </select>
             </div>
             <div>
@@ -158,6 +164,13 @@
           </form>
           <% } %>
 
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-[#8E94A8]">Historial de cargas</span>
+            <button onclick="exportCombustibleCSV()" class="text-xs px-3 py-1.5 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-[#8E94A8] hover:text-[#F1F3F8] flex items-center gap-1 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Exportar CSV
+            </button>
+          </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
@@ -227,6 +240,13 @@
           </form>
           <% } %>
 
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-[#8E94A8]">Historial de repuestos</span>
+            <button onclick="exportRepuestosCSV()" class="text-xs px-3 py-1.5 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-[#8E94A8] hover:text-[#F1F3F8] flex items-center gap-1 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Exportar CSV
+            </button>
+          </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
@@ -252,6 +272,244 @@
 </div>
 
 <%- include('partials/mobile-menu', { page: 'vehicles' }) %>
+
+<!-- Modal Editar Vehículo -->
+<div id="modal-vehiculo" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+  <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
+    <div class="flex items-center justify-between p-6 border-b border-[#FF6B35]/10 sticky top-0 z-10" style="background: #141e2d;">
+      <h3 class="text-lg font-bold text-[#F1F3F8]" id="modal-vehiculo-title">Editar Vehículo</h3>
+      <button onclick="closeVehicleModal()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-vehiculo" class="p-6 space-y-6">
+      <input type="hidden" id="vehiculo-id">
+
+      <div>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Datos Generales
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Patente *</label>
+            <input type="text" id="v-patente" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="ABC123" maxlength="10" style="text-transform:uppercase">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° Interno *</label>
+            <input type="text" id="v-interno" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="001">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo *</label>
+            <select id="v-tipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
+              <option value="Camión volcador" class="bg-[#0B0E17]">Camión volcador</option>
+              <option value="Camión mixer" class="bg-[#0B0E17]">Camión mixer</option>
+              <option value="Camión hormigonera" class="bg-[#0B0E17]">Camión hormigonera</option>
+              <option value="Camión cisterna" class="bg-[#0B0E17]">Camión cisterna</option>
+              <option value="Camión jaula" class="bg-[#0B0E17]">Camión jaula</option>
+              <option value="Camión playo" class="bg-[#0B0E17]">Camión playo</option>
+              <option value="Camión regador" class="bg-[#0B0E17]">Camión regador</option>
+              <option value="Camión chasis" class="bg-[#0B0E17]">Camión chasis</option>
+              <option value="Auto" class="bg-[#0B0E17]">Auto</option>
+              <option value="Camioneta" class="bg-[#0B0E17]">Camioneta</option>
+              <option value="Utilitario" class="bg-[#0B0E17]">Utilitario</option>
+              <option value="Cargadora frontal" class="bg-[#0B0E17]">Cargadora frontal</option>
+              <option value="Retroexcavadora" class="bg-[#0B0E17]">Retroexcavadora</option>
+              <option value="Motoniveladora" class="bg-[#0B0E17]">Motoniveladora</option>
+              <option value="Excavadora" class="bg-[#0B0E17]">Excavadora</option>
+              <option value="Minicargadora" class="bg-[#0B0E17]">Minicargadora</option>
+              <option value="Rodillo vibratorio" class="bg-[#0B0E17]">Rodillo vibratorio</option>
+              <option value="Acoplado" class="bg-[#0B0E17]">Acoplado</option>
+              <option value="Semirremolque" class="bg-[#0B0E17]">Semirremolque</option>
+              <option value="Otro" class="bg-[#0B0E17]">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Marca *</label>
+            <input type="text" id="v-marca" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Marca" list="marca-suggestions">
+            <datalist id="marca-suggestions">
+              <option value="Mercedes Benz"><option value="Scania"><option value="Volvo"><option value="Iveco"><option value="Volkswagen"><option value="Ford"><option value="Chevrolet"><option value="Toyota"><option value="Fiat"><option value="Renault"><option value="Nissan"><option value="JCB"><option value="Caterpillar"><option value="Komatsu"><option value="Hyundai"><option value="New Holland"><option value="John Deere"><option value="Case"><option value="Terex"><option value="Agrale">
+            </datalist>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Modelo</label>
+            <input type="text" id="v-modelo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Modelo">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Año</label>
+            <input type="number" id="v-anio" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="2024" min="1980" max="2026">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Chasis (N° de serie)</label>
+            <input type="text" id="v-chasis" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="9BM1234567890ABC">
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-[#FF6B35]/10">
+
+      <div>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Estado y Mediciones
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Kilometraje</label>
+            <input type="number" id="v-kilometraje" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Horómetro (hs)</label>
+            <input type="number" id="v-horometro" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Estado General *</label>
+            <select id="v-estadoGeneral" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="Bueno" class="bg-[#0B0E17]">Bueno</option>
+              <option value="Excelente" class="bg-[#0B0E17]">Excelente</option>
+              <option value="Regular" class="bg-[#0B0E17]">Regular</option>
+              <option value="Taller" class="bg-[#0B0E17]">Taller</option>
+              <option value="Baja" class="bg-[#0B0E17]">Baja</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Fecha última revisión</label>
+            <input type="date" id="v-fechaUltimaRevision" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Fecha Realización</label>
+            <input type="date" id="v-vtvFechaRealizacion" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Vencimiento *</label>
+            <input type="date" id="v-vencimientoVTV" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Costo ($)</label>
+            <input type="number" id="v-vtvCosto" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0" step="0.01">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Centro Medición</label>
+            <select id="v-vtvCentro" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Seleccionar centro</option>
+              <option value="Luján" class="bg-[#0B0E17]">Luján</option>
+              <option value="Campana" class="bg-[#0B0E17]">Campana</option>
+              <option value="Zárate" class="bg-[#0B0E17]">Zárate</option>
+              <option value="__otro__" class="bg-[#0B0E17]">Otro...</option>
+            </select>
+            <input type="text" id="v-vtvCentroOtro" class="w-full mt-2 px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon hidden" placeholder="Escribir centro...">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Resultado</label>
+            <select id="v-vtvResultado" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="Pendiente" class="bg-[#0B0E17]">Pendiente</option>
+              <option value="Aprobado" class="bg-[#0B0E17]">Aprobado</option>
+              <option value="Rechazado" class="bg-[#0B0E17]">Rechazado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-[#FF6B35]/10">
+
+      <div>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Seguro
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Compañía / Marca</label>
+            <input type="text" id="v-seguroCompania" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Rivadavia Seguros">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° Póliza</label>
+            <input type="text" id="v-seguroPoliza" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="POL-2024-12345">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo de Seguro</label>
+            <select id="v-seguroTipo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
+              <option value="Responsabilidad Civil" class="bg-[#0B0E17]">Responsabilidad Civil</option>
+              <option value="Todo Riesgo" class="bg-[#0B0E17]">Todo Riesgo</option>
+              <option value="Terceros Completo" class="bg-[#0B0E17]">Terceros Completo</option>
+              <option value="Seguro Técnico" class="bg-[#0B0E17]">Seguro Técnico</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Vencimiento del seguro</label>
+            <input type="date" id="v-seguroVencimiento" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Costo del seguro ($)</label>
+            <input type="number" id="v-seguroCosto" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0" step="0.01">
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-[#FF6B35]/10">
+
+      <div>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Service
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Próximo service (km)</label>
+            <input type="number" id="v-proximoServiceKm" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="10000">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Próximo service (fecha)</label>
+            <input type="date" id="v-proximoServiceFecha" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-[#FF6B35]/10">
+
+      <div>
+        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Ubicación y Conductor
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Centro de Trabajo *</label>
+            <select id="v-centroTrabajo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
+              <option value="Planta Central" class="bg-[#0B0E17]">Planta Central</option>
+              <option value="Cantera Los Ángeles" class="bg-[#0B0E17]">Cantera Los Ángeles</option>
+              <option value="Planta Norte" class="bg-[#0B0E17]">Planta Norte</option>
+              <option value="Obra RN33" class="bg-[#0B0E17]">Obra RN33</option>
+              <option value="Taller Central" class="bg-[#0B0E17]">Taller Central</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Conductor habitual</label>
+            <input type="text" id="v-conductorHabitual" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Juan Pérez">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-[#8E94A8] mb-1">Observaciones</label>
+        <textarea id="v-observaciones" rows="3" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Notas adicionales..."></textarea>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-[#8E94A8] mb-1">Foto (URL)</label>
+        <input type="url" id="v-foto" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="https://storage.googleapis.com/...">
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-[#FF6B35]/10">
+        <button type="button" onclick="closeVehicleModal()" class="px-4 py-2 text-[#8E94A8] hover:text-[#F1F3F8] text-sm transition-colors">Cancelar</button>
+        <button type="submit" class="btn-primary text-sm px-6 py-2">Guardar Cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script src="/js/vehicle-detail.js"></script>
 <%- include('partials/footer') %>

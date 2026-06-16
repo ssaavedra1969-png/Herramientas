@@ -93,8 +93,140 @@ function switchTab(tab) {
 }
 
 function openEditVehicle() {
-  window.location.href = `/vehicles#edit-${vehicleId}`;
+  if (!vehicleData || !isAdmin()) return;
+
+  document.getElementById('vehiculo-id').value = vehicleId;
+  document.getElementById('v-patente').value = vehicleData.patente || '';
+  document.getElementById('v-interno').value = vehicleData.interno || '';
+  document.getElementById('v-marca').value = vehicleData.marca || '';
+  document.getElementById('v-modelo').value = vehicleData.modelo || '';
+  document.getElementById('v-anio').value = vehicleData.año || '';
+  document.getElementById('v-chasis').value = vehicleData.chasis || '';
+  document.getElementById('v-tipo').value = vehicleData.tipo || '';
+  document.getElementById('v-kilometraje').value = vehicleData.kilometraje || '';
+  document.getElementById('v-horometro').value = vehicleData.horometro || '';
+  document.getElementById('v-estadoGeneral').value = vehicleData.estadoGeneral || 'Bueno';
+  setDateField('v-fechaUltimaRevision', vehicleData.fechaUltimaRevision);
+  setDateField('v-vtvFechaRealizacion', vehicleData.vtv?.fechaRealizacion || null);
+  setDateField('v-vencimientoVTV', vehicleData.vtv?.fechaVencimiento || null);
+  document.getElementById('v-vtvCosto').value = vehicleData.vtv?.costo || '';
+  const centro = vehicleData.vtv?.centroMedicion || '';
+  const selectCentro = document.getElementById('v-vtvCentro');
+  const inputCentroOtro = document.getElementById('v-vtvCentroOtro');
+  if (['Luján', 'Campana', 'Zárate'].includes(centro)) {
+    selectCentro.value = centro;
+    inputCentroOtro.classList.add('hidden');
+    inputCentroOtro.value = '';
+  } else if (centro) {
+    selectCentro.value = '__otro__';
+    inputCentroOtro.classList.remove('hidden');
+    inputCentroOtro.value = centro;
+  } else {
+    selectCentro.value = '';
+    inputCentroOtro.classList.add('hidden');
+    inputCentroOtro.value = '';
+  }
+  document.getElementById('v-vtvResultado').value = vehicleData.vtv?.resultado || 'Pendiente';
+  document.getElementById('v-seguroCompania').value = vehicleData.seguro?.compañía || '';
+  document.getElementById('v-seguroPoliza').value = vehicleData.seguro?.poliza || '';
+  document.getElementById('v-seguroTipo').value = vehicleData.seguro?.tipo || '';
+  setDateField('v-seguroVencimiento', vehicleData.seguro?.fechaVencimiento || null);
+  document.getElementById('v-seguroCosto').value = vehicleData.seguro?.costo || '';
+  document.getElementById('v-proximoServiceKm').value = vehicleData.proximoServiceKm || '';
+  setDateField('v-proximoServiceFecha', vehicleData.proximoServiceFecha);
+  document.getElementById('v-centroTrabajo').value = vehicleData.centroTrabajo || '';
+  document.getElementById('v-conductorHabitual').value = vehicleData.conductorHabitual || '';
+  document.getElementById('v-observaciones').value = vehicleData.observaciones || '';
+  document.getElementById('v-foto').value = vehicleData.fotoURL || '';
+
+  showModal('modal-vehiculo');
 }
+
+function closeVehicleModal() {
+  hideModal('modal-vehiculo');
+}
+
+function setDateField(id, val) {
+  const el = document.getElementById(id);
+  if (!val) { el.value = ''; return; }
+  const d = val.toDate ? val.toDate() : new Date(val);
+  el.value = d.toISOString().split('T')[0];
+}
+
+function getDateValue(id) {
+  const val = document.getElementById(id).value;
+  return val ? firebase.firestore.Timestamp.fromDate(new Date(val + 'T00:00:00')) : null;
+}
+
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('modal-vehiculo');
+  if (modal && e.target === modal) hideModal('modal-vehiculo');
+});
+
+document.getElementById('v-vtvCentro')?.addEventListener('change', function () {
+  const otro = document.getElementById('v-vtvCentroOtro');
+  if (this.value === '__otro__') { otro.classList.remove('hidden'); otro.focus(); }
+  else { otro.classList.add('hidden'); otro.value = ''; }
+});
+
+document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!isAdmin()) return;
+
+  const data = {
+    patente: document.getElementById('v-patente').value.trim().toUpperCase(),
+    interno: document.getElementById('v-interno').value.trim(),
+    marca: document.getElementById('v-marca').value.trim(),
+    modelo: document.getElementById('v-modelo').value.trim(),
+    año: parseInt(document.getElementById('v-anio').value) || null,
+    chasis: document.getElementById('v-chasis').value.trim() || '',
+    tipo: document.getElementById('v-tipo').value,
+    kilometraje: parseInt(document.getElementById('v-kilometraje').value) || 0,
+    horometro: parseInt(document.getElementById('v-horometro').value) || 0,
+    estadoGeneral: document.getElementById('v-estadoGeneral').value,
+    fechaUltimaRevision: getDateValue('v-fechaUltimaRevision'),
+    vtv: {
+      fechaRealizacion: getDateValue('v-vtvFechaRealizacion'),
+      fechaVencimiento: getDateValue('v-vencimientoVTV'),
+      costo: parseFloat(document.getElementById('v-vtvCosto').value) || null,
+      centroMedicion: (document.getElementById('v-vtvCentro').value === '__otro__'
+        ? document.getElementById('v-vtvCentroOtro').value.trim()
+        : document.getElementById('v-vtvCentro').value) || '',
+      resultado: document.getElementById('v-vtvResultado').value || 'Pendiente'
+    },
+    seguro: {
+      compañía: document.getElementById('v-seguroCompania').value.trim() || '',
+      poliza: document.getElementById('v-seguroPoliza').value.trim() || '',
+      tipo: document.getElementById('v-seguroTipo').value || '',
+      fechaVencimiento: getDateValue('v-seguroVencimiento'),
+      costo: parseFloat(document.getElementById('v-seguroCosto').value) || null
+    },
+    proximoServiceKm: parseInt(document.getElementById('v-proximoServiceKm').value) || null,
+    proximoServiceFecha: getDateValue('v-proximoServiceFecha'),
+    centroTrabajo: document.getElementById('v-centroTrabajo').value,
+    conductorHabitual: document.getElementById('v-conductorHabitual').value.trim() || '',
+    observaciones: document.getElementById('v-observaciones').value.trim() || '',
+    fotoURL: document.getElementById('v-foto').value.trim() || '',
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  if (!data.patente || !data.interno || !data.marca || !data.tipo) {
+    showToast('Completá los campos obligatorios: Patente, Interno, Marca y Tipo', 'error');
+    return;
+  }
+
+  try {
+    showLoading(true);
+    await db.collection('vehicles').doc(vehicleId).update(data);
+    showToast('Vehículo actualizado ✅');
+    closeVehicleModal();
+    loadVehicle();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+});
 
 function initCombustibleForm() {
   const form = document.getElementById('form-combustible');
@@ -162,6 +294,7 @@ function startCombustibleListener() {
     .orderBy('fecha', 'desc')
     .onSnapshot(snapshot => {
       const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      window.allCombustibleData = items;
       renderCombustible(items);
     }, err => {
       console.error('combustible error:', err);
@@ -176,6 +309,7 @@ function startRepuestosListener() {
     .orderBy('fecha', 'desc')
     .onSnapshot(snapshot => {
       const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      window.allRepuestosData = items;
       renderRepuestos(items);
     }, err => {
       console.error('repuestos error:', err);
@@ -222,6 +356,50 @@ function renderRepuestos(items) {
       <td class="py-2 no-print">${isAdmin() ? `<button onclick="deleteRepuesto('${r.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
     </tr>
   `).join('');
+}
+
+function exportCombustibleCSV() {
+  const items = window.allCombustibleData || [];
+  if (!items.length) { showToast('No hay datos para exportar', 'info'); return; }
+  const headers = ['Fecha', 'Litros', 'Importe', 'Tipo', 'Km', 'Proveedor', 'Observaciones'];
+  const rows = items.map(c => [
+    formatDate(c.fecha),
+    c.litros?.toFixed(2) || '',
+    c.importe?.toFixed(2) || '',
+    c.tipo || '',
+    c.km || '',
+    c.proveedor || '',
+    c.observaciones || ''
+  ]);
+  downloadCSV(`combustible-${vehicleData?.patente || vehicleId}.csv`, headers, rows);
+}
+
+function exportRepuestosCSV() {
+  const items = window.allRepuestosData || [];
+  if (!items.length) { showToast('No hay datos para exportar', 'info'); return; }
+  const headers = ['Fecha', 'Pieza', 'Costo', 'Proveedor', 'Tipo', 'Km', 'Observaciones'];
+  const rows = items.map(r => [
+    formatDate(r.fecha),
+    r.pieza || '',
+    r.costo?.toFixed(2) || '',
+    r.proveedor || '',
+    r.tipo || '',
+    r.km || '',
+    r.observaciones || ''
+  ]);
+  downloadCSV(`repuestos-${vehicleData?.patente || vehicleId}.csv`, headers, rows);
+}
+
+function downloadCSV(filename, headers, rows) {
+  const BOM = '\uFEFF';
+  const csv = BOM + headers.join(',') + '\n' + rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  showToast(`CSV exportado: ${filename}`);
 }
 
 async function deleteCombustible(id) {

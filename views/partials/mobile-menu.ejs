@@ -19,7 +19,10 @@ const isAdmin = currentUserData?.role === 'Admin';
         <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11.42 15.17l-7.5 7.5a2 2 0 01-2.83 0L.75 19.93a2 2 0 010-2.83l7.5-7.5"/><path d="M16.24 7.76a3 3 0 00-4.24-4.24l-1.5 1.5 6 6 1.5-1.5a3 3 0 000-4.24z"/></svg>Herramientas
       </a>
       <a href="/maintenance" class="nav-link <%= currentPage === 'maintenance' ? 'active' : '' %>">
-        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>Mantenimiento
+        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>      Mantenimiento
+      </a>
+      <a href="/reports" class="nav-link <%= currentPage === 'reports' ? 'active' : '' %>">
+        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Reportes
       </a>
       <% if (isAdmin) { %>
       <a href="/admin" class="nav-link <%= currentPage === 'admin' ? 'active' : '' %>">

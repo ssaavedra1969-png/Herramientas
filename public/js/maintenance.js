@@ -113,7 +113,7 @@ function renderMaintenance(items) {
         <td class="py-3 pr-3"><span class="status-badge ${estadoClass}">${m.estado || '—'}</span></td>
         <td class="py-3 no-print">
           ${viewBtn}
-          ${isAdmin() ? createActionButtons(`editMaintenance('${m.id}')`, `deleteMaintenance('${m.id}')`) : ''}
+          ${createActionButtons(`editMaintenance('${m.id}')`, `deleteMaintenance('${m.id}')`)}
         </td>
       </tr>`;
   }).join('');
@@ -241,14 +241,5 @@ async function saveMaintenance(e) {
 async function editMaintenance(id) { openMaintenanceModal(id); }
 
 async function deleteMaintenance(id) {
-  if (!confirm('¿Estás seguro de eliminar este mantenimiento?')) return;
-  try {
-    showLoading(true);
-    await db.collection('maintenance').doc(id).delete();
-    showToast('Mantenimiento eliminado');
-  } catch (error) {
-    showToast('Error al eliminar: ' + error.message, 'error');
-  } finally {
-    showLoading(false);
-  }
+  await deleteWithBackup('maintenance', id, 'Mantenimiento');
 }

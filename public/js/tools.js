@@ -98,7 +98,7 @@ function renderTools(tools) {
         <td class="py-3 pr-3">${mt.ubicacionActual || '—'}</td>
         <td class="py-3 pr-3 text-xs">${formatDate(mt.fechaUltimoControl)}</td>
         <td class="py-3 pr-3 text-xs">${formatDate(mt.proximoControl)}${controlAlert}</td>
-        <td class="py-3 no-print">${isAdmin() ? createActionButtons(`editTool('${t.id}')`, `deleteTool('${t.id}')`) : '—'}</td>
+        <td class="py-3 no-print">${createActionButtons(`editTool('${t.id}')`, `deleteTool('${t.id}')`)}</td>
       </tr>`;
   }).join('');
 }
@@ -470,15 +470,5 @@ function closeProgressModal() {
 }
 
 async function deleteTool(id) {
-  if (!isAdmin()) return;
-  if (!confirm('¿Estás seguro de eliminar esta herramienta?')) return;
-  try {
-    showLoading(true);
-    await db.collection('tools').doc(id).delete();
-    showToast('Herramienta eliminada');
-  } catch (error) {
-    showToast('Error al eliminar: ' + error.message, 'error');
-  } finally {
-    showLoading(false);
-  }
+  await deleteWithBackup('tools', id, 'Herramienta');
 }

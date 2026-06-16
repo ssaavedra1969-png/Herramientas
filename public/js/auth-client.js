@@ -3,7 +3,7 @@ const db = firebase.firestore();
 const storage = firebase.storage();
 
 let currentUser = null;
-let currentUserData = null;
+let currentUserData = window.__SERVER_USER_DATA || null;
 
 async function completeSignIn(user) {
   console.log('completeSignIn called, uid:', user.uid, 'email:', user.email);
@@ -85,7 +85,8 @@ function isAdmin() {
 }
 
 async function getAuthHeaders() {
-  const token = await currentUser?.getIdToken();
+  if (!currentUser) throw new Error('Usuario no autenticado');
+  const token = await currentUser.getIdToken();
   return {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`
@@ -169,23 +170,86 @@ function friendlyError(e) {
 }
 
 function createActionButtons(editFn, deleteFn, viewFn) {
+  const admin = isAdmin();
   const viewBtn = viewFn ? `<button onclick="${viewFn}" class="text-green-500 hover:text-green-400 mr-2 transition-colors" title="Ver">
     <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
     </svg>
   </button>` : '';
-  return `${viewBtn}
-    <button onclick="${editFn}" class="text-blue-500 hover:text-blue-400 mr-2 transition-colors" title="Editar">
-      <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-      </svg>
-    </button>
-    <button onclick="${deleteFn}" class="text-red-500 hover:text-red-400 transition-colors" title="Eliminar">
-      <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-      </svg>
-    </button>`;
+  const editBtn = editFn && admin ? `<button onclick="${editFn}" class="text-blue-500 hover:text-blue-400 mr-2 transition-colors" title="Editar">
+    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+    </svg>
+  </button>` : '';
+  const deleteBtn = deleteFn && admin ? `<button onclick="${deleteFn}" class="text-red-500 hover:text-red-400 transition-colors" title="Eliminar">
+    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+    </svg>
+  </button>` : '';
+  return `${viewBtn}${editBtn}${deleteBtn}`;
+}
+
+async function deleteWithBackup(collection, docId, label, getSubcollections) {
+  if (!isAdmin()) return;
+
+  const ok = await Swal.fire({
+    title: 'Eliminar ' + label,
+    text: 'Se descargará una copia de seguridad local antes de eliminar.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar',
+    background: '#0F1220',
+    color: '#F1F3F8'
+  });
+  if (!ok.isConfirmed) return;
+
+  try {
+    showLoading(true);
+    const doc = await db.collection(collection).doc(docId).get();
+    if (!doc.exists) { showToast('Registro no encontrado', 'error'); return; }
+
+    const backup = {
+      _meta: {
+        exportado: new Date().toISOString(),
+        coleccion: collection,
+        documento: docId,
+        estado: 'baja'
+      },
+      datos: doc.data()
+    };
+
+    if (getSubcollections) {
+      backup.subcolecciones = {};
+      for (const [nombre, ref] of Object.entries(getSubcollections(docId))) {
+        const snap = await ref.get();
+        backup.subcolecciones[nombre] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
+    }
+
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const fecha = new Date().toISOString().split('T')[0];
+    a.href = url;
+    a.download = `baja-${label.toLowerCase().replace(/\s+/g, '-')}-${fecha}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    await db.collection(collection).doc(docId).delete();
+
+    showToast(`${label} eliminado. Backup guardado en PC local.`);
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

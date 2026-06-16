@@ -104,6 +104,15 @@ app.get('/maintenance', requireAuth, (req, res) => {
   });
 });
 
+app.get('/reports', requireAuth, (req, res) => {
+  res.render('reports', {
+    title: 'Reportes',
+    clientConfig: res.locals.clientConfig,
+    currentUser: res.locals.currentUser,
+    currentUserData: res.locals.currentUserData
+  });
+});
+
 app.get('/admin', requireAuth, requireAdminPage, (req, res) => {
   res.render('admin', {
     title: 'Usuarios',

@@ -1,6 +1,7 @@
 <script>
   const FIREBASE_CONFIG = <%- JSON.stringify(clientConfig) %>;
   firebase.initializeApp(FIREBASE_CONFIG);
+  window.__SERVER_USER_DATA = <%- JSON.stringify(currentUserData?.role ? { role: currentUserData.role, displayName: currentUserData.displayName } : null) %>;
 </script>
 <script src="/js/auth-client.js"></script>
 </body>

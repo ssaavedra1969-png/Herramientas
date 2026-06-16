@@ -1,0 +1,123 @@
+<%- include('partials/head') %>
+<div class="flex h-screen overflow-hidden">
+  <%- include('partials/sidebar', { page: 'reports' }) %>
+
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="lg:hidden header-glass text-[#F1F3F8] p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#FF6B35]/10">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#FF6B35] to-[#FF3366] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+    </div>
+
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 class="text-2xl font-bold text-gradient-primary">Reportes</h1>
+          <p class="text-[#8E94A8] text-sm">Gastos consolidados</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportReporteXLSX()" class="px-4 py-2 bg-[#FF6B35] hover:bg-[#E55D2B] text-white rounded-lg text-sm font-medium transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Exportar CSV
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-6" id="report-summary-cards">
+        <div class="glass-card rounded-xl p-5 card-3d">
+          <p class="text-[#8E94A8] text-sm font-medium">Total Combustible</p>
+          <p class="text-2xl font-bold text-[#F1F3F8] mt-1" id="rep-total-combustible">-</p>
+        </div>
+        <div class="glass-card rounded-xl p-5 card-3d">
+          <p class="text-[#8E94A8] text-sm font-medium">Total Repuestos</p>
+          <p class="text-2xl font-bold text-[#F1F3F8] mt-1" id="rep-total-repuestos">-</p>
+        </div>
+        <div class="glass-card rounded-xl p-5 card-3d">
+          <p class="text-[#8E94A8] text-sm font-medium">Total Mantenimiento</p>
+          <p class="text-2xl font-bold text-[#F1F3F8] mt-1" id="rep-total-mantenimiento">-</p>
+        </div>
+        <div class="glass-card rounded-xl p-5 card-3d">
+          <p class="text-[#8E94A8] text-sm font-medium">Total VTV</p>
+          <p class="text-2xl font-bold text-[#F1F3F8] mt-1" id="rep-total-vtv">-</p>
+        </div>
+        <div class="glass-card rounded-xl p-5 card-3d">
+          <p class="text-[#8E94A8] text-sm font-medium">Total Seguro</p>
+          <p class="text-2xl font-bold text-[#F1F3F8] mt-1" id="rep-total-seguro">-</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 mt-6">
+        <div class="flex-1">
+          <label class="block text-xs font-medium text-[#8E94A8] mb-1">Desde</label>
+          <input type="date" id="filtro-desde" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8]">
+        </div>
+        <div class="flex-1">
+          <label class="block text-xs font-medium text-[#8E94A8] mb-1">Hasta</label>
+          <input type="date" id="filtro-hasta" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8]">
+        </div>
+        <div class="flex-1">
+          <label class="block text-xs font-medium text-[#8E94A8] mb-1">Categoría</label>
+          <select id="filtro-categoria" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8]">
+            <option value="todas" class="bg-[#0B0E17]">Todas</option>
+            <option value="Combustible" class="bg-[#0B0E17]">Combustible</option>
+            <option value="Repuestos" class="bg-[#0B0E17]">Repuestos</option>
+            <option value="Mantenimiento" class="bg-[#0B0E17]">Mantenimiento</option>
+            <option value="VTV" class="bg-[#0B0E17]">VTV</option>
+            <option value="Seguro" class="bg-[#0B0E17]">Seguro</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <label class="block text-xs font-medium text-[#8E94A8] mb-1">Vehículo</label>
+          <select id="filtro-vehiculo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8]">
+            <option value="todos" class="bg-[#0B0E17]">Todos</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button onclick="aplicarFiltros()" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-[#F1F3F8] rounded-lg text-sm font-medium transition border border-white/10">
+            Filtrar
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div class="lg:col-span-2 glass-card rounded-xl p-5">
+          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Detalle de Gastos</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-[#8E94A8] border-b border-[#FF6B35]/10">
+                  <th class="pb-3 pr-3 font-medium">Fecha</th>
+                  <th class="pb-3 pr-3 font-medium">Categoría</th>
+                  <th class="pb-3 pr-3 font-medium">Vehículo</th>
+                  <th class="pb-3 pr-3 font-medium">Detalle</th>
+                  <th class="pb-3 pr-3 font-medium text-right">Monto</th>
+                </tr>
+              </thead>
+              <tbody id="report-table-body">
+                <tr><td colspan="5" class="text-center py-8 text-[#5C6378]">Cargando datos...</td></tr>
+              </tbody>
+              <tfoot id="report-table-foot" class="hidden">
+                <tr class="border-t border-[#FF6B35]/10">
+                  <td colspan="4" class="pt-3 pr-3 text-right text-[#8E94A8] font-medium">Total:</td>
+                  <td class="pt-3 text-right text-[#F1F3F8] font-bold" id="report-total">$ 0,00</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-5">
+          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Gastos por Categoría</h3>
+          <div class="flex items-center justify-center h-[250px]">
+            <canvas id="chart-por-categoria" height="250"></canvas>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('partials/mobile-menu', { page: 'reports' }) %>
+<script src="/js/reports.js"></script>
+<%- include('partials/footer') %>
