@@ -1,0 +1,257 @@
+<%- include('partials/head') %>
+<div class="flex h-screen overflow-hidden">
+  <%- include('partials/sidebar', { page: 'vehicles' }) %>
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="lg:hidden header-glass text-[#F1F3F8] p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#FF6B35]/10">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#FF6B35] to-[#FF3366] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+    </div>
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <a href="/vehicles" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        </a>
+        <div>
+          <h1 class="text-2xl font-bold text-gradient-primary" id="vehicle-title">Vehículo</h1>
+          <p class="text-[#8E94A8] text-sm" id="vehicle-subtitle">Cargando...</p>
+        </div>
+        <% if (currentUserData?.role === 'Admin') { %>
+        <button onclick="openEditVehicle()" class="ml-auto btn-primary text-sm px-4 py-2 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Editar
+        </button>
+        <% } %>
+      </div>
+
+      <div class="mb-4 flex gap-1 glass-card rounded-xl p-1">
+        <button onclick="switchTab('resumen')" id="tab-resumen" class="tab-btn flex-1 py-2 text-center rounded-lg text-sm font-medium transition bg-[#FF6B35]/10 text-[#FF6B35]">Resumen</button>
+        <button onclick="switchTab('combustible')" id="tab-combustible" class="tab-btn flex-1 py-2 text-center rounded-lg text-sm font-medium transition text-[#8E94A8] hover:text-[#F1F3F8]">Combustible</button>
+        <button onclick="switchTab('repuestos')" id="tab-repuestos" class="tab-btn flex-1 py-2 text-center rounded-lg text-sm font-medium transition text-[#8E94A8] hover:text-[#F1F3F8]">Repuestos</button>
+      </div>
+
+      <div id="tab-content-resumen" class="tab-content space-y-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Datos Generales
+            </h3>
+            <div class="grid grid-cols-2 gap-3 text-sm" id="general-info">
+              <div class="text-[#8E94A8]">Patente:</div><div class="text-[#F1F3F8] font-medium" id="vg-patente">-</div>
+              <div class="text-[#8E94A8]">Interno:</div><div class="text-[#F1F3F8]" id="vg-interno">-</div>
+              <div class="text-[#8E94A8]">Marca:</div><div class="text-[#F1F3F8]" id="vg-marca">-</div>
+              <div class="text-[#8E94A8]">Modelo:</div><div class="text-[#F1F3F8]" id="vg-modelo">-</div>
+              <div class="text-[#8E94A8]">Tipo:</div><div class="text-[#F1F3F8]" id="vg-tipo">-</div>
+              <div class="text-[#8E94A8]">Año:</div><div class="text-[#F1F3F8]" id="vg-anio">-</div>
+              <div class="text-[#8E94A8]">Chasis:</div><div class="text-[#F1F3F8]" id="vg-chasis">-</div>
+              <div class="text-[#8E94A8]">Estado:</div><div class="text-[#F1F3F8]" id="vg-estado">-</div>
+              <div class="text-[#8E94A8]">Km / Hs:</div><div class="text-[#F1F3F8]" id="vg-kmhs">-</div>
+              <div class="text-[#8E94A8]">Centro:</div><div class="text-[#F1F3F8]" id="vg-centro">-</div>
+              <div class="text-[#8E94A8]">Conductor:</div><div class="text-[#F1F3F8]" id="vg-conductor">-</div>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              Seguro
+            </h3>
+            <div class="grid grid-cols-2 gap-3 text-sm" id="seguro-info">
+              <div class="text-[#8E94A8]">Compañía:</div><div class="text-[#F1F3F8]" id="vg-seguroCompania">-</div>
+              <div class="text-[#8E94A8]">Póliza:</div><div class="text-[#F1F3F8]" id="vg-seguroPoliza">-</div>
+              <div class="text-[#8E94A8]">Tipo:</div><div class="text-[#F1F3F8]" id="vg-seguroTipo">-</div>
+              <div class="text-[#8E94A8]">Vencimiento:</div><div class="text-[#F1F3F8]" id="vg-seguroVencimiento">-</div>
+              <div class="text-[#8E94A8]">Costo:</div><div class="text-[#F1F3F8] font-medium" id="vg-seguroCosto">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+              VTV
+            </h3>
+            <div class="grid grid-cols-2 gap-3 text-sm" id="vtv-info">
+              <div class="text-[#8E94A8]">Fecha Realización:</div><div class="text-[#F1F3F8]" id="vg-vtvFechaRealizacion">-</div>
+              <div class="text-[#8E94A8]">Vencimiento:</div><div class="text-[#F1F3F8]" id="vg-vtvVencimiento">-</div>
+              <div class="text-[#8E94A8]">Costo:</div><div class="text-[#F1F3F8]" id="vg-vtvCosto">-</div>
+              <div class="text-[#8E94A8]">Centro:</div><div class="text-[#F1F3F8]" id="vg-vtvCentro">-</div>
+              <div class="text-[#8E94A8]">Resultado:</div><div class="text-[#F1F3F8]" id="vg-vtvResultado">-</div>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Service
+            </h3>
+            <div class="grid grid-cols-2 gap-3 text-sm" id="service-info">
+              <div class="text-[#8E94A8]">Próx. Service (km):</div><div class="text-[#F1F3F8]" id="vg-proximoServiceKm">-</div>
+              <div class="text-[#8E94A8]">Próx. Service (fecha):</div><div class="text-[#F1F3F8]" id="vg-proximoServiceFecha">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-xl p-5">
+          <h3 class="text-md font-semibold text-[#F1F3F8] mb-2">Observaciones</h3>
+          <p class="text-sm text-[#8E94A8]" id="vg-observaciones">-</p>
+        </div>
+
+        <% if (currentUserData?.role === 'Admin') { %>
+        <div class="flex justify-center gap-3 pb-4">
+          <button onclick="openEditVehicle()" class="btn-primary px-6 py-2 text-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            Editar Vehículo
+          </button>
+        </div>
+        <% } %>
+      </div>
+
+      <div id="tab-content-combustible" class="tab-content hidden space-y-4">
+        <div class="glass-card rounded-xl p-5">
+          <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Carga de Combustible
+          </h3>
+
+          <% if (currentUserData?.role === 'Admin') { %>
+          <form id="form-combustible" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 p-4 bg-[#0B0E17]/30 rounded-lg">
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Fecha *</label>
+              <input type="date" id="c-fecha" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Litros *</label>
+              <input type="number" id="c-litros" required step="0.01" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="100">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Importe ($) *</label>
+              <input type="number" id="c-importe" required step="0.01" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="25000">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Tipo</label>
+              <select id="c-tipo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+                <option value="Gasoil" class="bg-[#0B0E17]">Gasoil</option>
+                <option value="Nafta" class="bg-[#0B0E17]">Nafta</option>
+                <option value="GNC" class="bg-[#0B0E17]">GNC</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Km actual</label>
+              <input type="number" id="c-km" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="0">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Proveedor</label>
+              <input type="text" id="c-proveedor" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Estación YPF">
+            </div>
+            <div class="sm:col-span-2 lg:col-span-3">
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Observaciones</label>
+              <input type="text" id="c-obs" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Notas">
+            </div>
+            <div class="sm:col-span-2 lg:col-span-3 flex justify-end">
+              <button type="submit" class="btn-primary text-sm px-6 py-2">Agregar Carga</button>
+            </div>
+          </form>
+          <% } %>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-[#8E94A8] border-b border-[#FF6B35]/10">
+                  <th class="pb-2 font-medium">Fecha</th>
+                  <th class="pb-2 font-medium">Litros</th>
+                  <th class="pb-2 font-medium">Importe</th>
+                  <th class="pb-2 font-medium">Tipo</th>
+                  <th class="pb-2 font-medium">Km</th>
+                  <th class="pb-2 font-medium">Proveedor</th>
+                  <th class="pb-2 font-medium no-print">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="combustible-table-body">
+                <tr><td colspan="7" class="text-center py-8 text-[#5C6378]">Cargando historial...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-content-repuestos" class="tab-content hidden space-y-4">
+        <div class="glass-card rounded-xl p-5">
+          <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.42 15.17l-7.5 7.5a2 2 0 01-2.83 0L.75 19.93a2 2 0 010-2.83l7.5-7.5"/><path d="M16.24 7.76a3 3 0 00-4.24-4.24l-1.5 1.5 6 6 1.5-1.5a3 3 0 000-4.24z"/></svg>
+            Repuestos
+          </h3>
+
+          <% if (currentUserData?.role === 'Admin') { %>
+          <form id="form-repuesto" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 p-4 bg-[#0B0E17]/30 rounded-lg">
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Fecha *</label>
+              <input type="date" id="r-fecha" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Pieza *</label>
+              <input type="text" id="r-pieza" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Filtro de aceite">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Costo ($) *</label>
+              <input type="number" id="r-costo" required step="0.01" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="15000">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Proveedor</label>
+              <input type="text" id="r-proveedor" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Autorepuestos S.A.">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Tipo</label>
+              <select id="r-tipo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+                <option value="Mantenimiento" class="bg-[#0B0E17]">Mantenimiento</option>
+                <option value="Reparación" class="bg-[#0B0E17]">Reparación</option>
+                <option value="Reemplazo" class="bg-[#0B0E17]">Reemplazo</option>
+                <option value="Mejora" class="bg-[#0B0E17]">Mejora</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Km</label>
+              <input type="number" id="r-km" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="0">
+            </div>
+            <div class="sm:col-span-2 lg:col-span-3">
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Observaciones</label>
+              <input type="text" id="r-obs" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Notas">
+            </div>
+            <div class="sm:col-span-2 lg:col-span-3 flex justify-end">
+              <button type="submit" class="btn-primary text-sm px-6 py-2">Agregar Repuesto</button>
+            </div>
+          </form>
+          <% } %>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-[#8E94A8] border-b border-[#FF6B35]/10">
+                  <th class="pb-2 font-medium">Fecha</th>
+                  <th class="pb-2 font-medium">Pieza</th>
+                  <th class="pb-2 font-medium">Costo</th>
+                  <th class="pb-2 font-medium">Proveedor</th>
+                  <th class="pb-2 font-medium">Tipo</th>
+                  <th class="pb-2 font-medium">Km</th>
+                  <th class="pb-2 font-medium no-print">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="repuestos-table-body">
+                <tr><td colspan="7" class="text-center py-8 text-[#5C6378]">Cargando historial...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('partials/mobile-menu', { page: 'vehicles' }) %>
+
+<script src="/js/vehicle-detail.js"></script>
+<%- include('partials/footer') %>

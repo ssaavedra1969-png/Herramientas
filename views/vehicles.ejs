@@ -202,8 +202,28 @@
             <input type="date" id="v-fechaUltimaRevision" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
           </div>
           <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Vencimiento VTV *</label>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Fecha Realización</label>
+            <input type="date" id="v-vtvFechaRealizacion" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Vencimiento *</label>
             <input type="date" id="v-vencimientoVTV" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Costo ($)</label>
+            <input type="number" id="v-vtvCosto" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0" step="0.01">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Centro Medición</label>
+            <input type="text" id="v-vtvCentro" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Centro de revisión técnica">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Resultado</label>
+            <select id="v-vtvResultado" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="Pendiente" class="bg-[#0B0E17]">Pendiente</option>
+              <option value="Aprobado" class="bg-[#0B0E17]">Aprobado</option>
+              <option value="Rechazado" class="bg-[#0B0E17]">Rechazado</option>
+            </select>
           </div>
         </div>
       </div>
@@ -218,7 +238,7 @@
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Compañía</label>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Compañía / Marca</label>
             <input type="text" id="v-seguroCompania" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Rivadavia Seguros">
           </div>
           <div>
@@ -226,8 +246,22 @@
             <input type="text" id="v-seguroPoliza" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="POL-2024-12345">
           </div>
           <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo de Seguro</label>
+            <select id="v-seguroTipo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
+              <option value="Responsabilidad Civil" class="bg-[#0B0E17]">Responsabilidad Civil</option>
+              <option value="Todo Riesgo" class="bg-[#0B0E17]">Todo Riesgo</option>
+              <option value="Terceros Completo" class="bg-[#0B0E17]">Terceros Completo</option>
+              <option value="Seguro Técnico" class="bg-[#0B0E17]">Seguro Técnico</option>
+            </select>
+          </div>
+          <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Vencimiento del seguro</label>
             <input type="date" id="v-seguroVencimiento" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Costo del seguro ($)</label>
+            <input type="number" id="v-seguroCosto" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0" step="0.01">
           </div>
         </div>
       </div>

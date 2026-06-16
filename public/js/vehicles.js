@@ -55,8 +55,14 @@ function fmap(v) {
     horometro: v.horometro || 0,
     estadoGeneral: v.estadoGeneral || v.estado || 'Bueno',
     fechaUltimaRevision: v.fechaUltimaRevision || null,
-    vencimientoVTV: v.vencimientoVTV || null,
-    seguro: v.seguro || { compañía: '', poliza: '', fechaVencimiento: null },
+    vtv: v.vtv || {
+      fechaRealizacion: null,
+      fechaVencimiento: v.vencimientoVTV || null,
+      costo: null,
+      centroMedicion: '',
+      resultado: 'Pendiente'
+    },
+    seguro: v.seguro || { compañía: '', poliza: '', tipo: '', fechaVencimiento: null, costo: null },
     proximoServiceKm: v.proximoServiceKm || null,
     proximoServiceFecha: v.proximoServiceFecha || null,
     centroTrabajo: v.centroTrabajo || '',
@@ -95,7 +101,7 @@ function renderVehicles(vehicles) {
         <td class="py-3 pr-3"><span class="status-badge ${estadoClass}">${mv.estadoGeneral || '—'}</span></td>
         <td class="py-3 pr-3 text-xs">${mv.centroTrabajo || '—'}</td>
         <td class="py-3 pr-3 text-xs">${serviceInfo}</td>
-        <td class="py-3 no-print">${isAdmin() ? createActionButtons(`editVehicle('${v.id}')`, `deleteVehicle('${v.id}')`) : '—'}</td>
+        <td class="py-3 no-print">${createActionButtons(`editVehicle('${v.id}')`, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
       </tr>`;
   }).join('');
 }
@@ -144,10 +150,16 @@ function openVehicleModal(vehicleId = null) {
     document.getElementById('v-horometro').value = v.horometro;
     document.getElementById('v-estadoGeneral').value = v.estadoGeneral;
     setDateField('v-fechaUltimaRevision', v.fechaUltimaRevision);
-    setDateField('v-vencimientoVTV', v.vencimientoVTV);
+    setDateField('v-vtvFechaRealizacion', v.vtv?.fechaRealizacion || null);
+    setDateField('v-vencimientoVTV', v.vtv?.fechaVencimiento || v.vencimientoVTV || null);
+    document.getElementById('v-vtvCosto').value = v.vtv?.costo || '';
+    document.getElementById('v-vtvCentro').value = v.vtv?.centroMedicion || '';
+    document.getElementById('v-vtvResultado').value = v.vtv?.resultado || 'Pendiente';
     document.getElementById('v-seguroCompania').value = v.seguro?.compañía || '';
     document.getElementById('v-seguroPoliza').value = v.seguro?.poliza || '';
+    document.getElementById('v-seguroTipo').value = v.seguro?.tipo || '';
     setDateField('v-seguroVencimiento', v.seguro?.fechaVencimiento || null);
+    document.getElementById('v-seguroCosto').value = v.seguro?.costo || '';
     document.getElementById('v-proximoServiceKm').value = v.proximoServiceKm || '';
     setDateField('v-proximoServiceFecha', v.proximoServiceFecha);
     document.getElementById('v-centroTrabajo').value = v.centroTrabajo;
@@ -221,11 +233,19 @@ async function saveVehicle(e) {
     horometro: parseInt(document.getElementById('v-horometro').value) || 0,
     estadoGeneral: document.getElementById('v-estadoGeneral').value,
     fechaUltimaRevision: getDateValue('v-fechaUltimaRevision'),
-    vencimientoVTV: getDateValue('v-vencimientoVTV'),
+    vtv: {
+      fechaRealizacion: getDateValue('v-vtvFechaRealizacion'),
+      fechaVencimiento: getDateValue('v-vencimientoVTV'),
+      costo: parseFloat(document.getElementById('v-vtvCosto').value) || null,
+      centroMedicion: document.getElementById('v-vtvCentro').value.trim() || '',
+      resultado: document.getElementById('v-vtvResultado').value || 'Pendiente'
+    },
     seguro: {
       compañía: document.getElementById('v-seguroCompania').value.trim() || '',
       poliza: document.getElementById('v-seguroPoliza').value.trim() || '',
-      fechaVencimiento: getDateValue('v-seguroVencimiento')
+      tipo: document.getElementById('v-seguroTipo').value || '',
+      fechaVencimiento: getDateValue('v-seguroVencimiento'),
+      costo: parseFloat(document.getElementById('v-seguroCosto').value) || null
     },
     proximoServiceKm: parseInt(document.getElementById('v-proximoServiceKm').value) || null,
     proximoServiceFecha: getDateValue('v-proximoServiceFecha'),
@@ -348,6 +368,10 @@ async function deleteVehicle(id) {
   }
 }
 
+function viewVehicle(id) {
+  window.location.href = `/vehicle/${id}`;
+}
+
 /* ───────── CSV Import ───────── */
 
 function openCsvImport() {
@@ -364,8 +388,8 @@ function closeCsvImport() {
 }
 
 function downloadCsvTemplate() {
-  const headers = ['patente','interno','tipo','marca','modelo','año','chasis','kilometraje','horometro','estadoGeneral','fechaUltimaRevision','vencimientoVTV','seguroCompania','seguroPoliza','seguroVencimiento','proximoServiceKm','proximoServiceFecha','conductorHabitual','centroTrabajo','observaciones'];
-  const sample = ['ABC123','001','Camión volcador','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','158000','4500','Bueno','2026-04-10','2026-08-31','Rivadavia Seguros','POL-2024-12345','2026-09-30','160000','2026-07-15','Juan Pérez','Cantera Los Ángeles','Último cambio de cubiertas a los 140.000 km'];
+  const headers = ['patente','interno','tipo','marca','modelo','año','chasis','kilometraje','horometro','estadoGeneral','fechaUltimaRevision','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','conductorHabitual','centroTrabajo','observaciones'];
+  const sample = ['ABC123','001','Camión volcador','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','158000','4500','Bueno','2026-04-10','2026-03-15','2026-08-31','25000','Planta Central','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','Cantera Los Ángeles','Último cambio de cubiertas a los 140.000 km'];
   const BOM = '\uFEFF';
   const csv = BOM + headers.join(',') + '\n' + sample.join(',') + '\n';
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -539,9 +563,11 @@ async function executeCsvImport() {
   if (!csvValidatedData.length) return;
   const items = csvValidatedData.map(row => {
     const seguro = {};
-    if (row.seguroCompania || row.seguroPoliza || row.seguroVencimiento) {
+    if (row.seguroCompania || row.seguroPoliza || row.seguroVencimiento || row.seguroTipo || row.seguroCosto) {
       seguro.compañía = row.seguroCompania || '';
       seguro.poliza = row.seguroPoliza || '';
+      seguro.tipo = row.seguroTipo || '';
+      seguro.costo = parseFloat(row.seguroCosto) || null;
       seguro.fechaVencimiento = row.seguroVencimiento ? firebase.firestore.Timestamp.fromDate(new Date(row.seguroVencimiento + 'T00:00:00')) : null;
     }
     return {
@@ -556,7 +582,13 @@ async function executeCsvImport() {
       horometro: row.horometro,
       estadoGeneral: row.estadoGeneral,
       fechaUltimaRevision: row.fechaUltimaRevision ? firebase.firestore.Timestamp.fromDate(new Date(row.fechaUltimaRevision + 'T00:00:00')) : null,
-      vencimientoVTV: row.vencimientoVTV ? firebase.firestore.Timestamp.fromDate(new Date(row.vencimientoVTV + 'T00:00:00')) : null,
+      vtv: {
+        fechaRealizacion: row.vtvFechaRealizacion ? firebase.firestore.Timestamp.fromDate(new Date(row.vtvFechaRealizacion + 'T00:00:00')) : null,
+        fechaVencimiento: row.vtvVencimiento ? firebase.firestore.Timestamp.fromDate(new Date(row.vtvVencimiento + 'T00:00:00')) : (row.vencimientoVTV ? firebase.firestore.Timestamp.fromDate(new Date(row.vencimientoVTV + 'T00:00:00')) : null),
+        costo: parseFloat(row.vtvCosto) || null,
+        centroMedicion: row.vtvCentro || '',
+        resultado: row.vtvResultado || 'Pendiente'
+      },
       seguro: Object.keys(seguro).length ? seguro : {},
       proximoServiceKm: row.proximoServiceKm,
       proximoServiceFecha: row.proximoServiceFecha ? firebase.firestore.Timestamp.fromDate(new Date(row.proximoServiceFecha + 'T00:00:00')) : null,

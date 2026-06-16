@@ -26,6 +26,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 router.post('/', verifyToken, requireAdmin, async (req, res) => {
   try {
     const seguro = req.body.seguro || {};
+    const vtv = req.body.vtv || {};
     const data = {
       patente: req.body.patente?.toUpperCase().trim(),
       interno: req.body.interno?.trim(),
@@ -38,11 +39,19 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       horometro: parseInt(req.body.horometro) || 0,
       estadoGeneral: req.body.estadoGeneral || 'Bueno',
       fechaUltimaRevision: req.body.fechaUltimaRevision ? new Date(req.body.fechaUltimaRevision) : null,
-      vencimientoVTV: req.body.vencimientoVTV ? new Date(req.body.vencimientoVTV) : null,
+      vtv: {
+        fechaRealizacion: vtv.fechaRealizacion ? new Date(vtv.fechaRealizacion) : null,
+        fechaVencimiento: vtv.fechaVencimiento ? new Date(vtv.fechaVencimiento) : null,
+        costo: parseFloat(vtv.costo) || null,
+        centroMedicion: vtv.centroMedicion?.trim() || '',
+        resultado: vtv.resultado || 'Pendiente'
+      },
       seguro: {
         compañía: seguro.compañía || '',
         poliza: seguro.poliza || '',
-        fechaVencimiento: seguro.fechaVencimiento ? new Date(seguro.fechaVencimiento) : null
+        tipo: seguro.tipo || '',
+        fechaVencimiento: seguro.fechaVencimiento ? new Date(seguro.fechaVencimiento) : null,
+        costo: parseFloat(seguro.costo) || null
       },
       proximoServiceKm: parseInt(req.body.proximoServiceKm) || null,
       proximoServiceFecha: req.body.proximoServiceFecha ? new Date(req.body.proximoServiceFecha) : null,
@@ -79,6 +88,7 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
     if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
 
     const seguro = req.body.seguro || {};
+    const vtv = req.body.vtv || {};
     const data = {
       patente: req.body.patente?.toUpperCase().trim(),
       interno: req.body.interno?.trim(),
@@ -91,11 +101,19 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
       horometro: parseInt(req.body.horometro) || 0,
       estadoGeneral: req.body.estadoGeneral || 'Bueno',
       fechaUltimaRevision: req.body.fechaUltimaRevision ? new Date(req.body.fechaUltimaRevision) : null,
-      vencimientoVTV: req.body.vencimientoVTV ? new Date(req.body.vencimientoVTV) : null,
+      vtv: {
+        fechaRealizacion: vtv.fechaRealizacion ? new Date(vtv.fechaRealizacion) : null,
+        fechaVencimiento: vtv.fechaVencimiento ? new Date(vtv.fechaVencimiento) : null,
+        costo: parseFloat(vtv.costo) || null,
+        centroMedicion: vtv.centroMedicion?.trim() || '',
+        resultado: vtv.resultado || 'Pendiente'
+      },
       seguro: {
         compañía: seguro.compañía || '',
         poliza: seguro.poliza || '',
-        fechaVencimiento: seguro.fechaVencimiento ? new Date(seguro.fechaVencimiento) : null
+        tipo: seguro.tipo || '',
+        fechaVencimiento: seguro.fechaVencimiento ? new Date(seguro.fechaVencimiento) : null,
+        costo: parseFloat(seguro.costo) || null
       },
       proximoServiceKm: parseInt(req.body.proximoServiceKm) || null,
       proximoServiceFecha: req.body.proximoServiceFecha ? new Date(req.body.proximoServiceFecha) : null,
@@ -118,6 +136,84 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
 router.delete('/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     await db.collection('vehicles').doc(req.params.id).delete();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/:id/combustible', verifyToken, async (req, res) => {
+  try {
+    const snap = await db.collection('vehicles').doc(req.params.id).collection('combustible')
+      .orderBy('fecha', 'desc').get();
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/combustible', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const data = {
+      fecha: req.body.fecha ? new Date(req.body.fecha) : new Date(),
+      litros: parseFloat(req.body.litros),
+      importe: parseFloat(req.body.importe),
+      tipo: req.body.tipo || 'Gasoil',
+      km: parseInt(req.body.km) || null,
+      proveedor: req.body.proveedor?.trim() || '',
+      observaciones: req.body.observaciones?.trim() || '',
+      createdAt: new Date()
+    };
+    const ref = await db.collection('vehicles').doc(req.params.id).collection('combustible').add(data);
+    res.status(201).json({ id: ref.id, ...data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/:id/combustible/:entryId', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    await db.collection('vehicles').doc(req.params.id).collection('combustible').doc(req.params.entryId).delete();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/:id/repuestos', verifyToken, async (req, res) => {
+  try {
+    const snap = await db.collection('vehicles').doc(req.params.id).collection('repuestos')
+      .orderBy('fecha', 'desc').get();
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/repuestos', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const data = {
+      fecha: req.body.fecha ? new Date(req.body.fecha) : new Date(),
+      pieza: req.body.pieza?.trim(),
+      costo: parseFloat(req.body.costo),
+      proveedor: req.body.proveedor?.trim() || '',
+      tipo: req.body.tipo || 'Mantenimiento',
+      km: parseInt(req.body.km) || null,
+      observaciones: req.body.observaciones?.trim() || '',
+      createdAt: new Date()
+    };
+    const ref = await db.collection('vehicles').doc(req.params.id).collection('repuestos').add(data);
+    res.status(201).json({ id: ref.id, ...data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/:id/repuestos/:entryId', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    await db.collection('vehicles').doc(req.params.id).collection('repuestos').doc(req.params.entryId).delete();
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });

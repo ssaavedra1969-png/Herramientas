@@ -77,6 +77,15 @@ app.get('/vehicles', requireAuth, (req, res) => {
   });
 });
 
+app.get('/vehicle/:id', requireAuth, (req, res) => {
+  res.render('vehicle-detail', {
+    title: 'Detalle del Vehículo',
+    clientConfig: res.locals.clientConfig,
+    currentUser: res.locals.currentUser,
+    currentUserData: res.locals.currentUserData
+  });
+});
+
 app.get('/tools', requireAuth, (req, res) => {
   res.render('tools', {
     title: 'Herramientas',
