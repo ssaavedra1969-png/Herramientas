@@ -81,7 +81,7 @@ async function handleLogout() {
 }
 
 function isAdmin() {
-  return currentUserData?.role === 'Admin';
+  return currentUserData?.role === 'Admin' || window.__IS_ADMIN === true;
 }
 
 async function getAuthHeaders() {

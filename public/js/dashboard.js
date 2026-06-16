@@ -9,6 +9,20 @@ document.addEventListener('DOMContentLoaded', () => {
   initRealtimeListeners();
 });
 
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById('tab-' + name)?.classList.remove('hidden');
+  document.querySelectorAll('[id^="tab-btn-"]').forEach(btn => {
+    btn.classList.remove('tab-btn-active', 'text-[#FF6B35]', 'border-b-2', 'border-[#FF6B35]');
+    btn.classList.add('text-[#8E94A8]');
+  });
+  const activeBtn = document.getElementById('tab-btn-' + name);
+  if (activeBtn) {
+    activeBtn.classList.add('tab-btn-active', 'text-[#FF6B35]', 'border-b-2', 'border-[#FF6B35]');
+    activeBtn.classList.remove('text-[#8E94A8]');
+  }
+}
+
 let initialDataLoaded = { vehicles: false, tools: false, maintenance: false, financial: false };
 
 function checkAllLoaded() {
