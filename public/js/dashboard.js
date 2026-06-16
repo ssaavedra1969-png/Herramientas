@@ -137,7 +137,7 @@ function initRealtimeListeners() {
     document.getElementById('card-proximos').textContent = warning;
 
     const sorted = [...alertas].sort((a, b) => (a.days || 999) - (b.days || 999));
-    renderAlertas(sorted.slice(0, 10));
+    renderAlertas(sorted.slice(0, 8));
 
     const badge = document.getElementById('alert-badge');
     if (badge) {
@@ -317,7 +317,9 @@ function renderUltimosMovimientos(movimientos) {
     return;
   }
 
-  container.innerHTML = movimientos.map(m => {
+  const MAX = 8;
+  const shown = movimientos.slice(0, MAX);
+  container.innerHTML = shown.map(m => {
     const color = m.tipo === 'Combustible' ? 'text-[#FF6B35]' : m.tipo === 'Mantenimiento' ? 'text-blue-400' : m.tipo === 'Repuestos' ? 'text-green-400' : m.tipo === 'VTV' ? 'text-purple-400' : m.tipo === 'Seguro' ? 'text-yellow-400' : 'text-[#8E94A8]';
     return `<div class="flex items-center justify-between py-2 border-b border-[#FF6B35]/5 last:border-0">
       <div class="min-w-0 flex-1">
@@ -327,6 +329,9 @@ function renderUltimosMovimientos(movimientos) {
       <p class="text-sm font-medium text-[#F1F3F8] ml-3">${formatCurrency(m.importe)}</p>
     </div>`;
   }).join('');
+  if (movimientos.length > MAX) {
+    container.innerHTML += `<p class="text-[#5C6378] text-xs text-center pt-2">+${movimientos.length - MAX} más</p>`;
+  }
 }
 
 function renderToolsStatus(tools) {
@@ -338,8 +343,10 @@ function renderToolsStatus(tools) {
   }
 
   const estadoColor = { 'Bueno': 'text-green-400', 'Regular': 'text-yellow-400', 'Roto': 'text-red-400', 'En reparación': 'text-orange-400', 'Descartado': 'text-gray-500' };
+  const MAX = 8;
+  const showCount = tools.length <= MAX ? tools.length : MAX;
 
-  container.innerHTML = tools.slice(0, 15).map(t => {
+  container.innerHTML = tools.slice(0, showCount).map(t => {
     const color = estadoColor[t.estado] || 'text-[#8E94A8]';
     const controlDays = daysUntil(t.proximoControl);
     const controlLabel = controlDays <= 0 ? '<span class="text-red-400">Vencido</span>' : controlDays <= 7 ? `<span class="text-yellow-400">${controlDays}d</span>` : `<span class="text-[#5C6378]">${controlDays}d</span>`;
@@ -355,7 +362,7 @@ function renderToolsStatus(tools) {
     </div>`;
   }).join('');
 
-  if (tools.length > 15) {
-    container.innerHTML += `<p class="text-[#5C6378] text-xs text-center pt-2">+${tools.length - 15} más</p>`;
+  if (tools.length > MAX) {
+    container.innerHTML += `<p class="text-[#5C6378] text-xs text-center pt-2">+${tools.length - MAX} más en <a href="/tools" class="text-[#10B981] hover:underline">Herramientas</a></p>`;
   }
 }
