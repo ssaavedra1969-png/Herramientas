@@ -93,7 +93,7 @@ function renderVehicles(vehicles) {
         <td class="py-3 pr-3">${mv.marca || ''} ${mv.modelo || ''}</td>
         <td class="py-3 pr-3">${mv.tipo || '—'}</td>
         <td class="py-3 pr-3 text-xs">${mv.centroTrabajo || '—'}</td>
-        <td class="py-3 no-print">${createActionButtons(`editVehicle('${v.id}')`, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
+        <td class="py-3 no-print">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
       </tr>`;
   }).join('');
 }
@@ -343,8 +343,6 @@ function addDocumentoRow(doc) {
 
   container.appendChild(row);
 }
-
-async function editVehicle(id) { window.location.href = `/vehicle/${id}`; }
 
 async function deleteVehicle(id) {
   await deleteWithBackup('vehicles', id, 'Vehículo');
