@@ -226,4 +226,66 @@ router.delete('/:id/repuestos/:entryId', verifyToken, requireAdmin, async (req, 
   }
 });
 
+router.get('/template/excel', verifyToken, async (req, res) => {
+  try {
+    const ExcelJS = require('exceljs');
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Ingreso Vehiculos', { views: [{ state: 'frozen', ySplit: 2 }] });
+
+    const cols = [
+      { h: 'patente', w: 14 }, { h: 'marca', w: 18 }, { h: 'modelo', w: 20 },
+      { h: 'ano', w: 8 }, { h: 'chasis', w: 24 }, { h: 'numeroMotor', w: 22 },
+      { h: 'tipo', w: 22 }, { h: 'subtipo', w: 16 }, { h: 'capacidadCarga', w: 16 },
+      { h: 'kilometraje', w: 14 }, { h: 'vtvFechaRealizacion', w: 18 },
+      { h: 'vtvVencimiento', w: 18 }, { h: 'vtvCosto', w: 14 }, { h: 'vtvCentro', w: 18 },
+      { h: 'vtvResultado', w: 16 }, { h: 'seguroCompania', w: 22 }, { h: 'seguroPoliza', w: 20 },
+      { h: 'seguroTipo', w: 22 }, { h: 'seguroVencimiento', w: 18 }, { h: 'seguroCosto', w: 14 },
+      { h: 'proximoServiceKm', w: 16 }, { h: 'proximoServiceFecha', w: 18 },
+      { h: 'conductorHabitual', w: 22 }, { h: 'centroTrabajo', w: 16 }, { h: 'observaciones', w: 42 }
+    ];
+    ws.columns = cols.map(c => ({ header: c.h, key: c.h, width: c.w }));
+
+    const hRow = ws.getRow(1);
+    hRow.height = 36;
+    ws.columns.forEach((col, i) => {
+      const c = hRow.getCell(i + 1);
+      c.value = col.header;
+      c.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFF' } };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF6B35' } };
+      c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      c.border = { top: { style: 'thin', color: { argb: 'FFFFFF' } }, bottom: { style: 'thin', color: { argb: 'FFFFFF' } }, left: { style: 'thin', color: { argb: 'FFFFFF' } }, right: { style: 'thin', color: { argb: 'FFFFFF' } } };
+    });
+
+    const sample = ['ABC123', 'Mercedes Benz', 'Atego 1718', 2022, '9BM1234567890ABC', 'Motor XYZ-12345', 'mixer', 'Indumix', 25000, 158000, '2026-03-15', '2026-08-31', 25000, 'Campana', 'Aprobado', 'Rivadavia Seguros', 'POL-2024-12345', 'Todo Riesgo', '2026-09-30', 120000, 160000, '2026-07-15', 'Juan Perez', 'Lujan', 'Ultimo cambio de cubiertas'];
+    const sRow = ws.getRow(2);
+    sRow.height = 24;
+    sample.forEach((v, i) => {
+      const c = sRow.getCell(i + 1);
+      c.value = v;
+      c.font = { name: 'Calibri', size: 10, color: { argb: '212121' } };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E8F5E9' } };
+      c.alignment = { vertical: 'middle' };
+      if (typeof v === 'number') c.alignment = { horizontal: 'right', vertical: 'middle' };
+    });
+
+    const addDV = (range, opts) => ws.dataValidations.add(range, { type: 'list', formulae: ['"' + opts + '"'], allowBlank: true, showErrorMessage: true, errorTitle: 'Valor invalido', error: 'Seleccione un valor de la lista.' });
+    addDV('B3:B502', 'Mercedes Benz,Scania,Volvo,Iveco,Volkswagen,Ford,Chevrolet,Toyota,Fiat,Renault,Nissan,JCB,Caterpillar,Komatsu,Hyundai,New Holland,John Deere,Case,Terex,Agrale');
+    addDV('G3:G502', 'Camión volcador,mixer,hormigonera,cisterna,jaula,playo,regador,chasis,Auto,Camioneta,Grua,Utilitario,Carga,Cargadora frontal,Retroexcavadora,Motoniveladora,Excavadora,Minicargadora,Rodillo,Acoplado,Semirremolque,Montacarga');
+    addDV('H3:H502', 'Indumix,Tzr,Betonmac,tecnus,Barival,everdingm,arrastre,Montacarga');
+    addDV('N3:N502', 'Pendiente,Aprobado,Rechazado');
+    addDV('R3:R502', 'Responsabilidad Civil,Todo Riesgo,Terceros Completo,Seguro Técnico');
+    addDV('Y3:Y502', 'Lujan,Campana,Ituzaingo,Moreno,Zarate');
+    ws.dataValidations.add('D3:D502', { type: 'whole', formulae: [1980, 2030], allowBlank: true, showErrorMessage: true, errorTitle: 'Ano invalido', error: 'Ingrese 1980-2030.' });
+    ws.dataValidations.add('J3:J502', { type: 'whole', formulae: [0], allowBlank: true, showErrorMessage: true, errorTitle: 'Kilometraje invalido', error: 'Debe ser positivo.' });
+    ws.dataValidations.add('I3:I502', { type: 'whole', formulae: [0], allowBlank: true, showErrorMessage: true, errorTitle: 'Capacidad invalida', error: 'Debe ser positivo.' });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=plantilla_vehiculos.xlsx');
+    await wb.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

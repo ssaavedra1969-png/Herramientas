@@ -434,58 +434,19 @@ function downloadCsvTemplate() {
   URL.revokeObjectURL(link.href);
 }
 
-function downloadExcelTemplate() {
-  const headers = ['patente','marca','modelo','año','chasis','numeroMotor','tipo','subtipo','capacidadCarga','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','conductorHabitual','centroTrabajo','observaciones'];
-  const sample = ['ABC123','Mercedes Benz','Atego 1718',2022,'9BM1234567890ABC','Motor XYZ-12345','mixer','Indumix',25000,158000,'2026-03-15','2026-08-31',25000,'Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30',120000,160000,'2026-07-15','Juan Pérez','Lujan','Último cambio de cubiertas a los 140.000 km'];
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet([headers, sample]);
-  ws['!cols'] = headers.map(h => {
-    const widths = { patente: 12, marca: 16, modelo: 18, año: 8, chasis: 22, numeroMotor: 20, tipo: 20, subtipo: 14, capacidadCarga: 14, kilometraje: 12, vtvFechaRealizacion: 16, vtvVencimiento: 16, vtvCosto: 12, vtvCentro: 16, vtvResultado: 14, seguroCompania: 22, seguroPoliza: 18, seguroTipo: 22, seguroVencimiento: 16, seguroCosto: 12, proximoServiceKm: 14, proximoServiceFecha: 16, conductorHabitual: 20, centroTrabajo: 14, observaciones: 40 };
-    return { wch: widths[h] || 14 };
-  });
-
-  const marcaDV = ['"Mercedes Benz,Scania,Volvo,Iveco,Volkswagen,Ford,Chevrolet,Toyota,Fiat,Renault,Nissan,JCB,Caterpillar,Komatsu,Hyundai,New Holland,John Deere,Case,Terex,Agrale"'];
-  const tipoDV = ['"Camión volcador,mixer,hormigonera,cisterna,jaula,playo,regador,chasis,Auto,Camioneta,Grua,Utilitario,Carga,Cargadora frontal,Retroexcavadora,Motoniveladora,Excavadora,Minicargadora,Rodillo,Acoplado,Semirremolque,Montacarga"'];
-  const subtipoDV = ['"Indumix,Tzr,Betonmac,tecnus,Barival,everdingm,arrastre,Montacarga"'];
-  const centroDV = ['"Lujan,Campana,Ituzaingo,Moreno,Zarate"'];
-  const vtvResDV = ['"Pendiente,Aprobado,Rechazado"'];
-  const segTipoDV = ['"Responsabilidad Civil,Todo Riesgo,Terceros Completo,Seguro Técnico"'];
-
-  const DV = {
-    B: marcaDV, G: tipoDV, H: subtipoDV, N: vtvResDV, R: segTipoDV, Y: centroDV
-  };
-
-  if (!ws['!dataValidations']) ws['!dataValidations'] = [];
-  for (const [col, formula] of Object.entries(DV)) {
-    ws['!dataValidations'].push({
-      sqref: col + '3:' + col + '502',
-      type: 'list',
-      formula1: formula[0],
-      allowBlank: true,
-      showErrorMessage: true,
-      errorTitle: 'Valor inválido',
-      error: 'Seleccioná un valor de la lista desplegable.',
-    });
+async function downloadExcelTemplate() {
+  try {
+    const resp = await fetch('/api/vehicles/template/excel');
+    if (!resp.ok) throw new Error('Error al descargar plantilla');
+    const blob = await resp.blob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'plantilla_vehiculos.xlsx';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  } catch (e) {
+    showToast('Error al descargar plantilla Excel: ' + e.message, 'error');
   }
-  ws['!dataValidations'].push({
-    sqref: 'D3:D502',
-    type: 'whole',
-    formula1: 1980,
-    formula2: 2030,
-    allowBlank: true,
-    showErrorMessage: true,
-    errorTitle: 'Año inválido',
-    error: 'Ingresá un año entre 1980 y 2030.',
-  });
-
-  XLSX.utils.book_append_sheet(wb, ws, 'Ingreso Vehículos');
-  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  const blob = new Blob([wbout], { type: 'application/octet-stream' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'plantilla_vehiculos.xlsx';
-  link.click();
-  URL.revokeObjectURL(link.href);
 }
 function parseVehicleRows(rows) {
   const errors = [];
