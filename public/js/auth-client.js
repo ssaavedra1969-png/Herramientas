@@ -204,12 +204,46 @@ function createActionButtons(editFn, deleteFn, viewFn) {
   return `${viewBtn}${editBtn}${deleteBtn}`;
 }
 
-async function deleteWithBackup(collection, docId, label, getSubcollections) {
+const _toJSON = (data) => {
+  if (!data || typeof data !== 'object') return data;
+  if (Array.isArray(data)) return data.map(_toJSON);
+  const r = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (v && typeof v === 'object') {
+      if (v.toDate && typeof v.toDate === 'function') {
+        r[k] = { __type: 'timestamp', value: v.toDate().toISOString() };
+      } else {
+        r[k] = _toJSON(v);
+      }
+    } else {
+      r[k] = v;
+    }
+  }
+  return r;
+};
+
+async function _dumpCollection(name) {
+  const snap = await db.collection(name).get();
+  const docs = snap.docs.map(d => ({ id: d.id, ..._toJSON(d.data()) }));
+
+  if (name !== 'vehicles') return docs;
+
+  for (const doc of docs) {
+    doc.subcolecciones = {};
+    for (const sub of ['combustible', 'repuestos']) {
+      const subSnap = await db.collection('vehicles').doc(doc.id).collection(sub).get();
+      doc.subcolecciones[sub] = subSnap.docs.map(d => ({ id: d.id, ..._toJSON(d.data()) }));
+    }
+  }
+  return docs;
+}
+
+async function deleteWithBackup(collection, docId, label, _getSubcollections) {
   if (!isAdmin()) return;
 
   const ok = await Swal.fire({
     title: 'Eliminar ' + label,
-    text: 'Se descargará una copia de seguridad en tu PC antes de eliminar.',
+    text: 'Se descargará un estado completo de la base antes de eliminar.\nEl registro eliminado quedará marcado como "baja" en el backup local.',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#dc2626',
@@ -224,62 +258,42 @@ async function deleteWithBackup(collection, docId, label, getSubcollections) {
   try {
     showLoading(true);
 
-    const docSnap = await db.collection(collection).doc(docId).get();
-    if (!docSnap.exists) throw new Error('Documento no encontrado en Firebase');
-
-    const toJSON = (data) => {
-      if (!data || typeof data !== 'object') return data;
-      if (Array.isArray(data)) return data.map(toJSON);
-      const r = {};
-      for (const [k, v] of Object.entries(data)) {
-        if (v && typeof v === 'object') {
-          if (v.toDate && typeof v.toDate === 'function') {
-            r[k] = { __type: 'timestamp', value: v.toDate().toISOString() };
-          } else {
-            r[k] = toJSON(v);
-          }
-        } else {
-          r[k] = v;
-        }
-      }
-      return r;
-    };
+    const docs = await Promise.all([
+      _dumpCollection('vehicles'),
+      _dumpCollection('tools'),
+      _dumpCollection('maintenance')
+    ]);
 
     const backup = {
       _meta: {
         exportado: new Date().toISOString(),
-        coleccion: collection,
-        documento: docId,
-        estado: 'baja'
+        tipo: 'baja_completa',
+        documentoEliminado: { coleccion: collection, id: docId }
       },
-      datos: { id: docSnap.id, ...toJSON(docSnap.data()) }
+      vehicles: docs[0],
+      tools: docs[1],
+      maintenance: docs[2]
     };
 
-    const subRefs = getSubcollections ? getSubcollections(docId) : null;
-    if (subRefs) {
-      backup.subcolecciones = {};
-      for (const [key, ref] of Object.entries(subRefs)) {
-        const snap = await ref.get();
-        backup.subcolecciones[key] = snap.docs.map(d => ({ id: d.id, ...toJSON(d.data()) }));
-      }
-    }
+    const found = backup[collection]?.find(d => d.id === docId);
+    if (found) found._meta = { estado: 'baja' };
 
     const ts = new Date().toISOString().replace(/[:.]/g, '-');
-    const blob = new Blob([JSON.stringify([backup], null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `backup-${collection}-${docId}-${ts}.json`;
+    a.download = `backup-completo-${ts}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 5000);
 
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 1500));
 
-    if (subRefs) {
-      for (const key of Object.keys(subRefs)) {
-        const snap = await db.collection(collection).doc(docId).collection(key).get();
+    if (collection === 'vehicles') {
+      for (const sub of ['combustible', 'repuestos']) {
+        const snap = await db.collection('vehicles').doc(docId).collection(sub).get();
         if (!snap.empty) {
           const batch = db.batch();
           snap.docs.forEach(d => batch.delete(d.ref));
@@ -290,7 +304,7 @@ async function deleteWithBackup(collection, docId, label, getSubcollections) {
 
     await db.collection(collection).doc(docId).delete();
 
-    showToast(`${label} eliminado. Backup descargado en tu PC.`);
+    showToast(`${label} eliminado de Firebase. Backup completo descargado en tu PC.`);
   } catch (e) {
     showToast('Error: ' + (e.message || 'desconocido'), 'error');
   } finally {

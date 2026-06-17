@@ -347,10 +347,7 @@ function addDocumentoRow(doc) {
 async function editVehicle(id) { window.location.href = `/vehicle/${id}`; }
 
 async function deleteVehicle(id) {
-  await deleteWithBackup('vehicles', id, 'Vehículo', (docId) => ({
-    combustible: db.collection('vehicles').doc(docId).collection('combustible'),
-    repuestos: db.collection('vehicles').doc(docId).collection('repuestos')
-  }));
+  await deleteWithBackup('vehicles', id, 'Vehículo');
 }
 
 function viewVehicle(id) {
