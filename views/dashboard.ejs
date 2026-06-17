@@ -66,11 +66,11 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           <div class="lg:col-span-2 glass-card rounded-xl p-5">
             <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Mantenimientos por Mes</h3>
-            <canvas id="chart-mantenimientos" height="250"></canvas>
+            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-mantenimientos"></canvas></div>
           </div>
           <div class="glass-card rounded-xl p-5">
             <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Alertas Activas</h3>
-            <div id="alertas-lista" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+            <div id="alertas-lista" class="space-y-2 max-h-72 overflow-y-auto pr-1">
               <p class="text-[#5C6378] text-sm">Cargando alertas...</p>
             </div>
           </div>
@@ -79,24 +79,35 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           <div class="lg:col-span-2 glass-card rounded-xl p-5">
             <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Consumo de Combustible</h3>
-            <canvas id="chart-combustible" height="250"></canvas>
+            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-combustible"></canvas></div>
           </div>
           <div class="glass-card rounded-xl p-5">
             <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Distribución de Gastos</h3>
-            <canvas id="chart-gastos-donut" height="250"></canvas>
+            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-gastos-donut"></canvas></div>
           </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <div class="glass-card rounded-xl p-5">
             <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Gasto en Combustible por Vehículo</h3>
-            <canvas id="chart-gasto-vehiculos" height="250"></canvas>
+            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-gasto-vehiculos"></canvas></div>
           </div>
           <div class="glass-card rounded-xl p-5">
             <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Últimos Movimientos</h3>
-            <div id="ultimos-movimientos" class="space-y-1 max-h-80 overflow-y-auto pr-1">
+            <div id="ultimos-movimientos" class="space-y-1 max-h-72 overflow-y-auto pr-1">
               <p class="text-[#5C6378] text-sm">Cargando...</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+        <div class="glass-card rounded-xl p-5 mt-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-[#F1F3F8]">Vehículos Recientes</h3>
+            <a href="/vehicles" class="text-xs text-[#FF6B35] hover:underline">Ver todos →</a>
+          </div>
+          <div id="dashboard-vehicles-list" class="space-y-1 max-h-72 overflow-y-auto pr-1">
+            <p class="text-[#5C6378] text-sm">Cargando...</p>
           </div>
         </div>
       </div>
@@ -140,8 +151,11 @@
         </div>
 
         <div class="glass-card rounded-xl p-5 mt-6">
-          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Estado de Herramientas</h3>
-          <div id="tools-status-list" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-[#F1F3F8]">Estado de Herramientas</h3>
+            <a href="/tools" class="text-xs text-[#10B981] hover:underline">Ver todas →</a>
+          </div>
+          <div id="tools-status-list" class="space-y-1 max-h-64 overflow-y-auto pr-1">
             <p class="text-[#5C6378] text-sm">Cargando...</p>
           </div>
         </div>

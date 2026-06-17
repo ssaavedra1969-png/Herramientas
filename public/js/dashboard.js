@@ -40,26 +40,27 @@ function initRealtimeListeners() {
     }
   }
 
-  db.collection('vehicles').onSnapshot((snapshot) => {
-    const active = snapshot.docs.filter(d => d.data().estado === 'Activo').length;
+  db.collection('vehicles').orderBy('interno').onSnapshot((snapshot) => {
+    const all = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    const active = all.filter(d => d.estadoGeneral !== 'Baja').length;
     document.getElementById('card-vehiculos').textContent = active;
+    renderDashboardVehicles(all);
 
     removeAlertsByPrefix('_vtv');
     removeAlertsByPrefix('_seguro');
     removeAlertsByPrefix('_service');
-    snapshot.docs.forEach(d => {
-      const v = d.data();
-      if (v.estado === 'Baja') return;
+    all.forEach(v => {
+      if (v.estadoGeneral === 'Baja') return;
       const daysVTV = daysUntil(v.vtv?.fechaVencimiento);
       const daysSeguro = daysUntil(v.seguro?.fechaVencimiento);
       const daysServiceF = daysUntil(v.proximoServiceFecha);
 
       if (getAlertLevel(daysVTV) !== 'none')
-        alertas.push({ id: d.id + '_vtv', level: getAlertLevel(daysVTV), days: daysVTV, label: 'VTV', desc: v.patente, type: 'VTV', date: v.vtv?.fechaVencimiento });
+        alertas.push({ id: v.id + '_vtv', level: getAlertLevel(daysVTV), days: daysVTV, label: 'VTV', desc: v.patente, type: 'VTV', date: v.vtv?.fechaVencimiento });
       if (getAlertLevel(daysSeguro) !== 'none')
-        alertas.push({ id: d.id + '_seguro', level: getAlertLevel(daysSeguro), days: daysSeguro, label: 'Seguro', desc: v.patente, type: 'Seguro', date: v.seguro?.fechaVencimiento });
+        alertas.push({ id: v.id + '_seguro', level: getAlertLevel(daysSeguro), days: daysSeguro, label: 'Seguro', desc: v.patente, type: 'Seguro', date: v.seguro?.fechaVencimiento });
       if (getAlertLevel(daysServiceF) !== 'none')
-        alertas.push({ id: d.id + '_service', level: getAlertLevel(daysServiceF), days: daysServiceF, label: 'Service', desc: v.patente, type: 'Service', date: v.proximoServiceFecha });
+        alertas.push({ id: v.id + '_service', level: getAlertLevel(daysServiceF), days: daysServiceF, label: 'Service', desc: v.patente, type: 'Service', date: v.proximoServiceFecha });
     });
     updateAlertasUI();
   }, (error) => {
@@ -333,6 +334,7 @@ function renderToolsStatus(tools) {
   }
 
   const estadoColor = { 'Bueno': 'text-green-400', 'Regular': 'text-yellow-400', 'Roto': 'text-red-400', 'En reparación': 'text-orange-400', 'Descartado': 'text-gray-500' };
+  const admin = isAdmin();
   const MAX = 8;
   const showCount = tools.length <= MAX ? tools.length : MAX;
 
@@ -340,6 +342,7 @@ function renderToolsStatus(tools) {
     const color = estadoColor[t.estado] || 'text-[#8E94A8]';
     const controlDays = daysUntil(t.proximoControl);
     const controlLabel = controlDays <= 0 ? '<span class="text-red-400">Vencido</span>' : controlDays <= 7 ? `<span class="text-yellow-400">${controlDays}d</span>` : `<span class="text-[#5C6378]">${controlDays}d</span>`;
+    const deleteBtn = admin ? `<button onclick="event.stopPropagation();deleteDashboardTool('${t.id}')" class="text-red-500 hover:text-red-400 ml-2" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : '';
     return `<div class="flex items-center justify-between py-2 border-b border-[#10B981]/5 last:border-0">
       <div class="min-w-0 flex-1">
         <p class="text-sm text-[#F1F3F8] truncate">${t.nombre || t.codigoInterno || '—'}</p>
@@ -348,6 +351,7 @@ function renderToolsStatus(tools) {
       <div class="flex items-center gap-3 ml-3">
         <span class="text-xs font-medium ${color}">${t.estado || '—'}</span>
         <span class="text-xs">${controlLabel}</span>
+        ${deleteBtn}
       </div>
     </div>`;
   }).join('');
@@ -355,4 +359,44 @@ function renderToolsStatus(tools) {
   if (tools.length > MAX) {
     container.innerHTML += `<p class="text-[#5C6378] text-xs text-center pt-2">+${tools.length - MAX} más en <a href="/tools" class="text-[#10B981] hover:underline">Herramientas</a></p>`;
   }
+}
+
+function renderDashboardVehicles(vehicles) {
+  const container = document.getElementById('dashboard-vehicles-list');
+  if (!container) return;
+  if (vehicles.length === 0) {
+    container.innerHTML = '<p class="text-[#5C6378] text-sm">No hay vehículos registrados</p>';
+    return;
+  }
+
+  const admin = isAdmin();
+  const MAX = 8;
+  const showCount = vehicles.length <= MAX ? vehicles.length : MAX;
+
+  container.innerHTML = vehicles.slice(0, showCount).map(v => {
+    const label = `${v.marca || ''} ${v.modelo || ''}`.trim() || '—';
+    const deleteBtn = admin ? `<button onclick="event.stopPropagation();deleteDashboardVehicle('${v.id}')" class="text-red-500 hover:text-red-400 ml-2" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : '';
+    return `<div class="flex items-center justify-between py-2 border-b border-[#FF6B35]/5 last:border-0">
+      <div class="min-w-0 flex-1">
+        <p class="text-sm text-[#F1F3F8] truncate">${v.patente || '—'} · ${v.interno || ''}</p>
+        <p class="text-xs text-[#8E94A8]">${label} · ${v.tipo || '—'}</p>
+      </div>
+      <div class="flex items-center gap-2 ml-3">
+        <span class="text-xs ${v.estadoGeneral === 'Baja' ? 'text-red-400' : 'text-green-400'}">${v.estadoGeneral || '—'}</span>
+        ${deleteBtn}
+      </div>
+    </div>`;
+  }).join('');
+
+  if (vehicles.length > MAX) {
+    container.innerHTML += `<p class="text-[#5C6378] text-xs text-center pt-2">+${vehicles.length - MAX} más en <a href="/vehicles" class="text-[#FF6B35] hover:underline">Vehículos</a></p>`;
+  }
+}
+
+async function deleteDashboardVehicle(id) {
+  await deleteWithBackup('vehicles', id, 'Vehículo');
+}
+
+async function deleteDashboardTool(id) {
+  await deleteWithBackup('tools', id, 'Herramienta');
 }

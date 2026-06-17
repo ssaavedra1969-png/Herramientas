@@ -198,7 +198,7 @@ async function deleteWithBackup(collection, docId, label, getSubcollections) {
 
   const ok = await Swal.fire({
     title: 'Eliminar ' + label,
-    text: 'Se descargará una copia de seguridad local antes de eliminar.',
+    text: 'Se guardará una copia de seguridad en el servidor antes de eliminar.',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#dc2626',
@@ -212,42 +212,22 @@ async function deleteWithBackup(collection, docId, label, getSubcollections) {
 
   try {
     showLoading(true);
-    const doc = await db.collection(collection).doc(docId).get();
-    if (!doc.exists) { showToast('Registro no encontrado', 'error'); return; }
 
-    const backup = {
-      _meta: {
-        exportado: new Date().toISOString(),
-        coleccion: collection,
-        documento: docId,
-        estado: 'baja'
-      },
-      datos: doc.data()
-    };
+    const headers = await getAuthHeaders();
+    const backupRes = await fetch('/api/admin/backup-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': headers['Authorization'] },
+      body: JSON.stringify({ collection, docId })
+    });
 
-    if (getSubcollections) {
-      backup.subcolecciones = {};
-      for (const [nombre, ref] of Object.entries(getSubcollections(docId))) {
-        const snap = await ref.get();
-        backup.subcolecciones[nombre] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      }
+    if (!backupRes.ok) {
+      const err = await backupRes.json();
+      throw new Error(err.error || 'Error al crear backup');
     }
-
-    const json = JSON.stringify(backup, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const fecha = new Date().toISOString().split('T')[0];
-    a.href = url;
-    a.download = `baja-${label.toLowerCase().replace(/\s+/g, '-')}-${fecha}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
 
     await db.collection(collection).doc(docId).delete();
 
-    showToast(`${label} eliminado. Backup guardado en PC local.`);
+    showToast(`${label} eliminado de Firebase. Backup guardado en backups/`);
   } catch (e) {
     showToast('Error: ' + e.message, 'error');
   } finally {

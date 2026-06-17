@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { db } = require('../config/firebase');
+const path = require('path');
+const fs = require('fs');
+const { db, admin } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 
 router.get('/users', verifyToken, requireAdmin, async (req, res) => {
@@ -184,6 +186,83 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
       gastoVehiculos: gastoVehiculosEntries.map(([vehiculo, monto]) => ({ vehiculo, monto })),
       ultimosMovimientos: ultimosMovimientos.slice(0, 15)
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/backup-delete', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { collection, docId } = req.body;
+    if (!collection || !docId) {
+      return res.status(400).json({ error: 'collection y docId requeridos' });
+    }
+
+    const doc = await db.collection(collection).doc(docId).get();
+    if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
+
+    const raw = doc.data();
+    const converted = {};
+    for (const [key, value] of Object.entries(raw)) {
+      if (value && typeof value === 'object') {
+        if (value.toDate && typeof value.toDate === 'function') {
+          converted[key] = { __type: 'timestamp', value: value.toDate().toISOString() };
+        } else if (value.constructor?.name === 'Timestamp') {
+          converted[key] = { __type: 'timestamp', value: new admin.firestore.Timestamp(value.seconds, value.nanoseconds).toDate().toISOString() };
+        } else {
+          converted[key] = value;
+        }
+      } else {
+        converted[key] = value;
+      }
+    }
+
+    const backupDir = path.join(__dirname, '..', 'backups');
+    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backup = {
+      _meta: {
+        exportado: new Date().toISOString(),
+        coleccion: collection,
+        documento: docId,
+        estado: 'baja'
+      },
+      datos: { id: doc.id, ...converted }
+    };
+
+    const backupPath = path.join(backupDir, `backup-${timestamp}`);
+    fs.mkdirSync(backupPath, { recursive: true });
+
+    const manifest = {
+      timestamp: new Date().toISOString(),
+      tipo: 'baja',
+      coleccion: collection,
+      documento: docId,
+      collections: {}
+    };
+
+    const filePath = path.join(backupPath, `${collection}.json`);
+    fs.writeFileSync(filePath, JSON.stringify([backup], null, 2), 'utf8');
+    manifest.collections[collection] = { count: 1, file: `${collection}.json`, tipo: 'baja' };
+
+    const manifestPath = path.join(backupPath, 'manifest.json');
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+
+    const latestLink = path.join(backupDir, 'latest');
+    if (fs.existsSync(latestLink)) {
+      const stat = fs.lstatSync(latestLink);
+      if (stat.isSymbolicLink() || stat.isDirectory()) {
+        fs.rmSync(latestLink, { recursive: true, force: true });
+      }
+    }
+    fs.mkdirSync(latestLink, { recursive: true });
+    for (const file of fs.readdirSync(backupPath)) {
+      fs.copyFileSync(path.join(backupPath, file), path.join(latestLink, file));
+    }
+
+    console.log(`Backup de baja guardado: ${backupPath}`);
+    res.json({ success: true, path: backupPath });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
