@@ -378,24 +378,25 @@
 <div id="modal-csv-import" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
   <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
     <div class="flex items-center justify-between p-6 border-b border-[#FF6B35]/10 sticky top-0 z-10" style="background: #141e2d;">
-      <h3 class="text-lg font-bold text-[#F1F3F8]">Importar desde CSV</h3>
+      <h3 class="text-lg font-bold text-[#F1F3F8]">Importar vehículos</h3>
       <button onclick="closeCsvImport()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="p-6 space-y-4">
       <div class="flex items-center gap-4 p-4 bg-[#FF6B35]/10 rounded-lg border border-[#FF6B35]/10">
-        <span class="text-sm text-[#F1F3F8]">1. Descargá la plantilla CSV →</span>
-        <button onclick="downloadCsvTemplate()" class="btn-secondary text-xs px-3 py-1.5">Descargar plantilla</button>
+        <span class="text-sm text-[#F1F3F8]">1. Descargá la plantilla →</span>
+        <button onclick="downloadCsvTemplate()" class="btn-secondary text-xs px-3 py-1.5">CSV</button>
+        <button onclick="downloadExcelTemplate()" class="btn-secondary text-xs px-3 py-1.5">Excel (.xlsx)</button>
       </div>
       <div>
-        <label class="block text-sm font-medium text-[#8E94A8] mb-2">2. Seleccioná el archivo CSV:</label>
+        <label class="block text-sm font-medium text-[#8E94A8] mb-2">2. Seleccioná el archivo (CSV o Excel):</label>
         <input type="file" id="csv-file-input" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-[#F1F3F8] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#FF6B35]/10 file:text-[#FF6B35] hover:file:bg-[#FF6B35]/20">
       </div>
       <div id="csv-import-preview"></div>
       <div class="flex justify-end gap-3">
         <button type="button" onclick="closeCsvImport()" class="px-4 py-2 text-[#8E94A8] hover:text-[#F1F3F8] text-sm transition-colors">Cancelar</button>
-        <button type="button" onclick="validateCsvImport()" class="btn-secondary text-sm px-4 py-2">Validar CSV</button>
+        <button type="button" onclick="validateCsvImport()" class="btn-secondary text-sm px-4 py-2">Validar archivo</button>
         <button type="button" id="btn-execute-csv" onclick="executeCsvImport()" class="btn-primary text-sm px-4 py-2 hidden">Importar</button>
       </div>
     </div>
