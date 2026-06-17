@@ -238,12 +238,34 @@ async function _dumpCollection(name) {
   return docs;
 }
 
-async function deleteWithBackup(collection, docId, label, _getSubcollections) {
-  if (!isAdmin()) return;
+function _backupFilename() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const yy = String(d.getFullYear()).slice(2);
+  const mm = pad(d.getMonth() + 1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const mi = pad(d.getMinutes());
+  const ss = pad(d.getSeconds());
+  return `Backup_[${yy}.${mm}.${dd}]_${hh}:${mi}:${ss}.json`;
+}
 
+async function _dumpAll() {
+  const docs = await Promise.all([
+    _dumpCollection('vehicles'),
+    _dumpCollection('tools'),
+    _dumpCollection('maintenance')
+  ]);
+  return { vehicles: docs[0], tools: docs[1], maintenance: docs[2] };
+}
+
+async function deleteMultipleWithBackup(collection, ids, label) {
+  if (!isAdmin() || !ids.length) return;
+
+  const plural = label === 'Vehículo' ? 'Vehículos' : label === 'Herramienta' ? 'Herramientas' : 'Mantenimientos';
   const ok = await Swal.fire({
-    title: 'Eliminar ' + label,
-    text: 'Se descargará un estado completo de la base antes de eliminar.\nEl registro eliminado quedará marcado como "baja" en el backup local.',
+    title: `Eliminar ${ids.length} ${plural}`,
+    text: `Se descargará el estado completo de la base.\n${ids.length} registro(s) quedarán marcados como "baja" en el backup local.`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#dc2626',
@@ -258,32 +280,26 @@ async function deleteWithBackup(collection, docId, label, _getSubcollections) {
   try {
     showLoading(true);
 
-    const docs = await Promise.all([
-      _dumpCollection('vehicles'),
-      _dumpCollection('tools'),
-      _dumpCollection('maintenance')
-    ]);
-
+    const data = await _dumpAll();
     const backup = {
       _meta: {
         exportado: new Date().toISOString(),
         tipo: 'baja_completa',
-        documentoEliminado: { coleccion: collection, id: docId }
+        documentosEliminados: ids.map(id => ({ coleccion: collection, id }))
       },
-      vehicles: docs[0],
-      tools: docs[1],
-      maintenance: docs[2]
+      ...data
     };
 
-    const found = backup[collection]?.find(d => d.id === docId);
-    if (found) found._meta = { estado: 'baja' };
+    const idSet = new Set(ids);
+    for (const doc of (backup[collection] || [])) {
+      if (idSet.has(doc.id)) doc._meta = { estado: 'baja' };
+    }
 
-    const ts = new Date().toISOString().replace(/[:.]/g, '-');
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `backup-completo-${ts}.json`;
+    a.download = _backupFilename();
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -291,25 +307,31 @@ async function deleteWithBackup(collection, docId, label, _getSubcollections) {
 
     await new Promise(r => setTimeout(r, 1500));
 
-    if (collection === 'vehicles') {
-      for (const sub of ['combustible', 'repuestos']) {
-        const snap = await db.collection('vehicles').doc(docId).collection(sub).get();
-        if (!snap.empty) {
-          const batch = db.batch();
-          snap.docs.forEach(d => batch.delete(d.ref));
-          await batch.commit();
+    const isVehicles = collection === 'vehicles';
+    for (const id of ids) {
+      if (isVehicles) {
+        for (const sub of ['combustible', 'repuestos']) {
+          const snap = await db.collection('vehicles').doc(id).collection(sub).get();
+          if (!snap.empty) {
+            const batch = db.batch();
+            snap.docs.forEach(d => batch.delete(d.ref));
+            await batch.commit();
+          }
         }
       }
+      await db.collection(collection).doc(id).delete();
     }
 
-    await db.collection(collection).doc(docId).delete();
-
-    showToast(`${label} eliminado de Firebase. Backup completo descargado en tu PC.`);
+    showToast(`${ids.length} ${plural} eliminados de Firebase. Backup descargado en tu PC.`);
   } catch (e) {
     showToast('Error: ' + (e.message || 'desconocido'), 'error');
   } finally {
     showLoading(false);
   }
+}
+
+async function deleteWithBackup(collection, docId, label) {
+  await deleteMultipleWithBackup(collection, [docId], label);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

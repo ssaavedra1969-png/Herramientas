@@ -2,6 +2,7 @@ let allVehicles = [];
 let editingVehicleId = null;
 let csvValidatedData = [];
 let patenteSet = new Set();
+let selectedIds = new Set();
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -80,22 +81,67 @@ function renderVehicles(vehicles) {
   if (!tbody) return;
 
   if (vehicles.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">No hay vehículos registrados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">No hay vehículos registrados</td></tr>';
     return;
   }
 
   tbody.innerHTML = vehicles.map(v => {
     const mv = fmap(v);
+    const checked = selectedIds.has(v.id) ? 'checked' : '';
     return `
-      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10 cursor-pointer" onclick="viewVehicle('${v.id}')">
+      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10 cursor-pointer" onclick="rowClick('${v.id}', event)">
+        <td class="py-3 pr-3" onclick="event.stopPropagation()">
+          <input type="checkbox" class="row-checkbox accent-[#FF6B35]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
+        </td>
         <td class="py-3 pr-3">${mv.interno || '—'}</td>
         <td class="py-3 pr-3 font-medium">${mv.patente || '—'}</td>
         <td class="py-3 pr-3">${mv.marca || ''} ${mv.modelo || ''}</td>
         <td class="py-3 pr-3">${mv.tipo || '—'}</td>
         <td class="py-3 pr-3 text-xs">${mv.centroTrabajo || '—'}</td>
-        <td class="py-3 no-print">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
+        <td class="py-3 no-print" onclick="event.stopPropagation()">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
       </tr>`;
   }).join('');
+}
+
+function rowClick(id, event) {
+  if (event.target.type === 'checkbox') return;
+  viewVehicle(id);
+}
+
+function toggleRow(id, checked) {
+  if (checked) selectedIds.add(id);
+  else selectedIds.delete(id);
+  updateBulkBar();
+  const all = document.querySelectorAll('.row-checkbox');
+  const allChecked = all.length > 0 && [...all].every(cb => cb.checked);
+  document.getElementById('select-all').checked = allChecked;
+}
+
+function toggleSelectAll(checked) {
+  document.querySelectorAll('.row-checkbox').forEach(cb => {
+    cb.checked = checked;
+    if (checked) selectedIds.add(cb.value);
+    else selectedIds.delete(cb.value);
+  });
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  const bar = document.getElementById('bulk-bar');
+  const count = document.getElementById('bulk-count');
+  if (!bar || !count) return;
+  count.textContent = selectedIds.size;
+  bar.classList.toggle('hidden', selectedIds.size === 0);
+}
+
+function deleteSelectedVehicles() {
+  if (!selectedIds.size) return;
+  const ids = [...selectedIds];
+  deleteMultipleWithBackup('vehicles', ids, 'Vehículo').then(() => {
+    selectedIds.clear();
+    document.getElementById('select-all').checked = false;
+    updateBulkBar();
+  });
 }
 
 function applyFilters() {
