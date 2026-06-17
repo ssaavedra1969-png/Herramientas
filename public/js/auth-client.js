@@ -7,6 +7,7 @@ let currentUserData = window.__SERVER_USER_DATA || null;
 
 async function completeSignIn(user) {
   console.log('completeSignIn called, uid:', user.uid, 'email:', user.email);
+  currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
   try {
     if (!sessionStorage.getItem('sessionInit')) {
@@ -35,13 +36,12 @@ async function completeSignIn(user) {
       await db.collection('users').doc(user.uid).set(newUser);
       currentUserData = newUser;
     }
-    currentUser = user;
 
     if (loginPage) window.location.href = '/dashboard';
   } catch (e) {
     console.warn('Error loading user data:', e.code || e.message, e);
     currentUserData = { role: 'Usuario', displayName: user.displayName || user.email?.split('@')[0] };
-    showToast('Error al iniciar sesión: ' + (e.message || 'desconocido'), 'error');
+    showToast('Error al cargar datos de usuario: ' + (e.message || 'desconocido'), 'error');
   }
 }
 
@@ -86,8 +86,19 @@ function isAdmin() {
   return currentUserData?.role === 'Admin' || window.__IS_ADMIN === true;
 }
 
-async function getAuthHeaders() {
+async function ensureAuth() {
+  if (currentUser) return;
+  await new Promise(resolve => {
+    const unsub = auth.onAuthStateChanged(u => {
+      if (u) { currentUser = u; unsub(); resolve(); }
+    });
+    setTimeout(() => { unsub(); resolve(); }, 10000);
+  });
   if (!currentUser) throw new Error('Usuario no autenticado');
+}
+
+async function getAuthHeaders() {
+  await ensureAuth();
   const token = await currentUser.getIdToken();
   return {
     'Content-Type': 'application/json',
@@ -214,22 +225,29 @@ async function deleteWithBackup(collection, docId, label, getSubcollections) {
     showLoading(true);
 
     const headers = await getAuthHeaders();
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+
     const backupRes = await fetch('/api/admin/backup-delete', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': headers['Authorization'] },
+      signal: ctrl.signal,
+      headers: { 'Authorization': headers['Authorization'] },
       body: JSON.stringify({ collection, docId })
     });
+    clearTimeout(timer);
 
     if (!backupRes.ok) {
-      const err = await backupRes.json();
+      const err = await backupRes.json().catch(() => ({ error: 'Error del servidor' }));
       throw new Error(err.error || 'Error al crear backup');
     }
 
-    await db.collection(collection).doc(docId).delete();
-
-    showToast(`${label} eliminado de Firebase. Backup guardado en backups/`);
+    showToast(`${label} eliminado. Backup guardado en backups/`);
   } catch (e) {
-    showToast('Error: ' + e.message, 'error');
+    if (e.name === 'AbortError') {
+      showToast('El servidor no respondió a tiempo. Intentá de nuevo.', 'error');
+    } else {
+      showToast('Error al eliminar: ' + (e.message || 'desconocido'), 'error');
+    }
   } finally {
     showLoading(false);
   }

@@ -198,29 +198,38 @@ router.post('/backup-delete', verifyToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'collection y docId requeridos' });
     }
 
-    const doc = await db.collection(collection).doc(docId).get();
+    const docRef = db.collection(collection).doc(docId);
+    const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
 
-    const raw = doc.data();
-    const converted = {};
-    for (const [key, value] of Object.entries(raw)) {
-      if (value && typeof value === 'object') {
-        if (value.toDate && typeof value.toDate === 'function') {
-          converted[key] = { __type: 'timestamp', value: value.toDate().toISOString() };
-        } else if (value.constructor?.name === 'Timestamp') {
-          converted[key] = { __type: 'timestamp', value: new admin.firestore.Timestamp(value.seconds, value.nanoseconds).toDate().toISOString() };
+    // Función auxiliar recursiva para convertir timestamps de firestore a JSON serializable
+    const convertData = (data) => {
+      if (!data || typeof data !== 'object') return data;
+      if (Array.isArray(data)) return data.map(convertData);
+
+      const converted = {};
+      for (const [key, value] of Object.entries(data)) {
+        if (value && typeof value === 'object') {
+          if (value.toDate && typeof value.toDate === 'function') {
+            converted[key] = { __type: 'timestamp', value: value.toDate().toISOString() };
+          } else if (value.constructor?.name === 'Timestamp' || (value._seconds !== undefined && value._nanoseconds !== undefined)) {
+            const seconds = value.seconds !== undefined ? value.seconds : value._seconds;
+            const nanoseconds = value.nanoseconds !== undefined ? value.nanoseconds : value._nanoseconds;
+            const date = new admin.firestore.Timestamp(seconds, nanoseconds).toDate();
+            converted[key] = { __type: 'timestamp', value: date.toISOString() };
+          } else {
+            converted[key] = convertData(value);
+          }
         } else {
           converted[key] = value;
         }
-      } else {
-        converted[key] = value;
       }
-    }
+      return converted;
+    };
 
-    const backupDir = path.join(__dirname, '..', 'backups');
-    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+    const raw = doc.data();
+    const converted = convertData(raw);
 
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backup = {
       _meta: {
         exportado: new Date().toISOString(),
@@ -231,6 +240,20 @@ router.post('/backup-delete', verifyToken, requireAdmin, async (req, res) => {
       datos: { id: doc.id, ...converted }
     };
 
+    // Si es vehículo, recolectar subcolecciones (combustible y repuestos)
+    if (collection === 'vehicles') {
+      backup.subcolecciones = {};
+      const subcols = ['combustible', 'repuestos'];
+      for (const sub of subcols) {
+        const snap = await docRef.collection(sub).get();
+        backup.subcolecciones[sub] = snap.docs.map(d => ({ id: d.id, ...convertData(d.data()) }));
+      }
+    }
+
+    const backupDir = path.join(__dirname, '..', 'backups');
+    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupPath = path.join(backupDir, `backup-${timestamp}`);
     fs.mkdirSync(backupPath, { recursive: true });
 
@@ -261,9 +284,26 @@ router.post('/backup-delete', verifyToken, requireAdmin, async (req, res) => {
       fs.copyFileSync(path.join(backupPath, file), path.join(latestLink, file));
     }
 
-    console.log(`Backup de baja guardado: ${backupPath}`);
+    // ELIMINAR DE FIREBASE COMPLETAMENTE
+    if (collection === 'vehicles') {
+      const subcols = ['combustible', 'repuestos'];
+      for (const sub of subcols) {
+        const snap = await docRef.collection(sub).get();
+        if (!snap.empty) {
+          const batch = db.batch();
+          snap.docs.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+        }
+      }
+    }
+
+    // Eliminar el documento principal
+    await docRef.delete();
+
+    console.log(`Backup de baja guardado y eliminado de Firebase: ${backupPath}`);
     res.json({ success: true, path: backupPath });
   } catch (error) {
+    console.error('Error al borrar con backup:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -788,3 +828,4 @@ router.get('/report/export', verifyToken, async (req, res) => {
 });
 
 module.exports = router;
+
