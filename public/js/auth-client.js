@@ -132,6 +132,13 @@ function formatCurrency(amount) {
   return '$ ' + Number(amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function setSelectValue(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const exists = Array.from(el.options).some(o => o.value === val);
+  el.value = exists ? val : '';
+}
+
 function showToast(message, type = 'success') {
   const colors = { success: 'text-green-400 bg-green-900/50 border-green-500/30', error: 'text-red-400 bg-red-900/50 border-red-500/30', warning: 'text-yellow-400 bg-yellow-900/50 border-yellow-500/30', info: 'text-blue-400 bg-blue-900/50 border-blue-500/30' };
   const toast = document.createElement('div');

@@ -48,6 +48,7 @@ function fmap(v) {
     patente: v.patente || '',
     interno: v.interno || v.numeroInterno || '',
     tipo: v.tipo || '',
+    subtipo: v.subtipo || '',
     marca: v.marca || '',
     modelo: v.modelo || '',
     año: v.año || v.anio || '',
@@ -182,17 +183,15 @@ function openVehicleModal(vehicleId = null) {
     document.getElementById('v-patente').value = v.patente;
     document.getElementById('v-interno').value = v.interno;
     document.getElementById('v-interno').readOnly = true;
-    document.getElementById('v-marca').value = v.marca;
+    setSelectValue('v-marca', v.marca);
     document.getElementById('v-modelo').value = v.modelo;
     document.getElementById('v-anio').value = v.año;
     document.getElementById('v-chasis').value = v.chasis;
     document.getElementById('v-numeroMotor').value = v.numeroMotor;
     document.getElementById('v-capacidadCarga').value = v.capacidadCarga || '';
     document.getElementById('v-tipo').value = v.tipo;
+    document.getElementById('v-subtipo').value = v.subtipo;
     document.getElementById('v-kilometraje').value = v.kilometraje;
-    document.getElementById('v-horometro').value = v.horometro;
-    document.getElementById('v-estadoGeneral').value = v.estadoGeneral;
-    setDateField('v-fechaUltimaRevision', v.fechaUltimaRevision);
     setDateField('v-vtvFechaRealizacion', v.vtv?.fechaRealizacion || null);
     setDateField('v-vencimientoVTV', v.vtv?.fechaVencimiento || v.vencimientoVTV || null);
     document.getElementById('v-vtvCosto').value = v.vtv?.costo || '';
@@ -268,17 +267,15 @@ async function saveVehicle(e) {
 
   const data = {
     patente: document.getElementById('v-patente').value.trim().toUpperCase(),
-    marca: document.getElementById('v-marca').value.trim(),
+    marca: document.getElementById('v-marca').value,
     modelo: document.getElementById('v-modelo').value.trim(),
     año: parseInt(document.getElementById('v-anio').value) || null,
     chasis: document.getElementById('v-chasis').value.trim() || '',
     numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
     capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
     tipo: document.getElementById('v-tipo').value,
+    subtipo: document.getElementById('v-subtipo').value,
     kilometraje: parseInt(document.getElementById('v-kilometraje').value) || 0,
-    horometro: parseInt(document.getElementById('v-horometro').value) || 0,
-    estadoGeneral: document.getElementById('v-estadoGeneral').value,
-    fechaUltimaRevision: getDateValue('v-fechaUltimaRevision'),
     vtv: {
       fechaRealizacion: getDateValue('v-vtvFechaRealizacion'),
       fechaVencimiento: getDateValue('v-vencimientoVTV'),
@@ -304,8 +301,8 @@ async function saveVehicle(e) {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  if (!data.patente || !data.marca || !data.tipo) {
-    showToast('Completá los campos obligatorios: Patente, Marca y Tipo', 'error');
+  if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.numeroMotor || !data.tipo || !data.subtipo) {
+    showToast('Completá todos los campos obligatorios', 'error');
     return;
   }
 
@@ -425,8 +422,8 @@ function closeCsvImport() {
 }
 
 function downloadCsvTemplate() {
-  const headers = ['patente','interno','tipo','marca','modelo','año','chasis','kilometraje','horometro','estadoGeneral','fechaUltimaRevision','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','conductorHabitual','centroTrabajo','observaciones'];
-  const sample = ['ABC123','001','Camión volcador','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','158000','4500','Bueno','2026-04-10','2026-03-15','2026-08-31','25000','Planta Central','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','Cantera Los Ángeles','Último cambio de cubiertas a los 140.000 km'];
+  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','tipo','subtipo','capacidadCarga','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','conductorHabitual','centroTrabajo','observaciones'];
+  const sample = ['ABC123','V-00001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','mixer','Indumix','25000','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','Lujan','Último cambio de cubiertas a los 140.000 km'];
   const BOM = '\uFEFF';
   const csv = BOM + headers.join(',') + '\n' + sample.join(',') + '\n';
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -449,12 +446,21 @@ function parseVehicleRows(rows) {
     const patente = (row.patente || '').toString().trim().toUpperCase();
     const interno = (row.interno || '').toString().trim();
     const marca = (row.marca || '').toString().trim();
+    const modelo = (row.modelo || '').toString().trim();
+    const año = parseInt(row.año);
+    const chasis = (row.chasis || '').toString().trim();
+    const numeroMotor = (row.numeroMotor || '').toString().trim();
     const tipo = (row.tipo || '').toString().trim();
+    const subtipo = (row.subtipo || '').toString().trim();
 
     if (!patente) rowErrors.push('patente requerida');
-    if (!interno) rowErrors.push('interno requerido');
     if (!marca) rowErrors.push('marca requerida');
+    if (!modelo) rowErrors.push('modelo requerido');
+    if (!año) rowErrors.push('año requerido');
+    if (!chasis) rowErrors.push('chasis requerido');
+    if (!numeroMotor) rowErrors.push('número de motor requerido');
     if (!tipo) rowErrors.push('tipo requerido');
+    if (!subtipo) rowErrors.push('subtipo requerido');
 
     if (patente && (patenteSet.has(patente) || seen.has(patente))) rowErrors.push('patente duplicada');
     if (patente) seen.add(patente);
@@ -463,18 +469,19 @@ function parseVehicleRows(rows) {
       errors.push({ fila: idx, patente: patente || '(sin patente)', errores: rowErrors.join(', ') });
     } else {
       valid.push({
-        patente, interno, tipo, marca,
-        modelo: (row.modelo || '').toString().trim(),
-        año: parseInt(row.año) || null,
-        chasis: (row.chasis || '').toString().trim(),
+        patente, interno, marca, modelo, año, chasis, numeroMotor, tipo, subtipo,
+        capacidadCarga: parseFloat(row.capacidadCarga) || null,
         kilometraje: parseFloat(row.kilometraje) || 0,
-        horometro: parseFloat(row.horometro) || 0,
-        estadoGeneral: (row.estadoGeneral || 'Bueno').toString().trim(),
-        fechaUltimaRevision: row.fechaUltimaRevision || '',
-        vencimientoVTV: row.vencimientoVTV || '',
+        vtvFechaRealizacion: row.vtvFechaRealizacion || '',
+        vtvVencimiento: row.vtvVencimiento || '',
+        vtvCosto: parseFloat(row.vtvCosto) || null,
+        vtvCentro: (row.vtvCentro || '').toString().trim(),
+        vtvResultado: (row.vtvResultado || 'Pendiente').toString().trim(),
         seguroCompania: (row.seguroCompania || '').toString().trim(),
         seguroPoliza: (row.seguroPoliza || '').toString().trim(),
+        seguroTipo: (row.seguroTipo || '').toString().trim(),
         seguroVencimiento: row.seguroVencimiento || '',
+        seguroCosto: parseFloat(row.seguroCosto) || null,
         proximoServiceKm: parseFloat(row.proximoServiceKm) || null,
         proximoServiceFecha: row.proximoServiceFecha || '',
         conductorHabitual: (row.conductorHabitual || '').toString().trim(),
@@ -598,6 +605,8 @@ function validateCsvImport() {
 
 async function executeCsvImport() {
   if (!csvValidatedData.length) return;
+  const seq = await getNextVehicleNumber();
+  let seqNum = seq.number;
   const items = csvValidatedData.map(row => {
     const seguro = {};
     if (row.seguroCompania || row.seguroPoliza || row.seguroVencimiento || row.seguroTipo || row.seguroCosto) {
@@ -607,31 +616,33 @@ async function executeCsvImport() {
       seguro.costo = parseFloat(row.seguroCosto) || null;
       seguro.fechaVencimiento = row.seguroVencimiento ? firebase.firestore.Timestamp.fromDate(new Date(row.seguroVencimiento + 'T00:00:00')) : null;
     }
+    const interno = `V-${String(seqNum).padStart(5, '0')}`;
+    seqNum++;
     return {
       patente: row.patente,
-      interno: row.interno,
-      tipo: row.tipo,
+      interno,
       marca: row.marca,
       modelo: row.modelo,
       año: row.año,
       chasis: row.chasis,
-      kilometraje: row.kilometraje,
-      horometro: row.horometro,
-      estadoGeneral: row.estadoGeneral,
-      fechaUltimaRevision: row.fechaUltimaRevision ? firebase.firestore.Timestamp.fromDate(new Date(row.fechaUltimaRevision + 'T00:00:00')) : null,
+      numeroMotor: row.numeroMotor || '',
+      tipo: row.tipo,
+      subtipo: row.subtipo || '',
+      capacidadCarga: row.capacidadCarga || null,
+      kilometraje: row.kilometraje || 0,
       vtv: {
         fechaRealizacion: row.vtvFechaRealizacion ? firebase.firestore.Timestamp.fromDate(new Date(row.vtvFechaRealizacion + 'T00:00:00')) : null,
-        fechaVencimiento: row.vtvVencimiento ? firebase.firestore.Timestamp.fromDate(new Date(row.vtvVencimiento + 'T00:00:00')) : (row.vencimientoVTV ? firebase.firestore.Timestamp.fromDate(new Date(row.vencimientoVTV + 'T00:00:00')) : null),
-        costo: parseFloat(row.vtvCosto) || null,
+        fechaVencimiento: row.vtvVencimiento ? firebase.firestore.Timestamp.fromDate(new Date(row.vtvVencimiento + 'T00:00:00')) : null,
+        costo: row.vtvCosto || null,
         centroMedicion: row.vtvCentro || '',
         resultado: row.vtvResultado || 'Pendiente'
       },
       seguro: Object.keys(seguro).length ? seguro : {},
-      proximoServiceKm: row.proximoServiceKm,
+      proximoServiceKm: row.proximoServiceKm || null,
       proximoServiceFecha: row.proximoServiceFecha ? firebase.firestore.Timestamp.fromDate(new Date(row.proximoServiceFecha + 'T00:00:00')) : null,
-      conductorHabitual: row.conductorHabitual,
-      centroTrabajo: row.centroTrabajo,
-      observaciones: row.observaciones,
+      conductorHabitual: row.conductorHabitual || '',
+      centroTrabajo: row.centroTrabajo || '',
+      observaciones: row.observaciones || '',
       fotoURL: '',
       multas: [],
       documentos: [],

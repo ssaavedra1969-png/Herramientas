@@ -45,12 +45,12 @@ function renderGeneralInfo() {
   setText('vg-marca', vehicleData.marca || '-');
   setText('vg-modelo', vehicleData.modelo || '-');
   setText('vg-tipo', vehicleData.tipo || '-');
+  setText('vg-subtipo', vehicleData.subtipo || '-');
   setText('vg-anio', vehicleData.año || '-');
   setText('vg-chasis', vehicleData.chasis || '-');
   setText('vg-numeroMotor', vehicleData.numeroMotor || '-');
   setText('vg-capacidadCarga', vehicleData.capacidadCarga ? `${vehicleData.capacidadCarga.toLocaleString()} kg` : '-');
-  setText('vg-estado', vehicleData.estadoGeneral || '-');
-  setText('vg-kmhs', `${vehicleData.kilometraje?.toLocaleString() || 0} km / ${vehicleData.horometro || 0} hs`);
+  setText('vg-kmhs', `${vehicleData.kilometraje?.toLocaleString() || 0} km`);
   setText('vg-centro', vehicleData.centroTrabajo || '-');
   setText('vg-conductor', vehicleData.conductorHabitual || '-');
 }
@@ -101,17 +101,15 @@ function openEditVehicle() {
   document.getElementById('v-patente').value = vehicleData.patente || '';
   document.getElementById('v-interno').value = vehicleData.interno || '';
   document.getElementById('v-interno').readOnly = true;
-  document.getElementById('v-marca').value = vehicleData.marca || '';
+  setSelectValue('v-marca', vehicleData.marca || '');
   document.getElementById('v-modelo').value = vehicleData.modelo || '';
   document.getElementById('v-anio').value = vehicleData.año || '';
   document.getElementById('v-chasis').value = vehicleData.chasis || '';
   document.getElementById('v-numeroMotor').value = vehicleData.numeroMotor || '';
   document.getElementById('v-capacidadCarga').value = vehicleData.capacidadCarga || '';
   document.getElementById('v-tipo').value = vehicleData.tipo || '';
+  document.getElementById('v-subtipo').value = vehicleData.subtipo || '';
   document.getElementById('v-kilometraje').value = vehicleData.kilometraje || '';
-  document.getElementById('v-horometro').value = vehicleData.horometro || '';
-  document.getElementById('v-estadoGeneral').value = vehicleData.estadoGeneral || 'Bueno';
-  setDateField('v-fechaUltimaRevision', vehicleData.fechaUltimaRevision);
   setDateField('v-vtvFechaRealizacion', vehicleData.vtv?.fechaRealizacion || null);
   setDateField('v-vencimientoVTV', vehicleData.vtv?.fechaVencimiento || null);
   document.getElementById('v-vtvCosto').value = vehicleData.vtv?.costo || '';
@@ -181,17 +179,15 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
   const data = {
     patente: document.getElementById('v-patente').value.trim().toUpperCase(),
     interno: document.getElementById('v-interno').value.trim(),
-    marca: document.getElementById('v-marca').value.trim(),
+    marca: document.getElementById('v-marca').value,
     modelo: document.getElementById('v-modelo').value.trim(),
     año: parseInt(document.getElementById('v-anio').value) || null,
     chasis: document.getElementById('v-chasis').value.trim() || '',
     numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
     capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
     tipo: document.getElementById('v-tipo').value,
+    subtipo: document.getElementById('v-subtipo').value,
     kilometraje: parseInt(document.getElementById('v-kilometraje').value) || 0,
-    horometro: parseInt(document.getElementById('v-horometro').value) || 0,
-    estadoGeneral: document.getElementById('v-estadoGeneral').value,
-    fechaUltimaRevision: getDateValue('v-fechaUltimaRevision'),
     vtv: {
       fechaRealizacion: getDateValue('v-vtvFechaRealizacion'),
       fechaVencimiento: getDateValue('v-vencimientoVTV'),
@@ -217,8 +213,8 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  if (!data.patente || !data.marca || !data.tipo) {
-    showToast('Completá los campos obligatorios: Patente, Marca y Tipo', 'error');
+  if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.numeroMotor || !data.tipo || !data.subtipo) {
+    showToast('Completá todos los campos obligatorios', 'error');
     return;
   }
 

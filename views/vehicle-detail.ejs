@@ -45,12 +45,12 @@
               <div class="text-[#8E94A8]">Marca:</div><div class="text-[#F1F3F8]" id="vg-marca">-</div>
               <div class="text-[#8E94A8]">Modelo:</div><div class="text-[#F1F3F8]" id="vg-modelo">-</div>
               <div class="text-[#8E94A8]">Tipo:</div><div class="text-[#F1F3F8]" id="vg-tipo">-</div>
+              <div class="text-[#8E94A8]">Sub Tipo:</div><div class="text-[#F1F3F8]" id="vg-subtipo">-</div>
               <div class="text-[#8E94A8]">Año:</div><div class="text-[#F1F3F8]" id="vg-anio">-</div>
               <div class="text-[#8E94A8]">Chasis:</div><div class="text-[#F1F3F8]" id="vg-chasis">-</div>
               <div class="text-[#8E94A8]">N° Motor:</div><div class="text-[#F1F3F8]" id="vg-numeroMotor">-</div>
               <div class="text-[#8E94A8]">Cap. Carga:</div><div class="text-[#F1F3F8]" id="vg-capacidadCarga">-</div>
-              <div class="text-[#8E94A8]">Estado:</div><div class="text-[#F1F3F8]" id="vg-estado">-</div>
-              <div class="text-[#8E94A8]">Km / Hs:</div><div class="text-[#F1F3F8]" id="vg-kmhs">-</div>
+              <div class="text-[#8E94A8]">Km:</div><div class="text-[#F1F3F8]" id="vg-kmhs">-</div>
               <div class="text-[#8E94A8]">Centro:</div><div class="text-[#F1F3F8]" id="vg-centro">-</div>
               <div class="text-[#8E94A8]">Conductor:</div><div class="text-[#F1F3F8]" id="vg-conductor">-</div>
             </div>
@@ -302,53 +302,88 @@
             <input type="text" id="v-interno" readonly class="w-full px-3 py-2 bg-[#0B0E17]/30 border border-[#FF6B35]/10 rounded-lg text-sm text-[#5C6378] cursor-not-allowed">
           </div>
           <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Marca *</label>
+            <select id="v-marca" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
+              <option value="Mercedes Benz" class="bg-[#0B0E17]">Mercedes Benz</option>
+              <option value="Scania" class="bg-[#0B0E17]">Scania</option>
+              <option value="Volvo" class="bg-[#0B0E17]">Volvo</option>
+              <option value="Iveco" class="bg-[#0B0E17]">Iveco</option>
+              <option value="Volkswagen" class="bg-[#0B0E17]">Volkswagen</option>
+              <option value="Ford" class="bg-[#0B0E17]">Ford</option>
+              <option value="Chevrolet" class="bg-[#0B0E17]">Chevrolet</option>
+              <option value="Toyota" class="bg-[#0B0E17]">Toyota</option>
+              <option value="Fiat" class="bg-[#0B0E17]">Fiat</option>
+              <option value="Renault" class="bg-[#0B0E17]">Renault</option>
+              <option value="Nissan" class="bg-[#0B0E17]">Nissan</option>
+              <option value="JCB" class="bg-[#0B0E17]">JCB</option>
+              <option value="Caterpillar" class="bg-[#0B0E17]">Caterpillar</option>
+              <option value="Komatsu" class="bg-[#0B0E17]">Komatsu</option>
+              <option value="Hyundai" class="bg-[#0B0E17]">Hyundai</option>
+              <option value="New Holland" class="bg-[#0B0E17]">New Holland</option>
+              <option value="John Deere" class="bg-[#0B0E17]">John Deere</option>
+              <option value="Case" class="bg-[#0B0E17]">Case</option>
+              <option value="Terex" class="bg-[#0B0E17]">Terex</option>
+              <option value="Agrale" class="bg-[#0B0E17]">Agrale</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Modelo *</label>
+            <input type="text" id="v-modelo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Modelo">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Año *</label>
+            <input type="number" id="v-anio" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="2024" min="1980" max="2026">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Chasis (N° de serie) *</label>
+            <input type="text" id="v-chasis" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="9BM1234567890ABC">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° de Motor *</label>
+            <input type="text" id="v-numeroMotor" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Motor XYZ-12345">
+          </div>
+          <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo *</label>
             <select id="v-tipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
               <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
               <option value="Camión volcador" class="bg-[#0B0E17]">Camión volcador</option>
-              <option value="Camión mixer" class="bg-[#0B0E17]">Camión mixer</option>
-              <option value="Camión hormigonera" class="bg-[#0B0E17]">Camión hormigonera</option>
-              <option value="Camión cisterna" class="bg-[#0B0E17]">Camión cisterna</option>
-              <option value="Camión jaula" class="bg-[#0B0E17]">Camión jaula</option>
-              <option value="Camión playo" class="bg-[#0B0E17]">Camión playo</option>
-              <option value="Camión regador" class="bg-[#0B0E17]">Camión regador</option>
-              <option value="Camión chasis" class="bg-[#0B0E17]">Camión chasis</option>
+              <option value="mixer" class="bg-[#0B0E17]">Mixer</option>
+              <option value="hormigonera" class="bg-[#0B0E17]">Hormigonera</option>
+              <option value="cisterna" class="bg-[#0B0E17]">Cisterna</option>
+              <option value="jaula" class="bg-[#0B0E17]">Jaula</option>
+              <option value="playo" class="bg-[#0B0E17]">Playo</option>
+              <option value="regador" class="bg-[#0B0E17]">Regador</option>
+              <option value="chasis" class="bg-[#0B0E17]">Chasis</option>
               <option value="Auto" class="bg-[#0B0E17]">Auto</option>
               <option value="Camioneta" class="bg-[#0B0E17]">Camioneta</option>
+              <option value="Grua" class="bg-[#0B0E17]">Grua</option>
               <option value="Utilitario" class="bg-[#0B0E17]">Utilitario</option>
+              <option value="Carga" class="bg-[#0B0E17]">Carga</option>
               <option value="Cargadora frontal" class="bg-[#0B0E17]">Cargadora frontal</option>
               <option value="Retroexcavadora" class="bg-[#0B0E17]">Retroexcavadora</option>
               <option value="Motoniveladora" class="bg-[#0B0E17]">Motoniveladora</option>
               <option value="Excavadora" class="bg-[#0B0E17]">Excavadora</option>
               <option value="Minicargadora" class="bg-[#0B0E17]">Minicargadora</option>
-              <option value="Rodillo vibratorio" class="bg-[#0B0E17]">Rodillo vibratorio</option>
+              <option value="Rodillo" class="bg-[#0B0E17]">Rodillo</option>
               <option value="Acoplado" class="bg-[#0B0E17]">Acoplado</option>
               <option value="Semirremolque" class="bg-[#0B0E17]">Semirremolque</option>
-              <option value="Otro" class="bg-[#0B0E17]">Otro</option>
+              <option value="Montacarga" class="bg-[#0B0E17]">Montacarga</option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Marca *</label>
-            <input type="text" id="v-marca" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Marca" list="marca-suggestions">
-            <datalist id="marca-suggestions">
-              <option value="Mercedes Benz"><option value="Scania"><option value="Volvo"><option value="Iveco"><option value="Volkswagen"><option value="Ford"><option value="Chevrolet"><option value="Toyota"><option value="Fiat"><option value="Renault"><option value="Nissan"><option value="JCB"><option value="Caterpillar"><option value="Komatsu"><option value="Hyundai"><option value="New Holland"><option value="John Deere"><option value="Case"><option value="Terex"><option value="Agrale">
-            </datalist>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Modelo</label>
-            <input type="text" id="v-modelo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Modelo">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Año</label>
-            <input type="number" id="v-anio" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="2024" min="1980" max="2026">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Chasis (N° de serie)</label>
-            <input type="text" id="v-chasis" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="9BM1234567890ABC">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° de Motor</label>
-            <input type="text" id="v-numeroMotor" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Motor XYZ-12345">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Sub Tipo *</label>
+            <select id="v-subtipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
+              <option value="Indumix" class="bg-[#0B0E17]">Indumix</option>
+              <option value="Tzr" class="bg-[#0B0E17]">Tzr</option>
+              <option value="Betonmac" class="bg-[#0B0E17]">Betonmac</option>
+              <option value="tecnus" class="bg-[#0B0E17]">Tecnus</option>
+              <option value="Barival" class="bg-[#0B0E17]">Barival</option>
+              <option value="everdingm" class="bg-[#0B0E17]">Everdingm</option>
+              <option value="arrastre" class="bg-[#0B0E17]">Arrastre</option>
+              <option value="Montacarga" class="bg-[#0B0E17]">Montacarga</option>
+            </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Capacidad de Carga (kg)</label>
@@ -368,24 +403,6 @@
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Kilometraje</label>
             <input type="number" id="v-kilometraje" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Horómetro (hs)</label>
-            <input type="number" id="v-horometro" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Estado General *</label>
-            <select id="v-estadoGeneral" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-              <option value="Bueno" class="bg-[#0B0E17]">Bueno</option>
-              <option value="Excelente" class="bg-[#0B0E17]">Excelente</option>
-              <option value="Regular" class="bg-[#0B0E17]">Regular</option>
-              <option value="Taller" class="bg-[#0B0E17]">Taller</option>
-              <option value="Baja" class="bg-[#0B0E17]">Baja</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Fecha última revisión</label>
-            <input type="date" id="v-fechaUltimaRevision" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Fecha Realización</label>
@@ -430,8 +447,8 @@
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Compañía / Marca</label>
-            <input type="text" id="v-seguroCompania" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Rivadavia Seguros">
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Compañía / Marca *</label>
+            <input type="text" id="v-seguroCompania" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Rivadavia Seguros">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° Póliza</label>
@@ -439,7 +456,7 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo de Seguro</label>
-            <select id="v-seguroTipo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <select id="v-seguroTipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
               <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
               <option value="Responsabilidad Civil" class="bg-[#0B0E17]">Responsabilidad Civil</option>
               <option value="Todo Riesgo" class="bg-[#0B0E17]">Todo Riesgo</option>
@@ -489,11 +506,11 @@
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Centro de Trabajo *</label>
             <select id="v-centroTrabajo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
               <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
-              <option value="Planta Central" class="bg-[#0B0E17]">Planta Central</option>
-              <option value="Cantera Los Ángeles" class="bg-[#0B0E17]">Cantera Los Ángeles</option>
-              <option value="Planta Norte" class="bg-[#0B0E17]">Planta Norte</option>
-              <option value="Obra RN33" class="bg-[#0B0E17]">Obra RN33</option>
-              <option value="Taller Central" class="bg-[#0B0E17]">Taller Central</option>
+              <option value="Lujan" class="bg-[#0B0E17]">Lujan</option>
+              <option value="Campana" class="bg-[#0B0E17]">Campana</option>
+              <option value="Ituzaingo" class="bg-[#0B0E17]">Ituzaingo</option>
+              <option value="Moreno" class="bg-[#0B0E17]">Moreno</option>
+              <option value="Zarate" class="bg-[#0B0E17]">Zarate</option>
             </select>
           </div>
           <div>

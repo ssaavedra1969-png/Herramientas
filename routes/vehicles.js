@@ -31,6 +31,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       patente: req.body.patente?.toUpperCase().trim(),
       interno: req.body.interno?.trim(),
       tipo: req.body.tipo,
+      subtipo: req.body.subtipo?.trim() || '',
       marca: req.body.marca?.trim(),
       modelo: req.body.modelo?.trim(),
       año: req.body.año ? parseInt(req.body.año) : null,
@@ -68,8 +69,8 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       updatedAt: new Date()
     };
 
-    if (!data.patente || !data.marca || !data.tipo) {
-      return res.status(400).json({ error: 'Campos obligatorios: patente, marca, tipo' });
+    if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.numeroMotor || !data.tipo || !data.subtipo) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
 
     const existing = await db.collection('vehicles').where('patente', '==', data.patente).get();
@@ -95,6 +96,7 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
       patente: req.body.patente?.toUpperCase().trim(),
       interno: req.body.interno?.trim(),
       tipo: req.body.tipo,
+      subtipo: req.body.subtipo?.trim() || '',
       marca: req.body.marca?.trim(),
       modelo: req.body.modelo?.trim(),
       año: req.body.año ? parseInt(req.body.año) : null,
