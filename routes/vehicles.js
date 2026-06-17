@@ -35,6 +35,8 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       modelo: req.body.modelo?.trim(),
       año: req.body.año ? parseInt(req.body.año) : null,
       chasis: req.body.chasis?.trim() || '',
+      numeroMotor: req.body.numeroMotor?.trim() || '',
+      capacidadCarga: parseFloat(req.body.capacidadCarga) || null,
       kilometraje: parseInt(req.body.kilometraje) || 0,
       horometro: parseInt(req.body.horometro) || 0,
       estadoGeneral: req.body.estadoGeneral || 'Bueno',
@@ -66,8 +68,8 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       updatedAt: new Date()
     };
 
-    if (!data.patente || !data.interno || !data.marca || !data.tipo) {
-      return res.status(400).json({ error: 'Campos obligatorios: patente, interno, marca, tipo' });
+    if (!data.patente || !data.marca || !data.tipo) {
+      return res.status(400).json({ error: 'Campos obligatorios: patente, marca, tipo' });
     }
 
     const existing = await db.collection('vehicles').where('patente', '==', data.patente).get();
@@ -97,6 +99,8 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
       modelo: req.body.modelo?.trim(),
       año: req.body.año ? parseInt(req.body.año) : null,
       chasis: req.body.chasis?.trim() || '',
+      numeroMotor: req.body.numeroMotor?.trim() || '',
+      capacidadCarga: parseFloat(req.body.capacidadCarga) || null,
       kilometraje: parseInt(req.body.kilometraje) || 0,
       horometro: parseInt(req.body.horometro) || 0,
       estadoGeneral: req.body.estadoGeneral || 'Bueno',

@@ -52,6 +52,8 @@ function fmap(v) {
     modelo: v.modelo || '',
     año: v.año || v.anio || '',
     chasis: v.chasis || '',
+    numeroMotor: v.numeroMotor || '',
+    capacidadCarga: v.capacidadCarga || null,
     kilometraje: v.kilometraje || 0,
     horometro: v.horometro || 0,
     estadoGeneral: v.estadoGeneral || v.estado || 'Bueno',
@@ -179,10 +181,13 @@ function openVehicleModal(vehicleId = null) {
     document.getElementById('vehiculo-id').value = vehicleId;
     document.getElementById('v-patente').value = v.patente;
     document.getElementById('v-interno').value = v.interno;
+    document.getElementById('v-interno').readOnly = true;
     document.getElementById('v-marca').value = v.marca;
     document.getElementById('v-modelo').value = v.modelo;
     document.getElementById('v-anio').value = v.año;
     document.getElementById('v-chasis').value = v.chasis;
+    document.getElementById('v-numeroMotor').value = v.numeroMotor;
+    document.getElementById('v-capacidadCarga').value = v.capacidadCarga || '';
     document.getElementById('v-tipo').value = v.tipo;
     document.getElementById('v-kilometraje').value = v.kilometraje;
     document.getElementById('v-horometro').value = v.horometro;
@@ -259,13 +264,16 @@ async function saveVehicle(e) {
   if (!isAdmin()) return;
 
   const id = document.getElementById('vehiculo-id').value;
+  const isNew = !id;
+
   const data = {
     patente: document.getElementById('v-patente').value.trim().toUpperCase(),
-    interno: document.getElementById('v-interno').value.trim(),
     marca: document.getElementById('v-marca').value.trim(),
     modelo: document.getElementById('v-modelo').value.trim(),
     año: parseInt(document.getElementById('v-anio').value) || null,
     chasis: document.getElementById('v-chasis').value.trim() || '',
+    numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
+    capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
     tipo: document.getElementById('v-tipo').value,
     kilometraje: parseInt(document.getElementById('v-kilometraje').value) || 0,
     horometro: parseInt(document.getElementById('v-horometro').value) || 0,
@@ -296,26 +304,29 @@ async function saveVehicle(e) {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  if (!data.patente || !data.interno || !data.marca || !data.tipo) {
-    showToast('Completá los campos obligatorios: Patente, Interno, Marca y Tipo', 'error');
+  if (!data.patente || !data.marca || !data.tipo) {
+    showToast('Completá los campos obligatorios: Patente, Marca y Tipo', 'error');
     return;
   }
 
   try {
     showLoading(true);
-    if (id) {
-      await db.collection('vehicles').doc(id).update(data);
-      showToast('Vehículo actualizado exitosamente');
-    } else {
+    if (isNew) {
       const dup = await db.collection('vehicles').where('patente', '==', data.patente).get();
       if (!dup.empty) {
         showToast('Ya existe un vehículo con esa patente', 'error');
         return;
       }
+      const seq = await getNextVehicleNumber();
+      data.interno = seq.formatted;
       data.fechaAlta = firebase.firestore.FieldValue.serverTimestamp();
       data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection('vehicles').add(data);
-      showToast('Vehículo creado exitosamente');
+      showToast(`Vehículo creado exitosamente — N° Interno: ${seq.formatted}`);
+    } else {
+      data.interno = document.getElementById('v-interno').value.trim();
+      await db.collection('vehicles').doc(id).update(data);
+      showToast('Vehículo actualizado exitosamente');
     }
     closeVehicleModal();
   } catch (error) {

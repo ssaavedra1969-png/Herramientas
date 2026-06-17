@@ -238,6 +238,31 @@ async function _dumpCollection(name) {
   return docs;
 }
 
+async function getNextVehicleNumber() {
+  const counterRef = db.collection('counters').doc('vehicles');
+  try {
+    const result = await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(counterRef);
+      if (!doc.exists) {
+        const vehiclesSnap = await db.collection('vehicles').get();
+        let max = 0;
+        vehiclesSnap.docs.forEach(d => {
+          const m = (d.data().interno || '').match(/^V-0*(\d+)$/);
+          if (m) { const n = parseInt(m[1], 10); if (n > max) max = n; }
+        });
+        transaction.set(counterRef, { current: max });
+        return { number: max + 1, formatted: `V-${String(max + 1).padStart(5, '0')}` };
+      }
+      const next = (doc.data().current || 0) + 1;
+      transaction.update(counterRef, { current: next });
+      return { number: next, formatted: `V-${String(next).padStart(5, '0')}` };
+    });
+    return result;
+  } catch {
+    return { number: Date.now(), formatted: `V-${String(Date.now()).slice(-5).padStart(5, '0')}` };
+  }
+}
+
 function _backupFilename() {
   const d = new Date();
   const pad = (n) => String(n).padStart(2, '0');

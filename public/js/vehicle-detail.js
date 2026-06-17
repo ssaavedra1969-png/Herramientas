@@ -47,6 +47,8 @@ function renderGeneralInfo() {
   setText('vg-tipo', vehicleData.tipo || '-');
   setText('vg-anio', vehicleData.año || '-');
   setText('vg-chasis', vehicleData.chasis || '-');
+  setText('vg-numeroMotor', vehicleData.numeroMotor || '-');
+  setText('vg-capacidadCarga', vehicleData.capacidadCarga ? `${vehicleData.capacidadCarga.toLocaleString()} kg` : '-');
   setText('vg-estado', vehicleData.estadoGeneral || '-');
   setText('vg-kmhs', `${vehicleData.kilometraje?.toLocaleString() || 0} km / ${vehicleData.horometro || 0} hs`);
   setText('vg-centro', vehicleData.centroTrabajo || '-');
@@ -98,10 +100,13 @@ function openEditVehicle() {
   document.getElementById('vehiculo-id').value = vehicleId;
   document.getElementById('v-patente').value = vehicleData.patente || '';
   document.getElementById('v-interno').value = vehicleData.interno || '';
+  document.getElementById('v-interno').readOnly = true;
   document.getElementById('v-marca').value = vehicleData.marca || '';
   document.getElementById('v-modelo').value = vehicleData.modelo || '';
   document.getElementById('v-anio').value = vehicleData.año || '';
   document.getElementById('v-chasis').value = vehicleData.chasis || '';
+  document.getElementById('v-numeroMotor').value = vehicleData.numeroMotor || '';
+  document.getElementById('v-capacidadCarga').value = vehicleData.capacidadCarga || '';
   document.getElementById('v-tipo').value = vehicleData.tipo || '';
   document.getElementById('v-kilometraje').value = vehicleData.kilometraje || '';
   document.getElementById('v-horometro').value = vehicleData.horometro || '';
@@ -180,6 +185,8 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     modelo: document.getElementById('v-modelo').value.trim(),
     año: parseInt(document.getElementById('v-anio').value) || null,
     chasis: document.getElementById('v-chasis').value.trim() || '',
+    numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
+    capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
     tipo: document.getElementById('v-tipo').value,
     kilometraje: parseInt(document.getElementById('v-kilometraje').value) || 0,
     horometro: parseInt(document.getElementById('v-horometro').value) || 0,
@@ -210,8 +217,8 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  if (!data.patente || !data.interno || !data.marca || !data.tipo) {
-    showToast('Completá los campos obligatorios: Patente, Interno, Marca y Tipo', 'error');
+  if (!data.patente || !data.marca || !data.tipo) {
+    showToast('Completá los campos obligatorios: Patente, Marca y Tipo', 'error');
     return;
   }
 
