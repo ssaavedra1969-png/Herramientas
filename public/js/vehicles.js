@@ -667,8 +667,9 @@ function toTimestamp(val) {
 
 async function executeCsvImport() {
   if (!csvValidatedData.length) return;
-  const seq = await getNextVehicleNumber();
+  let seq = await getNextVehicleNumber();
   let seqNum = seq.number;
+  let maxNum = seqNum - 1;
   const items = csvValidatedData.map(row => {
     const seguro = {};
     if (row.seguroCompania || row.seguroPoliza || row.seguroVencimiento || row.seguroTipo || row.seguroCosto) {
@@ -678,8 +679,15 @@ async function executeCsvImport() {
       seguro.costo = parseFloat(row.seguroCosto) || null;
       seguro.fechaVencimiento = toTimestamp(row.seguroVencimiento);
     }
-    const interno = `V-${String(seqNum).padStart(5, '0')}`;
-    seqNum++;
+    let interno;
+    if (row.interno && /^V-\d+$/i.test(String(row.interno).trim())) {
+      interno = String(row.interno).trim().toUpperCase();
+      const m = interno.match(/^V-0*(\d+)$/);
+      if (m) { const n = parseInt(m[1], 10); if (n > maxNum) maxNum = n; }
+    } else {
+      interno = `V-${String(seqNum).padStart(5, '0')}`;
+      seqNum++;
+    }
     return {
       patente: row.patente,
       interno,
@@ -716,6 +724,10 @@ async function executeCsvImport() {
     };
   });
   await batchImport(items, 'csv');
+  // Update counter to max number used
+  try {
+    await db.collection('counters').doc('vehicles').set({ current: maxNum }, { merge: true });
+  } catch (_) {}
   csvValidatedData = [];
   document.getElementById('btn-execute-csv').classList.add('hidden');
   document.getElementById('csv-import-preview').innerHTML = '';
