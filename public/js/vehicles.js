@@ -746,7 +746,7 @@ async function executeCsvImport() {
       fechaAlta: firebase.firestore.FieldValue.serverTimestamp(),
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
+    });
   }
   await batchImport(items, 'csv');
   // Update counter to max number used
