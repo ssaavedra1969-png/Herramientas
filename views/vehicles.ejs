@@ -110,19 +110,14 @@
               <option value="Zarate" class="bg-[#0B0E17]">Zarate</option>
             </select>
           </div>
-          <div class="filter-chip">
-            <select id="filter-empresa" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-              <option value="" class="bg-[#0B0E17]">Empresa: Todas</option>
+           <div class="filter-chip">
+            <select id="filter-subtipo" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0B0E17]">Sub Tipo: Todos</option>
             </select>
           </div>
           <div class="filter-chip">
-            <select id="filter-estado" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-              <option value="" class="bg-[#0B0E17]">Estado: Todos</option>
-              <option value="Excelente" class="bg-[#0B0E17]">Excelente</option>
-              <option value="Bueno" class="bg-[#0B0E17]">Bueno</option>
-              <option value="Regular" class="bg-[#0B0E17]">Regular</option>
-              <option value="Taller" class="bg-[#0B0E17]">Taller</option>
-              <option value="Baja" class="bg-[#0B0E17]">Baja</option>
+            <select id="filter-empresa" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0B0E17]">Empresa: Todas</option>
             </select>
           </div>
           <button onclick="resetFilters()" class="px-3 py-1.5 text-xs text-[#8E94A8] hover:text-[#F1F3F8] transition-colors flex items-center gap-1">
@@ -134,27 +129,32 @@
           <span class="text-xs text-[#8E94A8]"><span id="filter-count">0</span> vehículo(s)</span>
           <button onclick="resetFilters()" class="text-xs text-[#FF6B35]/70 hover:text-[#FF6B35] transition-colors">Limpiar filtros</button>
         </div>
+        <% if (currentUserData?.role === 'Admin') { %>
         <div id="bulk-bar" class="hidden flex items-center justify-between px-4 py-2 bg-[#FF6B35]/10 border-b border-[#FF6B35]/20 text-sm">
           <span class="text-[#8E94A8]"><span id="bulk-count">0</span> seleccionado(s)</span>
           <button onclick="deleteSelectedVehicles()" class="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition text-sm font-medium">🗑️ Eliminar seleccionados</button>
         </div>
+        <% } %>
         <div class="table-container p-4">
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-[#8E94A8] border-b border-[#FF6B35]/10">
+                <% if (currentUserData?.role === 'Admin') { %>
                 <th class="pb-3 font-medium w-10">
                   <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" class="accent-[#FF6B35]">
                 </th>
+                <% } %>
                 <th class="pb-3 font-medium">Interno</th>
                 <th class="pb-3 font-medium">Patente</th>
                 <th class="pb-3 font-medium">Marca / Modelo</th>
                 <th class="pb-3 font-medium">Tipo</th>
+                <th class="pb-3 font-medium">Sub Tipo</th>
                 <th class="pb-3 font-medium">Centro</th>
                 <th class="pb-3 font-medium no-print">Acciones</th>
               </tr>
             </thead>
             <tbody id="vehiculos-table-body">
-              <tr><td colspan="7" class="text-center py-8 text-[#5C6378]">Cargando vehículos...</td></tr>
+              <tr><td colspan="<%= currentUserData?.role === 'Admin' ? 8 : 7 %>" class="text-center py-8 text-[#5C6378]">Cargando vehículos...</td></tr>
             </tbody>
           </table>
         </div>

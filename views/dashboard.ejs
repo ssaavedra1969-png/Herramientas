@@ -27,7 +27,8 @@
 
       <!-- TAB: VEHÍCULOS -->
       <div id="tab-vehiculos" class="tab-content">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6" id="summary-cards-vehiculos">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
           <div class="glass-card rounded-xl p-5 card-3d">
             <div class="flex items-center justify-between">
               <div>
@@ -42,71 +43,36 @@
           <div class="glass-card rounded-xl p-5 card-3d">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-[#8E94A8] text-sm font-medium">Vencidos Hoy</p>
-                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-vencidos">-</p>
+                <p class="text-[#8E94A8] text-sm font-medium">Empresas</p>
+                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-empresas">-</p>
               </div>
-              <div class="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              </div>
-            </div>
-          </div>
-          <div class="glass-card rounded-xl p-5 card-3d">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[#8E94A8] text-sm font-medium">Próximos 7 Días</p>
-                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-proximos">-</p>
-              </div>
-              <div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              <div class="w-12 h-12 bg-[#10B981]/10 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          <div class="lg:col-span-2 glass-card rounded-xl p-5">
-            <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Mantenimientos por Mes</h3>
-            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-mantenimientos"></canvas></div>
-          </div>
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Alertas Activas</h3>
-            <div id="alertas-lista" class="space-y-2 max-h-72 overflow-y-auto pr-1">
-              <p class="text-[#5C6378] text-sm">Cargando alertas...</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          <div class="lg:col-span-2 glass-card rounded-xl p-5">
-            <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Consumo de Combustible</h3>
-            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-combustible"></canvas></div>
-          </div>
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Distribución de Gastos</h3>
-            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-gastos-donut"></canvas></div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Gasto en Combustible por Vehículo</h3>
-            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-gasto-vehiculos"></canvas></div>
-          </div>
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Últimos Movimientos</h3>
-            <div id="ultimos-movimientos" class="space-y-1 max-h-72 overflow-y-auto pr-1">
+            <div id="empresas-list" class="mt-4 space-y-1 max-h-32 overflow-y-auto pr-1">
               <p class="text-[#5C6378] text-sm">Cargando...</p>
             </div>
           </div>
         </div>
 
+        <!-- Alertas VTV -->
         <div class="glass-card rounded-xl p-5 mt-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-[#F1F3F8]">Vehículos Recientes</h3>
-            <a href="/vehicles" class="text-xs text-[#FF6B35] hover:underline">Ver todos →</a>
+          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Alertas VTV</h3>
+          <div id="alertas-vtv" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+            <p class="text-[#5C6378] text-sm">Cargando alertas...</p>
           </div>
-          <div id="dashboard-vehicles-list" class="space-y-1 max-h-72 overflow-y-auto pr-1">
-            <p class="text-[#5C6378] text-sm">Cargando...</p>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Consumo de Combustible</h3>
+            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-combustible"></canvas></div>
+          </div>
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Gasto en Combustible por Vehículo</h3>
+            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-gasto-vehiculos"></canvas></div>
           </div>
         </div>
       </div>

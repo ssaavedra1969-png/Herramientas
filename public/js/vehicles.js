@@ -14,9 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('search-vehiculo')?.addEventListener('input', applyFilters);
   document.getElementById('filter-marca')?.addEventListener('change', applyFilters);
   document.getElementById('filter-tipo')?.addEventListener('change', applyFilters);
+  document.getElementById('filter-subtipo')?.addEventListener('change', applyFilters);
   document.getElementById('filter-centro')?.addEventListener('change', applyFilters);
   document.getElementById('filter-empresa')?.addEventListener('change', applyFilters);
-  document.getElementById('filter-estado')?.addEventListener('change', applyFilters);
 });
 
 function initMobileMenu() {
@@ -38,13 +38,14 @@ function initRealtimeListener() {
   db.collection('vehicles').orderBy('interno').onSnapshot((snapshot) => {
     allVehicles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     patenteSet = new Set(allVehicles.map(v => (v.patente || '').toUpperCase()));
-    populateFilterEmpresa();
+    populateFilterDropdowns();
     document.getElementById('filter-count').textContent = allVehicles.length;
     renderVehicles(allVehicles);
   }, (error) => {
     console.error('Error loading vehicles:', error);
+    const colCount = isAdmin() ? 8 : 7;
     document.getElementById('vehiculos-table-body').innerHTML =
-      '<tr><td colspan="9" class="text-center py-8 text-red-500">Error al cargar vehículos</td></tr>';
+      `<tr><td colspan="${colCount}" class="text-center py-8 text-red-500">Error al cargar vehículos</td></tr>`;
   });
 }
 
@@ -89,23 +90,28 @@ function renderVehicles(vehicles) {
   const tbody = document.getElementById('vehiculos-table-body');
   if (!tbody) return;
 
+  const admin = isAdmin();
+  const colCount = admin ? 8 : 7;
+
   if (vehicles.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">No hay vehículos registrados</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-8 text-gray-400">No hay vehículos registrados</td></tr>`;
     return;
   }
 
   tbody.innerHTML = vehicles.map(v => {
     const mv = fmap(v);
     const checked = selectedIds.has(v.id) ? 'checked' : '';
+    const checkboxCell = admin ? `<td class="py-3 pr-3" onclick="event.stopPropagation()">
+      <input type="checkbox" class="row-checkbox accent-[#FF6B35]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
+    </td>` : '';
     return `
       <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10 cursor-pointer" onclick="rowClick('${v.id}', event)">
-        <td class="py-3 pr-3" onclick="event.stopPropagation()">
-          <input type="checkbox" class="row-checkbox accent-[#FF6B35]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
-        </td>
+        ${checkboxCell}
         <td class="py-3 pr-3">${mv.interno || '—'}</td>
         <td class="py-3 pr-3 font-medium">${mv.patente || '—'}</td>
         <td class="py-3 pr-3">${mv.marca || ''} ${mv.modelo || ''}</td>
         <td class="py-3 pr-3">${mv.tipo || '—'}</td>
+        <td class="py-3 pr-3">${mv.subtipo || '—'}</td>
         <td class="py-3 pr-3 text-xs">${mv.centroTrabajo || '—'}</td>
         <td class="py-3 no-print" onclick="event.stopPropagation()">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
       </tr>`;
@@ -157,9 +163,9 @@ function applyFilters() {
   const search = (document.getElementById('search-vehiculo').value || '').toLowerCase();
   const marca = document.getElementById('filter-marca').value;
   const tipo = document.getElementById('filter-tipo').value;
+  const subtipo = document.getElementById('filter-subtipo').value;
   const centro = document.getElementById('filter-centro').value;
   const empresa = document.getElementById('filter-empresa').value;
-  const estado = document.getElementById('filter-estado').value;
 
   let filtered = allVehicles;
   if (search) {
@@ -169,15 +175,16 @@ function applyFilters() {
       (v.modelo || '').toLowerCase().includes(search) ||
       (v.interno || v.numeroInterno || '').toLowerCase().includes(search) ||
       (v.tipo || '').toLowerCase().includes(search) ||
+      (v.subtipo || '').toLowerCase().includes(search) ||
       (v.centroTrabajo || '').toLowerCase().includes(search) ||
       (v.empresa || '').toLowerCase().includes(search)
     );
   }
   if (marca) filtered = filtered.filter(v => (v.marca || '') === marca);
   if (tipo) filtered = filtered.filter(v => (v.tipo || '') === tipo);
+  if (subtipo) filtered = filtered.filter(v => (v.subtipo || '') === subtipo);
   if (centro) filtered = filtered.filter(v => (v.centroTrabajo || '') === centro);
   if (empresa) filtered = filtered.filter(v => (v.empresa || '') === empresa);
-  if (estado) filtered = filtered.filter(v => (v.estadoGeneral || v.estado) === estado);
 
   document.getElementById('filter-count').textContent = filtered.length;
   renderVehicles(filtered);
@@ -187,18 +194,25 @@ function resetFilters() {
   document.getElementById('search-vehiculo').value = '';
   document.getElementById('filter-marca').value = '';
   document.getElementById('filter-tipo').value = '';
+  document.getElementById('filter-subtipo').value = '';
   document.getElementById('filter-centro').value = '';
   document.getElementById('filter-empresa').value = '';
-  document.getElementById('filter-estado').value = '';
   applyFilters();
 }
 
-function populateFilterEmpresa() {
+function populateFilterDropdowns() {
   const empresas = [...new Set(allVehicles.map(v => v.empresa).filter(Boolean))].sort();
-  const sel = document.getElementById('filter-empresa');
-  if (!sel) return;
-  sel.innerHTML = '<option value="" class="bg-[#0B0E17]">Empresa: Todas</option>' +
-    empresas.map(e => `<option value="${e}" class="bg-[#0B0E17]">${e}</option>`).join('');
+  const selEmp = document.getElementById('filter-empresa');
+  if (selEmp) {
+    selEmp.innerHTML = '<option value="" class="bg-[#0B0E17]">Empresa: Todas</option>' +
+      empresas.map(e => `<option value="${e}" class="bg-[#0B0E17]">${e}</option>`).join('');
+  }
+  const subtipos = [...new Set(allVehicles.map(v => v.subtipo).filter(Boolean))].sort();
+  const selSub = document.getElementById('filter-subtipo');
+  if (selSub) {
+    selSub.innerHTML = '<option value="" class="bg-[#0B0E17]">Sub Tipo: Todos</option>' +
+      subtipos.map(s => `<option value="${s}" class="bg-[#0B0E17]">${s}</option>`).join('');
+  }
 }
 
 function openVehicleModal(vehicleId = null) {

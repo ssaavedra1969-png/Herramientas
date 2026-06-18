@@ -50,10 +50,21 @@
             <button onclick="applyFilters()" class="btn-secondary text-sm px-4 py-2">Filtrar</button>
           </div>
         </div>
+        <% if (currentUserData?.role === 'Admin') { %>
+        <div id="bulk-bar" class="hidden flex items-center justify-between px-4 py-2 bg-[#FF6B35]/10 border-b border-[#FF6B35]/20 text-sm">
+          <span class="text-[#8E94A8]"><span id="bulk-count">0</span> seleccionado(s)</span>
+          <button onclick="deleteSelectedTools()" class="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition text-sm font-medium">Eliminar seleccionados</button>
+        </div>
+        <% } %>
         <div class="table-container p-4">
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-[#8E94A8] border-b border-[#FF6B35]/10">
+                <% if (currentUserData?.role === 'Admin') { %>
+                <th class="pb-3 font-medium w-10">
+                  <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" class="accent-[#FF6B35]">
+                </th>
+                <% } %>
                 <th class="pb-3 font-medium">Código</th>
                 <th class="pb-3 font-medium">Nombre</th>
                 <th class="pb-3 font-medium">Tipo / Categoría</th>
@@ -65,7 +76,7 @@
               </tr>
             </thead>
             <tbody id="tools-table-body">
-              <tr><td colspan="8" class="text-center py-8 text-[#5C6378]">Cargando herramientas...</td></tr>
+              <tr><td colspan="<%= currentUserData?.role === 'Admin' ? 9 : 8 %>" class="text-center py-8 text-[#5C6378]">Cargando herramientas...</td></tr>
             </tbody>
           </table>
         </div>

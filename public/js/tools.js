@@ -2,6 +2,7 @@ let allTools = [];
 let editingToolId = null;
 let csvValidatedData = [];
 let codigoSet = new Set();
+let selectedIds = new Set();
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -37,8 +38,9 @@ function initRealtimeListener() {
     renderTools(allTools);
   }, (error) => {
     console.error('Error loading tools:', error);
+    const colCount = isAdmin() ? 9 : 8;
     document.getElementById('tools-table-body').innerHTML =
-      '<tr><td colspan="8" class="text-center py-8 text-red-500">Error al cargar herramientas</td></tr>';
+      `<tr><td colspan="${colCount}" class="text-center py-8 text-red-500">Error al cargar herramientas</td></tr>`;
   });
 }
 
@@ -73,8 +75,11 @@ function renderTools(tools) {
   const tbody = document.getElementById('tools-table-body');
   if (!tbody) return;
 
+  const admin = isAdmin();
+  const colCount = admin ? 9 : 8;
+
   if (tools.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400">No hay herramientas registradas</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-8 text-gray-400">No hay herramientas registradas</td></tr>`;
     return;
   }
 
@@ -89,8 +94,13 @@ function renderTools(tools) {
       return '';
     })() : '';
     const estadoClass = (mt.estadoGeneral || '').toLowerCase().replace(/\s+/g, '');
+    const checked = selectedIds.has(t.id) ? 'checked' : '';
+    const checkboxCell = admin ? `<td class="py-3 pr-3" onclick="event.stopPropagation()">
+      <input type="checkbox" class="row-checkbox accent-[#FF6B35]" value="${t.id}" ${checked} onchange="toggleRow('${t.id}', this.checked)">
+    </td>` : '';
     return `
-      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10">
+      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10 cursor-pointer" onclick="rowClick('${t.id}', event)">
+        ${checkboxCell}
         <td class="py-3 pr-3 font-medium">${mt.codigoInterno || '—'}</td>
         <td class="py-3 pr-3">${mt.nombre || '—'}</td>
         <td class="py-3 pr-3 text-xs">${tipoCategoria}</td>
@@ -98,7 +108,7 @@ function renderTools(tools) {
         <td class="py-3 pr-3">${mt.ubicacionActual || '—'}</td>
         <td class="py-3 pr-3 text-xs">${formatDate(mt.fechaUltimoControl)}</td>
         <td class="py-3 pr-3 text-xs">${formatDate(mt.proximoControl)}${controlAlert}</td>
-        <td class="py-3 no-print">${createActionButtons(`editTool('${t.id}')`, `deleteTool('${t.id}')`)}</td>
+        <td class="py-3 no-print" onclick="event.stopPropagation()">${createActionButtons(`editTool('${t.id}')`, `deleteTool('${t.id}')`)}</td>
       </tr>`;
   }).join('');
 }
@@ -467,6 +477,47 @@ function closeProgressModal() {
   document.getElementById('btn-progress-close')?.classList.add('hidden');
   document.getElementById('progress-bar').style.width = '0%';
   document.getElementById('progress-detail').textContent = '';
+}
+
+function rowClick(id, event) {
+  if (event.target.type === 'checkbox') return;
+  openToolModal(id);
+}
+
+function toggleRow(id, checked) {
+  if (checked) selectedIds.add(id);
+  else selectedIds.delete(id);
+  updateBulkBar();
+  const all = document.querySelectorAll('.row-checkbox');
+  const allChecked = all.length > 0 && [...all].every(cb => cb.checked);
+  document.getElementById('select-all').checked = allChecked;
+}
+
+function toggleSelectAll(checked) {
+  document.querySelectorAll('.row-checkbox').forEach(cb => {
+    cb.checked = checked;
+    if (checked) selectedIds.add(cb.value);
+    else selectedIds.delete(cb.value);
+  });
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  const bar = document.getElementById('bulk-bar');
+  const count = document.getElementById('bulk-count');
+  if (!bar || !count) return;
+  count.textContent = selectedIds.size;
+  bar.classList.toggle('hidden', selectedIds.size === 0);
+}
+
+function deleteSelectedTools() {
+  if (!selectedIds.size) return;
+  const ids = [...selectedIds];
+  deleteMultipleWithBackup('tools', ids, 'Herramienta').then(() => {
+    selectedIds.clear();
+    document.getElementById('select-all').checked = false;
+    updateBulkBar();
+  });
 }
 
 async function deleteTool(id) {
