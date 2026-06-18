@@ -219,7 +219,7 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.numeroMotor || !data.tipo || !data.subtipo) {
+  if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.tipo) {
     showToast('Completá todos los campos obligatorios', 'error');
     return;
   }

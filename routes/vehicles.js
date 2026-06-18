@@ -69,7 +69,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       updatedAt: new Date()
     };
 
-    if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.numeroMotor || !data.tipo || !data.subtipo) {
+    if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.tipo) {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
 

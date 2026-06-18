@@ -303,7 +303,7 @@ async function saveVehicle(e) {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.numeroMotor || !data.tipo || !data.subtipo) {
+  if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.tipo) {
     showToast('Completá todos los campos obligatorios', 'error');
     return;
   }
@@ -480,9 +480,7 @@ function parseVehicleRows(rows) {
     if (!modelo) rowErrors.push('modelo requerido');
     if (!año) rowErrors.push('año requerido');
     if (!chasis) rowErrors.push('chasis requerido');
-    if (!numeroMotor) rowErrors.push('número de motor requerido');
     if (!tipo) rowErrors.push('tipo requerido');
-    if (!subtipo) rowErrors.push('subtipo requerido');
 
     if (patente && (patenteSet.has(patente) || seen.has(patente))) rowErrors.push('patente duplicada');
     if (patente) seen.add(patente);
