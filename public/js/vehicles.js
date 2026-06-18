@@ -648,6 +648,23 @@ function validateCsvImport() {
   }
 }
 
+function toTimestamp(val) {
+  if (!val && val !== 0) return null;
+  let d;
+  if (typeof val === 'number') {
+    // Excel serial date: days since 1900-01-01
+    d = new Date((val - 25569) * 86400 * 1000);
+  } else if (val instanceof Date) {
+    d = val;
+  } else {
+    const s = String(val).trim();
+    if (!s) return null;
+    d = s.includes('T') ? new Date(s) : new Date(s + 'T00:00:00');
+  }
+  if (isNaN(d.getTime())) return null;
+  return firebase.firestore.Timestamp.fromDate(d);
+}
+
 async function executeCsvImport() {
   if (!csvValidatedData.length) return;
   const seq = await getNextVehicleNumber();
@@ -659,7 +676,7 @@ async function executeCsvImport() {
       seguro.poliza = row.seguroPoliza || '';
       seguro.tipo = row.seguroTipo || '';
       seguro.costo = parseFloat(row.seguroCosto) || null;
-      seguro.fechaVencimiento = row.seguroVencimiento ? firebase.firestore.Timestamp.fromDate(new Date(row.seguroVencimiento + 'T00:00:00')) : null;
+      seguro.fechaVencimiento = toTimestamp(row.seguroVencimiento);
     }
     const interno = `V-${String(seqNum).padStart(5, '0')}`;
     seqNum++;
@@ -677,15 +694,15 @@ async function executeCsvImport() {
       cargaTrompo: row.cargaTrompo || '',
       kilometraje: row.kilometraje || 0,
       vtv: {
-        fechaRealizacion: row.vtvFechaRealizacion ? firebase.firestore.Timestamp.fromDate(new Date(row.vtvFechaRealizacion + 'T00:00:00')) : null,
-        fechaVencimiento: row.vtvVencimiento ? firebase.firestore.Timestamp.fromDate(new Date(row.vtvVencimiento + 'T00:00:00')) : null,
+        fechaRealizacion: toTimestamp(row.vtvFechaRealizacion),
+        fechaVencimiento: toTimestamp(row.vtvVencimiento),
         costo: row.vtvCosto || null,
         centroMedicion: row.vtvCentro || '',
         resultado: row.vtvResultado || 'Pendiente'
       },
       seguro: Object.keys(seguro).length ? seguro : {},
       proximoServiceKm: row.proximoServiceKm || null,
-      proximoServiceFecha: row.proximoServiceFecha ? firebase.firestore.Timestamp.fromDate(new Date(row.proximoServiceFecha + 'T00:00:00')) : null,
+      proximoServiceFecha: toTimestamp(row.proximoServiceFecha),
       conductorHabitual: row.conductorHabitual || '',
       empresa: row.empresa || '',
       centroTrabajo: row.centroTrabajo || '',
