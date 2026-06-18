@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setupModalClose('modal-csv-import');
   setupModalClose('modal-progress');
   document.getElementById('search-vehiculo')?.addEventListener('input', applyFilters);
+  document.getElementById('filter-marca')?.addEventListener('change', applyFilters);
+  document.getElementById('filter-tipo')?.addEventListener('change', applyFilters);
+  document.getElementById('filter-centro')?.addEventListener('change', applyFilters);
+  document.getElementById('filter-empresa')?.addEventListener('change', applyFilters);
   document.getElementById('filter-estado')?.addEventListener('change', applyFilters);
 });
 
@@ -34,6 +38,8 @@ function initRealtimeListener() {
   db.collection('vehicles').orderBy('interno').onSnapshot((snapshot) => {
     allVehicles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     patenteSet = new Set(allVehicles.map(v => (v.patente || '').toUpperCase()));
+    populateFilterEmpresa();
+    document.getElementById('filter-count').textContent = allVehicles.length;
     renderVehicles(allVehicles);
   }, (error) => {
     console.error('Error loading vehicles:', error);
@@ -149,6 +155,10 @@ function deleteSelectedVehicles() {
 
 function applyFilters() {
   const search = (document.getElementById('search-vehiculo').value || '').toLowerCase();
+  const marca = document.getElementById('filter-marca').value;
+  const tipo = document.getElementById('filter-tipo').value;
+  const centro = document.getElementById('filter-centro').value;
+  const empresa = document.getElementById('filter-empresa').value;
   const estado = document.getElementById('filter-estado').value;
 
   let filtered = allVehicles;
@@ -157,12 +167,38 @@ function applyFilters() {
       (v.patente || '').toLowerCase().includes(search) ||
       (v.marca || '').toLowerCase().includes(search) ||
       (v.modelo || '').toLowerCase().includes(search) ||
-      (v.interno || v.numeroInterno || '').toLowerCase().includes(search)
+      (v.interno || v.numeroInterno || '').toLowerCase().includes(search) ||
+      (v.tipo || '').toLowerCase().includes(search) ||
+      (v.centroTrabajo || '').toLowerCase().includes(search) ||
+      (v.empresa || '').toLowerCase().includes(search)
     );
   }
+  if (marca) filtered = filtered.filter(v => (v.marca || '') === marca);
+  if (tipo) filtered = filtered.filter(v => (v.tipo || '') === tipo);
+  if (centro) filtered = filtered.filter(v => (v.centroTrabajo || '') === centro);
+  if (empresa) filtered = filtered.filter(v => (v.empresa || '') === empresa);
   if (estado) filtered = filtered.filter(v => (v.estadoGeneral || v.estado) === estado);
 
+  document.getElementById('filter-count').textContent = filtered.length;
   renderVehicles(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('search-vehiculo').value = '';
+  document.getElementById('filter-marca').value = '';
+  document.getElementById('filter-tipo').value = '';
+  document.getElementById('filter-centro').value = '';
+  document.getElementById('filter-empresa').value = '';
+  document.getElementById('filter-estado').value = '';
+  applyFilters();
+}
+
+function populateFilterEmpresa() {
+  const empresas = [...new Set(allVehicles.map(v => v.empresa).filter(Boolean))].sort();
+  const sel = document.getElementById('filter-empresa');
+  if (!sel) return;
+  sel.innerHTML = '<option value="" class="bg-[#0B0E17]">Empresa: Todas</option>' +
+    empresas.map(e => `<option value="${e}" class="bg-[#0B0E17]">${e}</option>`).join('');
 }
 
 function openVehicleModal(vehicleId = null) {

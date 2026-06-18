@@ -34,20 +34,105 @@
         <% } %>
       </div>
 
-      <div class="mt-6 glass-card rounded-xl">
-        <div class="p-4 border-b border-[#FF6B35]/10 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-          <div class="flex gap-2 flex-wrap">
-            <input type="text" id="search-vehiculo" placeholder="Buscar por patente, marca..." class="px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm w-64 text-[#F1F3F8] placeholder-[#5C6378] input-neon">
-            <select id="filter-estado" class="px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-              <option value="" class="bg-[#0B0E17]">Todos los estados</option>
+      <div class="mt-6 glass-card rounded-xl overflow-hidden">
+        <!-- Search + filter bar -->
+        <div class="p-4 border-b border-[#FF6B35]/10">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C6378]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="search-vehiculo" placeholder="Buscar por patente, marca, modelo, interno..." class="w-full pl-10 pr-4 py-2.5 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon transition-all focus:border-[#FF6B35]/60">
+          </div>
+        </div>
+        <!-- Filter dropdowns -->
+        <div class="px-4 py-3 flex flex-wrap gap-2 items-center bg-[#0B0E17]/30">
+          <div class="filter-chip">
+            <select id="filter-marca" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0B0E17]">Marca: Todas</option>
+              <option value="Mercedes Benz" class="bg-[#0B0E17]">Mercedes Benz</option>
+              <option value="Scania" class="bg-[#0B0E17]">Scania</option>
+              <option value="Volvo" class="bg-[#0B0E17]">Volvo</option>
+              <option value="Iveco" class="bg-[#0B0E17]">Iveco</option>
+              <option value="Volkswagen" class="bg-[#0B0E17]">Volkswagen</option>
+              <option value="Ford" class="bg-[#0B0E17]">Ford</option>
+              <option value="Chevrolet" class="bg-[#0B0E17]">Chevrolet</option>
+              <option value="Toyota" class="bg-[#0B0E17]">Toyota</option>
+              <option value="Fiat" class="bg-[#0B0E17]">Fiat</option>
+              <option value="Renault" class="bg-[#0B0E17]">Renault</option>
+              <option value="Nissan" class="bg-[#0B0E17]">Nissan</option>
+              <option value="JCB" class="bg-[#0B0E17]">JCB</option>
+              <option value="Caterpillar" class="bg-[#0B0E17]">Caterpillar</option>
+              <option value="Komatsu" class="bg-[#0B0E17]">Komatsu</option>
+              <option value="Hyundai" class="bg-[#0B0E17]">Hyundai</option>
+              <option value="New Holland" class="bg-[#0B0E17]">New Holland</option>
+              <option value="John Deere" class="bg-[#0B0E17]">John Deere</option>
+              <option value="Case" class="bg-[#0B0E17]">Case</option>
+              <option value="Terex" class="bg-[#0B0E17]">Terex</option>
+              <option value="Agrale" class="bg-[#0B0E17]">Agrale</option>
+              <option value="Randon" class="bg-[#0B0E17]">Randon</option>
+            </select>
+          </div>
+          <div class="filter-chip">
+            <select id="filter-tipo" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0B0E17]">Tipo: Todos</option>
+              <option value="Camión volcador" class="bg-[#0B0E17]">Camión volcador</option>
+              <option value="mixer" class="bg-[#0B0E17]">Mixer</option>
+              <option value="hormigonera" class="bg-[#0B0E17]">Hormigonera</option>
+              <option value="cisterna" class="bg-[#0B0E17]">Cisterna</option>
+              <option value="jaula" class="bg-[#0B0E17]">Jaula</option>
+              <option value="playo" class="bg-[#0B0E17]">Playo</option>
+              <option value="regador" class="bg-[#0B0E17]">Regador</option>
+              <option value="chasis" class="bg-[#0B0E17]">Chasis</option>
+              <option value="Auto" class="bg-[#0B0E17]">Auto</option>
+              <option value="Camioneta" class="bg-[#0B0E17]">Camioneta</option>
+              <option value="Grua" class="bg-[#0B0E17]">Grua</option>
+              <option value="Utilitario" class="bg-[#0B0E17]">Utilitario</option>
+              <option value="Carga" class="bg-[#0B0E17]">Carga</option>
+              <option value="Cargadora frontal" class="bg-[#0B0E17]">Cargadora frontal</option>
+              <option value="Retroexcavadora" class="bg-[#0B0E17]">Retroexcavadora</option>
+              <option value="Motoniveladora" class="bg-[#0B0E17]">Motoniveladora</option>
+              <option value="Excavadora" class="bg-[#0B0E17]">Excavadora</option>
+              <option value="Minicargadora" class="bg-[#0B0E17]">Minicargadora</option>
+              <option value="Rodillo" class="bg-[#0B0E17]">Rodillo</option>
+              <option value="Acoplado" class="bg-[#0B0E17]">Acoplado</option>
+              <option value="Semirremolque" class="bg-[#0B0E17]">Semirremolque</option>
+              <option value="Montacarga" class="bg-[#0B0E17]">Montacarga</option>
+              <option value="Tolva" class="bg-[#0B0E17]">Tolva</option>
+              <option value="Achelo" class="bg-[#0B0E17]">Achelo</option>
+              <option value="Camion" class="bg-[#0B0E17]">Camion</option>
+            </select>
+          </div>
+          <div class="filter-chip">
+            <select id="filter-centro" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0B0E17]">Centro: Todos</option>
+              <option value="Lujan" class="bg-[#0B0E17]">Lujan</option>
+              <option value="Campana" class="bg-[#0B0E17]">Campana</option>
+              <option value="Ituzaingo" class="bg-[#0B0E17]">Ituzaingo</option>
+              <option value="Moreno" class="bg-[#0B0E17]">Moreno</option>
+              <option value="Zarate" class="bg-[#0B0E17]">Zarate</option>
+            </select>
+          </div>
+          <div class="filter-chip">
+            <select id="filter-empresa" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0B0E17]">Empresa: Todas</option>
+            </select>
+          </div>
+          <div class="filter-chip">
+            <select id="filter-estado" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0B0E17]">Estado: Todos</option>
               <option value="Excelente" class="bg-[#0B0E17]">Excelente</option>
               <option value="Bueno" class="bg-[#0B0E17]">Bueno</option>
               <option value="Regular" class="bg-[#0B0E17]">Regular</option>
               <option value="Taller" class="bg-[#0B0E17]">Taller</option>
               <option value="Baja" class="bg-[#0B0E17]">Baja</option>
             </select>
-            <button onclick="applyFilters()" class="btn-secondary text-sm px-4 py-2">Filtrar</button>
           </div>
+          <button onclick="resetFilters()" class="px-3 py-1.5 text-xs text-[#8E94A8] hover:text-[#F1F3F8] transition-colors flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            Limpiar
+          </button>
+        </div>
+        <div class="px-4 py-1.5 bg-[#FF6B35]/5 border-b border-[#FF6B35]/10 flex items-center justify-between">
+          <span class="text-xs text-[#8E94A8]"><span id="filter-count">0</span> vehículo(s)</span>
+          <button onclick="resetFilters()" class="text-xs text-[#FF6B35]/70 hover:text-[#FF6B35] transition-colors">Limpiar filtros</button>
         </div>
         <div id="bulk-bar" class="hidden flex items-center justify-between px-4 py-2 bg-[#FF6B35]/10 border-b border-[#FF6B35]/20 text-sm">
           <span class="text-[#8E94A8]"><span id="bulk-count">0</span> seleccionado(s)</span>
