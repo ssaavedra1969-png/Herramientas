@@ -670,7 +670,41 @@ async function executeCsvImport() {
   let seq = await getNextVehicleNumber();
   let seqNum = seq.number;
   let maxNum = seqNum - 1;
-  const items = csvValidatedData.map(row => {
+
+  // Build items and check for interno conflicts
+  const items = [];
+  const internosUsar = [];
+  for (const row of csvValidatedData) {
+    let interno;
+    if (row.interno && /^V-\d+$/i.test(String(row.interno).trim())) {
+      interno = String(row.interno).trim().toUpperCase();
+    } else {
+      interno = `V-${String(seqNum).padStart(5, '0')}`;
+      seqNum++;
+    }
+    internosUsar.push(interno);
+  }
+  // Query existing vehicles that match any of our internos (batched for Firestore limit)
+  const existentes = new Set();
+  for (let i = 0; i < internosUsar.length; i += 30) {
+    const chunk = internosUsar.slice(i, i + 30);
+    const snap = await db.collection('vehicles').where('interno', 'in', chunk).get();
+    snap.forEach(d => existentes.add(d.data().interno));
+  }
+  const conflictos = csvValidatedData
+    .map((r, idx) => ({ interno: internosUsar[idx], idx }))
+    .filter(({ interno }) => existentes.has(interno));
+  if (conflictos.length) {
+    const lines = conflictos.map(c => `Fila ${c.idx + 2}: ${c.interno}`);
+    showToast(`Conflicto de números de interno:\n${lines.join('\n')}`, 'error');
+    return;
+  }
+
+  for (let i = 0; i < csvValidatedData.length; i++) {
+    const row = csvValidatedData[i];
+    const interno = internosUsar[i];
+    const m = interno.match(/^V-0*(\d+)$/);
+    if (m) { const n = parseInt(m[1], 10); if (n > maxNum) maxNum = n; }
     const seguro = {};
     if (row.seguroCompania || row.seguroPoliza || row.seguroVencimiento || row.seguroTipo || row.seguroCosto) {
       seguro.compañía = row.seguroCompania || '';
@@ -679,16 +713,7 @@ async function executeCsvImport() {
       seguro.costo = parseFloat(row.seguroCosto) || null;
       seguro.fechaVencimiento = toTimestamp(row.seguroVencimiento);
     }
-    let interno;
-    if (row.interno && /^V-\d+$/i.test(String(row.interno).trim())) {
-      interno = String(row.interno).trim().toUpperCase();
-      const m = interno.match(/^V-0*(\d+)$/);
-      if (m) { const n = parseInt(m[1], 10); if (n > maxNum) maxNum = n; }
-    } else {
-      interno = `V-${String(seqNum).padStart(5, '0')}`;
-      seqNum++;
-    }
-    return {
+    items.push({
       patente: row.patente,
       interno,
       marca: row.marca,
@@ -722,7 +747,7 @@ async function executeCsvImport() {
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-  });
+  }
   await batchImport(items, 'csv');
   // Update counter to max number used
   try {
