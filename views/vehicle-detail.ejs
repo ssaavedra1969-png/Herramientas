@@ -49,14 +49,16 @@
               <div class="text-[#8E94A8]">Año:</div><div class="text-[#F1F3F8]" id="vg-anio">-</div>
               <div class="text-[#8E94A8]">Chasis:</div><div class="text-[#F1F3F8]" id="vg-chasis">-</div>
               <div class="text-[#8E94A8]">N° Motor:</div><div class="text-[#F1F3F8]" id="vg-numeroMotor">-</div>
-              <div class="text-[#8E94A8]">Cap. Carga:</div><div class="text-[#F1F3F8]" id="vg-capacidadCarga">-</div>
-              <div class="text-[#8E94A8]">Km:</div><div class="text-[#F1F3F8]" id="vg-kmhs">-</div>
-              <div class="text-[#8E94A8]">Centro:</div><div class="text-[#F1F3F8]" id="vg-centro">-</div>
-              <div class="text-[#8E94A8]">Conductor:</div><div class="text-[#F1F3F8]" id="vg-conductor">-</div>
-            </div>
-          </div>
+               <div class="text-[#8E94A8]">Cap. Carga:</div><div class="text-[#F1F3F8]" id="vg-capacidadCarga">-</div>
+               <div class="text-[#8E94A8]">Carga Trompo:</div><div class="text-[#F1F3F8]" id="vg-cargaTrompo">-</div>
+               <div class="text-[#8E94A8]">Km:</div><div class="text-[#F1F3F8]" id="vg-kmhs">-</div>
+               <div class="text-[#8E94A8]">Centro:</div><div class="text-[#F1F3F8]" id="vg-centro">-</div>
+               <div class="text-[#8E94A8]">Conductor:</div><div class="text-[#F1F3F8]" id="vg-conductor">-</div>
+               <div class="text-[#8E94A8]">Empresa:</div><div class="text-[#F1F3F8]" id="vg-empresa">-</div>
+             </div>
+           </div>
 
-          <div class="glass-card rounded-xl p-5">
+           <div class="glass-card rounded-xl p-5">
             <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
               <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
               Seguro
@@ -324,8 +326,9 @@
               <option value="John Deere" class="bg-[#0B0E17]">John Deere</option>
               <option value="Case" class="bg-[#0B0E17]">Case</option>
               <option value="Terex" class="bg-[#0B0E17]">Terex</option>
-              <option value="Agrale" class="bg-[#0B0E17]">Agrale</option>
-            </select>
+               <option value="Agrale" class="bg-[#0B0E17]">Agrale</option>
+               <option value="Randon" class="bg-[#0B0E17]">Randon</option>
+             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Modelo *</label>
@@ -368,33 +371,42 @@
               <option value="Rodillo" class="bg-[#0B0E17]">Rodillo</option>
               <option value="Acoplado" class="bg-[#0B0E17]">Acoplado</option>
               <option value="Semirremolque" class="bg-[#0B0E17]">Semirremolque</option>
-              <option value="Montacarga" class="bg-[#0B0E17]">Montacarga</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Sub Tipo *</label>
-            <select id="v-subtipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
-              <option value="Indumix" class="bg-[#0B0E17]">Indumix</option>
-              <option value="Tzr" class="bg-[#0B0E17]">Tzr</option>
-              <option value="Betonmac" class="bg-[#0B0E17]">Betonmac</option>
-              <option value="tecnus" class="bg-[#0B0E17]">Tecnus</option>
-              <option value="Barival" class="bg-[#0B0E17]">Barival</option>
-              <option value="everdingm" class="bg-[#0B0E17]">Everdingm</option>
-              <option value="arrastre" class="bg-[#0B0E17]">Arrastre</option>
-              <option value="Montacarga" class="bg-[#0B0E17]">Montacarga</option>
-            </select>
+               <option value="Montacarga" class="bg-[#0B0E17]">Montacarga</option>
+               <option value="Tolva" class="bg-[#0B0E17]">Tolva</option>
+               <option value="Achelo" class="bg-[#0B0E17]">Achelo</option>
+               <option value="Camion" class="bg-[#0B0E17]">Camion</option>
+             </select>
+           </div>
+           <div>
+             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Sub Tipo *</label>
+             <select id="v-subtipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+               <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
+               <option value="Indumix" class="bg-[#0B0E17]">Indumix</option>
+               <option value="Tzr" class="bg-[#0B0E17]">Tzr</option>
+               <option value="Betonmac" class="bg-[#0B0E17]">Betonmac</option>
+               <option value="tecnus" class="bg-[#0B0E17]">Tecnus</option>
+               <option value="Barival" class="bg-[#0B0E17]">Barival</option>
+               <option value="everdingm" class="bg-[#0B0E17]">Everdingm</option>
+               <option value="arrastre" class="bg-[#0B0E17]">Arrastre</option>
+               <option value="Montacarga" class="bg-[#0B0E17]">Montacarga</option>
+               <option value="Carga" class="bg-[#0B0E17]">Carga</option>
+               <option value="Hyva" class="bg-[#0B0E17]">Hyva</option>
+             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Capacidad de Carga (kg)</label>
             <input type="number" id="v-capacidadCarga" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="25000" step="100">
-          </div>
-        </div>
-      </div>
+           </div>
+           <div>
+             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Carga Trompo</label>
+             <input type="text" id="v-cargaTrompo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="8 M3">
+           </div>
+         </div>
+       </div>
 
-      <hr class="border-[#FF6B35]/10">
+       <hr class="border-[#FF6B35]/10">
 
-      <div>
+       <div>
         <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
           <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Estado y Mediciones
@@ -516,12 +528,16 @@
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Conductor habitual</label>
             <input type="text" id="v-conductorHabitual" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Juan Pérez">
-          </div>
-        </div>
-      </div>
+           </div>
+           <div>
+             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Empresa</label>
+             <input type="text" id="v-empresa" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="FRAFIL SRL">
+           </div>
+         </div>
+       </div>
 
-      <div>
-        <label class="block text-sm font-medium text-[#8E94A8] mb-1">Observaciones</label>
+       <div>
+         <label class="block text-sm font-medium text-[#8E94A8] mb-1">Observaciones</label>
         <textarea id="v-observaciones" rows="3" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Notas adicionales..."></textarea>
       </div>
 

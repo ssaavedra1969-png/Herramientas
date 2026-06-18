@@ -273,6 +273,7 @@ async function saveVehicle(e) {
     chasis: document.getElementById('v-chasis').value.trim() || '',
     numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
     capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
+    cargaTrompo: document.getElementById('v-cargaTrompo').value.trim() || '',
     tipo: document.getElementById('v-tipo').value,
     subtipo: document.getElementById('v-subtipo').value,
     kilometraje: parseInt(document.getElementById('v-kilometraje').value) || 0,
@@ -294,6 +295,7 @@ async function saveVehicle(e) {
     proximoServiceFecha: getDateValue('v-proximoServiceFecha'),
     centroTrabajo: document.getElementById('v-centroTrabajo').value,
     conductorHabitual: document.getElementById('v-conductorHabitual').value.trim() || '',
+    empresa: document.getElementById('v-empresa').value.trim() || '',
     observaciones: document.getElementById('v-observaciones').value.trim() || '',
     fotoURL: document.getElementById('v-foto').value.trim() || '',
     multas: collectMultas(),
@@ -422,8 +424,8 @@ function closeCsvImport() {
 }
 
 function downloadCsvTemplate() {
-  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','tipo','subtipo','capacidadCarga','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','conductorHabitual','centroTrabajo','observaciones'];
-  const sample = ['ABC123','V-00001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','mixer','Indumix','25000','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','Lujan','Último cambio de cubiertas a los 140.000 km'];
+  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','tipo','subtipo','capacidadCarga','cargaTrompo','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','conductorHabitual','empresa','centroTrabajo','observaciones'];
+  const sample = ['ABC123','V-00001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','mixer','Indumix','25000','8 M3','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','FRAFIL SRL','Lujan','Último cambio de cubiertas a los 140.000 km'];
   const BOM = '\uFEFF';
   const csv = BOM + headers.join(',') + '\n' + sample.join(',') + '\n';
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -467,6 +469,11 @@ function parseVehicleRows(rows) {
     const numeroMotor = (row.numeroMotor || '').toString().trim();
     const tipo = (row.tipo || '').toString().trim();
     const subtipo = (row.subtipo || '').toString().trim();
+    const cargaTrompo = (row.cargaTrompo || '').toString().trim();
+    const empresa = (row.empresa || '').toString().trim();
+
+    // Skip completely empty rows
+    if (!patente && !interno && !marca && !modelo && !chasis && !numeroMotor && !tipo && !subtipo) continue;
 
     if (!patente) rowErrors.push('patente requerida');
     if (!marca) rowErrors.push('marca requerida');
@@ -486,6 +493,7 @@ function parseVehicleRows(rows) {
       valid.push({
         patente, interno, marca, modelo, año, chasis, numeroMotor, tipo, subtipo,
         capacidadCarga: parseFloat(row.capacidadCarga) || null,
+        cargaTrompo,
         kilometraje: parseFloat(row.kilometraje) || 0,
         vtvFechaRealizacion: row.vtvFechaRealizacion || '',
         vtvVencimiento: row.vtvVencimiento || '',
@@ -500,6 +508,7 @@ function parseVehicleRows(rows) {
         proximoServiceKm: parseFloat(row.proximoServiceKm) || null,
         proximoServiceFecha: row.proximoServiceFecha || '',
         conductorHabitual: (row.conductorHabitual || '').toString().trim(),
+        empresa: (row.empresa || '').toString().trim(),
         centroTrabajo: (row.centroTrabajo || '').toString().trim(),
         observaciones: (row.observaciones || '').toString().trim()
       });
@@ -598,11 +607,34 @@ function validateCsvImport() {
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+          let rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
           if (!rows.length) {
             showToast('El Excel está vacío o no tiene datos válidos', 'error');
             return;
           }
+          // Normalize Excel column names to lowercase internal field names
+          const headerMap = {
+            'id':'interno','patente':'patente','marca':'marca','modelo':'modelo',
+            'año':'año','aÃ±o':'año','chasis':'chasis','nro motor':'numeroMotor',
+            'tipo':'tipo','subtipo':'subtipo','capacidad':'capacidadCarga',
+            'carga trompo':'cargaTrompo','kilometraje':'kilometraje',
+            'vtv realizacion':'vtvFechaRealizacion','vtv vencimiento':'vtvVencimiento',
+            'vtv costo':'vtvCosto','vtv centro':'vtvCentro','vtv resultado':'vtvResultado',
+            'seguro compania':'seguroCompania','seguro poliza':'seguroPoliza',
+            'seguro tipo':'seguroTipo','seguro vencimiento':'seguroVencimiento',
+            'seguro costo':'seguroCosto','prox service km':'proximoServiceKm',
+            'prox service fecha':'proximoServiceFecha',
+            'conductor':'conductorHabitual','empresa':'empresa',
+            'centro trabajo':'centroTrabajo','observaciones':'observaciones'
+          };
+          rows = rows.map(r => {
+            const o = {};
+            Object.keys(r).forEach(k => {
+              const mk = headerMap[k.toLowerCase().trim()] || k.toLowerCase().trim();
+              o[mk] = r[k];
+            });
+            return o;
+          });
           const result = parseVehicleRows(rows);
           showVehicleImportResult(result);
         } catch (err) {
@@ -644,6 +676,7 @@ async function executeCsvImport() {
       tipo: row.tipo,
       subtipo: row.subtipo || '',
       capacidadCarga: row.capacidadCarga || null,
+      cargaTrompo: row.cargaTrompo || '',
       kilometraje: row.kilometraje || 0,
       vtv: {
         fechaRealizacion: row.vtvFechaRealizacion ? firebase.firestore.Timestamp.fromDate(new Date(row.vtvFechaRealizacion + 'T00:00:00')) : null,
@@ -656,6 +689,7 @@ async function executeCsvImport() {
       proximoServiceKm: row.proximoServiceKm || null,
       proximoServiceFecha: row.proximoServiceFecha ? firebase.firestore.Timestamp.fromDate(new Date(row.proximoServiceFecha + 'T00:00:00')) : null,
       conductorHabitual: row.conductorHabitual || '',
+      empresa: row.empresa || '',
       centroTrabajo: row.centroTrabajo || '',
       observaciones: row.observaciones || '',
       fotoURL: '',

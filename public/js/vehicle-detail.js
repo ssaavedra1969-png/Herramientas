@@ -50,9 +50,11 @@ function renderGeneralInfo() {
   setText('vg-chasis', vehicleData.chasis || '-');
   setText('vg-numeroMotor', vehicleData.numeroMotor || '-');
   setText('vg-capacidadCarga', vehicleData.capacidadCarga ? `${vehicleData.capacidadCarga.toLocaleString()} kg` : '-');
+  setText('vg-cargaTrompo', vehicleData.cargaTrompo || '-');
   setText('vg-kmhs', `${vehicleData.kilometraje?.toLocaleString() || 0} km`);
   setText('vg-centro', vehicleData.centroTrabajo || '-');
   setText('vg-conductor', vehicleData.conductorHabitual || '-');
+  setText('vg-empresa', vehicleData.empresa || '-');
 }
 
 function renderSeguro() {
@@ -107,6 +109,7 @@ function openEditVehicle() {
   document.getElementById('v-chasis').value = vehicleData.chasis || '';
   document.getElementById('v-numeroMotor').value = vehicleData.numeroMotor || '';
   document.getElementById('v-capacidadCarga').value = vehicleData.capacidadCarga || '';
+  document.getElementById('v-cargaTrompo').value = vehicleData.cargaTrompo || '';
   document.getElementById('v-tipo').value = vehicleData.tipo || '';
   document.getElementById('v-subtipo').value = vehicleData.subtipo || '';
   document.getElementById('v-kilometraje').value = vehicleData.kilometraje || '';
@@ -139,6 +142,7 @@ function openEditVehicle() {
   setDateField('v-proximoServiceFecha', vehicleData.proximoServiceFecha);
   document.getElementById('v-centroTrabajo').value = vehicleData.centroTrabajo || '';
   document.getElementById('v-conductorHabitual').value = vehicleData.conductorHabitual || '';
+  document.getElementById('v-empresa').value = vehicleData.empresa || '';
   document.getElementById('v-observaciones').value = vehicleData.observaciones || '';
   document.getElementById('v-foto').value = vehicleData.fotoURL || '';
 
@@ -185,6 +189,7 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     chasis: document.getElementById('v-chasis').value.trim() || '',
     numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
     capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
+    cargaTrompo: document.getElementById('v-cargaTrompo').value.trim() || '',
     tipo: document.getElementById('v-tipo').value,
     subtipo: document.getElementById('v-subtipo').value,
     kilometraje: parseInt(document.getElementById('v-kilometraje').value) || 0,
@@ -208,6 +213,7 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     proximoServiceFecha: getDateValue('v-proximoServiceFecha'),
     centroTrabajo: document.getElementById('v-centroTrabajo').value,
     conductorHabitual: document.getElementById('v-conductorHabitual').value.trim() || '',
+    empresa: document.getElementById('v-empresa').value.trim() || '',
     observaciones: document.getElementById('v-observaciones').value.trim() || '',
     fotoURL: document.getElementById('v-foto').value.trim() || '',
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
