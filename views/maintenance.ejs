@@ -3,11 +3,11 @@
   <%- include('partials/sidebar', { page: 'maintenance' }) %>
   <div class="flex-1 flex flex-col overflow-hidden">
     <div class="lg:hidden header-glass text-[#F1F3F8] p-3 flex items-center justify-between">
-      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#FF6B35]/10">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#6C3CE1]/10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
-      <span class="w-8 h-8 bg-gradient-to-br from-[#FF6B35] to-[#FF3366] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
     </div>
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -21,19 +21,19 @@
       </div>
 
       <div class="mt-6 glass-card rounded-xl">
-        <div class="p-4 border-b border-[#FF6B35]/10 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div class="p-4 border-b border-[#6C3CE1]/10 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <div class="flex gap-2 flex-wrap">
-            <input type="text" id="search-mant" placeholder="Buscar..." class="px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm w-48 text-[#F1F3F8] placeholder-[#5C6378] input-neon">
-            <select id="filter-tipo-mant" class="px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-              <option value="" class="bg-[#0B0E17]">Todos los tipos</option>
-              <option value="Mecánico" class="bg-[#0B0E17]">Mecánico</option>
-              <option value="Legal" class="bg-[#0B0E17]">Legal</option>
+            <input type="text" id="search-mant" placeholder="Buscar..." class="px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm w-48 text-[#F1F3F8] placeholder-[#5C6378] input-neon">
+            <select id="filter-tipo-mant" class="px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0A0A1A]">Todos los tipos</option>
+              <option value="Mecánico" class="bg-[#0A0A1A]">Mecánico</option>
+              <option value="Legal" class="bg-[#0A0A1A]">Legal</option>
             </select>
-            <select id="filter-estado-mant" class="px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-              <option value="" class="bg-[#0B0E17]">Todos los estados</option>
-              <option value="Pendiente" class="bg-[#0B0E17]">Pendiente</option>
-              <option value="Realizado" class="bg-[#0B0E17]">Realizado</option>
-              <option value="Vencido" class="bg-[#0B0E17]">Vencido</option>
+            <select id="filter-estado-mant" class="px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0A0A1A]">Todos los estados</option>
+              <option value="Pendiente" class="bg-[#0A0A1A]">Pendiente</option>
+              <option value="Realizado" class="bg-[#0A0A1A]">Realizado</option>
+              <option value="Vencido" class="bg-[#0A0A1A]">Vencido</option>
             </select>
             <button onclick="applyFilters()" class="btn-secondary text-sm px-4 py-2">Filtrar</button>
           </div>
@@ -41,7 +41,7 @@
         <div class="table-container p-4">
           <table class="w-full text-sm">
             <thead>
-              <tr class="text-left text-[#8E94A8] border-b border-[#FF6B35]/10">
+              <tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
                 <th class="pb-3 font-medium">Tipo</th>
                 <th class="pb-3 font-medium">Asociado a</th>
                 <th class="pb-3 font-medium">Descripción</th>
@@ -67,7 +67,7 @@
 
 <div id="modal-mantenimiento" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
   <div class="glass-card rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-6 border-b border-[#FF6B35]/10 sticky top-0 z-10" style="background: #141e2d;">
+    <div class="flex items-center justify-between p-6 border-b border-[#6C3CE1]/10 sticky top-0 z-10" style="background: #141e2d;">
       <h3 class="text-lg font-bold text-[#F1F3F8]" id="modal-mant-title">Nuevo Mantenimiento</h3>
       <button onclick="closeMaintenanceModal()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -78,64 +78,64 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo *</label>
-          <select id="m-tipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-            <option value="Mecánico" class="bg-[#0B0E17]">Mecánico</option>
-            <option value="Legal" class="bg-[#0B0E17]">Legal</option>
+          <select id="m-tipo" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <option value="Mecánico" class="bg-[#0A0A1A]">Mecánico</option>
+            <option value="Legal" class="bg-[#0A0A1A]">Legal</option>
           </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Asociado a *</label>
-          <select id="m-asociado-tipo" required onchange="toggleAsociado()" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-            <option value="vehiculo" class="bg-[#0B0E17]">Vehículo</option>
-            <option value="herramienta" class="bg-[#0B0E17]">Herramienta</option>
+          <select id="m-asociado-tipo" required onchange="toggleAsociado()" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <option value="vehiculo" class="bg-[#0A0A1A]">Vehículo</option>
+            <option value="herramienta" class="bg-[#0A0A1A]">Herramienta</option>
           </select>
         </div>
         <div id="m-vehiculo-group">
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Vehículo *</label>
-          <select id="m-vehiculo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon"><option value="" class="bg-[#0B0E17]">Cargando...</option></select>
+          <select id="m-vehiculo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon"><option value="" class="bg-[#0A0A1A]">Cargando...</option></select>
         </div>
         <div id="m-herramienta-group" class="hidden">
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Herramienta *</label>
-          <select id="m-herramienta" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon"><option value="" class="bg-[#0B0E17]">Cargando...</option></select>
+          <select id="m-herramienta" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon"><option value="" class="bg-[#0A0A1A]">Cargando...</option></select>
         </div>
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Fecha de Realización *</label>
-          <input type="date" id="m-fecha" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          <input type="date" id="m-fecha" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
         </div>
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Próx. Fecha Vencimiento *</label>
-          <input type="date" id="m-vencimiento" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          <input type="date" id="m-vencimiento" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
         </div>
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Km / Horas</label>
-          <input type="number" id="m-km" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
+          <input type="number" id="m-km" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
         </div>
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Costo ($)</label>
-          <input type="number" id="m-costo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0.00" step="0.01">
+          <input type="number" id="m-costo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0.00" step="0.01">
         </div>
         <div class="sm:col-span-2">
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Descripción *</label>
-          <textarea id="m-descripcion" required rows="2" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Describa el mantenimiento realizado..."></textarea>
+          <textarea id="m-descripcion" required rows="2" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Describa el mantenimiento realizado..."></textarea>
         </div>
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Responsable *</label>
-          <input type="text" id="m-responsable" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Nombre del responsable">
+          <input type="text" id="m-responsable" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Nombre del responsable">
         </div>
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Estado *</label>
-          <select id="m-estado" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-            <option value="Pendiente" class="bg-[#0B0E17]">Pendiente</option>
-            <option value="Realizado" class="bg-[#0B0E17]">Realizado</option>
-            <option value="Vencido" class="bg-[#0B0E17]">Vencido</option>
+          <select id="m-estado" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <option value="Pendiente" class="bg-[#0A0A1A]">Pendiente</option>
+            <option value="Realizado" class="bg-[#0A0A1A]">Realizado</option>
+            <option value="Vencido" class="bg-[#0A0A1A]">Vencido</option>
           </select>
         </div>
         <div class="sm:col-span-2">
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Comprobante (URL foto/PDF)</label>
-          <input type="url" id="m-comprobante" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="https://ejemplo.com/comprobante.pdf">
+          <input type="url" id="m-comprobante" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="https://ejemplo.com/comprobante.pdf">
         </div>
       </div>
-      <div class="flex justify-end gap-3 pt-4 border-t border-[#FF6B35]/10">
+      <div class="flex justify-end gap-3 pt-4 border-t border-[#6C3CE1]/10">
         <button type="button" onclick="closeMaintenanceModal()" class="px-4 py-2 text-[#8E94A8] hover:text-[#F1F3F8] text-sm transition-colors">Cancelar</button>
         <button type="submit" class="btn-primary text-sm px-6 py-2">Guardar</button>
       </div>

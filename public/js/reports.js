@@ -95,7 +95,7 @@ function populateVehicleFilter() {
     opt.value = v.patente;
     const label = [v.marca, v.tipo, `${v.patente}${v.interno ? ' (' + v.interno + ')' : ''}`].filter(Boolean).join(' — ');
     opt.textContent = label;
-    opt.className = 'bg-[#0B0E17]';
+    opt.className = 'bg-[#0A0A1A]';
     sel.appendChild(opt);
   });
 }
@@ -134,10 +134,10 @@ function renderTabla(data) {
     return;
   }
 
-  const colorMap = { Combustible: 'text-[#FF6B35]', Repuestos: 'text-green-400', Mantenimiento: 'text-blue-400', VTV: 'text-purple-400', Seguro: 'text-yellow-400' };
+  const colorMap = { Combustible: 'text-[#6C3CE1]', Repuestos: 'text-green-400', Mantenimiento: 'text-blue-400', VTV: 'text-purple-400', Seguro: 'text-yellow-400' };
 
   tbody.innerHTML = data.map(d => `
-    <tr class="border-b border-[#FF6B35]/5 hover:bg-white/[0.02]">
+    <tr class="border-b border-[#6C3CE1]/5 hover:bg-white/[0.02]">
       <td class="py-2.5 pr-3 text-[#F1F3F8]">${d.fecha.toLocaleDateString('es-AR')}</td>
       <td class="py-2.5 pr-3"><span class="${colorMap[d.categoria] || ''}">${d.categoria}</span></td>
       <td class="py-2.5 pr-3 text-[#8E94A8]">${d.vehiculo || '—'}</td>
@@ -167,7 +167,7 @@ function renderChartPorCategoria(data) {
     type: 'doughnut',
     data: {
       labels,
-      datasets: [{ data: values, backgroundColor: ['#FF6B35', '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'], borderWidth: 0 }]
+      datasets: [{ data: values, backgroundColor: ['#6C3CE1', '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'], borderWidth: 0 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,

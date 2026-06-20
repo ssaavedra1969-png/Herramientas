@@ -89,11 +89,11 @@ function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.tab-btn').forEach(el => {
-    el.classList.remove('bg-[#FF6B35]/10', 'text-[#FF6B35]');
+    el.classList.remove('bg-[#6C3CE1]/10', 'text-[#6C3CE1]');
     el.classList.add('text-[#8E94A8]');
   });
   document.getElementById(`tab-content-${tab}`)?.classList.remove('hidden');
-  document.getElementById(`tab-${tab}`)?.classList.add('bg-[#FF6B35]/10', 'text-[#FF6B35]');
+  document.getElementById(`tab-${tab}`)?.classList.add('bg-[#6C3CE1]/10', 'text-[#6C3CE1]');
 }
 
 function openEditVehicle() {
@@ -335,7 +335,7 @@ function renderCombustible(items) {
     return;
   }
   tbody.innerHTML = items.map(c => `
-    <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10">
+    <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
       <td class="py-2 pr-2">${formatDate(c.fecha)}</td>
       <td class="py-2 pr-2">${c.litros?.toFixed(1) || '-'}</td>
       <td class="py-2 pr-2">${formatCurrency(c.importe)}</td>
@@ -355,7 +355,7 @@ function renderRepuestos(items) {
     return;
   }
   tbody.innerHTML = items.map(r => `
-    <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10">
+    <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
       <td class="py-2 pr-2">${formatDate(r.fecha)}</td>
       <td class="py-2 pr-2 font-medium">${r.pieza || '-'}</td>
       <td class="py-2 pr-2">${formatCurrency(r.costo)}</td>

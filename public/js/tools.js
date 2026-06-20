@@ -96,10 +96,10 @@ function renderTools(tools) {
     const estadoClass = (mt.estadoGeneral || '').toLowerCase().replace(/\s+/g, '');
     const checked = selectedIds.has(t.id) ? 'checked' : '';
     const checkboxCell = admin ? `<td class="py-3 pr-3" onclick="event.stopPropagation()">
-      <input type="checkbox" class="row-checkbox accent-[#FF6B35]" value="${t.id}" ${checked} onchange="toggleRow('${t.id}', this.checked)">
+      <input type="checkbox" class="row-checkbox accent-[#6C3CE1]" value="${t.id}" ${checked} onchange="toggleRow('${t.id}', this.checked)">
     </td>` : '';
     return `
-      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10 cursor-pointer" onclick="rowClick('${t.id}', event)">
+      <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10 cursor-pointer" onclick="rowClick('${t.id}', event)">
         ${checkboxCell}
         <td class="py-3 pr-3 font-medium">${mt.codigoInterno || '—'}</td>
         <td class="py-3 pr-3">${mt.nombre || '—'}</td>

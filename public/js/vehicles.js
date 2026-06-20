@@ -102,10 +102,10 @@ function renderVehicles(vehicles) {
     const mv = fmap(v);
     const checked = selectedIds.has(v.id) ? 'checked' : '';
     const checkboxCell = admin ? `<td class="py-3 pr-3" onclick="event.stopPropagation()">
-      <input type="checkbox" class="row-checkbox accent-[#FF6B35]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
+      <input type="checkbox" class="row-checkbox accent-[#6C3CE1]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
     </td>` : '';
     return `
-      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10 cursor-pointer" onclick="rowClick('${v.id}', event)">
+      <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10 cursor-pointer" onclick="rowClick('${v.id}', event)">
         ${checkboxCell}
         <td class="py-3 pr-3">${mv.interno || '—'}</td>
         <td class="py-3 pr-3 font-medium">${mv.patente || '—'}</td>
@@ -204,14 +204,14 @@ function populateFilterDropdowns() {
   const empresas = [...new Set(allVehicles.map(v => v.empresa).filter(Boolean))].sort();
   const selEmp = document.getElementById('filter-empresa');
   if (selEmp) {
-    selEmp.innerHTML = '<option value="" class="bg-[#0B0E17]">Empresa: Todas</option>' +
-      empresas.map(e => `<option value="${e}" class="bg-[#0B0E17]">${e}</option>`).join('');
+    selEmp.innerHTML = '<option value="" class="bg-[#0A0A1A]">Empresa: Todas</option>' +
+      empresas.map(e => `<option value="${e}" class="bg-[#0A0A1A]">${e}</option>`).join('');
   }
   const subtipos = [...new Set(allVehicles.map(v => v.subtipo).filter(Boolean))].sort();
   const selSub = document.getElementById('filter-subtipo');
   if (selSub) {
-    selSub.innerHTML = '<option value="" class="bg-[#0B0E17]">Sub Tipo: Todos</option>' +
-      subtipos.map(s => `<option value="${s}" class="bg-[#0B0E17]">${s}</option>`).join('');
+    selSub.innerHTML = '<option value="" class="bg-[#0A0A1A]">Sub Tipo: Todos</option>' +
+      subtipos.map(s => `<option value="${s}" class="bg-[#0A0A1A]">${s}</option>`).join('');
   }
 }
 
@@ -395,15 +395,15 @@ function addMultaRow(multa) {
   row.innerHTML = `
     <div class="flex-1 min-w-[120px]">
       <label class="block text-xs text-[#8E94A8] mb-1">Fecha</label>
-      <input type="date" class="multa-fecha w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0B0E17]/50 border border-[#FF6B35]/20 text-[#F1F3F8]" value="${multa?.fecha || ''}">
+      <input type="date" class="multa-fecha w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 text-[#F1F3F8]" value="${multa?.fecha || ''}">
     </div>
     <div class="w-28">
       <label class="block text-xs text-[#8E94A8] mb-1">Importe ($)</label>
-      <input type="number" class="multa-importe w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0B0E17]/50 border border-[#FF6B35]/20 text-[#F1F3F8]" value="${multa?.importe || ''}" step="0.01">
+      <input type="number" class="multa-importe w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 text-[#F1F3F8]" value="${multa?.importe || ''}" step="0.01">
     </div>
     <div class="flex-[2] min-w-[150px]">
       <label class="block text-xs text-[#8E94A8] mb-1">Concepto</label>
-      <input type="text" class="multa-concepto w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0B0E17]/50 border border-[#FF6B35]/20 text-[#F1F3F8]" value="${multa?.concepto || ''}" placeholder="Exceso de velocidad">
+      <input type="text" class="multa-concepto w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 text-[#F1F3F8]" value="${multa?.concepto || ''}" placeholder="Exceso de velocidad">
     </div>
     <div class="flex items-center gap-1 pb-1.5">
       <input type="checkbox" class="multa-pagado" ${multa?.pagado ? 'checked' : ''}>
@@ -426,7 +426,7 @@ function addDocumentoRow(doc) {
   row.innerHTML = `
     <div class="flex-1 min-w-[120px]">
       <label class="block text-xs text-[#8E94A8] mb-1">Tipo</label>
-      <select class="doc-tipo w-full px-2 py-1.5 border border-[#FF6B35]/20 rounded text-sm bg-[#0B0E17]/50 text-[#F1F3F8]">
+      <select class="doc-tipo w-full px-2 py-1.5 border border-[#6C3CE1]/20 rounded text-sm bg-[#0A0A1A]/50 text-[#F1F3F8]">
         <option value="">Seleccionar...</option>
         <option value="VTV" ${doc?.tipo === 'VTV' ? 'selected' : ''}>VTV</option>
         <option value="Cédula" ${doc?.tipo === 'Cédula' ? 'selected' : ''}>Cédula</option>
@@ -437,11 +437,11 @@ function addDocumentoRow(doc) {
     </div>
     <div class="w-36">
       <label class="block text-xs text-[#8E94A8] mb-1">Vencimiento</label>
-      <input type="date" class="doc-fecha w-full px-2 py-1.5 border border-[#FF6B35]/20 rounded text-sm bg-[#0B0E17]/50 text-[#F1F3F8]" value="${doc?.fechaVencimiento || ''}">
+      <input type="date" class="doc-fecha w-full px-2 py-1.5 border border-[#6C3CE1]/20 rounded text-sm bg-[#0A0A1A]/50 text-[#F1F3F8]" value="${doc?.fechaVencimiento || ''}">
     </div>
     <div class="flex-[2] min-w-[180px]">
       <label class="block text-xs text-[#8E94A8] mb-1">Archivo URL</label>
-      <input type="url" class="doc-url w-full px-2 py-1.5 border border-[#FF6B35]/20 rounded text-sm bg-[#0B0E17]/50 text-[#F1F3F8]" value="${doc?.archivoURL || ''}" placeholder="https://storage.googleapis.com/...">
+      <input type="url" class="doc-url w-full px-2 py-1.5 border border-[#6C3CE1]/20 rounded text-sm bg-[#0A0A1A]/50 text-[#F1F3F8]" value="${doc?.archivoURL || ''}" placeholder="https://storage.googleapis.com/...">
     </div>
     <button type="button" onclick="this.closest('.documento-row').remove()" class="pb-1.5 text-red-400 hover:text-red-300">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>

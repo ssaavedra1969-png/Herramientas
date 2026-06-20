@@ -3,7 +3,7 @@
   <div class="w-full max-w-md">
     <div class="text-center mb-8">
       <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 glass-card shadow-lg">
-        <svg class="w-10 h-10 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-10 h-10 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
         </svg>
       </div>
@@ -15,19 +15,19 @@
       <% if (typeof error !== 'undefined' && error) { %>
         <div class="mb-4 px-4 py-3 rounded-lg border border-red-500/30 bg-red-900/50 text-red-400 text-sm text-center"><%= error %></div>
       <% } %>
-      <div class="flex mb-6 bg-[#0B0E17]/50 rounded-lg p-1 border border-[#FF6B35]/10">
-        <button id="tab-login" class="flex-1 py-2 text-center rounded-md text-sm font-medium transition text-[#FF6B35] bg-[#FF6B35]/10 shadow-sm">Iniciar Sesión</button>
+      <div class="flex mb-6 bg-[#0A0A1A]/50 rounded-lg p-1 border border-[#6C3CE1]/10">
+        <button id="tab-login" class="flex-1 py-2 text-center rounded-md text-sm font-medium transition text-[#6C3CE1] bg-[#6C3CE1]/10 shadow-sm">Iniciar Sesión</button>
         <button id="tab-register" class="flex-1 py-2 text-center rounded-md text-sm font-medium transition text-[#8E94A8] hover:text-[#F1F3F8]">Registrarse</button>
       </div>
 
       <form id="login-form" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Email</label>
-          <input type="email" id="login-email" required class="input-neon w-full px-4 py-2.5 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/20" placeholder="correo@ejemplo.com">
+          <input type="email" id="login-email" required class="input-neon w-full px-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#6C3CE1] focus:ring-2 focus:ring-[#6C3CE1]/20" placeholder="correo@ejemplo.com">
         </div>
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Contraseña</label>
-          <input type="password" id="login-password" required class="input-neon w-full px-4 py-2.5 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/20" placeholder="••••••••">
+          <input type="password" id="login-password" required class="input-neon w-full px-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#6C3CE1] focus:ring-2 focus:ring-[#6C3CE1]/20" placeholder="••••••••">
         </div>
         <button type="button" id="btn-login-submit" class="btn-primary w-full text-center py-2.5">Ingresar</button>
         <p id="login-error" class="text-red-400 text-sm text-center hidden"></p>
@@ -36,17 +36,17 @@
       <form id="register-form" class="space-y-4 hidden">
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Nombre completo</label>
-          <input type="text" id="reg-name" required class="input-neon w-full px-4 py-2.5 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/20" placeholder="Juan Pérez">
+          <input type="text" id="reg-name" required class="input-neon w-full px-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#6C3CE1] focus:ring-2 focus:ring-[#6C3CE1]/20" placeholder="Juan Pérez">
         </div>
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Email</label>
-          <input type="email" id="reg-email" required class="input-neon w-full px-4 py-2.5 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/20" placeholder="correo@ejemplo.com">
+          <input type="email" id="reg-email" required class="input-neon w-full px-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#6C3CE1] focus:ring-2 focus:ring-[#6C3CE1]/20" placeholder="correo@ejemplo.com">
         </div>
         <div>
           <label class="block text-sm font-medium text-[#8E94A8] mb-1">Contraseña</label>
-          <input type="password" id="reg-password" required minlength="6" class="input-neon w-full px-4 py-2.5 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/20" placeholder="Mínimo 6 caracteres">
+          <input type="password" id="reg-password" required minlength="6" class="input-neon w-full px-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#6C3CE1] focus:ring-2 focus:ring-[#6C3CE1]/20" placeholder="Mínimo 6 caracteres">
         </div>
-        <button type="button" id="btn-register-submit" class="w-full bg-gradient-to-r from-[#FF6B35] to-[#FFD700] text-[#0B0E17] font-bold py-2.5 rounded-lg hover:shadow-lg hover:shadow-[#FF6B35]/20 transition-all duration-300 transform hover:scale-[1.02]">Crear cuenta</button>
+        <button type="button" id="btn-register-submit" class="w-full bg-gradient-to-r from-[#6C3CE1] to-[#00D4FF] text-[#0A0A1A] font-bold py-2.5 rounded-lg hover:shadow-lg hover:shadow-[#6C3CE1]/20 transition-all duration-300 transform hover:scale-[1.02]">Crear cuenta</button>
         <p id="register-error" class="text-red-400 text-sm text-center hidden"></p>
       </form>
 
@@ -79,8 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   tabLogin.addEventListener('click', () => {
-    tabLogin.classList.add('text-[#FF6B35]', 'bg-[#FF6B35]/10');
-    tabRegister.classList.remove('text-[#FF6B35]', 'bg-[#FF6B35]/10');
+    tabLogin.classList.add('text-[#6C3CE1]', 'bg-[#6C3CE1]/10');
+    tabRegister.classList.remove('text-[#6C3CE1]', 'bg-[#6C3CE1]/10');
     tabRegister.classList.add('text-[#8E94A8]');
     loginForm.classList.remove('hidden');
     registerForm.classList.add('hidden');
@@ -89,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   tabRegister.addEventListener('click', () => {
-    tabRegister.classList.add('text-[#FF6B35]', 'bg-[#FF6B35]/10');
-    tabLogin.classList.remove('text-[#FF6B35]', 'bg-[#FF6B35]/10');
+    tabRegister.classList.add('text-[#6C3CE1]', 'bg-[#6C3CE1]/10');
+    tabLogin.classList.remove('text-[#6C3CE1]', 'bg-[#6C3CE1]/10');
     tabLogin.classList.add('text-[#8E94A8]');
     registerForm.classList.remove('hidden');
     loginForm.classList.add('hidden');

@@ -52,7 +52,7 @@ function renderUsers(users) {
       ? 'background-color:rgba(52,211,153,0.15);color:#34D399'
       : 'background-color:rgba(96,165,250,0.15);color:#60A5FA';
     return `
-      <tr class="border-b border-white/5 hover:bg-[#FF6B35]/10">
+      <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
         <td class="py-3 pr-3 font-medium">${u.displayName || '—'} ${isCurrentUser ? '<span class="text-xs text-blue-500 ml-1">(tú)</span>' : ''}</td>
         <td class="py-3 pr-3">${u.email || '—'}</td>
         <td class="py-3 pr-3"><span class="status-badge" style="${roleStyle}">${u.role || 'Usuario'}</span></td>
@@ -106,7 +106,7 @@ function viewUser(userId) {
 
   let html = '';
   info.forEach(i => {
-    html += `<div class="flex justify-between py-2 border-b border-[#FF6B35]/10">
+    html += `<div class="flex justify-between py-2 border-b border-[#6C3CE1]/10">
       <span class="text-[#8E94A8] text-sm">${i.label}</span>
       <span class="text-[#F1F3F8] text-sm font-medium text-right max-w-[200px] truncate">${i.value}</span>
     </div>`;
@@ -118,7 +118,7 @@ function viewUser(userId) {
     icon: 'info',
     background: '#0F1220',
     color: '#F1F3F8',
-    confirmButtonColor: '#FF6B35',
+    confirmButtonColor: '#6C3CE1',
     confirmButtonText: 'Cerrar'
   });
 }

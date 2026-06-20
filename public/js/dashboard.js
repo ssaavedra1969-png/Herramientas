@@ -10,12 +10,12 @@ function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
   document.getElementById('tab-' + name)?.classList.remove('hidden');
   document.querySelectorAll('[id^="tab-btn-"]').forEach(btn => {
-    btn.classList.remove('tab-btn-active', 'text-[#FF6B35]', 'border-b-2', 'border-[#FF6B35]');
+    btn.classList.remove('tab-btn-active', 'text-[#6C3CE1]', 'border-b-2', 'border-[#6C3CE1]');
     btn.classList.add('text-[#8E94A8]');
   });
   const activeBtn = document.getElementById('tab-btn-' + name);
   if (activeBtn) {
-    activeBtn.classList.add('tab-btn-active', 'text-[#FF6B35]', 'border-b-2', 'border-[#FF6B35]');
+    activeBtn.classList.add('tab-btn-active', 'text-[#6C3CE1]', 'border-b-2', 'border-[#6C3CE1]');
     activeBtn.classList.remove('text-[#8E94A8]');
   }
 }
@@ -119,7 +119,7 @@ function renderCombustibleChart(chartData) {
     data: {
       labels: labels.length ? labels : ['Sin datos'],
       datasets: [
-        { label: 'Litros', data: labels.length ? litros : [0], backgroundColor: '#FF6B35', borderRadius: 6, yAxisID: 'y' },
+        { label: 'Litros', data: labels.length ? litros : [0], backgroundColor: '#6C3CE1', borderRadius: 6, yAxisID: 'y' },
         { label: 'Importe ($)', data: labels.length ? importes : [0], backgroundColor: '#10B981', borderRadius: 6, yAxisID: 'y1' }
       ]
     },

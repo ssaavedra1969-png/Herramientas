@@ -3,11 +3,11 @@
   <%- include('partials/sidebar', { page: 'vehicles' }) %>
   <div class="flex-1 flex flex-col overflow-hidden">
     <div class="lg:hidden header-glass text-[#F1F3F8] p-3 flex items-center justify-between">
-      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#FF6B35]/10">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#6C3CE1]/10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
-      <span class="w-8 h-8 bg-gradient-to-br from-[#FF6B35] to-[#FF3366] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
     </div>
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -21,8 +21,8 @@
             <button onclick="toggleImportMenu()" class="btn-primary text-sm flex items-center gap-1 px-4 py-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg> Importar
             </button>
-            <div id="import-menu" class="hidden absolute right-0 mt-2 w-48 glass-card rounded-lg shadow-xl border border-[#FF6B35]/10 z-10">
-              <button onclick="openCsvImport()" class="w-full text-left px-4 py-3 text-sm text-[#F1F3F8] hover:bg-[#FF6B35]/10 flex items-center gap-2 rounded-lg">
+            <div id="import-menu" class="hidden absolute right-0 mt-2 w-48 glass-card rounded-lg shadow-xl border border-[#6C3CE1]/10 z-10">
+              <button onclick="openCsvImport()" class="w-full text-left px-4 py-3 text-sm text-[#F1F3F8] hover:bg-[#6C3CE1]/10 flex items-center gap-2 rounded-lg">
                 <svg class="w-4 h-4 text-[#8E94A8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Desde CSV
               </button>
             </div>
@@ -36,88 +36,88 @@
 
       <div class="mt-6 glass-card rounded-xl overflow-hidden">
         <!-- Search + filter bar -->
-        <div class="p-4 border-b border-[#FF6B35]/10">
+        <div class="p-4 border-b border-[#6C3CE1]/10">
           <div class="relative">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C6378]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="search-vehiculo" placeholder="Buscar por patente, marca, modelo, interno..." class="w-full pl-10 pr-4 py-2.5 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon transition-all focus:border-[#FF6B35]/60">
+            <input type="text" id="search-vehiculo" placeholder="Buscar por patente, marca, modelo, interno..." class="w-full pl-10 pr-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon transition-all focus:border-[#6C3CE1]/60">
           </div>
         </div>
         <!-- Filter dropdowns -->
-        <div class="px-4 py-3 flex flex-wrap gap-2 items-center bg-[#0B0E17]/30">
+        <div class="px-4 py-3 flex flex-wrap gap-2 items-center bg-[#0A0A1A]/30">
           <div class="filter-chip">
-            <select id="filter-marca" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-              <option value="" class="bg-[#0B0E17]">Marca: Todas</option>
-              <option value="Mercedes Benz" class="bg-[#0B0E17]">Mercedes Benz</option>
-              <option value="Scania" class="bg-[#0B0E17]">Scania</option>
-              <option value="Volvo" class="bg-[#0B0E17]">Volvo</option>
-              <option value="Iveco" class="bg-[#0B0E17]">Iveco</option>
-              <option value="Volkswagen" class="bg-[#0B0E17]">Volkswagen</option>
-              <option value="Ford" class="bg-[#0B0E17]">Ford</option>
-              <option value="Chevrolet" class="bg-[#0B0E17]">Chevrolet</option>
-              <option value="Toyota" class="bg-[#0B0E17]">Toyota</option>
-              <option value="Fiat" class="bg-[#0B0E17]">Fiat</option>
-              <option value="Renault" class="bg-[#0B0E17]">Renault</option>
-              <option value="Nissan" class="bg-[#0B0E17]">Nissan</option>
-              <option value="JCB" class="bg-[#0B0E17]">JCB</option>
-              <option value="Caterpillar" class="bg-[#0B0E17]">Caterpillar</option>
-              <option value="Komatsu" class="bg-[#0B0E17]">Komatsu</option>
-              <option value="Hyundai" class="bg-[#0B0E17]">Hyundai</option>
-              <option value="New Holland" class="bg-[#0B0E17]">New Holland</option>
-              <option value="John Deere" class="bg-[#0B0E17]">John Deere</option>
-              <option value="Case" class="bg-[#0B0E17]">Case</option>
-              <option value="Terex" class="bg-[#0B0E17]">Terex</option>
-              <option value="Agrale" class="bg-[#0B0E17]">Agrale</option>
-              <option value="Randon" class="bg-[#0B0E17]">Randon</option>
+            <select id="filter-marca" class="px-3 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0A0A1A]">Marca: Todas</option>
+              <option value="Mercedes Benz" class="bg-[#0A0A1A]">Mercedes Benz</option>
+              <option value="Scania" class="bg-[#0A0A1A]">Scania</option>
+              <option value="Volvo" class="bg-[#0A0A1A]">Volvo</option>
+              <option value="Iveco" class="bg-[#0A0A1A]">Iveco</option>
+              <option value="Volkswagen" class="bg-[#0A0A1A]">Volkswagen</option>
+              <option value="Ford" class="bg-[#0A0A1A]">Ford</option>
+              <option value="Chevrolet" class="bg-[#0A0A1A]">Chevrolet</option>
+              <option value="Toyota" class="bg-[#0A0A1A]">Toyota</option>
+              <option value="Fiat" class="bg-[#0A0A1A]">Fiat</option>
+              <option value="Renault" class="bg-[#0A0A1A]">Renault</option>
+              <option value="Nissan" class="bg-[#0A0A1A]">Nissan</option>
+              <option value="JCB" class="bg-[#0A0A1A]">JCB</option>
+              <option value="Caterpillar" class="bg-[#0A0A1A]">Caterpillar</option>
+              <option value="Komatsu" class="bg-[#0A0A1A]">Komatsu</option>
+              <option value="Hyundai" class="bg-[#0A0A1A]">Hyundai</option>
+              <option value="New Holland" class="bg-[#0A0A1A]">New Holland</option>
+              <option value="John Deere" class="bg-[#0A0A1A]">John Deere</option>
+              <option value="Case" class="bg-[#0A0A1A]">Case</option>
+              <option value="Terex" class="bg-[#0A0A1A]">Terex</option>
+              <option value="Agrale" class="bg-[#0A0A1A]">Agrale</option>
+              <option value="Randon" class="bg-[#0A0A1A]">Randon</option>
             </select>
           </div>
           <div class="filter-chip">
-            <select id="filter-tipo" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-              <option value="" class="bg-[#0B0E17]">Tipo: Todos</option>
-              <option value="Camión volcador" class="bg-[#0B0E17]">Camión volcador</option>
-              <option value="mixer" class="bg-[#0B0E17]">Mixer</option>
-              <option value="hormigonera" class="bg-[#0B0E17]">Hormigonera</option>
-              <option value="cisterna" class="bg-[#0B0E17]">Cisterna</option>
-              <option value="jaula" class="bg-[#0B0E17]">Jaula</option>
-              <option value="playo" class="bg-[#0B0E17]">Playo</option>
-              <option value="regador" class="bg-[#0B0E17]">Regador</option>
-              <option value="chasis" class="bg-[#0B0E17]">Chasis</option>
-              <option value="Auto" class="bg-[#0B0E17]">Auto</option>
-              <option value="Camioneta" class="bg-[#0B0E17]">Camioneta</option>
-              <option value="Grua" class="bg-[#0B0E17]">Grua</option>
-              <option value="Utilitario" class="bg-[#0B0E17]">Utilitario</option>
-              <option value="Carga" class="bg-[#0B0E17]">Carga</option>
-              <option value="Cargadora frontal" class="bg-[#0B0E17]">Cargadora frontal</option>
-              <option value="Retroexcavadora" class="bg-[#0B0E17]">Retroexcavadora</option>
-              <option value="Motoniveladora" class="bg-[#0B0E17]">Motoniveladora</option>
-              <option value="Excavadora" class="bg-[#0B0E17]">Excavadora</option>
-              <option value="Minicargadora" class="bg-[#0B0E17]">Minicargadora</option>
-              <option value="Rodillo" class="bg-[#0B0E17]">Rodillo</option>
-              <option value="Acoplado" class="bg-[#0B0E17]">Acoplado</option>
-              <option value="Semirremolque" class="bg-[#0B0E17]">Semirremolque</option>
-              <option value="Montacarga" class="bg-[#0B0E17]">Montacarga</option>
-              <option value="Tolva" class="bg-[#0B0E17]">Tolva</option>
-              <option value="Achelo" class="bg-[#0B0E17]">Achelo</option>
-              <option value="Camion" class="bg-[#0B0E17]">Camion</option>
+            <select id="filter-tipo" class="px-3 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0A0A1A]">Tipo: Todos</option>
+              <option value="Camión volcador" class="bg-[#0A0A1A]">Camión volcador</option>
+              <option value="mixer" class="bg-[#0A0A1A]">Mixer</option>
+              <option value="hormigonera" class="bg-[#0A0A1A]">Hormigonera</option>
+              <option value="cisterna" class="bg-[#0A0A1A]">Cisterna</option>
+              <option value="jaula" class="bg-[#0A0A1A]">Jaula</option>
+              <option value="playo" class="bg-[#0A0A1A]">Playo</option>
+              <option value="regador" class="bg-[#0A0A1A]">Regador</option>
+              <option value="chasis" class="bg-[#0A0A1A]">Chasis</option>
+              <option value="Auto" class="bg-[#0A0A1A]">Auto</option>
+              <option value="Camioneta" class="bg-[#0A0A1A]">Camioneta</option>
+              <option value="Grua" class="bg-[#0A0A1A]">Grua</option>
+              <option value="Utilitario" class="bg-[#0A0A1A]">Utilitario</option>
+              <option value="Carga" class="bg-[#0A0A1A]">Carga</option>
+              <option value="Cargadora frontal" class="bg-[#0A0A1A]">Cargadora frontal</option>
+              <option value="Retroexcavadora" class="bg-[#0A0A1A]">Retroexcavadora</option>
+              <option value="Motoniveladora" class="bg-[#0A0A1A]">Motoniveladora</option>
+              <option value="Excavadora" class="bg-[#0A0A1A]">Excavadora</option>
+              <option value="Minicargadora" class="bg-[#0A0A1A]">Minicargadora</option>
+              <option value="Rodillo" class="bg-[#0A0A1A]">Rodillo</option>
+              <option value="Acoplado" class="bg-[#0A0A1A]">Acoplado</option>
+              <option value="Semirremolque" class="bg-[#0A0A1A]">Semirremolque</option>
+              <option value="Montacarga" class="bg-[#0A0A1A]">Montacarga</option>
+              <option value="Tolva" class="bg-[#0A0A1A]">Tolva</option>
+              <option value="Achelo" class="bg-[#0A0A1A]">Achelo</option>
+              <option value="Camion" class="bg-[#0A0A1A]">Camion</option>
             </select>
           </div>
           <div class="filter-chip">
-            <select id="filter-centro" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-              <option value="" class="bg-[#0B0E17]">Centro: Todos</option>
-              <option value="Lujan" class="bg-[#0B0E17]">Lujan</option>
-              <option value="Campana" class="bg-[#0B0E17]">Campana</option>
-              <option value="Ituzaingo" class="bg-[#0B0E17]">Ituzaingo</option>
-              <option value="Moreno" class="bg-[#0B0E17]">Moreno</option>
-              <option value="Zarate" class="bg-[#0B0E17]">Zarate</option>
+            <select id="filter-centro" class="px-3 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0A0A1A]">Centro: Todos</option>
+              <option value="Lujan" class="bg-[#0A0A1A]">Lujan</option>
+              <option value="Campana" class="bg-[#0A0A1A]">Campana</option>
+              <option value="Ituzaingo" class="bg-[#0A0A1A]">Ituzaingo</option>
+              <option value="Moreno" class="bg-[#0A0A1A]">Moreno</option>
+              <option value="Zarate" class="bg-[#0A0A1A]">Zarate</option>
             </select>
           </div>
            <div class="filter-chip">
-            <select id="filter-subtipo" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-              <option value="" class="bg-[#0B0E17]">Sub Tipo: Todos</option>
+            <select id="filter-subtipo" class="px-3 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0A0A1A]">Sub Tipo: Todos</option>
             </select>
           </div>
           <div class="filter-chip">
-            <select id="filter-empresa" class="px-3 py-1.5 bg-[#0B0E17]/60 border border-[#FF6B35]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-              <option value="" class="bg-[#0B0E17]">Empresa: Todas</option>
+            <select id="filter-empresa" class="px-3 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+              <option value="" class="bg-[#0A0A1A]">Empresa: Todas</option>
             </select>
           </div>
           <button onclick="resetFilters()" class="px-3 py-1.5 text-xs text-[#8E94A8] hover:text-[#F1F3F8] transition-colors flex items-center gap-1">
@@ -125,12 +125,12 @@
             Limpiar
           </button>
         </div>
-        <div class="px-4 py-1.5 bg-[#FF6B35]/5 border-b border-[#FF6B35]/10 flex items-center justify-between">
+        <div class="px-4 py-1.5 bg-[#6C3CE1]/5 border-b border-[#6C3CE1]/10 flex items-center justify-between">
           <span class="text-xs text-[#8E94A8]"><span id="filter-count">0</span> vehículo(s)</span>
-          <button onclick="resetFilters()" class="text-xs text-[#FF6B35]/70 hover:text-[#FF6B35] transition-colors">Limpiar filtros</button>
+          <button onclick="resetFilters()" class="text-xs text-[#6C3CE1]/70 hover:text-[#6C3CE1] transition-colors">Limpiar filtros</button>
         </div>
         <% if (currentUserData?.role === 'Admin') { %>
-        <div id="bulk-bar" class="hidden flex items-center justify-between px-4 py-2 bg-[#FF6B35]/10 border-b border-[#FF6B35]/20 text-sm">
+        <div id="bulk-bar" class="hidden flex items-center justify-between px-4 py-2 bg-[#6C3CE1]/10 border-b border-[#6C3CE1]/20 text-sm">
           <span class="text-[#8E94A8]"><span id="bulk-count">0</span> seleccionado(s)</span>
           <button onclick="deleteSelectedVehicles()" class="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition text-sm font-medium">🗑️ Eliminar seleccionados</button>
         </div>
@@ -138,10 +138,10 @@
         <div class="table-container p-4">
           <table class="w-full text-sm">
             <thead>
-              <tr class="text-left text-[#8E94A8] border-b border-[#FF6B35]/10">
+              <tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
                 <% if (currentUserData?.role === 'Admin') { %>
                 <th class="pb-3 font-medium w-10">
-                  <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" class="accent-[#FF6B35]">
+                  <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" class="accent-[#6C3CE1]">
                 </th>
                 <% } %>
                 <th class="pb-3 font-medium">Interno</th>
@@ -168,7 +168,7 @@
 <!-- Modal Formulario Vehículo -->
 <div id="modal-vehiculo" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
   <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-6 border-b border-[#FF6B35]/10 sticky top-0 z-10" style="background: #141e2d;">
+    <div class="flex items-center justify-between p-6 border-b border-[#6C3CE1]/10 sticky top-0 z-10" style="background: #141e2d;">
       <h3 class="text-lg font-bold text-[#F1F3F8]" id="modal-vehiculo-title">Nuevo Vehículo</h3>
       <button onclick="closeVehicleModal()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -180,120 +180,120 @@
       <!-- Sección: Datos Generales -->
       <div>
         <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <svg class="w-5 h-5 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           Datos Generales
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° Interno</label>
-            <input type="text" id="v-interno" readonly class="w-full px-3 py-2 bg-[#0B0E17]/30 border border-[#FF6B35]/10 rounded-lg text-sm text-[#5C6378] cursor-not-allowed" placeholder="Se genera automáticamente">
+            <input type="text" id="v-interno" readonly class="w-full px-3 py-2 bg-[#0A0A1A]/30 border border-[#6C3CE1]/10 rounded-lg text-sm text-[#5C6378] cursor-not-allowed" placeholder="Se genera automáticamente">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Patente *</label>
-            <input type="text" id="v-patente" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="ABC123" maxlength="10" style="text-transform:uppercase">
+            <input type="text" id="v-patente" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="ABC123" maxlength="10" style="text-transform:uppercase">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Marca *</label>
-            <select id="v-marca" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
-              <option value="Mercedes Benz" class="bg-[#0B0E17]">Mercedes Benz</option>
-              <option value="Scania" class="bg-[#0B0E17]">Scania</option>
-              <option value="Volvo" class="bg-[#0B0E17]">Volvo</option>
-              <option value="Iveco" class="bg-[#0B0E17]">Iveco</option>
-              <option value="Volkswagen" class="bg-[#0B0E17]">Volkswagen</option>
-              <option value="Ford" class="bg-[#0B0E17]">Ford</option>
-              <option value="Chevrolet" class="bg-[#0B0E17]">Chevrolet</option>
-              <option value="Toyota" class="bg-[#0B0E17]">Toyota</option>
-              <option value="Fiat" class="bg-[#0B0E17]">Fiat</option>
-              <option value="Renault" class="bg-[#0B0E17]">Renault</option>
-              <option value="Nissan" class="bg-[#0B0E17]">Nissan</option>
-              <option value="JCB" class="bg-[#0B0E17]">JCB</option>
-              <option value="Caterpillar" class="bg-[#0B0E17]">Caterpillar</option>
-              <option value="Komatsu" class="bg-[#0B0E17]">Komatsu</option>
-              <option value="Hyundai" class="bg-[#0B0E17]">Hyundai</option>
-              <option value="New Holland" class="bg-[#0B0E17]">New Holland</option>
-              <option value="John Deere" class="bg-[#0B0E17]">John Deere</option>
-              <option value="Case" class="bg-[#0B0E17]">Case</option>
-              <option value="Terex" class="bg-[#0B0E17]">Terex</option>
-               <option value="Agrale" class="bg-[#0B0E17]">Agrale</option>
-               <option value="Randon" class="bg-[#0B0E17]">Randon</option>
+            <select id="v-marca" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0A0A1A]">Seleccionar...</option>
+              <option value="Mercedes Benz" class="bg-[#0A0A1A]">Mercedes Benz</option>
+              <option value="Scania" class="bg-[#0A0A1A]">Scania</option>
+              <option value="Volvo" class="bg-[#0A0A1A]">Volvo</option>
+              <option value="Iveco" class="bg-[#0A0A1A]">Iveco</option>
+              <option value="Volkswagen" class="bg-[#0A0A1A]">Volkswagen</option>
+              <option value="Ford" class="bg-[#0A0A1A]">Ford</option>
+              <option value="Chevrolet" class="bg-[#0A0A1A]">Chevrolet</option>
+              <option value="Toyota" class="bg-[#0A0A1A]">Toyota</option>
+              <option value="Fiat" class="bg-[#0A0A1A]">Fiat</option>
+              <option value="Renault" class="bg-[#0A0A1A]">Renault</option>
+              <option value="Nissan" class="bg-[#0A0A1A]">Nissan</option>
+              <option value="JCB" class="bg-[#0A0A1A]">JCB</option>
+              <option value="Caterpillar" class="bg-[#0A0A1A]">Caterpillar</option>
+              <option value="Komatsu" class="bg-[#0A0A1A]">Komatsu</option>
+              <option value="Hyundai" class="bg-[#0A0A1A]">Hyundai</option>
+              <option value="New Holland" class="bg-[#0A0A1A]">New Holland</option>
+              <option value="John Deere" class="bg-[#0A0A1A]">John Deere</option>
+              <option value="Case" class="bg-[#0A0A1A]">Case</option>
+              <option value="Terex" class="bg-[#0A0A1A]">Terex</option>
+               <option value="Agrale" class="bg-[#0A0A1A]">Agrale</option>
+               <option value="Randon" class="bg-[#0A0A1A]">Randon</option>
              </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Modelo *</label>
-            <input type="text" id="v-modelo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Modelo">
+            <input type="text" id="v-modelo" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Modelo">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Año *</label>
-            <input type="number" id="v-anio" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="2024" min="1980" max="2026">
+            <input type="number" id="v-anio" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="2024" min="1980" max="2026">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Chasis (N° de serie) *</label>
-            <input type="text" id="v-chasis" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="9BM1234567890ABC">
+            <input type="text" id="v-chasis" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="9BM1234567890ABC">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° de Motor *</label>
-            <input type="text" id="v-numeroMotor" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Motor XYZ-12345">
+            <input type="text" id="v-numeroMotor" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Motor XYZ-12345">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo *</label>
-            <select id="v-tipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
-              <option value="Camión volcador" class="bg-[#0B0E17]">Camión volcador</option>
-              <option value="mixer" class="bg-[#0B0E17]">Mixer</option>
-              <option value="hormigonera" class="bg-[#0B0E17]">Hormigonera</option>
-              <option value="cisterna" class="bg-[#0B0E17]">Cisterna</option>
-              <option value="jaula" class="bg-[#0B0E17]">Jaula</option>
-              <option value="playo" class="bg-[#0B0E17]">Playo</option>
-              <option value="regador" class="bg-[#0B0E17]">Regador</option>
-              <option value="chasis" class="bg-[#0B0E17]">Chasis</option>
-              <option value="Auto" class="bg-[#0B0E17]">Auto</option>
-              <option value="Camioneta" class="bg-[#0B0E17]">Camioneta</option>
-              <option value="Grua" class="bg-[#0B0E17]">Grua</option>
-              <option value="Utilitario" class="bg-[#0B0E17]">Utilitario</option>
-              <option value="Carga" class="bg-[#0B0E17]">Carga</option>
-              <option value="Cargadora frontal" class="bg-[#0B0E17]">Cargadora frontal</option>
-              <option value="Retroexcavadora" class="bg-[#0B0E17]">Retroexcavadora</option>
-              <option value="Motoniveladora" class="bg-[#0B0E17]">Motoniveladora</option>
-              <option value="Excavadora" class="bg-[#0B0E17]">Excavadora</option>
-              <option value="Minicargadora" class="bg-[#0B0E17]">Minicargadora</option>
-              <option value="Rodillo" class="bg-[#0B0E17]">Rodillo</option>
-              <option value="Acoplado" class="bg-[#0B0E17]">Acoplado</option>
-              <option value="Semirremolque" class="bg-[#0B0E17]">Semirremolque</option>
-               <option value="Montacarga" class="bg-[#0B0E17]">Montacarga</option>
-               <option value="Tolva" class="bg-[#0B0E17]">Tolva</option>
-               <option value="Achelo" class="bg-[#0B0E17]">Achelo</option>
-               <option value="Camion" class="bg-[#0B0E17]">Camion</option>
+            <select id="v-tipo" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0A0A1A]">Seleccionar...</option>
+              <option value="Camión volcador" class="bg-[#0A0A1A]">Camión volcador</option>
+              <option value="mixer" class="bg-[#0A0A1A]">Mixer</option>
+              <option value="hormigonera" class="bg-[#0A0A1A]">Hormigonera</option>
+              <option value="cisterna" class="bg-[#0A0A1A]">Cisterna</option>
+              <option value="jaula" class="bg-[#0A0A1A]">Jaula</option>
+              <option value="playo" class="bg-[#0A0A1A]">Playo</option>
+              <option value="regador" class="bg-[#0A0A1A]">Regador</option>
+              <option value="chasis" class="bg-[#0A0A1A]">Chasis</option>
+              <option value="Auto" class="bg-[#0A0A1A]">Auto</option>
+              <option value="Camioneta" class="bg-[#0A0A1A]">Camioneta</option>
+              <option value="Grua" class="bg-[#0A0A1A]">Grua</option>
+              <option value="Utilitario" class="bg-[#0A0A1A]">Utilitario</option>
+              <option value="Carga" class="bg-[#0A0A1A]">Carga</option>
+              <option value="Cargadora frontal" class="bg-[#0A0A1A]">Cargadora frontal</option>
+              <option value="Retroexcavadora" class="bg-[#0A0A1A]">Retroexcavadora</option>
+              <option value="Motoniveladora" class="bg-[#0A0A1A]">Motoniveladora</option>
+              <option value="Excavadora" class="bg-[#0A0A1A]">Excavadora</option>
+              <option value="Minicargadora" class="bg-[#0A0A1A]">Minicargadora</option>
+              <option value="Rodillo" class="bg-[#0A0A1A]">Rodillo</option>
+              <option value="Acoplado" class="bg-[#0A0A1A]">Acoplado</option>
+              <option value="Semirremolque" class="bg-[#0A0A1A]">Semirremolque</option>
+               <option value="Montacarga" class="bg-[#0A0A1A]">Montacarga</option>
+               <option value="Tolva" class="bg-[#0A0A1A]">Tolva</option>
+               <option value="Achelo" class="bg-[#0A0A1A]">Achelo</option>
+               <option value="Camion" class="bg-[#0A0A1A]">Camion</option>
              </select>
            </div>
            <div>
              <label class="block text-sm font-medium text-[#8E94A8] mb-1">Sub Tipo *</label>
-             <select id="v-subtipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-               <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
-               <option value="Indumix" class="bg-[#0B0E17]">Indumix</option>
-               <option value="Tzr" class="bg-[#0B0E17]">Tzr</option>
-               <option value="Betonmac" class="bg-[#0B0E17]">Betonmac</option>
-               <option value="tecnus" class="bg-[#0B0E17]">Tecnus</option>
-               <option value="Barival" class="bg-[#0B0E17]">Barival</option>
-               <option value="everdingm" class="bg-[#0B0E17]">Everdingm</option>
-               <option value="arrastre" class="bg-[#0B0E17]">Arrastre</option>
-               <option value="Montacarga" class="bg-[#0B0E17]">Montacarga</option>
-               <option value="Carga" class="bg-[#0B0E17]">Carga</option>
-               <option value="Hyva" class="bg-[#0B0E17]">Hyva</option>
+             <select id="v-subtipo" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+               <option value="" class="bg-[#0A0A1A]">Seleccionar...</option>
+               <option value="Indumix" class="bg-[#0A0A1A]">Indumix</option>
+               <option value="Tzr" class="bg-[#0A0A1A]">Tzr</option>
+               <option value="Betonmac" class="bg-[#0A0A1A]">Betonmac</option>
+               <option value="tecnus" class="bg-[#0A0A1A]">Tecnus</option>
+               <option value="Barival" class="bg-[#0A0A1A]">Barival</option>
+               <option value="everdingm" class="bg-[#0A0A1A]">Everdingm</option>
+               <option value="arrastre" class="bg-[#0A0A1A]">Arrastre</option>
+               <option value="Montacarga" class="bg-[#0A0A1A]">Montacarga</option>
+               <option value="Carga" class="bg-[#0A0A1A]">Carga</option>
+               <option value="Hyva" class="bg-[#0A0A1A]">Hyva</option>
              </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Capacidad de Carga (kg)</label>
-            <input type="number" id="v-capacidadCarga" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="25000" step="100">
+            <input type="number" id="v-capacidadCarga" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="25000" step="100">
            </div>
            <div>
              <label class="block text-sm font-medium text-[#8E94A8] mb-1">Carga Trompo</label>
-             <input type="text" id="v-cargaTrompo" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="8 M3">
+             <input type="text" id="v-cargaTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="8 M3">
            </div>
          </div>
        </div>
 
-       <hr class="border-[#FF6B35]/10">
+       <hr class="border-[#6C3CE1]/10">
 
        <!-- Sección: Estado y Mediciones -->
       <div>
@@ -304,36 +304,36 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Kilometraje</label>
-            <input type="number" id="v-kilometraje" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
+            <input type="number" id="v-kilometraje" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Fecha Realización</label>
-            <input type="date" id="v-vtvFechaRealizacion" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <input type="date" id="v-vtvFechaRealizacion" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Vencimiento *</label>
-            <input type="date" id="v-vencimientoVTV" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <input type="date" id="v-vencimientoVTV" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Costo ($)</label>
-            <input type="number" id="v-vtvCosto" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0" step="0.01">
+            <input type="number" id="v-vtvCosto" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0" step="0.01">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Centro Medición</label>
-            <input type="text" id="v-vtvCentro" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Centro de revisión técnica">
+            <input type="text" id="v-vtvCentro" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Centro de revisión técnica">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">VTV - Resultado</label>
-            <select id="v-vtvResultado" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-              <option value="Pendiente" class="bg-[#0B0E17]">Pendiente</option>
-              <option value="Aprobado" class="bg-[#0B0E17]">Aprobado</option>
-              <option value="Rechazado" class="bg-[#0B0E17]">Rechazado</option>
+            <select id="v-vtvResultado" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="Pendiente" class="bg-[#0A0A1A]">Pendiente</option>
+              <option value="Aprobado" class="bg-[#0A0A1A]">Aprobado</option>
+              <option value="Rechazado" class="bg-[#0A0A1A]">Rechazado</option>
             </select>
           </div>
         </div>
       </div>
 
-      <hr class="border-[#FF6B35]/10">
+      <hr class="border-[#6C3CE1]/10">
 
       <!-- Sección: Seguro -->
       <div>
@@ -344,34 +344,34 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Compañía / Marca *</label>
-            <input type="text" id="v-seguroCompania" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Rivadavia Seguros">
+            <input type="text" id="v-seguroCompania" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Rivadavia Seguros">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° Póliza</label>
-            <input type="text" id="v-seguroPoliza" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="POL-2024-12345">
+            <input type="text" id="v-seguroPoliza" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="POL-2024-12345">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo de Seguro *</label>
-            <select id="v-seguroTipo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
-              <option value="Responsabilidad Civil" class="bg-[#0B0E17]">Responsabilidad Civil</option>
-              <option value="Todo Riesgo" class="bg-[#0B0E17]">Todo Riesgo</option>
-              <option value="Terceros Completo" class="bg-[#0B0E17]">Terceros Completo</option>
-              <option value="Seguro Técnico" class="bg-[#0B0E17]">Seguro Técnico</option>
+            <select id="v-seguroTipo" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0A0A1A]">Seleccionar...</option>
+              <option value="Responsabilidad Civil" class="bg-[#0A0A1A]">Responsabilidad Civil</option>
+              <option value="Todo Riesgo" class="bg-[#0A0A1A]">Todo Riesgo</option>
+              <option value="Terceros Completo" class="bg-[#0A0A1A]">Terceros Completo</option>
+              <option value="Seguro Técnico" class="bg-[#0A0A1A]">Seguro Técnico</option>
             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Vencimiento del seguro</label>
-            <input type="date" id="v-seguroVencimiento" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <input type="date" id="v-seguroVencimiento" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Costo del seguro ($)</label>
-            <input type="number" id="v-seguroCosto" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0" step="0.01">
+            <input type="number" id="v-seguroCosto" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="0" step="0.01">
           </div>
         </div>
       </div>
 
-      <hr class="border-[#FF6B35]/10">
+      <hr class="border-[#6C3CE1]/10">
 
       <!-- Sección: Service -->
       <div>
@@ -382,16 +382,16 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Próximo service (km)</label>
-            <input type="number" id="v-proximoServiceKm" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="10000">
+            <input type="number" id="v-proximoServiceKm" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="10000">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Próximo service (fecha)</label>
-            <input type="date" id="v-proximoServiceFecha" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            <input type="date" id="v-proximoServiceFecha" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
           </div>
         </div>
       </div>
 
-      <hr class="border-[#FF6B35]/10">
+      <hr class="border-[#6C3CE1]/10">
 
       <!-- Sección: Ubicación y Conductor -->
       <div>
@@ -402,22 +402,22 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Centro de Trabajo *</label>
-            <select id="v-centroTrabajo" required class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-              <option value="" class="bg-[#0B0E17]">Seleccionar...</option>
-              <option value="Lujan" class="bg-[#0B0E17]">Lujan</option>
-              <option value="Campana" class="bg-[#0B0E17]">Campana</option>
-              <option value="Ituzaingo" class="bg-[#0B0E17]">Ituzaingo</option>
-              <option value="Moreno" class="bg-[#0B0E17]">Moreno</option>
-              <option value="Zarate" class="bg-[#0B0E17]">Zarate</option>
+            <select id="v-centroTrabajo" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="" class="bg-[#0A0A1A]">Seleccionar...</option>
+              <option value="Lujan" class="bg-[#0A0A1A]">Lujan</option>
+              <option value="Campana" class="bg-[#0A0A1A]">Campana</option>
+              <option value="Ituzaingo" class="bg-[#0A0A1A]">Ituzaingo</option>
+              <option value="Moreno" class="bg-[#0A0A1A]">Moreno</option>
+              <option value="Zarate" class="bg-[#0A0A1A]">Zarate</option>
             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Conductor habitual</label>
-            <input type="text" id="v-conductorHabitual" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Juan Pérez">
+            <input type="text" id="v-conductorHabitual" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Juan Pérez">
            </div>
            <div>
              <label class="block text-sm font-medium text-[#8E94A8] mb-1">Empresa</label>
-             <input type="text" id="v-empresa" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="FRAFIL SRL">
+             <input type="text" id="v-empresa" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="FRAFIL SRL">
            </div>
          </div>
        </div>
@@ -434,7 +434,7 @@
         <button type="button" onclick="addMultaRow()" class="mt-2 px-3 py-1.5 text-xs bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition">+ Agregar multa</button>
       </div>
 
-      <hr class="border-[#FF6B35]/10">
+      <hr class="border-[#6C3CE1]/10">
 
       <!-- Sección: Documentos -->
       <div>
@@ -448,7 +448,7 @@
         <button type="button" onclick="addDocumentoRow()" class="mt-2 px-3 py-1.5 text-xs bg-teal-500/10 text-teal-400 rounded-lg hover:bg-teal-500/20 transition">+ Agregar documento</button>
       </div>
 
-      <hr class="border-[#FF6B35]/10">
+      <hr class="border-[#6C3CE1]/10">
 
       <!-- Sección: Observaciones -->
       <div>
@@ -456,16 +456,16 @@
           <svg class="w-5 h-5 text-[#8E94A8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
           Observaciones
         </h4>
-        <textarea id="v-observaciones" rows="3" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Notas adicionales..."></textarea>
+        <textarea id="v-observaciones" rows="3" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Notas adicionales..."></textarea>
       </div>
 
       <!-- Sección: Foto -->
       <div>
         <label class="block text-sm font-medium text-[#8E94A8] mb-1">Foto (URL)</label>
-        <input type="url" id="v-foto" class="w-full px-3 py-2 bg-[#0B0E17]/50 border border-[#FF6B35]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="https://storage.googleapis.com/...">
+        <input type="url" id="v-foto" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="https://storage.googleapis.com/...">
       </div>
 
-      <div class="flex justify-end gap-3 pt-4 border-t border-[#FF6B35]/10">
+      <div class="flex justify-end gap-3 pt-4 border-t border-[#6C3CE1]/10">
         <button type="button" onclick="closeVehicleModal()" class="px-4 py-2 text-[#8E94A8] hover:text-[#F1F3F8] text-sm transition-colors">Cancelar</button>
         <button type="submit" class="btn-primary text-sm px-6 py-2">Guardar</button>
       </div>
@@ -476,21 +476,21 @@
 <!-- Modal Importación CSV -->
 <div id="modal-csv-import" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
   <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-6 border-b border-[#FF6B35]/10 sticky top-0 z-10" style="background: #141e2d;">
+    <div class="flex items-center justify-between p-6 border-b border-[#6C3CE1]/10 sticky top-0 z-10" style="background: #141e2d;">
       <h3 class="text-lg font-bold text-[#F1F3F8]">Importar vehículos</h3>
       <button onclick="closeCsvImport()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="p-6 space-y-4">
-      <div class="flex items-center gap-4 p-4 bg-[#FF6B35]/10 rounded-lg border border-[#FF6B35]/10">
+      <div class="flex items-center gap-4 p-4 bg-[#6C3CE1]/10 rounded-lg border border-[#6C3CE1]/10">
         <span class="text-sm text-[#F1F3F8]">1. Descargá la plantilla →</span>
         <button onclick="downloadCsvTemplate()" class="btn-secondary text-xs px-3 py-1.5">CSV</button>
         <button onclick="downloadExcelTemplate()" class="btn-secondary text-xs px-3 py-1.5">Excel (.xlsx)</button>
       </div>
       <div>
         <label class="block text-sm font-medium text-[#8E94A8] mb-2">2. Seleccioná el archivo (CSV o Excel):</label>
-        <input type="file" id="csv-file-input" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-[#F1F3F8] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#FF6B35]/10 file:text-[#FF6B35] hover:file:bg-[#FF6B35]/20">
+        <input type="file" id="csv-file-input" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-[#F1F3F8] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#6C3CE1]/10 file:text-[#6C3CE1] hover:file:bg-[#6C3CE1]/20">
       </div>
       <div id="csv-import-preview"></div>
       <div class="flex justify-end gap-3">
@@ -511,7 +511,7 @@
     </div>
     <p id="progress-text" class="text-sm text-[#8E94A8] text-center">Preparando...</p>
     <p id="progress-detail" class="text-xs text-[#5C6378] text-center mt-1"></p>
-    <button id="btn-progress-close" onclick="closeProgressModal()" class="mt-4 w-full px-4 py-2 bg-[#FF6B35]/10 text-[#FF6B35] text-sm rounded-lg hover:bg-[#FF6B35]/20 transition hidden">Cerrar</button>
+    <button id="btn-progress-close" onclick="closeProgressModal()" class="mt-4 w-full px-4 py-2 bg-[#6C3CE1]/10 text-[#6C3CE1] text-sm rounded-lg hover:bg-[#6C3CE1]/20 transition hidden">Cerrar</button>
   </div>
 </div>
 
