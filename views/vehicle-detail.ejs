@@ -81,7 +81,6 @@
               <div><span class="text-[#8E94A8]">Chasis</span><br><span class="text-[#F1F3F8] text-xs md:text-sm" id="vg-chasis">-</span></div>
               <div><span class="text-[#8E94A8]">N° Motor</span><br><span class="text-[#F1F3F8] text-xs" id="vg-numeroMotor">-</span></div>
               <div><span class="text-[#8E94A8]">Cap. Carga</span><br><span class="text-[#F1F3F8]" id="vg-capacidadCarga">-</span></div>
-              <div><span class="text-[#8E94A8]">Carga Trompo</span><br><span class="text-[#F1F3F8]" id="vg-cargaTrompo">-</span></div>
             </div>
           </div>
           <div class="glass-card rounded-xl p-4 md:p-5">
@@ -134,6 +133,20 @@
             <div class="space-y-1.5 text-xs md:text-sm" id="service-info">
               <div class="flex justify-between"><span class="text-[#8E94A8]">Próx. (km)</span><span class="text-[#F1F3F8]" id="vg-proximoServiceKm">-</span></div>
               <div class="flex justify-between"><span class="text-[#8E94A8]">Próx. (fecha)</span><span class="text-[#F1F3F8]" id="vg-proximoServiceFecha">-</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trompo (condicional) -->
+        <div id="vg-trompo-card" class="hidden">
+          <div class="glass-card rounded-xl p-4 md:p-5 border border-[#00D4FF]/20">
+            <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 md:mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4 md:w-5 md:h-5 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Equipamiento — Trompo
+            </h3>
+            <div class="text-xs md:text-sm">
+              <span class="text-[#8E94A8]">Capacidad</span><br>
+              <span class="text-[#F1F3F8] font-semibold text-sm md:text-base" id="vg-cargaTrompo">-</span>
             </div>
           </div>
         </div>
@@ -340,13 +353,22 @@
       </div>
 
       <div id="tab-content-qr" class="tab-content hidden space-y-4">
-        <div class="glass-card rounded-xl p-5 text-center">
-          <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2 justify-center">
-            <svg class="w-5 h-5 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
+        <div class="glass-card rounded-xl p-5 md:p-6 max-w-lg mx-auto">
+          <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-4 text-center flex items-center gap-2 justify-center">
+            <svg class="w-4 h-4 md:w-5 md:h-5 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
             Código QR del Vehículo
           </h3>
-          <p class="text-sm text-[#8E94A8] mb-4">Escaneá este código con el celular para ver la información del vehículo</p>
-          <div id="qrcode" class="inline-block p-3 bg-white rounded-xl mx-auto"></div>
+          <div class="flex justify-center mb-4">
+            <div id="qrcode" class="inline-block p-4 bg-white rounded-xl shadow-lg shadow-[#00D4FF]/10"></div>
+          </div>
+          <div class="bg-[#0A0A1A]/50 rounded-lg px-4 py-3 text-center border border-[#6C3CE1]/10 w-full">
+            <div class="text-[#8E94A8] text-xs uppercase tracking-wider">Empresa</div>
+            <div class="text-[#F1F3F8] font-bold text-sm md:text-base" id="qr-empresa">Grupo Falpat SRL</div>
+            <div class="mt-2 pt-2 border-t border-[#6C3CE1]/10">
+              <div class="text-[#8E94A8] text-xs uppercase tracking-wider">Interno / Patente</div>
+              <div class="text-[#F1F3F8] font-mono font-semibold text-sm md:text-base" id="qr-vehiculo-id">-</div>
+            </div>
+          </div>
           <div class="mt-4 flex flex-wrap justify-center gap-3">
             <button onclick="printQR()" class="btn-secondary text-sm px-4 py-2 flex items-center gap-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
@@ -357,7 +379,7 @@
               Descargar QR
             </button>
           </div>
-          <div class="mt-4 text-xs text-[#5C6378]">
+          <div class="mt-4 text-xs text-[#5C6378] text-center">
             <p>Imprimí este código y colocálo en el vehículo para identificarlo rápidamente.</p>
           </div>
         </div>

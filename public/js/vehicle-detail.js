@@ -40,6 +40,8 @@ async function loadVehicle() {
   document.getElementById('vg-observaciones').textContent = vehicleData.observaciones || 'Sin observaciones';
 
   generateQR();
+  setText('qr-empresa', vehicleData.empresa || 'Grupo Falpat SRL');
+  setText('qr-vehiculo-id', `Int. ${vehicleData.interno || ''} — ${vehicleData.patente || ''}`);
 
   startCombustibleListener();
   startRepuestosListener();
@@ -56,7 +58,7 @@ function renderGeneralInfo() {
   setText('vg-chasis', vehicleData.chasis || '-');
   setText('vg-numeroMotor', vehicleData.numeroMotor || '-');
   setText('vg-capacidadCarga', vehicleData.capacidadCarga ? `${vehicleData.capacidadCarga.toLocaleString()} kg` : '-');
-  setText('vg-cargaTrompo', vehicleData.cargaTrompo || '-');
+  renderTrompo();
   setText('vg-kmhs', `${vehicleData.kilometraje?.toLocaleString() || 0} km`);
   setText('vg-centro', vehicleData.centroTrabajo || '-');
   setText('vg-conductor', vehicleData.conductorHabitual || '-');
@@ -65,6 +67,21 @@ function renderGeneralInfo() {
   setText('vg-horometro', vehicleData.horometro ? `${vehicleData.horometro} hs` : '-');
   setText('vg-fechaUltimaRevision', formatDate(vehicleData.fechaUltimaRevision));
   setText('vg-fechaAlta', formatDate(vehicleData.fechaAlta) || formatDate(vehicleData.createdAt) || '-');
+}
+
+function renderTrompo() {
+  const val = vehicleData.cargaTrompo || '';
+  const card = document.getElementById('vg-trompo-card');
+  if (!card) return;
+  if (val.toLowerCase().startsWith('sí') || val.toLowerCase().startsWith('si')) {
+    card.classList.remove('hidden');
+    document.getElementById('vg-cargaTrompo').textContent = 'Sí — Equipado con trompo';
+  } else if (val) {
+    card.classList.remove('hidden');
+    document.getElementById('vg-cargaTrompo').textContent = val;
+  } else {
+    card.classList.add('hidden');
+  }
 }
 
 function renderSeguro() {
@@ -170,8 +187,8 @@ function generateQR() {
   if (typeof QRCode !== 'undefined') {
     qrCodeInstance = new QRCode(container, {
       text: qrUrl,
-      width: 200,
-      height: 200,
+      width: 280,
+      height: 280,
       colorDark: '#1a1a2e',
       colorLight: '#ffffff',
       correctLevel: QRCode.CorrectLevel.H
@@ -186,20 +203,66 @@ function printQR() {
   const canvas = document.querySelector('#qrcode canvas') || document.querySelector('#qrcode img');
   if (!canvas) return;
   const win = window.open('', '_blank');
-  win.document.write(`<html><head><title>QR - ${vehicleData?.patente || 'Vehículo'}</title><style>body{text-align:center;padding:40px;font-family:Arial}</style></head><body>`);
-  win.document.write(`<h2>${vehicleData?.patente || ''} - Int. ${vehicleData?.interno || ''}</h2>`);
-  win.document.write(`<p>${vehicleData?.marca || ''} ${vehicleData?.modelo || ''}</p>`);
-  win.document.write(canvas.outerHTML);
-  win.document.write('</body></html>');
-  win.print();
+  const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
+  win.document.write(`<html><head><title>QR - ${vehicleData?.patente || 'Vehículo'}</title><style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{text-align:center;padding:40px;font-family:Arial,sans-serif;background:#fff}
+    .qr-wrap{display:inline-block;padding:20px;border:2px solid #eee;border-radius:16px}
+    h2{font-size:22px;margin-bottom:4px}
+    .sub{color:#666;font-size:14px;margin-bottom:16px}
+    .footer{margin-top:16px;padding-top:12px;border-top:1px solid #eee;font-size:13px;color:#444}
+    .footer strong{display:block;font-size:15px;color:#111}
+    .label{font-size:10px;text-transform:uppercase;color:#999;letter-spacing:1px}
+  </style></head><body>
+    <div class="qr-wrap">
+      <h2>${vehicleData?.patente || ''}</h2>
+      <div class="sub">Int. ${vehicleData?.interno || ''} — ${vehicleData?.marca || ''} ${vehicleData?.modelo || ''}</div>
+      ${canvas.outerHTML}
+      <div class="footer">
+        <div class="label">Empresa</div>
+        <strong>${empresa}</strong>
+        <div style="margin-top:6px" class="label">Interno</div>
+        <strong>${vehicleData?.interno || '-'}</strong>
+      </div>
+    </div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => { win.print(); }, 300);
 }
 
 function downloadQR() {
   const canvas = document.querySelector('#qrcode canvas');
   if (!canvas) return;
+  const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
+  const vehiculo = `${vehicleData?.patente || ''} Int. ${vehicleData?.interno || ''}`;
+  const w = canvas.width;
+  const h = canvas.height;
+  const padding = 40;
+  const footerH = 100;
+  const totalH = h + padding * 2 + footerH;
+  const totalW = w + padding * 2;
+  const c = document.createElement('canvas');
+  c.width = totalW;
+  c.height = totalH;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, totalW, totalH);
+  ctx.drawImage(canvas, padding, padding, w, h);
+  ctx.fillStyle = '#1a1a2e';
+  ctx.font = 'bold 18px Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(empresa, totalW / 2, h + padding + 35);
+  ctx.font = '12px Arial, sans-serif';
+  ctx.fillStyle = '#666';
+  ctx.fillText(vehiculo, totalW / 2, h + padding + 60);
+  ctx.strokeStyle = '#e0e0e0';
+  ctx.beginPath();
+  ctx.moveTo(padding, h + padding + 15);
+  ctx.lineTo(totalW - padding, h + padding + 15);
+  ctx.stroke();
   const link = document.createElement('a');
   link.download = `qr-${vehicleData?.patente || 'vehiculo'}.png`;
-  link.href = canvas.toDataURL('image/png');
+  link.href = c.toDataURL('image/png');
   link.click();
   showToast('QR descargado');
 }
