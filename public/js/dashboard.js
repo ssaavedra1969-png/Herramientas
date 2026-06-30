@@ -90,17 +90,14 @@ function renderEmpresas(vehicles) {
     return;
   }
 
-  const MAX = 5;
-  const shown = empresas.slice(0, MAX);
-  container.innerHTML = shown.map(e => `
-    <div class="flex items-center gap-2 py-1">
-      <span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
-      <span class="text-sm text-[#F1F3F8]">${e}</span>
-    </div>
-  `).join('');
-  if (empresas.length > MAX) {
-    container.innerHTML += `<p class="text-[#5C6378] text-xs pt-1">+${empresas.length - MAX} más</p>`;
-  }
+  container.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+    ${empresas.map(e => `
+      <div class="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-[#10B981]/5 border border-[#10B981]/20 shadow-[0_0_10px_rgba(16,185,129,0.15)] hover:shadow-[0_0_16px_rgba(16,185,129,0.3)] transition-shadow duration-300">
+        <span class="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_6px_rgba(16,185,129,0.6)] shrink-0"></span>
+        <span class="text-sm text-[#F1F3F8] truncate">${e}</span>
+      </div>
+    `).join('')}
+  </div>`;
 }
 
 function renderCombustibleChart(chartData) {

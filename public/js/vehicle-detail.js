@@ -280,7 +280,7 @@ function openEditVehicle() {
   document.getElementById('v-patente').value = vehicleData.patente || '';
   document.getElementById('v-interno').value = vehicleData.interno || '';
   document.getElementById('v-interno').readOnly = true;
-  setSelectValue('v-marca', vehicleData.marca || '');
+  document.getElementById('v-marca').value = vehicleData.marca || '';
   document.getElementById('v-modelo').value = vehicleData.modelo || '';
   document.getElementById('v-anio').value = vehicleData.año || '';
   document.getElementById('v-chasis').value = vehicleData.chasis || '';
@@ -303,22 +303,7 @@ function openEditVehicle() {
   setDateField('v-vtvFechaRealizacion', vehicleData.vtv?.fechaRealizacion || null);
   setDateField('v-vencimientoVTV', vehicleData.vtv?.fechaVencimiento || null);
   document.getElementById('v-vtvCosto').value = vehicleData.vtv?.costo || '';
-  const centro = vehicleData.vtv?.centroMedicion || '';
-  const selectCentro = document.getElementById('v-vtvCentro');
-  const inputCentroOtro = document.getElementById('v-vtvCentroOtro');
-  if (['Luján', 'Campana', 'Zárate'].includes(centro)) {
-    selectCentro.value = centro;
-    inputCentroOtro.classList.add('hidden');
-    inputCentroOtro.value = '';
-  } else if (centro) {
-    selectCentro.value = '__otro__';
-    inputCentroOtro.classList.remove('hidden');
-    inputCentroOtro.value = centro;
-  } else {
-    selectCentro.value = '';
-    inputCentroOtro.classList.add('hidden');
-    inputCentroOtro.value = '';
-  }
+  document.getElementById('v-vtvCentro').value = vehicleData.vtv?.centroMedicion || '';
   document.getElementById('v-vtvResultado').value = vehicleData.vtv?.resultado || 'Pendiente';
   document.getElementById('v-seguroCompania').value = vehicleData.seguro?.compañía || '';
   document.getElementById('v-seguroPoliza').value = vehicleData.seguro?.poliza || '';
@@ -357,12 +342,6 @@ document.addEventListener('click', (e) => {
   if (modal && e.target === modal) hideModal('modal-vehiculo');
 });
 
-document.getElementById('v-vtvCentro')?.addEventListener('change', function () {
-  const otro = document.getElementById('v-vtvCentroOtro');
-  if (this.value === '__otro__') { otro.classList.remove('hidden'); otro.focus(); }
-  else { otro.classList.add('hidden'); otro.value = ''; }
-});
-
 document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!isAdmin()) return;
@@ -392,9 +371,7 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
       fechaRealizacion: getDateValue('v-vtvFechaRealizacion'),
       fechaVencimiento: getDateValue('v-vencimientoVTV'),
       costo: parseFloat(document.getElementById('v-vtvCosto').value) || null,
-      centroMedicion: (document.getElementById('v-vtvCentro').value === '__otro__'
-        ? document.getElementById('v-vtvCentroOtro').value.trim()
-        : document.getElementById('v-vtvCentro').value) || '',
+      centroMedicion: document.getElementById('v-vtvCentro').value.trim() || '',
       resultado: document.getElementById('v-vtvResultado').value || 'Pendiente'
     },
     seguro: {
@@ -413,11 +390,6 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     fotoURL: document.getElementById('v-foto').value.trim() || '',
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
-
-  if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.tipo) {
-    showToast('Completá todos los campos obligatorios', 'error');
-    return;
-  }
 
   try {
     showLoading(true);
