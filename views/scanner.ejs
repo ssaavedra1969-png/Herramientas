@@ -1,0 +1,64 @@
+<%- include('partials/head') %>
+<div class="flex h-screen overflow-hidden">
+  <%- include('partials/sidebar', { page: 'vehicles' }) %>
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="lg:hidden header-glass text-[#F1F3F8] p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#6C3CE1]/10">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+    </div>
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <a href="/vehicles" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        </a>
+        <div>
+          <h1 class="text-2xl font-bold text-gradient-primary">Escanear Vehículo</h1>
+          <p class="text-[#8E94A8] text-sm">Apuntá la cámara al código QR del vehículo</p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-xl p-5 max-w-2xl mx-auto">
+        <div id="scanner-container" class="w-full aspect-video bg-[#0A0A1A]/80 rounded-lg overflow-hidden relative">
+          <div id="scanner-loading" class="absolute inset-0 flex items-center justify-center text-[#8E94A8] text-sm">
+            <div class="text-center">
+              <svg class="w-8 h-8 animate-spin mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Iniciando cámara...
+            </div>
+          </div>
+          <div id="reader" class="w-full h-full"></div>
+        </div>
+
+        <div id="scan-result" class="hidden mt-4 p-4 bg-[#0A0A1A]/50 rounded-lg"></div>
+
+        <div class="mt-4 flex flex-col sm:flex-row gap-3">
+          <button id="btn-start-scanner" onclick="startScanner()" class="btn-primary text-sm px-4 py-2 flex items-center gap-2 justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Iniciar Cámara
+          </button>
+          <button id="btn-stop-scanner" onclick="stopScanner()" class="hidden btn-secondary text-sm px-4 py-2 flex items-center gap-2 justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+            Detener
+          </button>
+        </div>
+
+        <div class="mt-6 p-4 bg-[#0A0A1A]/30 rounded-lg">
+          <label class="block text-sm font-medium text-[#8E94A8] mb-2">O ingresá manualmente el ID del vehículo:</label>
+          <div class="flex gap-2">
+            <input type="text" id="manual-id" placeholder="ID del vehículo o patente" class="flex-1 px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon">
+            <button onclick="lookupManual()" class="btn-primary text-sm px-4 py-2">Buscar</button>
+          </div>
+          <div id="manual-result" class="mt-2 text-sm"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('partials/mobile-menu', { page: 'vehicles' }) %>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="/js/scanner.js?v=1"></script>
+<%- include('partials/footer') %>

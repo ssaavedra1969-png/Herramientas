@@ -3,6 +3,7 @@ let vehicleData = null;
 let combustibleUnsub = null;
 let repuestosUnsub = null;
 let currentTab = 'resumen';
+let qrCodeInstance = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const pathParts = window.location.pathname.split('/');
@@ -33,7 +34,12 @@ async function loadVehicle() {
   renderSeguro();
   renderVTV();
   renderService();
+  renderMultas();
+  renderDocumentos();
+  renderFoto();
   document.getElementById('vg-observaciones').textContent = vehicleData.observaciones || 'Sin observaciones';
+
+  generateQR();
 
   startCombustibleListener();
   startRepuestosListener();
@@ -55,6 +61,10 @@ function renderGeneralInfo() {
   setText('vg-centro', vehicleData.centroTrabajo || '-');
   setText('vg-conductor', vehicleData.conductorHabitual || '-');
   setText('vg-empresa', vehicleData.empresa || '-');
+  setText('vg-estadoGeneral', vehicleData.estadoGeneral || '-');
+  setText('vg-horometro', vehicleData.horometro ? `${vehicleData.horometro} hs` : '-');
+  setText('vg-fechaUltimaRevision', formatDate(vehicleData.fechaUltimaRevision));
+  setText('vg-fechaAlta', formatDate(vehicleData.fechaAlta) || formatDate(vehicleData.createdAt) || '-');
 }
 
 function renderSeguro() {
@@ -80,6 +90,56 @@ function renderService() {
   setText('vg-proximoServiceFecha', formatDate(vehicleData.proximoServiceFecha));
 }
 
+function renderMultas() {
+  const container = document.getElementById('vg-multas');
+  const multas = vehicleData.multas || [];
+  if (!multas.length) {
+    container.innerHTML = '<span class="italic text-[#5C6378]">Sin multas registradas</span>';
+    return;
+  }
+  container.innerHTML = multas.map(m => `
+    <div class="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
+      <div>
+        <span class="text-[#F1F3F8]">${m.concepto || 'Multa'}</span>
+        <span class="text-xs text-[#5C6378] ml-2">${m.fecha || ''}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-red-400 font-medium">${formatCurrency(m.importe)}</span>
+        ${m.pagado ? '<span class="text-xs text-green-400">Pagado</span>' : '<span class="text-xs text-yellow-400">Pendiente</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDocumentos() {
+  const container = document.getElementById('vg-documentos');
+  const docs = vehicleData.documentos || [];
+  if (!docs.length) {
+    container.innerHTML = '<span class="italic text-[#5C6378]">Sin documentos adjuntos</span>';
+    return;
+  }
+  container.innerHTML = docs.map(d => `
+    <div class="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
+      <div>
+        <span class="text-[#F1F3F8]">${d.tipo || 'Documento'}</span>
+        ${d.fechaVencimiento ? `<span class="text-xs text-[#5C6378] ml-2">Vence: ${d.fechaVencimiento}</span>` : ''}
+      </div>
+      ${d.archivoURL ? `<a href="${d.archivoURL}" target="_blank" class="text-[#00D4FF] text-xs hover:underline">Ver</a>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderFoto() {
+  const container = document.getElementById('vg-foto-container');
+  const img = document.getElementById('vg-foto');
+  if (vehicleData.fotoURL) {
+    container.classList.remove('hidden');
+    img.src = vehicleData.fotoURL;
+  } else {
+    container.classList.add('hidden');
+  }
+}
+
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
@@ -94,6 +154,58 @@ function switchTab(tab) {
   });
   document.getElementById(`tab-content-${tab}`)?.classList.remove('hidden');
   document.getElementById(`tab-${tab}`)?.classList.add('bg-[#6C3CE1]/10', 'text-[#6C3CE1]');
+
+  if (tab === 'qr') {
+    setTimeout(generateQR, 100);
+  }
+}
+
+function generateQR() {
+  const container = document.getElementById('qrcode');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  const qrUrl = window.location.href;
+  if (typeof QRCode !== 'undefined') {
+    qrCodeInstance = new QRCode(container, {
+      text: qrUrl,
+      width: 200,
+      height: 200,
+      colorDark: '#1a1a2e',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } else {
+    container.innerHTML = '<p class="text-[#5C6378] text-sm">Cargando librería QR...</p>';
+    setTimeout(generateQR, 500);
+  }
+}
+
+function printQR() {
+  const canvas = document.querySelector('#qrcode canvas') || document.querySelector('#qrcode img');
+  if (!canvas) return;
+  const win = window.open('', '_blank');
+  win.document.write(`<html><head><title>QR - ${vehicleData?.patente || 'Vehículo'}</title><style>body{text-align:center;padding:40px;font-family:Arial}</style></head><body>`);
+  win.document.write(`<h2>${vehicleData?.patente || ''} - Int. ${vehicleData?.interno || ''}</h2>`);
+  win.document.write(`<p>${vehicleData?.marca || ''} ${vehicleData?.modelo || ''}</p>`);
+  win.document.write(canvas.outerHTML);
+  win.document.write('</body></html>');
+  win.print();
+}
+
+function downloadQR() {
+  const canvas = document.querySelector('#qrcode canvas');
+  if (!canvas) return;
+  const link = document.createElement('a');
+  link.download = `qr-${vehicleData?.patente || 'vehiculo'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('QR descargado');
+}
+
+function showQRCode() {
+  switchTab('qr');
 }
 
 function openEditVehicle() {
