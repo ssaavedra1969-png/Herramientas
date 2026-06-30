@@ -70,18 +70,20 @@ function renderGeneralInfo() {
 }
 
 function renderTrompo() {
-  const val = vehicleData.cargaTrompo || '';
   const card = document.getElementById('vg-trompo-card');
   if (!card) return;
-  if (val.toLowerCase().startsWith('sí') || val.toLowerCase().startsWith('si')) {
-    card.classList.remove('hidden');
-    document.getElementById('vg-cargaTrompo').textContent = 'Sí — Equipado con trompo';
-  } else if (val) {
-    card.classList.remove('hidden');
-    document.getElementById('vg-cargaTrompo').textContent = val;
-  } else {
-    card.classList.add('hidden');
-  }
+  const t = vehicleData.trompo || {};
+  const cargaTrompo = vehicleData.cargaTrompo || '';
+  const hasTrompo = cargaTrompo.toLowerCase().startsWith('sí') || cargaTrompo.toLowerCase().startsWith('si') || t.tipo || t.numeroSerie || t.marca || t.capacidad || t.modelo;
+  if (!hasTrompo) { card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  setText('vg-trompo-tipo', t.tipo || '-');
+  setText('vg-trompo-numeroSerie', t.numeroSerie || '-');
+  setText('vg-trompo-marca', t.marca || '-');
+  setText('vg-trompo-capacidad', t.capacidad || '-');
+  setText('vg-trompo-modelo', t.modelo || '-');
+  setText('vg-trompo-otro', t.otro || '-');
+  setText('vg-trompo-empresa', vehicleData.empresa || 'Grupo Falpat SRL');
 }
 
 function renderSeguro() {
@@ -284,7 +286,17 @@ function openEditVehicle() {
   document.getElementById('v-chasis').value = vehicleData.chasis || '';
   document.getElementById('v-numeroMotor').value = vehicleData.numeroMotor || '';
   document.getElementById('v-capacidadCarga').value = vehicleData.capacidadCarga || '';
-  document.getElementById('v-cargaTrompo').value = vehicleData.cargaTrompo || '';
+  const ct = vehicleData.cargaTrompo || '';
+  document.getElementById('v-cargaTrompo').value = (ct.toLowerCase().startsWith('sí') || ct.toLowerCase().startsWith('si')) ? 'Sí' : ct;
+  const t = vehicleData.trompo || {};
+  document.getElementById('v-trompo-tipo').value = t.tipo || '';
+  document.getElementById('v-trompo-numeroSerie').value = t.numeroSerie || '';
+  document.getElementById('v-trompo-marca').value = t.marca || '';
+  document.getElementById('v-trompo-capacidad').value = t.capacidad || '';
+  document.getElementById('v-trompo-modelo').value = t.modelo || '';
+  document.getElementById('v-trompo-otro').value = t.otro || '';
+  const trompoSection = document.getElementById('v-trompo-section');
+  if (trompoSection) trompoSection.classList.remove('hidden');
   document.getElementById('v-tipo').value = vehicleData.tipo || '';
   document.getElementById('v-subtipo').value = vehicleData.subtipo || '';
   document.getElementById('v-kilometraje').value = vehicleData.kilometraje || '';
@@ -365,6 +377,14 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
     capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
     cargaTrompo: document.getElementById('v-cargaTrompo').value.trim() || '',
+    trompo: {
+      tipo: document.getElementById('v-trompo-tipo').value.trim() || '',
+      numeroSerie: document.getElementById('v-trompo-numeroSerie').value.trim() || '',
+      marca: document.getElementById('v-trompo-marca').value.trim() || '',
+      capacidad: document.getElementById('v-trompo-capacidad').value.trim() || '',
+      modelo: document.getElementById('v-trompo-modelo').value.trim() || '',
+      otro: document.getElementById('v-trompo-otro').value.trim() || ''
+    },
     tipo: document.getElementById('v-tipo').value,
     subtipo: document.getElementById('v-subtipo').value,
     kilometraje: parseInt(document.getElementById('v-kilometraje').value) || 0,

@@ -144,9 +144,17 @@
               <svg class="w-4 h-4 md:w-5 md:h-5 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               Equipamiento — Trompo
             </h3>
-            <div class="text-xs md:text-sm">
-              <span class="text-[#8E94A8]">Capacidad</span><br>
-              <span class="text-[#F1F3F8] font-semibold text-sm md:text-base" id="vg-cargaTrompo">-</span>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-xs md:text-sm" id="vg-trompo-fields">
+              <div><span class="text-[#8E94A8]">Tipo</span><br><span class="text-[#F1F3F8]" id="vg-trompo-tipo">-</span></div>
+              <div><span class="text-[#8E94A8]">N° Serie</span><br><span class="text-[#F1F3F8]" id="vg-trompo-numeroSerie">-</span></div>
+              <div><span class="text-[#8E94A8]">Marca</span><br><span class="text-[#F1F3F8]" id="vg-trompo-marca">-</span></div>
+              <div><span class="text-[#8E94A8]">Capacidad</span><br><span class="text-[#F1F3F8]" id="vg-trompo-capacidad">-</span></div>
+              <div><span class="text-[#8E94A8]">Modelo</span><br><span class="text-[#F1F3F8]" id="vg-trompo-modelo">-</span></div>
+              <div><span class="text-[#8E94A8]">Otros</span><br><span class="text-[#F1F3F8]" id="vg-trompo-otro">-</span></div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-[#6C3CE1]/10">
+              <span class="text-[#8E94A8] text-xs">Empresa</span><br>
+              <span class="text-[#F1F3F8] font-medium text-sm" id="vg-trompo-empresa">-</span>
             </div>
           </div>
         </div>
@@ -510,19 +518,59 @@
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Capacidad de Carga (kg)</label>
             <input type="number" id="v-capacidadCarga" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="25000" step="100">
            </div>
-           <div>
-             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Carga Trompo</label>
-             <input type="text" id="v-cargaTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="8 M3">
-           </div>
-         </div>
-       </div>
+          </div>
+        </div>
 
-       <hr class="border-[#6C3CE1]/10">
+        <!-- Trompo Section -->
+        <div id="v-trompo-section" class="hidden">
+          <hr class="border-[#6C3CE1]/10">
+          <div>
+            <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+              <svg class="w-5 h-5 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Datos del Trompo
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-[#8E94A8] mb-1">¿Tiene Trompo?</label>
+                <select id="v-cargaTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+                  <option value="" class="bg-[#0A0A1A]">No</option>
+                  <option value="Sí" class="bg-[#0A0A1A]">Sí</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo</label>
+                <input type="text" id="v-trompo-tipo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Hormigonera, Mixer...">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° de Serie</label>
+                <input type="text" id="v-trompo-numeroSerie" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Serie">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[#8E94A8] mb-1">Marca</label>
+                <input type="text" id="v-trompo-marca" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Marca">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[#8E94A8] mb-1">Capacidad</label>
+                <input type="text" id="v-trompo-capacidad" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="8 M³">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[#8E94A8] mb-1">Modelo</label>
+                <input type="text" id="v-trompo-modelo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Modelo">
+              </div>
+              <div class="sm:col-span-2 lg:col-span-3">
+                <label class="block text-sm font-medium text-[#8E94A8] mb-1">Otros datos</label>
+                <input type="text" id="v-trompo-otro" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Especificaciones adicionales">
+              </div>
+            </div>
+          </div>
+        </div>
 
-       <div>
-        <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-          Estado y Mediciones
+        <hr class="border-[#6C3CE1]/10">
+
+        <div>
+         <h4 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+           <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+           Estado y Mediciones
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>

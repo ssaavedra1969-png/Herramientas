@@ -38,6 +38,15 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       chasis: req.body.chasis?.trim() || '',
       numeroMotor: req.body.numeroMotor?.trim() || '',
       capacidadCarga: parseFloat(req.body.capacidadCarga) || null,
+      cargaTrompo: req.body.cargaTrompo?.trim() || '',
+      trompo: {
+        tipo: req.body.trompo?.tipo?.trim() || '',
+        numeroSerie: req.body.trompo?.numeroSerie?.trim() || '',
+        marca: req.body.trompo?.marca?.trim() || '',
+        capacidad: req.body.trompo?.capacidad?.trim() || '',
+        modelo: req.body.trompo?.modelo?.trim() || '',
+        otro: req.body.trompo?.otro?.trim() || ''
+      },
       kilometraje: parseInt(req.body.kilometraje) || 0,
       horometro: parseInt(req.body.horometro) || 0,
       estadoGeneral: req.body.estadoGeneral || 'Bueno',
@@ -103,6 +112,15 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
       chasis: req.body.chasis?.trim() || '',
       numeroMotor: req.body.numeroMotor?.trim() || '',
       capacidadCarga: parseFloat(req.body.capacidadCarga) || null,
+      cargaTrompo: req.body.cargaTrompo?.trim() || '',
+      trompo: {
+        tipo: req.body.trompo?.tipo?.trim() || '',
+        numeroSerie: req.body.trompo?.numeroSerie?.trim() || '',
+        marca: req.body.trompo?.marca?.trim() || '',
+        capacidad: req.body.trompo?.capacidad?.trim() || '',
+        modelo: req.body.trompo?.modelo?.trim() || '',
+        otro: req.body.trompo?.otro?.trim() || ''
+      },
       kilometraje: parseInt(req.body.kilometraje) || 0,
       horometro: parseInt(req.body.horometro) || 0,
       estadoGeneral: req.body.estadoGeneral || 'Bueno',
