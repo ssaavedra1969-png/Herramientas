@@ -73,11 +73,11 @@ function renderTrompo() {
   const card = document.getElementById('vg-trompo-card');
   if (!card) return;
   const t = vehicleData.trompo || {};
-  const cargaTrompo = vehicleData.cargaTrompo || '';
-  const hasTrompo = cargaTrompo.toLowerCase().startsWith('sí') || cargaTrompo.toLowerCase().startsWith('si') || t.tipo || t.numeroSerie || t.marca || t.capacidad || t.modelo;
+  const ct = vehicleData.cargaTrompo || '';
+  const hasTrompo = ct || t.tipo || t.numeroSerie || t.marca || t.capacidad || t.modelo || t.otro;
   if (!hasTrompo) { card.classList.add('hidden'); return; }
   card.classList.remove('hidden');
-  setText('vg-trompo-tipo', t.tipo || '-');
+  setText('vg-trompo-tipo', t.tipo || (ct ? ct : '-'));
   setText('vg-trompo-numeroSerie', t.numeroSerie || '-');
   setText('vg-trompo-marca', t.marca || '-');
   setText('vg-trompo-capacidad', t.capacidad || '-');
