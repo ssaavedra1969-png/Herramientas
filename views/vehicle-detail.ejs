@@ -17,6 +17,7 @@
         <div>
           <h1 class="text-2xl font-bold text-gradient-primary" id="vehicle-title">Vehículo</h1>
           <p class="text-[#8E94A8] text-sm" id="vehicle-subtitle">Cargando...</p>
+        </div>
         <button onclick="showQRCode()" class="btn-secondary text-sm px-4 py-2 flex items-center gap-2 ml-auto">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
           QR
@@ -29,107 +30,145 @@
         <% } %>
       </div>
 
-      <div class="mb-4 flex gap-1 glass-card rounded-xl p-1 overflow-x-auto">
-        <button onclick="switchTab('resumen')" id="tab-resumen" class="tab-btn flex-1 py-2 text-center rounded-lg text-sm font-medium transition whitespace-nowrap bg-[#6C3CE1]/10 text-[#6C3CE1]">Resumen</button>
-        <button onclick="switchTab('combustible')" id="tab-combustible" class="tab-btn flex-1 py-2 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Combustible</button>
-        <button onclick="switchTab('repuestos')" id="tab-repuestos" class="tab-btn flex-1 py-2 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Repuestos</button>
-        <button onclick="switchTab('qr')" id="tab-qr" class="tab-btn flex-1 py-2 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">QR</button>
+      <!-- Sticky Tab Bar -->
+      <div class="sticky top-0 z-10 mb-4 -mx-4 md:-mx-6 px-4 md:px-6 pt-2 pb-0" style="background: #0A0A1A;">
+        <div class="flex gap-1 glass-card rounded-xl p-1 overflow-x-auto">
+          <button onclick="switchTab('resumen')" id="tab-resumen" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap bg-[#6C3CE1]/10 text-[#6C3CE1]">Resumen</button>
+          <button onclick="switchTab('combustible')" id="tab-combustible" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Combustible</button>
+          <button onclick="switchTab('repuestos')" id="tab-repuestos" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Repuestos</button>
+          <button onclick="switchTab('qr')" id="tab-qr" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">QR</button>
+        </div>
       </div>
 
-      <div id="tab-content-resumen" class="tab-content space-y-4">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
-              <svg class="w-5 h-5 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              Datos Generales
+      <!-- ═══ TAB: RESUMEN ═══ -->
+      <div id="tab-content-resumen" class="tab-content space-y-3 md:space-y-4">
+        <!-- Fila 1: Identificación + Foto -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
+          <div class="lg:col-span-2 glass-card rounded-xl p-4 md:p-5">
+            <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 md:mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4 md:w-5 md:h-5 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Identificación
             </h3>
-            <div class="grid grid-cols-2 gap-3 text-sm" id="general-info">
-              <div class="text-[#8E94A8]">Patente:</div><div class="text-[#F1F3F8] font-medium" id="vg-patente">-</div>
-              <div class="text-[#8E94A8]">Interno:</div><div class="text-[#F1F3F8]" id="vg-interno">-</div>
-              <div class="text-[#8E94A8]">Marca:</div><div class="text-[#F1F3F8]" id="vg-marca">-</div>
-              <div class="text-[#8E94A8]">Modelo:</div><div class="text-[#F1F3F8]" id="vg-modelo">-</div>
-              <div class="text-[#8E94A8]">Tipo:</div><div class="text-[#F1F3F8]" id="vg-tipo">-</div>
-              <div class="text-[#8E94A8]">Sub Tipo:</div><div class="text-[#F1F3F8]" id="vg-subtipo">-</div>
-              <div class="text-[#8E94A8]">Año:</div><div class="text-[#F1F3F8]" id="vg-anio">-</div>
-              <div class="text-[#8E94A8]">Chasis:</div><div class="text-[#F1F3F8]" id="vg-chasis">-</div>
-              <div class="text-[#8E94A8]">N° Motor:</div><div class="text-[#F1F3F8]" id="vg-numeroMotor">-</div>
-               <div class="text-[#8E94A8]">Cap. Carga:</div><div class="text-[#F1F3F8]" id="vg-capacidadCarga">-</div>
-               <div class="text-[#8E94A8]">Carga Trompo:</div><div class="text-[#F1F3F8]" id="vg-cargaTrompo">-</div>
-               <div class="text-[#8E94A8]">Km:</div><div class="text-[#F1F3F8]" id="vg-kmhs">-</div>
-               <div class="text-[#8E94A8]">Centro:</div><div class="text-[#F1F3F8]" id="vg-centro">-</div>
-               <div class="text-[#8E94A8]">Conductor:</div><div class="text-[#F1F3F8]" id="vg-conductor">-</div>
-               <div class="text-[#8E94A8]">Empresa:</div><div class="text-[#F1F3F8]" id="vg-empresa">-</div>
-               <div class="text-[#8E94A8]">Estado General:</div><div class="text-[#F1F3F8]" id="vg-estadoGeneral">-</div>
-               <div class="text-[#8E94A8]">Horómetro:</div><div class="text-[#F1F3F8]" id="vg-horometro">-</div>
-               <div class="text-[#8E94A8]">Última Revisión:</div><div class="text-[#F1F3F8]" id="vg-fechaUltimaRevision">-</div>
-               <div class="text-[#8E94A8]">Fecha Alta:</div><div class="text-[#F1F3F8]" id="vg-fechaAlta">-</div>
-             </div>
-             <div id="vg-foto-container" class="mt-3 hidden">
-               <img id="vg-foto" class="w-full max-h-48 object-cover rounded-lg" alt="Foto del vehículo">
-             </div>
-           </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-xs md:text-sm">
+              <div><span class="text-[#8E94A8]">Patente</span><br><span class="text-[#F1F3F8] font-semibold text-sm md:text-base" id="vg-patente">-</span></div>
+              <div><span class="text-[#8E94A8]">Interno</span><br><span class="text-[#F1F3F8]" id="vg-interno">-</span></div>
+              <div><span class="text-[#8E94A8]">Fecha Alta</span><br><span class="text-[#F1F3F8]" id="vg-fechaAlta">-</span></div>
+              <div><span class="text-[#8E94A8]">Marca</span><br><span class="text-[#F1F3F8]" id="vg-marca">-</span></div>
+              <div><span class="text-[#8E94A8]">Modelo</span><br><span class="text-[#F1F3F8]" id="vg-modelo">-</span></div>
+              <div><span class="text-[#8E94A8]">Año</span><br><span class="text-[#F1F3F8]" id="vg-anio">-</span></div>
+              <div><span class="text-[#8E94A8]">Tipo</span><br><span class="text-[#F1F3F8]" id="vg-tipo">-</span></div>
+              <div><span class="text-[#8E94A8]">Sub Tipo</span><br><span class="text-[#F1F3F8]" id="vg-subtipo">-</span></div>
+              <div><span class="text-[#8E94A8]">Empresa</span><br><span class="text-[#F1F3F8]" id="vg-empresa">-</span></div>
+            </div>
+          </div>
+          <div class="glass-card rounded-xl p-4 md:p-5 flex flex-col items-center justify-center" id="vg-foto-container">
+            <div class="text-[#5C6378] text-xs text-center" id="vg-foto-placeholder">
+              <svg class="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              Sin foto
+            </div>
+            <img id="vg-foto" class="hidden w-full max-h-36 md:max-h-44 object-cover rounded-lg" alt="Foto del vehículo">
+          </div>
+        </div>
 
-           <div class="glass-card rounded-xl p-5">
-            <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
-              <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-              Seguro
+        <!-- Fila 2: Características + Estado -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+          <div class="glass-card rounded-xl p-4 md:p-5">
+            <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 md:mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4 md:w-5 md:h-5 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Características
             </h3>
-            <div class="grid grid-cols-2 gap-3 text-sm" id="seguro-info">
-              <div class="text-[#8E94A8]">Compañía:</div><div class="text-[#F1F3F8]" id="vg-seguroCompania">-</div>
-              <div class="text-[#8E94A8]">Póliza:</div><div class="text-[#F1F3F8]" id="vg-seguroPoliza">-</div>
-              <div class="text-[#8E94A8]">Tipo:</div><div class="text-[#F1F3F8]" id="vg-seguroTipo">-</div>
-              <div class="text-[#8E94A8]">Vencimiento:</div><div class="text-[#F1F3F8]" id="vg-seguroVencimiento">-</div>
-              <div class="text-[#8E94A8]">Costo:</div><div class="text-[#F1F3F8] font-medium" id="vg-seguroCosto">-</div>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs md:text-sm">
+              <div><span class="text-[#8E94A8]">Chasis</span><br><span class="text-[#F1F3F8] text-xs md:text-sm" id="vg-chasis">-</span></div>
+              <div><span class="text-[#8E94A8]">N° Motor</span><br><span class="text-[#F1F3F8] text-xs" id="vg-numeroMotor">-</span></div>
+              <div><span class="text-[#8E94A8]">Cap. Carga</span><br><span class="text-[#F1F3F8]" id="vg-capacidadCarga">-</span></div>
+              <div><span class="text-[#8E94A8]">Carga Trompo</span><br><span class="text-[#F1F3F8]" id="vg-cargaTrompo">-</span></div>
+            </div>
+          </div>
+          <div class="glass-card rounded-xl p-4 md:p-5">
+            <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 md:mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4 md:w-5 md:h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              Estado
+            </h3>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs md:text-sm">
+              <div><span class="text-[#8E94A8]">Km</span><br><span class="text-[#F1F3F8]" id="vg-kmhs">-</span></div>
+              <div><span class="text-[#8E94A8]">Horómetro</span><br><span class="text-[#F1F3F8]" id="vg-horometro">-</span></div>
+              <div><span class="text-[#8E94A8]">Estado General</span><br><span class="text-[#F1F3F8]" id="vg-estadoGeneral">-</span></div>
+              <div><span class="text-[#8E94A8]">Últ. Revisión</span><br><span class="text-[#F1F3F8]" id="vg-fechaUltimaRevision">-</span></div>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
-              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        <!-- Fila 3: Vencimientos (VTV + Seguro + Service) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          <div class="glass-card rounded-xl p-4 md:p-5">
+            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
               VTV
             </h3>
-            <div class="grid grid-cols-2 gap-3 text-sm" id="vtv-info">
-              <div class="text-[#8E94A8]">Fecha Realización:</div><div class="text-[#F1F3F8]" id="vg-vtvFechaRealizacion">-</div>
-              <div class="text-[#8E94A8]">Vencimiento:</div><div class="text-[#F1F3F8]" id="vg-vtvVencimiento">-</div>
-              <div class="text-[#8E94A8]">Costo:</div><div class="text-[#F1F3F8]" id="vg-vtvCosto">-</div>
-              <div class="text-[#8E94A8]">Centro:</div><div class="text-[#F1F3F8]" id="vg-vtvCentro">-</div>
-              <div class="text-[#8E94A8]">Resultado:</div><div class="text-[#F1F3F8]" id="vg-vtvResultado">-</div>
+            <div class="space-y-1.5 text-xs md:text-sm" id="vtv-info">
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Realización</span><span class="text-[#F1F3F8]" id="vg-vtvFechaRealizacion">-</span></div>
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Vencimiento</span><span class="text-[#F1F3F8]" id="vg-vtvVencimiento">-</span></div>
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Costo</span><span class="text-[#F1F3F8]" id="vg-vtvCosto">-</span></div>
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Centro</span><span class="text-[#F1F3F8]" id="vg-vtvCentro">-</span></div>
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Resultado</span><span class="text-[#F1F3F8]" id="vg-vtvResultado">-</span></div>
             </div>
           </div>
-
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
-              <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <div class="glass-card rounded-xl p-4 md:p-5">
+            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              Seguro
+            </h3>
+            <div class="space-y-1.5 text-xs md:text-sm" id="seguro-info">
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Compañía</span><span class="text-[#F1F3F8]" id="vg-seguroCompania">-</span></div>
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Póliza</span><span class="text-[#F1F3F8]" id="vg-seguroPoliza">-</span></div>
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Tipo</span><span class="text-[#F1F3F8]" id="vg-seguroTipo">-</span></div>
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Vencimiento</span><span class="text-[#F1F3F8]" id="vg-seguroVencimiento">-</span></div>
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Costo</span><span class="text-[#F1F3F8] font-medium" id="vg-seguroCosto">-</span></div>
+            </div>
+          </div>
+          <div class="glass-card rounded-xl p-4 md:p-5">
+            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               Service
             </h3>
-            <div class="grid grid-cols-2 gap-3 text-sm" id="service-info">
-              <div class="text-[#8E94A8]">Próx. Service (km):</div><div class="text-[#F1F3F8]" id="vg-proximoServiceKm">-</div>
-              <div class="text-[#8E94A8]">Próx. Service (fecha):</div><div class="text-[#F1F3F8]" id="vg-proximoServiceFecha">-</div>
+            <div class="space-y-1.5 text-xs md:text-sm" id="service-info">
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Próx. (km)</span><span class="text-[#F1F3F8]" id="vg-proximoServiceKm">-</span></div>
+              <div class="flex justify-between"><span class="text-[#8E94A8]">Próx. (fecha)</span><span class="text-[#F1F3F8]" id="vg-proximoServiceFecha">-</span></div>
             </div>
           </div>
         </div>
 
-        <div class="glass-card rounded-xl p-5">
-          <h3 class="text-md font-semibold text-[#F1F3F8] mb-2">Observaciones</h3>
-          <p class="text-sm text-[#8E94A8]" id="vg-observaciones">-</p>
+        <!-- Fila 4: Ubicación -->
+        <div class="glass-card rounded-xl p-4 md:p-5">
+          <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 md:mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 md:w-5 md:h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Ubicación
+          </h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs md:text-sm">
+            <div><span class="text-[#8E94A8]">Centro de Trabajo</span><br><span class="text-[#F1F3F8]" id="vg-centro">-</span></div>
+            <div><span class="text-[#8E94A8]">Conductor</span><br><span class="text-[#F1F3F8]" id="vg-conductor">-</span></div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
-              <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+        <!-- Fila 5: Observaciones + Multas + Documentos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
+          <div class="lg:col-span-1 glass-card rounded-xl p-4 md:p-5">
+            <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-2">Observaciones</h3>
+            <p class="text-xs md:text-sm text-[#8E94A8]" id="vg-observaciones">-</p>
+          </div>
+          <div class="glass-card rounded-xl p-4 md:p-5">
+            <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
               Multas
             </h3>
-            <div id="vg-multas" class="text-sm text-[#5C6378] italic">Sin multas registradas</div>
+            <div id="vg-multas" class="text-xs md:text-sm text-[#5C6378] italic">Sin multas registradas</div>
           </div>
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
-              <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <div class="glass-card rounded-xl p-4 md:p-5">
+            <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Documentos
             </h3>
-            <div id="vg-documentos" class="text-sm text-[#5C6378] italic">Sin documentos adjuntos</div>
+            <div id="vg-documentos" class="text-xs md:text-sm text-[#5C6378] italic">Sin documentos adjuntos</div>
           </div>
         </div>
 
