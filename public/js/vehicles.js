@@ -174,9 +174,12 @@ function hasTrompo(v) {
   const raw = v.trompo;
   const isNested = raw && typeof raw === 'object';
   const t = isNested ? raw : {};
-  const hasTrompoFlag = raw === 'Si' || raw === true || raw === 'Sí' || v.cargaTrompo === 'Sí' || v.cargaTrompo === 'Si';
   const carga = v.cargaTrompo || '';
-  return hasTrompoFlag || carga || t.tipo || t.numeroSerie || t.marca || t.capacidad || t.modelo || t.otro || v.marcaTrompo || v.serieTrompo || v.modeloTrompo || v.cargaM3Trompo;
+  if (carga === 'No' || carga === 'no') return false;
+  if (carga === 'Sí' || carga === 'Si' || raw === 'Sí' || raw === 'Si' || raw === true) return true;
+  if (isNested && (t.tipo || t.numeroSerie || t.marca || t.capacidad || t.modelo || t.otro)) return true;
+  if (v.marcaTrompo || v.serieTrompo || v.modeloTrompo || v.cargaM3Trompo) return true;
+  return false;
 }
 
 function applyFilters() {
