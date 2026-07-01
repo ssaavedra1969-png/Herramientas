@@ -17,6 +17,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('filter-subtipo')?.addEventListener('change', applyFilters);
   document.getElementById('filter-centro')?.addEventListener('change', applyFilters);
   document.getElementById('filter-empresa')?.addEventListener('change', applyFilters);
+  document.querySelectorAll('[data-trompo-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-trompo-filter]').forEach(b => {
+        b.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
+        b.classList.add('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');
+      });
+      btn.classList.add('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
+      btn.classList.remove('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');
+      applyFilters();
+    });
+  });
 });
 
 function initMobileMenu() {
@@ -159,6 +170,15 @@ function deleteSelectedVehicles() {
   });
 }
 
+function hasTrompo(v) {
+  const raw = v.trompo;
+  const isNested = raw && typeof raw === 'object';
+  const t = isNested ? raw : {};
+  const hasTrompoFlag = raw === 'Si' || raw === true || raw === 'Sí' || v.cargaTrompo === 'Sí' || v.cargaTrompo === 'Si';
+  const carga = v.cargaTrompo || '';
+  return hasTrompoFlag || carga || t.tipo || t.numeroSerie || t.marca || t.capacidad || t.modelo || t.otro || v.marcaTrompo || v.serieTrompo || v.modeloTrompo || v.cargaM3Trompo;
+}
+
 function applyFilters() {
   const search = (document.getElementById('search-vehiculo').value || '').toLowerCase();
   const marca = document.getElementById('filter-marca').value;
@@ -166,6 +186,8 @@ function applyFilters() {
   const subtipo = document.getElementById('filter-subtipo').value;
   const centro = document.getElementById('filter-centro').value;
   const empresa = document.getElementById('filter-empresa').value;
+  const activeTrompoBtn = document.querySelector('[data-trompo-filter].bg-\\[\\#6C3CE1\\]\\/30');
+  const trompoFilter = activeTrompoBtn ? activeTrompoBtn.dataset.trompoFilter : 'all';
 
   let filtered = allVehicles;
   if (search) {
@@ -185,6 +207,8 @@ function applyFilters() {
   if (subtipo) filtered = filtered.filter(v => (v.subtipo || '') === subtipo);
   if (centro) filtered = filtered.filter(v => (v.centroTrabajo || '') === centro);
   if (empresa) filtered = filtered.filter(v => (v.empresa || '') === empresa);
+  if (trompoFilter === 'yes') filtered = filtered.filter(v => hasTrompo(v));
+  if (trompoFilter === 'no') filtered = filtered.filter(v => !hasTrompo(v));
 
   document.getElementById('filter-count').textContent = filtered.length;
   renderVehicles(filtered);
@@ -197,6 +221,14 @@ function resetFilters() {
   document.getElementById('filter-subtipo').value = '';
   document.getElementById('filter-centro').value = '';
   document.getElementById('filter-empresa').value = '';
+  document.querySelectorAll('[data-trompo-filter]').forEach((btn, i) => {
+    btn.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
+    btn.classList.add('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');
+    if (i === 0) {
+      btn.classList.add('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
+      btn.classList.remove('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');
+    }
+  });
   applyFilters();
 }
 
