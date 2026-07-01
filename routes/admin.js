@@ -38,17 +38,14 @@ router.put('/users/:id', verifyToken, requireAdmin, async (req, res) => {
 
 router.get('/dashboard', verifyToken, async (req, res) => {
   try {
-    const [vehiclesSnap, toolsSnap, maintenanceSnap] = await Promise.all([
+    const [vehiclesSnap, maintenanceSnap] = await Promise.all([
       db.collection('vehicles').get(),
-      db.collection('tools').get(),
       db.collection('maintenance').get()
     ]);
 
     const now = new Date();
-    const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
     const vehiculosActivos = vehiclesSnap.docs.filter(d => d.data().estado === 'Activo').length;
-    const herramientasMalEstado = toolsSnap.docs.filter(d => ['Roto', 'En reparación'].includes(d.data().estado)).length;
 
     let vencidosHoy = 0;
     let proximos7 = 0;
@@ -71,7 +68,6 @@ router.get('/dashboard', verifyToken, async (req, res) => {
 
     res.json({
       vehiculosActivos,
-      herramientasMalEstado,
       vencidosHoy,
       proximos7,
       monthlyData
@@ -158,7 +154,7 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
       if (m.costo) {
         totalMantenimiento += Number(m.costo) || 0;
         ultimosMovimientos.push({
-          tipo: 'Mantenimiento', patente: m.vehiculoPatente || m.herramientaCodigo || '—',
+          tipo: 'Mantenimiento', patente: m.vehiculoPatente || '—',
           desc: m.descripcion || '', importe: Number(m.costo) || 0, fecha: m.fechaRealizacion
         });
       }
@@ -311,7 +307,7 @@ router.get('/report', verifyToken, async (req, res) => {
       const fecha = m.fechaRealizacion?.toDate ? m.fechaRealizacion.toDate() : new Date(m.fechaRealizacion || m.createdAt);
       if (fecha < filterDesde || fecha > filterHasta) return;
       if (!m.costo) return;
-      const vehRef = m.vehiculoPatente || m.herramientaCodigo || '—';
+      const vehRef = m.vehiculoPatente || '—';
       if (vehiculo && vehiculo !== 'todos' && !vehRef.toLowerCase().includes(vehiculo.toLowerCase())) return;
       if (categoria && categoria !== 'todas' && categoria !== 'Mantenimiento') return;
       items.push({ fecha, categoria: 'Mantenimiento', vehiculo: vehRef, detalle: m.descripcion || m.tipo || '', monto: Number(m.costo) || 0 });
@@ -353,7 +349,6 @@ router.get('/alerts', verifyToken, async (req, res) => {
           descripcion: m.descripcion,
           proximaFechaVencimiento: venc,
           vehiculoPatente: m.vehiculoPatente,
-          herramientaCodigo: m.herramientaCodigo,
           tipo: m.tipo
         });
       }
@@ -472,7 +467,7 @@ router.get('/report/export', verifyToken, async (req, res) => {
       const fecha = m.fechaRealizacion?.toDate ? m.fechaRealizacion.toDate() : new Date(m.fechaRealizacion || m.createdAt);
       if (fecha < filterDesde || fecha > filterHasta) return;
       if (!m.costo) return;
-      const vehRef = m.vehiculoPatente || m.herramientaCodigo || '—';
+      const vehRef = m.vehiculoPatente || '—';
       if (vehiculo && vehiculo !== 'todos' && !vehRef.toLowerCase().includes(vehiculo.toLowerCase())) return;
       if (categoria && categoria !== 'todas' && categoria !== 'Mantenimiento') return;
       catTotals.Mantenimiento += Number(m.costo) || 0;

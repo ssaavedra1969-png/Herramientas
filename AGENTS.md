@@ -23,14 +23,12 @@ middleware/auth.js           # verifyToken, requireAdmin, loadUser, requireAuth
 routes/
   auth.js                    # Login/session
   vehicles.js                # CRUD vehículos + combustible/repuestos subcolecciones
-  tools.js                   # CRUD herramientas
   maintenance.js             # CRUD mantenimientos
   admin.js                   # Dashboard stats, reports, backup
 views/
-  dashboard.ejs              # Dashboard principal (tabs vehículos/herramientas)
+  dashboard.ejs              # Dashboard principal
   vehicles.ejs               # Listado vehículos + modal CRUD + import CSV/Excel
   vehicle-detail.ejs         # Detalle vehículo (combustible/repuestos)
-  tools.ejs                  # Listado herramientas + modal CRUD + import CSV
   maintenance.ejs            # Listado mantenimientos + modal CRUD
   reports.ejs                # Reportes financieros
   admin.ejs                  # Gestión de usuarios
@@ -42,7 +40,6 @@ public/js/
   dashboard.js               # Listeners, charts, alertas VTV, empresas
   vehicles.js                # CRUD, bulk delete, filtros, import CSV/Excel
   vehicle-detail.js          # Combustible + repuestos CRUD
-  tools.js                   # CRUD, bulk delete, import CSV
   maintenance.js             # CRUD mantenimientos
   reports.js                 # Reportes financieros
   admin.js                   # Roles de usuario
@@ -54,11 +51,8 @@ public/js/
 Campos clave: patente, interno, tipo, subtipo, marca, modelo, año, chasis, numeroMotor, capacidadCarga, kilometraje, horometro, estadoGeneral, vtv (map), seguro (map), proximoServiceKm, proximoServiceFecha, centroTrabajo, conductorHabitual, empresa, observaciones, fotoURL, multas[], documentos[]
 Subcolecciones: `combustible` (fecha, litros, importe, tipo, km, proveedor), `repuestos` (fecha, pieza, costo, proveedor, tipo)
 
-### `tools`
-Campos clave: nombre, codigoInterno, tipoHerramienta, categoria, marca, modelo, numeroSerie, valorCompra, fechaCompra, proveedor, garantiaVence, estadoGeneral, ubicacionActual, responsableActual, fechaUltimoControl, proximoControl, tiempoUsoAcumulado, observaciones, fotoURL, documentoURL
-
 ### `maintenance`
-Campos clave: tipo (Mecánico/Legal), vehiculoId, herramientaId, fechaRealizacion, proximaFechaVencimiento, kilometrajeHoras, descripcion, costo, responsable, estado, comprobanteURL
+Campos clave: tipo (Mecánico/Legal), vehiculoId, fechaRealizacion, proximaFechaVencimiento, kilometrajeHoras, descripcion, costo, responsable, estado, comprobanteURL
 
 ### `users`
 Campos clave: role (Admin|Usuario), displayName, email
@@ -70,13 +64,7 @@ Documento único con campo `current` para auto-increment de números internos de
 - `isAdmin()` = `currentUserData?.role === 'Admin'`
 - Middleware: `verifyToken` (API), `requireAdmin` (API 403), `loadUser` (SSR global), `requireAuth` (redirect a /login), `requireAdminPage` (redirect a /dashboard)
 - Primer usuario registrado se convierte automáticamente en Admin
-- UI Admin-only: botones editar/eliminar, checkboxes bulk, barra bulk, cards de herramientas, import CSV, botón Nuevo
-
-## Cambios recientes (este commit)
-- **Dashboard vehículos:** cards Vehículos Activos + Empresas (con listado), alertas VTV, gráficos Combustible + Gasto por Vehículo. Eliminado: Mantenimientos por Mes, Distribución de Gastos, Últimos Movimientos, Vehículos Recientes.
-- **Vehículos:** columna y filtro Sub Tipo agregados, filtro Estado eliminado.
-- **Herramientas:** bulk delete con checkboxes + barra de selección + deleteSelectedTools().
-- **Perfiles:** botones de eliminar/editar, checkboxes y bulk bar solo visibles para Admin.
+- UI Admin-only: botones editar/eliminar, checkboxes bulk, barra bulk, import CSV, botón Nuevo
 
 ## Patrones importantes
 - **Bulk delete:** Los checkboxes se renderizan condicionalmente (`isAdmin()` en JS y `currentUserData?.role === 'Admin'` en EJS). `deleteMultipleWithBackup()` descarga backup JSON antes de eliminar.

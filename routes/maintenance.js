@@ -10,7 +10,6 @@ router.get('/', verifyToken, async (req, res) => {
     if (req.query.tipo) query = query.where('tipo', '==', req.query.tipo);
     if (req.query.estado) query = query.where('estado', '==', req.query.estado);
     if (req.query.vehiculoId) query = query.where('vehiculoId', '==', req.query.vehiculoId);
-    if (req.query.herramientaId) query = query.where('herramientaId', '==', req.query.herramientaId);
 
     const snapshot = await query.get();
     const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -39,11 +38,8 @@ router.post('/', verifyToken, async (req, res) => {
     const data = {
       tipo: req.body.tipo,
       vehiculoId: req.body.vehiculoId || null,
-      herramientaId: req.body.herramientaId || null,
       vehiculoPatente: req.body.vehiculoPatente || null,
       vehiculoInterno: req.body.vehiculoInterno || null,
-      herramientaCodigo: req.body.herramientaCodigo || null,
-      herramientaNombre: req.body.herramientaNombre || null,
       fechaRealizacion: req.body.fechaRealizacion ? new Date(req.body.fechaRealizacion) : null,
       proximaFechaVencimiento: req.body.proximaFechaVencimiento ? new Date(req.body.proximaFechaVencimiento) : null,
       kilometrajeHoras: parseInt(req.body.kilometrajeHoras) || null,
@@ -58,10 +54,6 @@ router.post('/', verifyToken, async (req, res) => {
 
     if (!data.tipo || !data.descripcion || !data.responsable || !data.fechaRealizacion) {
       return res.status(400).json({ error: 'Campos obligatorios: tipo, descripción, responsable, fecha' });
-    }
-
-    if (!data.vehiculoId && !data.herramientaId) {
-      return res.status(400).json({ error: 'Debe asociar a un vehículo o herramienta' });
     }
 
     const docRef = await db.collection('maintenance').add(data);
@@ -79,11 +71,8 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
     const data = {
       tipo: req.body.tipo,
       vehiculoId: req.body.vehiculoId || null,
-      herramientaId: req.body.herramientaId || null,
       vehiculoPatente: req.body.vehiculoPatente || null,
       vehiculoInterno: req.body.vehiculoInterno || null,
-      herramientaCodigo: req.body.herramientaCodigo || null,
-      herramientaNombre: req.body.herramientaNombre || null,
       fechaRealizacion: req.body.fechaRealizacion ? new Date(req.body.fechaRealizacion) : null,
       proximaFechaVencimiento: req.body.proximaFechaVencimiento ? new Date(req.body.proximaFechaVencimiento) : null,
       kilometrajeHoras: parseInt(req.body.kilometrajeHoras) || null,

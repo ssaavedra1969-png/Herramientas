@@ -1,7 +1,6 @@
 let allMaintenance = [];
 let editingMaintenanceId = null;
 let vehiclesCache = [];
-let toolsCache = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -34,11 +33,6 @@ function loadSelectData() {
     vehiclesCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     populateVehicleSelect();
   });
-
-  db.collection('tools').onSnapshot((snapshot) => {
-    toolsCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    populateToolSelect();
-  });
 }
 
 function populateVehicleSelect() {
@@ -48,18 +42,6 @@ function populateVehicleSelect() {
     vehiclesCache.map(v => `<option value="${v.id}">${v.patente} - ${v.marca} ${v.modelo} (Int: ${v.numeroInterno})</option>`).join('');
 }
 
-function populateToolSelect() {
-  const select = document.getElementById('m-herramienta');
-  if (!select) return;
-  select.innerHTML = '<option value="">Seleccionar herramienta...</option>' +
-    toolsCache.map(t => `<option value="${t.id}">${t.codigoInterno} - ${t.nombre}</option>`).join('');
-}
-
-function toggleAsociado() {
-  const tipo = document.getElementById('m-asociado-tipo').value;
-  document.getElementById('m-vehiculo-group').classList.toggle('hidden', tipo !== 'vehiculo');
-  document.getElementById('m-herramienta-group').classList.toggle('hidden', tipo !== 'herramienta');
-}
 
 function initRealtimeListener() {
   db.collection('maintenance').orderBy('fechaRealizacion', 'desc').onSnapshot((snapshot) => {
@@ -86,7 +68,7 @@ function renderMaintenance(items) {
     const level = getAlertLevel(days);
     const alertIcon = level === 'critical' ? ' 🔴' : level === 'warning' ? ' 🟡' : '';
     const rowClass = level === 'critical' ? 'bg-red-50' : '';
-    const asociado = m.vehiculoPatente || m.herramientaCodigo || '—';
+    const asociado = m.vehiculoPatente || '—';
     const tipoStyle = m.tipo === 'Legal'
       ? 'style="background-color:#DBEAFE;color:#1E40AF"'
       : 'style="background-color:#D1FAE5;color:#065F46"';
@@ -129,7 +111,6 @@ function applyFilters() {
     filtered = filtered.filter(m =>
       (m.descripcion || '').toLowerCase().includes(search) ||
       (m.vehiculoPatente || '').toLowerCase().includes(search) ||
-      (m.herramientaCodigo || '').toLowerCase().includes(search) ||
       (m.responsable || '').toLowerCase().includes(search)
     );
   }
@@ -153,15 +134,7 @@ function openMaintenanceModal(maintenanceId = null) {
     document.getElementById('mant-id').value = maintenanceId;
     document.getElementById('m-tipo').value = m.tipo || 'Mecánico';
 
-    if (m.vehiculoId) {
-      document.getElementById('m-asociado-tipo').value = 'vehiculo';
-      toggleAsociado();
-      setTimeout(() => { document.getElementById('m-vehiculo').value = m.vehiculoId; }, 100);
-    } else {
-      document.getElementById('m-asociado-tipo').value = 'herramienta';
-      toggleAsociado();
-      setTimeout(() => { document.getElementById('m-herramienta').value = m.herramientaId; }, 100);
-    }
+    setTimeout(() => { document.getElementById('m-vehiculo').value = m.vehiculoId || ''; }, 100);
 
     if (m.fechaRealizacion) {
       const d = m.fechaRealizacion.toDate ? m.fechaRealizacion.toDate() : new Date(m.fechaRealizacion);
@@ -191,24 +164,15 @@ async function saveMaintenance(e) {
   e.preventDefault();
 
   const id = document.getElementById('mant-id').value;
-  const asociadoTipo = document.getElementById('m-asociado-tipo').value;
-  const vehiculoId = asociadoTipo === 'vehiculo' ? document.getElementById('m-vehiculo').value : null;
-  const herramientaId = asociadoTipo === 'herramienta' ? document.getElementById('m-herramienta').value : null;
-
-  if (asociadoTipo === 'vehiculo' && !vehiculoId) { showToast('Seleccione un vehículo', 'error'); return; }
-  if (asociadoTipo === 'herramienta' && !herramientaId) { showToast('Seleccione una herramienta', 'error'); return; }
-
+  const vehiculoId = document.getElementById('m-vehiculo').value || null;
+  if (!vehiculoId) { showToast('Seleccione un vehículo', 'error'); return; }
   const vehiculo = vehiclesCache.find(v => v.id === vehiculoId);
-  const herramienta = toolsCache.find(t => t.id === herramientaId);
 
   const data = {
     tipo: document.getElementById('m-tipo').value,
-    vehiculoId: vehiculoId || null,
-    herramientaId: herramientaId || null,
+    vehiculoId: vehiculoId,
     vehiculoPatente: vehiculo?.patente || null,
     vehiculoInterno: vehiculo?.numeroInterno || null,
-    herramientaCodigo: herramienta?.codigoInterno || null,
-    herramientaNombre: herramienta?.nombre || null,
     fechaRealizacion: firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('m-fecha').value)),
     proximaFechaVencimiento: firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('m-vencimiento').value)),
     kilometrajeHoras: parseInt(document.getElementById('m-km').value) || null,

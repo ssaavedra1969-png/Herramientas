@@ -285,10 +285,9 @@ function _backupFilename() {
 async function _dumpAll() {
   const docs = await Promise.all([
     _dumpCollection('vehicles'),
-    _dumpCollection('tools'),
     _dumpCollection('maintenance')
   ]);
-  return { vehicles: docs[0], tools: docs[1], maintenance: docs[2] };
+  return { vehicles: docs[0], maintenance: docs[1] };
 }
 
 async function deleteMultipleWithBackup(collection, ids, label) {

@@ -6,7 +6,7 @@ const path = require('path');
 
 const BACKUP_DIR = path.join(__dirname, '..', 'backups');
 
-const COLLECTIONS = ['vehicles', 'tools', 'maintenance', 'users'];
+const COLLECTIONS = ['vehicles', 'maintenance', 'users'];
 
 function parseJSON(str) {
   try { return JSON.parse(str); }

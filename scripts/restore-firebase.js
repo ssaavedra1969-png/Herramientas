@@ -119,7 +119,7 @@ async function main() {
 
   const db = admin.firestore();
 
-  const collectionOrder = ['users', 'vehicles', 'tools', 'maintenance'];
+  const collectionOrder = ['users', 'vehicles', 'maintenance'];
 
   for (const name of collectionOrder) {
     if (manifest.collections[name]) {

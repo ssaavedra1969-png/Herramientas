@@ -10,7 +10,7 @@ const cors = require('cors');
 const { loadUser, requireAuth, requireAdminPage } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const vehiclesRoutes = require('./routes/vehicles');
-const toolsRoutes = require('./routes/tools');
+
 const maintenanceRoutes = require('./routes/maintenance');
 const adminRoutes = require('./routes/admin');
 
@@ -41,7 +41,7 @@ app.use(loadUser);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehiclesRoutes);
-app.use('/api/tools', toolsRoutes);
+
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/admin', adminRoutes);
 
@@ -95,14 +95,6 @@ app.get('/vehicle/:id', requireAuth, (req, res) => {
   });
 });
 
-app.get('/tools', requireAuth, (req, res) => {
-  res.render('tools', {
-    title: 'Herramientas',
-    clientConfig: res.locals.clientConfig,
-    currentUser: res.locals.currentUser,
-    currentUserData: res.locals.currentUserData
-  });
-});
 
 app.get('/maintenance', requireAuth, (req, res) => {
   res.render('maintenance', {

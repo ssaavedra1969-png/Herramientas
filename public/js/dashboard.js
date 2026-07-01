@@ -40,24 +40,6 @@ function initRealtimeListeners() {
     console.error('Error en snapshot de vehículos:', error);
   });
 
-  db.collection('tools').onSnapshot((snapshot) => {
-    const malEstado = snapshot.docs.filter(d => ['Roto', 'En reparación'].includes(d.data().estado)).length;
-    document.getElementById('card-herramientas').textContent = malEstado;
-    document.getElementById('card-total-herramientas').textContent = snapshot.docs.length;
-
-    let proxControl = 0;
-    snapshot.docs.forEach(d => {
-      const t = d.data();
-      if (t.estado === 'Descartado') return;
-      const daysControl = daysUntil(t.proximoControl);
-      if (daysControl <= 30 && daysControl >= 0) proxControl++;
-    });
-    document.getElementById('card-prox-control').textContent = proxControl;
-    renderToolsStatus(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-  }, (error) => {
-    console.error('Error en snapshot de herramientas:', error);
-  });
-
   async function fetchFinancialData() {
     try {
       const headers = await getAuthHeaders();
@@ -195,37 +177,5 @@ function renderGastoVehiculosChart(gastoPorVehiculo) {
   });
 }
 
-function renderToolsStatus(tools) {
-  const container = document.getElementById('tools-status-list');
-  if (!container) return;
-  if (tools.length === 0) {
-    container.innerHTML = '<p class="text-[#5C6378] text-sm">No hay herramientas registradas</p>';
-    return;
-  }
-
-  const estadoColor = { 'Bueno': 'text-green-400', 'Regular': 'text-yellow-400', 'Roto': 'text-red-400', 'En reparación': 'text-orange-400', 'Descartado': 'text-gray-500' };
-  const MAX = 8;
-  const showCount = tools.length <= MAX ? tools.length : MAX;
-
-  container.innerHTML = tools.slice(0, showCount).map(t => {
-    const color = estadoColor[t.estado] || 'text-[#8E94A8]';
-    const controlDays = daysUntil(t.proximoControl);
-    const controlLabel = controlDays <= 0 ? '<span class="text-red-400">Vencido</span>' : controlDays <= 7 ? `<span class="text-yellow-400">${controlDays}d</span>` : `<span class="text-[#5C6378]">${controlDays}d</span>`;
-    return `<div class="flex items-center justify-between py-2 border-b border-[#10B981]/5 last:border-0">
-      <div class="min-w-0 flex-1">
-        <p class="text-sm text-[#F1F3F8] truncate">${t.nombre || t.codigoInterno || '—'}</p>
-        <p class="text-xs text-[#8E94A8]">${t.codigoInterno || ''} · ${t.categoria || ''}</p>
-      </div>
-      <div class="flex items-center gap-3 ml-3">
-        <span class="text-xs font-medium ${color}">${t.estado || '—'}</span>
-        <span class="text-xs">${controlLabel}</span>
-      </div>
-    </div>`;
-  }).join('');
-
-  if (tools.length > MAX) {
-    container.innerHTML += `<p class="text-[#5C6378] text-xs text-center pt-2">+${tools.length - MAX} más en <a href="/tools" class="text-[#10B981] hover:underline">Herramientas</a></p>`;
-  }
-}
 
 
