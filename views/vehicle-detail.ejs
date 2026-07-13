@@ -36,6 +36,7 @@
           <button onclick="switchTab('resumen')" id="tab-resumen" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap bg-[#6C3CE1]/10 text-[#6C3CE1]">Resumen</button>
           <button onclick="switchTab('combustible')" id="tab-combustible" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Combustible</button>
           <button onclick="switchTab('repuestos')" id="tab-repuestos" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Repuestos</button>
+          <button onclick="switchTab('codigobarras')" id="tab-codigobarras" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Código Barras</button>
           <button onclick="switchTab('qr')" id="tab-qr" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">QR</button>
         </div>
       </div>
@@ -356,6 +357,66 @@
                 <tr><td colspan="7" class="text-center py-8 text-[#5C6378]">Cargando historial...</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-content-codigobarras" class="tab-content hidden space-y-4">
+        <div class="glass-card rounded-xl p-5 md:p-6 max-w-lg mx-auto">
+          <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-4 text-center flex items-center gap-2 justify-center">
+            <svg class="w-4 h-4 md:w-5 md:h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v16H3V4zm4 5v6m4-8v8m4-6v6"/></svg>
+            Código de Barras del Vehículo
+          </h3>
+
+          <div class="mb-4">
+            <label class="block text-xs font-medium text-[#8E94A8] mb-2">Formato del código</label>
+            <select id="barcode-format" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" onchange="generateBarcode()">
+              <option value="CODE128" class="bg-[#0A0A1A]">CODE 128 (recomendado)</option>
+              <option value="CODE39" class="bg-[#0A0A1A]">CODE 39</option>
+              <option value="EAN13" class="bg-[#0A0A1A]">EAN-13 (requiere 12/13 dígitos)</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-xs font-medium text-[#8E94A8] mb-2">Contenido del código</label>
+            <select id="barcode-content" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" onchange="generateBarcode()">
+              <option value="patente" class="bg-[#0A0A1A]">Patente</option>
+              <option value="interno" class="bg-[#0A0A1A]">Interno</option>
+              <option value="patente-interno" class="bg-[#0A0A1A]">Patente + Interno</option>
+            </select>
+          </div>
+
+          <div class="flex justify-center mb-4">
+            <div id="barcode-container" class="inline-block p-4 bg-white rounded-xl shadow-lg shadow-[#10B981]/10">
+              <svg id="barcode-svg"></svg>
+            </div>
+          </div>
+
+          <div class="bg-[#0A0A1A]/50 rounded-lg px-4 py-3 text-center border border-[#6C3CE1]/10 w-full">
+            <div class="text-[#8E94A8] text-xs uppercase tracking-wider">Empresa</div>
+            <div class="text-[#F1F3F8] font-bold text-sm md:text-base" id="barcode-empresa">Grupo Falpat SRL</div>
+            <div class="mt-2 pt-2 border-t border-[#6C3CE1]/10">
+              <div class="text-[#8E94A8] text-xs uppercase tracking-wider">Interno / Patente</div>
+              <div class="text-[#F1F3F8] font-mono font-semibold text-sm md:text-base" id="barcode-vehiculo-id">-</div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-wrap justify-center gap-3">
+            <button onclick="printBarcode()" class="btn-secondary text-sm px-4 py-2 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              Imprimir
+            </button>
+            <button onclick="downloadBarcodePNG()" class="btn-secondary text-sm px-4 py-2 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Descargar PNG
+            </button>
+            <button onclick="downloadBarcodePDF()" class="btn-secondary text-sm px-4 py-2 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Descargar PDF
+            </button>
+          </div>
+          <div class="mt-4 text-xs text-[#5C6378] text-center">
+            <p>Generá e imprimí el código de barras para identificar el vehículo.</p>
           </div>
         </div>
       </div>

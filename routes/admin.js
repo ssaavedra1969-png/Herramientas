@@ -189,25 +189,53 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
 
 router.post('/backup', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { spawn } = require('child_process');
-    const path = require('path');
+    const COLLECTIONS = ['vehicles', 'maintenance', 'users'];
 
-    const child = spawn('node', [path.join(__dirname, '..', 'scripts', 'export-firebase.js')], {
-      env: { ...process.env },
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
-
-    let output = '';
-    child.stdout.on('data', d => output += d.toString());
-    child.stderr.on('data', d => output += d.toString());
-
-    child.on('close', code => {
-      if (code === 0) {
-        res.json({ success: true, message: 'Backup completado', log: output });
-      } else {
-        res.status(500).json({ error: 'Error en backup', log: output });
+    function serializeTimestamps(data) {
+      if (!data || typeof data !== 'object') return data;
+      if (Array.isArray(data)) return data.map(serializeTimestamps);
+      const out = {};
+      for (const [k, v] of Object.entries(data)) {
+        if (v && typeof v === 'object') {
+          if (v.toDate && typeof v.toDate === 'function') {
+            out[k] = { __type: 'timestamp', value: v.toDate().toISOString() };
+          } else if (v.constructor?.name === 'Timestamp') {
+            out[k] = { __type: 'timestamp', value: new admin.firestore.Timestamp(v.seconds, v.nanoseconds).toDate().toISOString() };
+          } else {
+            out[k] = serializeTimestamps(v);
+          }
+        } else {
+          out[k] = v;
+        }
       }
-    });
+      return out;
+    }
+
+    const allData = {};
+    let total = 0;
+
+    for (const col of COLLECTIONS) {
+      try {
+        const snap = await db.collection(col).get();
+        const docs = snap.docs.map(d => ({ id: d.id, ...serializeTimestamps(d.data()) }));
+        allData[col] = docs;
+        total += docs.length;
+      } catch (e) {
+        allData[col] = [];
+      }
+    }
+
+    const backup = {
+      _meta: { exportado: new Date().toISOString(), totalDocumentos: total, collections: COLLECTIONS },
+      ...allData
+    };
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `backup-${timestamp}.json`;
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.json(backup);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

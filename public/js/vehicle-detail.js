@@ -180,6 +180,9 @@ function switchTab(tab) {
   if (tab === 'qr') {
     setTimeout(generateQR, 100);
   }
+  if (tab === 'codigobarras') {
+    setTimeout(generateBarcode, 100);
+  }
 }
 
 function generateQR() {
@@ -607,4 +610,158 @@ async function deleteRepuesto(id) {
   } catch (err) {
     showToast('Error: ' + err.message, 'error');
   }
+}
+
+/* ───────── Barcode ───────── */
+
+function getBarcodeText() {
+  const mode = document.getElementById('barcode-content')?.value || 'patente';
+  switch (mode) {
+    case 'interno': return vehicleData?.interno || '';
+    case 'patente-interno': return `${vehicleData?.patente || ''} ${vehicleData?.interno || ''}`;
+    default: return vehicleData?.patente || '';
+  }
+}
+
+function generateBarcode() {
+  if (!vehicleData || typeof JsBarcode === 'undefined') return;
+
+  const format = document.getElementById('barcode-format')?.value || 'CODE128';
+  const text = getBarcodeText();
+  const svgEl = document.getElementById('barcode-svg');
+  if (!svgEl || !text) return;
+
+  try {
+    JsBarcode('#barcode-svg', text, {
+      format: format,
+      width: 2,
+      height: 80,
+      displayValue: true,
+      fontSize: 16,
+      margin: 10,
+      background: '#ffffff',
+      lineColor: '#1a1a2e'
+    });
+  } catch (e) {
+    svgEl.innerHTML = `<text x="10" y="30" fill="red" font-size="12">Error: ${e.message}</text>`;
+  }
+
+  setText('barcode-empresa', vehicleData?.empresa || 'Grupo Falpat SRL');
+  setText('barcode-vehiculo-id', `Int. ${vehicleData?.interno || ''} — ${vehicleData?.patente || ''}`);
+}
+
+function printBarcode() {
+  const svgEl = document.getElementById('barcode-svg');
+  if (!svgEl || !svgEl.textContent.trim()) {
+    showToast('Generá el código de barras primero', 'error');
+    return;
+  }
+
+  const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
+  const svgData = new XMLSerializer().serializeToString(svgEl);
+  const win = window.open('', '_blank');
+  win.document.write(`<html><head><title>Barcode - ${vehicleData?.patente || 'Vehículo'}</title><style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{text-align:center;padding:40px;font-family:Arial,sans-serif;background:#fff}
+    .barcode-wrap{display:inline-block;padding:20px;border:2px solid #eee;border-radius:16px}
+    h2{font-size:22px;margin-bottom:4px}
+    .sub{color:#666;font-size:14px;margin-bottom:16px}
+    .footer{margin-top:16px;padding-top:12px;border-top:1px solid #eee;font-size:13px;color:#444}
+    .footer strong{display:block;font-size:15px;color:#111}
+  </style></head><body>
+    <div class="barcode-wrap">
+      <h2>${vehicleData?.patente || ''}</h2>
+      <div class="sub">Int. ${vehicleData?.interno || ''} — ${vehicleData?.marca || ''} ${vehicleData?.modelo || ''}</div>
+      ${svgData}
+      <div class="footer">
+        <strong>${empresa}</strong>
+        <div style="margin-top:6px;font-weight:bold">${vehicleData?.interno || '-'}</div>
+      </div>
+    </div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => { win.print(); }, 400);
+}
+
+function downloadBarcodePNG() {
+  const svgEl = document.getElementById('barcode-svg');
+  if (!svgEl || !svgEl.textContent.trim()) {
+    showToast('Generá el código de barras primero', 'error');
+    return;
+  }
+
+  const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
+  const svgData = new XMLSerializer().serializeToString(svgEl);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+
+  img.onload = function () {
+    const padding = 40;
+    const footerH = 80;
+    canvas.width = img.width + padding * 2;
+    canvas.height = img.height + padding * 2 + footerH;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, padding, padding);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.font = 'bold 16px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(empresa, canvas.width / 2, img.height + padding + 30);
+    ctx.font = '12px Arial, sans-serif';
+    ctx.fillStyle = '#666';
+    ctx.fillText(`Int. ${vehicleData?.interno || ''} — ${vehicleData?.patente || ''}`, canvas.width / 2, img.height + padding + 52);
+    const link = document.createElement('a');
+    link.download = `barcode-${vehicleData?.patente || 'vehiculo'}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('Código de barras descargado');
+  };
+
+  img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+}
+
+function downloadBarcodePDF() {
+  const svgEl = document.getElementById('barcode-svg');
+  if (!svgEl || !svgEl.textContent.trim()) {
+    showToast('Generá el código de barras primero', 'error');
+    return;
+  }
+
+  const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
+  const svgData = new XMLSerializer().serializeToString(svgEl);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+
+  img.onload = function () {
+    const padding = 40;
+    const footerH = 80;
+    canvas.width = img.width + padding * 2;
+    canvas.height = img.height + padding * 2 + footerH;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, padding, padding);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.font = 'bold 16px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(empresa, canvas.width / 2, img.height + padding + 30);
+    ctx.font = '12px Arial, sans-serif';
+    ctx.fillStyle = '#666';
+    ctx.fillText(`Int. ${vehicleData?.interno || ''} — ${vehicleData?.patente || ''}`, canvas.width / 2, img.height + padding + 52);
+
+    const imgData = canvas.toDataURL('image/png');
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`<html><head><title>Barcode - ${vehicleData?.patente || ''}</title>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+      <style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#fff}</style>
+      </head><body>
+      <img src="${imgData}" style="max-width:100%">
+      <script>setTimeout(()=>{window.print();},300);<\/script>
+      </body></html>`);
+    printWindow.document.close();
+    showToast('PDF listo para imprimir/descargar');
+  };
+
+  img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
 }

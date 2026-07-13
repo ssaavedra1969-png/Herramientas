@@ -131,14 +131,28 @@ async function triggerBackup() {
   try {
     const headers = await getAuthHeaders();
     const res = await fetch('/api/admin/backup', { method: 'POST', headers });
-    const data = await res.json();
 
-    if (data.success) {
-      showToast('Backup completado exitosamente', 'success');
-    } else {
-      showToast('Error en backup: ' + (data.error || 'desconocido'), 'error');
-      console.error('Backup log:', data.log);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ error: 'Error desconocido' }));
+      showToast('Error en backup: ' + (errData.error || 'desconocido'), 'error');
+      return;
     }
+
+    const blob = await res.blob();
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const filenameMatch = disposition.match(/filename="?(.+?)"?$/);
+    const filename = filenameMatch ? filenameMatch[1] : `backup-${new Date().toISOString().slice(0,10)}.json`;
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+    showToast('Backup descargado exitosamente', 'success');
   } catch (err) {
     showToast('Error al conectar con el servidor: ' + err.message, 'error');
   } finally {
