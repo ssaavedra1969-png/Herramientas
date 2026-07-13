@@ -222,67 +222,130 @@ function printQR() {
     qrDataUrl = imgEl.src;
   }
 
-  const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
+  const v = vehicleData || {};
+  const empresa = v.empresa || 'Grupo Falpat SRL';
   const win = window.open('', '_blank');
-  win.document.write(`<html><head><title>QR - ${vehicleData?.patente || 'Vehículo'}</title><style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{text-align:center;padding:40px;font-family:Arial,sans-serif;background:#fff}
-    .qr-wrap{display:inline-block;padding:20px;border:2px solid #eee;border-radius:16px}
-    h2{font-size:22px;margin-bottom:4px}
-    .sub{color:#666;font-size:14px;margin-bottom:16px}
-    .footer{margin-top:16px;padding-top:12px;border-top:1px solid #eee;font-size:13px;color:#444}
-    .footer strong{display:block;font-size:15px;color:#111}
-    .label{font-size:10px;text-transform:uppercase;color:#999;letter-spacing:1px}
-    img.qr-img{width:280px;height:280px}
-  </style></head><body>
-    <div class="qr-wrap">
-      <h2>${vehicleData?.patente || ''}</h2>
-      <div class="sub">Int. ${vehicleData?.interno || ''} — ${vehicleData?.marca || ''} ${vehicleData?.modelo || ''}</div>
-      <img class="qr-img" src="${qrDataUrl}" />
-      <div class="footer">
-        <div class="label">Empresa</div>
-        <strong>${empresa}</strong>
-        <div style="margin-top:6px" class="label">Interno</div>
-        <strong>${vehicleData?.interno || '-'}</strong>
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>QR - ${v.patente || 'Vehiculo'}</title>
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box}
+      @page{size:A4 portrait;margin:10mm}
+      body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;background:#fff;color:#1a1a2e;display:flex;justify-content:center;padding:20px}
+      .card{width:100%;max-width:400px;border:3px solid #1a1a2e;border-radius:16px;overflow:hidden;text-align:center}
+      .header{background:#1a1a2e;color:#fff;padding:12px 16px}
+      .header .patente{font-size:28px;font-weight:800;letter-spacing:2px}
+      .header .interno{font-size:14px;opacity:.85;margin-top:2px}
+      .body-card{padding:20px}
+      .qr-section{margin:16px auto;display:inline-block;padding:12px;background:#fff;border:2px solid #e5e7eb;border-radius:12px}
+      .qr-section img{display:block;width:220px;height:220px}
+      .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;text-align:left;margin-top:16px;padding-top:16px;border-top:2px solid #e5e7eb}
+      .info-item .label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;font-weight:600}
+      .info-item .value{font-size:13px;font-weight:600;color:#1a1a2e;margin-top:1px}
+      .footer-bar{background:#f9fafb;padding:10px 16px;border-top:2px solid #e5e7eb;font-size:11px;color:#6b7280}
+      .footer-bar strong{color:#1a1a2e;font-size:13px}
+      @media print{body{padding:0}.card{border-radius:0}}
+    </style></head><body>
+    <div class="card">
+      <div class="header">
+        <div class="patente">${v.patente || ''}</div>
+        <div class="interno">Interno ${v.interno || ''}</div>
       </div>
+      <div class="body-card">
+        <div class="qr-section"><img src="${qrDataUrl}" /></div>
+        <div class="info-grid">
+          <div class="info-item"><div class="label">Marca / Modelo</div><div class="value">${v.marca || ''} ${v.modelo || ''}</div></div>
+          <div class="info-item"><div class="label">Tipo</div><div class="value">${v.tipo || ''} ${v.subtipo || ''}</div></div>
+          <div class="info-item"><div class="label">Conductor</div><div class="value">${v.conductorHabitual || '-'}</div></div>
+          <div class="info-item"><div class="label">Centro Trabajo</div><div class="value">${v.centroTrabajo || '-'}</div></div>
+          <div class="info-item"><div class="label">Ano</div><div class="value">${v.año || '-'}</div></div>
+          <div class="info-item"><div class="label">Estado</div><div class="value">${v.estadoGeneral || '-'}</div></div>
+        </div>
+      </div>
+      <div class="footer-bar"><strong>${empresa}</strong>Escaneá para ver detalle del vehiculo</div>
     </div>
   </body></html>`);
   win.document.close();
-  setTimeout(() => { win.print(); }, 400);
+  setTimeout(() => { win.print(); }, 500);
 }
 
 function downloadQR() {
-  const canvas = document.querySelector('#qrcode canvas');
-  if (!canvas) return;
-  const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
-  const vehiculo = `${vehicleData?.patente || ''} Int. ${vehicleData?.interno || ''}`;
-  const w = canvas.width;
-  const h = canvas.height;
-  const padding = 40;
-  const footerH = 100;
-  const totalH = h + padding * 2 + footerH;
-  const totalW = w + padding * 2;
+  const canvasEl = document.querySelector('#qrcode canvas');
+  const imgEl = document.querySelector('#qrcode img');
+  if (!canvasEl && !imgEl) return;
+
+  const v = vehicleData || {};
+  const empresa = v.empresa || 'Grupo Falpat SRL';
+
   const c = document.createElement('canvas');
-  c.width = totalW;
-  c.height = totalH;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, totalW, totalH);
-  ctx.drawImage(canvas, padding, padding, w, h);
+  const W = 600;
+  const headerH = 80;
+  const qrSize = 280;
+  const infoH = 140;
+  const footerH = 50;
+  const totalH = headerH + qrSize + 60 + infoH + footerH;
+  c.width = W;
+  c.height = totalH;
+
   ctx.fillStyle = '#1a1a2e';
-  ctx.font = 'bold 18px Arial, sans-serif';
+  ctx.fillRect(0, 0, W, headerH);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 32px Arial, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(empresa, totalW / 2, h + padding + 35);
-  ctx.font = '12px Arial, sans-serif';
-  ctx.fillStyle = '#666';
-  ctx.fillText(vehiculo, totalW / 2, h + padding + 60);
-  ctx.strokeStyle = '#e0e0e0';
-  ctx.beginPath();
-  ctx.moveTo(padding, h + padding + 15);
-  ctx.lineTo(totalW - padding, h + padding + 15);
-  ctx.stroke();
+  ctx.fillText(v.patente || '', W / 2, 40);
+  ctx.font = '14px Arial, sans-serif';
+  ctx.globalAlpha = 0.85;
+  ctx.fillText(`Interno ${v.interno || ''}`, W / 2, 62);
+  ctx.globalAlpha = 1;
+
+  const qrY = headerH + 30;
+  if (canvasEl) {
+    ctx.drawImage(canvasEl, (W - qrSize) / 2, qrY, qrSize, qrSize);
+  } else {
+    const img = new Image();
+    img.src = imgEl.src;
+    ctx.drawImage(img, (W - qrSize) / 2, qrY, qrSize, qrSize);
+  }
+
+  const infoY = qrY + qrSize + 30;
+  ctx.fillStyle = '#f3f4f6';
+  ctx.fillRect(0, infoY - 10, W, infoH + 20);
+  ctx.fillStyle = '#1a1a2e';
+  ctx.textAlign = 'left';
+  const leftX = 60;
+  const rightX = W / 2 + 30;
+  const lineH = 28;
+  const items = [
+    [leftX, 'Marca / Modelo', `${v.marca || ''} ${v.modelo || ''}`],
+    [rightX, 'Tipo', `${v.tipo || ''} ${v.subtipo || ''}`],
+    [leftX + lineH, 'Conductor', v.conductorHabitual || '-'],
+    [rightX + lineH, 'Centro', v.centroTrabajo || '-'],
+    [leftX + lineH * 2, 'Ano', v.año || '-'],
+    [rightX + lineH * 2, 'Estado', v.estadoGeneral || '-']
+  ];
+  items.forEach(([yOffset, label, value]) => {
+    const x = yOffset === leftX || yOffset === leftX + lineH || yOffset === leftX + lineH * 2 ? leftX : rightX;
+    ctx.font = '9px Arial, sans-serif';
+    ctx.fillStyle = '#9ca3af';
+    ctx.fillText(label.toUpperCase(), x, infoY + (yOffset - leftX));
+    ctx.font = 'bold 13px Arial, sans-serif';
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillText(value, x, infoY + (yOffset - leftX) + 14);
+  });
+
+  const footY = totalH - footerH;
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, footY, W, footerH);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(empresa, W / 2, footY + 20);
+  ctx.font = '10px Arial, sans-serif';
+  ctx.globalAlpha = 0.7;
+  ctx.fillText('Escanea para ver detalle del vehiculo', W / 2, footY + 36);
+
   const link = document.createElement('a');
-  link.download = `qr-${vehicleData?.patente || 'vehiculo'}.png`;
+  link.download = `qr-${v.patente || 'vehiculo'}.png`;
   link.href = c.toDataURL('image/png');
   link.click();
   showToast('QR descargado');
@@ -703,43 +766,135 @@ function printBarcode() {
       return;
     }
 
-    const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
+    const v = vehicleData || {};
+    const empresa = v.empresa || 'Grupo Falpat SRL';
     const imgData = canvas.toDataURL('image/png');
     const win = window.open('', '_blank');
-    win.document.write(`<html><head><title>Barcode - ${vehicleData?.patente || 'Vehículo'}</title><style>
-      *{margin:0;padding:0;box-sizing:border-box}
-      body{text-align:center;padding:40px;font-family:Arial,sans-serif;background:#fff}
-      .barcode-wrap{display:inline-block;padding:20px;border:2px solid #eee;border-radius:16px}
-      h2{font-size:22px;margin-bottom:4px}
-      .sub{color:#666;font-size:14px;margin-bottom:16px}
-      .footer{margin-top:16px;padding-top:12px;border-top:1px solid #eee;font-size:13px;color:#444}
-      .footer strong{display:block;font-size:15px;color:#111}
-      img.barcode-img{max-width:100%}
-    </style></head><body>
-      <div class="barcode-wrap">
-        <h2>${vehicleData?.patente || ''}</h2>
-        <div class="sub">Int. ${vehicleData?.interno || ''} — ${vehicleData?.marca || ''} ${vehicleData?.modelo || ''}</div>
-        <img class="barcode-img" src="${imgData}" />
-        <div class="footer">
-          <strong>${empresa}</strong>
-          <div style="margin-top:6px;font-weight:bold">${vehicleData?.interno || '-'}</div>
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>Barcode - ${v.patente || 'Vehiculo'}</title>
+      <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        @page{size:A4 portrait;margin:10mm}
+        body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;background:#fff;color:#1a1a2e;display:flex;justify-content:center;padding:20px}
+        .card{width:100%;max-width:480px;border:3px solid #1a1a2e;border-radius:16px;overflow:hidden;text-align:center}
+        .header{background:#1a1a2e;color:#fff;padding:12px 16px}
+        .header .patente{font-size:28px;font-weight:800;letter-spacing:2px}
+        .header .interno{font-size:14px;opacity:.85;margin-top:2px}
+        .body-card{padding:20px}
+        .barcode-section{margin:16px auto;text-align:center}
+        .barcode-section img{max-width:100%;height:auto}
+        .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;text-align:left;margin-top:16px;padding-top:16px;border-top:2px solid #e5e7eb}
+        .info-item .label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;font-weight:600}
+        .info-item .value{font-size:13px;font-weight:600;color:#1a1a2e;margin-top:1px}
+        .footer-bar{background:#f9fafb;padding:10px 16px;border-top:2px solid #e5e7eb;font-size:11px;color:#6b7280}
+        .footer-bar strong{color:#1a1a2e;font-size:13px}
+        @media print{body{padding:0}.card{border-radius:0}}
+      </style></head><body>
+      <div class="card">
+        <div class="header">
+          <div class="patente">${v.patente || ''}</div>
+          <div class="interno">Interno ${v.interno || ''}</div>
         </div>
+        <div class="body-card">
+          <div class="barcode-section"><img src="${imgData}" /></div>
+          <div class="info-grid">
+            <div class="info-item"><div class="label">Marca / Modelo</div><div class="value">${v.marca || ''} ${v.modelo || ''}</div></div>
+            <div class="info-item"><div class="label">Tipo</div><div class="value">${v.tipo || ''} ${v.subtipo || ''}</div></div>
+            <div class="info-item"><div class="label">Conductor</div><div class="value">${v.conductorHabitual || '-'}</div></div>
+            <div class="info-item"><div class="label">Centro Trabajo</div><div class="value">${v.centroTrabajo || '-'}</div></div>
+            <div class="info-item"><div class="label">Ano</div><div class="value">${v.año || '-'}</div></div>
+            <div class="info-item"><div class="label">Estado</div><div class="value">${v.estadoGeneral || '-'}</div></div>
+          </div>
+        </div>
+        <div class="footer-bar"><strong>${empresa}</strong>Escanea para ver detalle del vehiculo</div>
       </div>
     </body></html>`);
     win.document.close();
-    setTimeout(() => { win.print(); }, 400);
+    setTimeout(() => { win.print(); }, 500);
   });
 }
 
 function downloadBarcodePNG() {
-  getBarcodeCanvas().then((canvas) => {
-    if (!canvas) {
+  getBarcodeCanvas().then((barcodeCanvas) => {
+    if (!barcodeCanvas) {
       showToast('Generá el código de barras primero', 'error');
       return;
     }
+
+    const v = vehicleData || {};
+    const empresa = v.empresa || 'Grupo Falpat SRL';
+    const W = 600;
+    const headerH = 80;
+    const barcodeH = 140;
+    const infoH = 140;
+    const footerH = 50;
+    const totalH = headerH + barcodeH + 60 + infoH + footerH;
+    const c = document.createElement('canvas');
+    const ctx = c.getContext('2d');
+    c.width = W;
+    c.height = totalH;
+
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, W, headerH);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(v.patente || '', W / 2, 40);
+    ctx.font = '14px Arial, sans-serif';
+    ctx.globalAlpha = 0.85;
+    ctx.fillText(`Interno ${v.interno || ''}`, W / 2, 62);
+    ctx.globalAlpha = 1;
+
+    const bcY = headerH + 20;
+    const bcW = barcodeCanvas.width;
+    const bcHeight = barcodeCanvas.height;
+    const scale = Math.min((W - 40) / bcW, barcodeH / bcHeight);
+    const drawW = bcW * scale;
+    const drawH = bcHeight * scale;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect((W - drawW) / 2 - 10, bcY - 5, drawW + 20, drawH + 10);
+    ctx.drawImage(barcodeCanvas, (W - drawW) / 2, bcY, drawW, drawH);
+
+    const infoY = bcY + barcodeH + 20;
+    ctx.fillStyle = '#f3f4f6';
+    ctx.fillRect(0, infoY - 10, W, infoH + 20);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.textAlign = 'left';
+    const leftX = 60;
+    const rightX = W / 2 + 30;
+    const lineH = 28;
+    const items = [
+      [leftX, 'Marca / Modelo', `${v.marca || ''} ${v.modelo || ''}`],
+      [rightX, 'Tipo', `${v.tipo || ''} ${v.subtipo || ''}`],
+      [leftX + lineH, 'Conductor', v.conductorHabitual || '-'],
+      [rightX + lineH, 'Centro', v.centroTrabajo || '-'],
+      [leftX + lineH * 2, 'Ano', v.año || '-'],
+      [rightX + lineH * 2, 'Estado', v.estadoGeneral || '-']
+    ];
+    items.forEach(([yOffset, label, value]) => {
+      const x = yOffset === leftX || yOffset === leftX + lineH || yOffset === leftX + lineH * 2 ? leftX : rightX;
+      ctx.font = '9px Arial, sans-serif';
+      ctx.fillStyle = '#9ca3af';
+      ctx.fillText(label.toUpperCase(), x, infoY + (yOffset - leftX));
+      ctx.font = 'bold 13px Arial, sans-serif';
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillText(value, x, infoY + (yOffset - leftX) + 14);
+    });
+
+    const footY = totalH - footerH;
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, footY, W, footerH);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(empresa, W / 2, footY + 20);
+    ctx.font = '10px Arial, sans-serif';
+    ctx.globalAlpha = 0.7;
+    ctx.fillText('Escanea para ver detalle del vehiculo', W / 2, footY + 36);
+
     const link = document.createElement('a');
-    link.download = `barcode-${vehicleData?.patente || 'vehiculo'}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.download = `barcode-${v.patente || 'vehiculo'}.png`;
+    link.href = c.toDataURL('image/png');
     link.click();
     showToast('Código de barras descargado');
   });
@@ -751,26 +906,51 @@ function downloadBarcodePDF() {
       showToast('Generá el código de barras primero', 'error');
       return;
     }
-    const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
+
+    const v = vehicleData || {};
+    const empresa = v.empresa || 'Grupo Falpat SRL';
     const imgData = canvas.toDataURL('image/png');
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`<html><head><title>Barcode - ${vehicleData?.patente || ''}</title>
-      <style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#fff;font-family:Arial,sans-serif}
-      .wrap{text-align:center} img{max-width:100%} .footer{margin-top:16px;font-size:13px;color:#444}
-      .footer strong{display:block;font-size:15px;color:#111}</style>
-      </head><body>
-      <div class="wrap">
-        <h2 style="font-size:22px;margin-bottom:4px">${vehicleData?.patente || ''}</h2>
-        <div style="color:#666;font-size:14px;margin-bottom:16px">Int. ${vehicleData?.interno || ''} — ${vehicleData?.marca || ''} ${vehicleData?.modelo || ''}</div>
-        <img src="${imgData}" />
-        <div class="footer">
-          <strong>${empresa}</strong>
-          <div style="margin-top:6px;font-weight:bold">${vehicleData?.interno || '-'}</div>
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>Barcode - ${v.patente || ''}</title>
+      <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        @page{size:A4 portrait;margin:10mm}
+        body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;background:#fff;color:#1a1a2e;display:flex;justify-content:center;padding:20px}
+        .card{width:100%;max-width:480px;border:3px solid #1a1a2e;border-radius:16px;overflow:hidden;text-align:center}
+        .header{background:#1a1a2e;color:#fff;padding:12px 16px}
+        .header .patente{font-size:28px;font-weight:800;letter-spacing:2px}
+        .header .interno{font-size:14px;opacity:.85;margin-top:2px}
+        .body-card{padding:20px}
+        .barcode-section{margin:16px auto;text-align:center}
+        .barcode-section img{max-width:100%;height:auto}
+        .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;text-align:left;margin-top:16px;padding-top:16px;border-top:2px solid #e5e7eb}
+        .info-item .label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;font-weight:600}
+        .info-item .value{font-size:13px;font-weight:600;color:#1a1a2e;margin-top:1px}
+        .footer-bar{background:#f9fafb;padding:10px 16px;border-top:2px solid #e5e7eb;font-size:11px;color:#6b7280}
+        .footer-bar strong{color:#1a1a2e;font-size:13px}
+        @media print{body{padding:0}.card{border-radius:0}}
+      </style></head><body>
+      <div class="card">
+        <div class="header">
+          <div class="patente">${v.patente || ''}</div>
+          <div class="interno">Interno ${v.interno || ''}</div>
         </div>
+        <div class="body-card">
+          <div class="barcode-section"><img src="${imgData}" /></div>
+          <div class="info-grid">
+            <div class="info-item"><div class="label">Marca / Modelo</div><div class="value">${v.marca || ''} ${v.modelo || ''}</div></div>
+            <div class="info-item"><div class="label">Tipo</div><div class="value">${v.tipo || ''} ${v.subtipo || ''}</div></div>
+            <div class="info-item"><div class="label">Conductor</div><div class="value">${v.conductorHabitual || '-'}</div></div>
+            <div class="info-item"><div class="label">Centro Trabajo</div><div class="value">${v.centroTrabajo || '-'}</div></div>
+            <div class="info-item"><div class="label">Ano</div><div class="value">${v.año || '-'}</div></div>
+            <div class="info-item"><div class="label">Estado</div><div class="value">${v.estadoGeneral || '-'}</div></div>
+          </div>
+        </div>
+        <div class="footer-bar"><strong>${empresa}</strong>Escanea para ver detalle del vehiculo</div>
       </div>
-      <script>setTimeout(()=>{window.print();},400);<\/script>
-      </body></html>`);
-    printWindow.document.close();
-    showToast('PDF listo para imprimir/descargar');
+      <script>setTimeout(()=>{window.print();},500);<\/script>
+    </body></html>`);
+    win.document.close();
   });
 }
