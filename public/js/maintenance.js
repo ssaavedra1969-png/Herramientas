@@ -29,7 +29,7 @@ function setupModalClose(modalId) {
 }
 
 function loadSelectData() {
-  db.collection('vehicles').where('estado', '!=', 'Dado de baja').onSnapshot((snapshot) => {
+  db.collection('vehicles').where('estadoGeneral', '!=', 'Dado de baja').onSnapshot((snapshot) => {
     vehiclesCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     populateVehicleSelect();
   });
@@ -39,7 +39,7 @@ function populateVehicleSelect() {
   const select = document.getElementById('m-vehiculo');
   if (!select) return;
   select.innerHTML = '<option value="">Seleccionar vehículo...</option>' +
-    vehiclesCache.map(v => `<option value="${v.id}">${v.patente} - ${v.marca} ${v.modelo} (Int: ${v.numeroInterno})</option>`).join('');
+    vehiclesCache.map(v => `<option value="${v.id}">${v.patente} - ${v.marca} ${v.modelo} (Int: ${v.interno || v.numeroInterno || ''})</option>`).join('');
 }
 
 
@@ -172,7 +172,7 @@ async function saveMaintenance(e) {
     tipo: document.getElementById('m-tipo').value,
     vehiculoId: vehiculoId,
     vehiculoPatente: vehiculo?.patente || null,
-    vehiculoInterno: vehiculo?.numeroInterno || null,
+    vehiculoInterno: vehiculo?.interno || vehiculo?.numeroInterno || null,
     fechaRealizacion: firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('m-fecha').value)),
     proximaFechaVencimiento: firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('m-vencimiento').value)),
     kilometrajeHoras: parseInt(document.getElementById('m-km').value) || null,
