@@ -628,8 +628,7 @@ function generateBarcode() {
 
   const format = document.getElementById('barcode-format')?.value || 'CODE128';
   const text = getBarcodeText();
-  const svgEl = document.getElementById('barcode-svg');
-  if (!svgEl || !text) return;
+  if (!text) return;
 
   try {
     JsBarcode('#barcode-svg', text, {
@@ -642,8 +641,13 @@ function generateBarcode() {
       background: '#ffffff',
       lineColor: '#1a1a2e'
     });
+    const svgEl = document.getElementById('barcode-svg');
+    if (svgEl && !svgEl.getAttribute('xmlns')) {
+      svgEl.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    }
   } catch (e) {
-    svgEl.innerHTML = `<text x="10" y="30" fill="red" font-size="12">Error: ${e.message}</text>`;
+    const svgEl = document.getElementById('barcode-svg');
+    if (svgEl) svgEl.innerHTML = `<text x="10" y="30" fill="red" font-size="12">Error: ${e.message}</text>`;
   }
 
   setText('barcode-empresa', vehicleData?.empresa || 'Grupo Falpat SRL');
@@ -652,13 +656,16 @@ function generateBarcode() {
 
 function printBarcode() {
   const svgEl = document.getElementById('barcode-svg');
-  if (!svgEl || !svgEl.textContent.trim()) {
+  if (!svgEl || !svgEl.querySelector('rect')) {
     showToast('Generá el código de barras primero', 'error');
     return;
   }
 
   const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
-  const svgData = new XMLSerializer().serializeToString(svgEl);
+  const svgClone = svgEl.cloneNode(true);
+  if (!svgClone.getAttribute('xmlns')) svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const svgData = new XMLSerializer().serializeToString(svgClone);
+  const svgBase64 = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   const win = window.open('', '_blank');
   win.document.write(`<html><head><title>Barcode - ${vehicleData?.patente || 'Vehículo'}</title><style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -668,11 +675,12 @@ function printBarcode() {
     .sub{color:#666;font-size:14px;margin-bottom:16px}
     .footer{margin-top:16px;padding-top:12px;border-top:1px solid #eee;font-size:13px;color:#444}
     .footer strong{display:block;font-size:15px;color:#111}
+    img.barcode-img{max-width:100%}
   </style></head><body>
     <div class="barcode-wrap">
       <h2>${vehicleData?.patente || ''}</h2>
       <div class="sub">Int. ${vehicleData?.interno || ''} — ${vehicleData?.marca || ''} ${vehicleData?.modelo || ''}</div>
-      ${svgData}
+      <img class="barcode-img" src="${svgBase64}" />
       <div class="footer">
         <strong>${empresa}</strong>
         <div style="margin-top:6px;font-weight:bold">${vehicleData?.interno || '-'}</div>
@@ -685,13 +693,15 @@ function printBarcode() {
 
 function downloadBarcodePNG() {
   const svgEl = document.getElementById('barcode-svg');
-  if (!svgEl || !svgEl.textContent.trim()) {
+  if (!svgEl || !svgEl.querySelector('rect')) {
     showToast('Generá el código de barras primero', 'error');
     return;
   }
 
   const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
-  const svgData = new XMLSerializer().serializeToString(svgEl);
+  const svgClone = svgEl.cloneNode(true);
+  if (!svgClone.getAttribute('xmlns')) svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const svgData = new XMLSerializer().serializeToString(svgClone);
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   const img = new Image();
@@ -723,13 +733,15 @@ function downloadBarcodePNG() {
 
 function downloadBarcodePDF() {
   const svgEl = document.getElementById('barcode-svg');
-  if (!svgEl || !svgEl.textContent.trim()) {
+  if (!svgEl || !svgEl.querySelector('rect')) {
     showToast('Generá el código de barras primero', 'error');
     return;
   }
 
   const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
-  const svgData = new XMLSerializer().serializeToString(svgEl);
+  const svgClone = svgEl.cloneNode(true);
+  if (!svgClone.getAttribute('xmlns')) svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const svgData = new XMLSerializer().serializeToString(svgClone);
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   const img = new Image();
