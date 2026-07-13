@@ -208,10 +208,22 @@ function generateQR() {
 }
 
 function printQR() {
-  const canvas = document.querySelector('#qrcode canvas') || document.querySelector('#qrcode img');
-  if (!canvas) return;
-  const win = window.open('', '_blank');
+  const canvasEl = document.querySelector('#qrcode canvas');
+  const imgEl = document.querySelector('#qrcode img');
+  if (!canvasEl && !imgEl) {
+    showToast('Generá el QR primero', 'error');
+    return;
+  }
+
+  let qrDataUrl;
+  if (canvasEl) {
+    qrDataUrl = canvasEl.toDataURL('image/png');
+  } else {
+    qrDataUrl = imgEl.src;
+  }
+
   const empresa = vehicleData?.empresa || 'Grupo Falpat SRL';
+  const win = window.open('', '_blank');
   win.document.write(`<html><head><title>QR - ${vehicleData?.patente || 'Vehículo'}</title><style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{text-align:center;padding:40px;font-family:Arial,sans-serif;background:#fff}
@@ -221,11 +233,12 @@ function printQR() {
     .footer{margin-top:16px;padding-top:12px;border-top:1px solid #eee;font-size:13px;color:#444}
     .footer strong{display:block;font-size:15px;color:#111}
     .label{font-size:10px;text-transform:uppercase;color:#999;letter-spacing:1px}
+    img.qr-img{width:280px;height:280px}
   </style></head><body>
     <div class="qr-wrap">
       <h2>${vehicleData?.patente || ''}</h2>
       <div class="sub">Int. ${vehicleData?.interno || ''} — ${vehicleData?.marca || ''} ${vehicleData?.modelo || ''}</div>
-      ${canvas.outerHTML}
+      <img class="qr-img" src="${qrDataUrl}" />
       <div class="footer">
         <div class="label">Empresa</div>
         <strong>${empresa}</strong>
@@ -235,7 +248,7 @@ function printQR() {
     </div>
   </body></html>`);
   win.document.close();
-  setTimeout(() => { win.print(); }, 300);
+  setTimeout(() => { win.print(); }, 400);
 }
 
 function downloadQR() {
