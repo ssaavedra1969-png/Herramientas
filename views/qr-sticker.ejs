@@ -63,9 +63,15 @@
           <div style="background:#fff;border-radius:2mm;width:8mm;height:8mm;display:flex;align-items:center;justify-content:center;">
             <span style="color:#6C3CE1;font-size:9pt;font-weight:900;">GF</span>
           </div>
-          <span style="color:#fff;font-size:8pt;font-weight:700;letter-spacing:0.5px;">GRUPO FALPAT SRL</span>
+          <div style="display:flex;flex-direction:column;">
+            <span style="color:#fff;font-size:8pt;font-weight:700;letter-spacing:0.5px;">GRUPO FALPAT SRL</span>
+            <span style="color:rgba(255,255,255,0.8);font-size:6pt;">Control de Mantenimiento</span>
+          </div>
         </div>
-        <span style="color:rgba(255,255,255,0.8);font-size:6pt;">Control de Mantenimiento</span>
+        <div style="text-align:right;">
+          <span style="color:rgba(255,255,255,0.6);font-size:5.5pt;display:block;">Interno</span>
+          <span style="color:#fff;font-size:13pt;font-weight:900;letter-spacing:1px;line-height:1;"><%= vehicle.interno || '—' %></span>
+        </div>
       </div>
 
       <div class="sticker-body">
@@ -74,18 +80,16 @@
         </div>
         <div class="sticker-info">
           <div class="sticker-patente"><%= vehicle.patente || '—' %></div>
-          <div class="sticker-interno"><%= vehicle.interno || '' %></div>
-          <div class="sticker-detail" style="margin-top:2mm;">
-            <div><strong><%= vehicle.marca || '' %> <%= vehicle.modelo || '' %></strong></div>
-            <div><%= vehicle.tipo || '' %><%= vehicle.subtipo ? ' · ' + vehicle.subtipo : '' %><%= vehicle.año ? ' · ' + vehicle.año : '' %></div>
-            <% if (vehicle.empresa) { %><div style="margin-top:0.5mm;"><%= vehicle.empresa %></div><% } %>
+          <div class="sticker-detail" style="margin-top:1.5mm;">
+            <div style="font-size:8pt;font-weight:700;color:#1a1a2e;"><%= vehicle.marca || '' %> <%= vehicle.modelo || '' %></div>
+            <div style="font-size:6.5pt;color:#666;margin-top:0.5mm;"><%= vehicle.tipo || '' %><%= vehicle.subtipo ? ' · ' + vehicle.subtipo : '' %><%= vehicle.anio ? ' · ' + vehicle.año : '' %></div>
           </div>
         </div>
       </div>
 
       <div class="sticker-footer">
-        <span>Escaneá para ver datos del vehículo</span>
-        <span>Scan → falpat-control-de-vehiculos.vercel.app</span>
+        <span style="font-size:6.5pt;color:#333;font-weight:600;"><%= vehicle.marca || '' %> <%= vehicle.modelo || '' %></span>
+        <span style="font-size:6pt;color:#888;"><%= vehicle.empresa || '' %></span>
       </div>
     </div>
   </div>
