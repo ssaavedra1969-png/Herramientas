@@ -5,7 +5,7 @@ node_modules/
 *.xlsx
 .DS_Store
 *-firebase-adminsdk-*.json
-backups/
+[Bb]ackups/
 ENTRADA/
 
 .vercel

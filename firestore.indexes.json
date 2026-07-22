@@ -8,13 +8,6 @@
       ]
     },
     {
-      "collectionGroup": "tools",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "codigoInterno", "order": "ASCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "maintenance",
       "queryScope": "COLLECTION",
       "fields": [

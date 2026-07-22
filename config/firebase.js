@@ -6,7 +6,7 @@ function parseJSON(str) {
   try {
     return JSON.parse(str);
   } catch (e) {
-    console.error('Error parsing JSON (will try without service account):', e.message.slice(0, 100));
+    console.error('Error parsing JSON:', e.message.slice(0, 100));
     return null;
   }
 }
@@ -25,12 +25,6 @@ function getServiceAccount() {
       .replace(/^['"]/, '').replace(/['"]$/, '');
     const result = parseJSON(cleaned);
     if (result && result.private_key) return result;
-  }
-
-  const localFile = path.join(__dirname, '..', 'engaged-card-450213-d7-firebase-adminsdk-fbsvc-a956702c95.json');
-  if (fs.existsSync(localFile)) {
-    const result = parseJSON(fs.readFileSync(localFile, 'utf8'));
-    if (result) return result;
   }
 
   return null;
@@ -60,14 +54,6 @@ initializeFirebase();
 const db = admin.firestore();
 const auth = admin.auth();
 
-function getBucket() {
-  try {
-    return admin.storage().bucket();
-  } catch (e) {
-    return null;
-  }
-}
-
 const clientConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
   authDomain: process.env.FIREBASE_AUTH_DOMAIN,
@@ -77,4 +63,4 @@ const clientConfig = {
   appId: process.env.FIREBASE_APP_ID
 };
 
-module.exports = { admin, db, getBucket, auth, clientConfig };
+module.exports = { admin, db, auth, clientConfig };
