@@ -1,0 +1,240 @@
+============================================================
+  GRUPO FALPAT SRL — SISTEMA DE CONTROL VEHICULAR
+  Guia de Instalacion en PC Nueva
+  ============================================================
+
+REQUISITOS PREVIOS
+------------------
+1. Node.js 18+ (version LTS)
+   Descargar: https://nodejs.org
+   Verificar instalacion:打开 terminal y ejecutar:
+     node --version
+     npm --version
+
+2. Git
+   Descargar: https://git-scm.com
+   Verificar: git --version
+
+3. Cuenta de Google con acceso al proyecto Firebase:
+   engaged-card-450213-d7
+
+
+PASO 1 — CLONAR EL REPOSITORIO
+-------------------------------
+Abrir PowerShell o CMD y ejecutar:
+
+  git clone https://github.com/ssaavedra1969-png/Herramientas.git
+  cd Herramientas
+
+
+PASO 2 — INSTALAR DEPENDENCIAS
+-------------------------------
+
+  npm install
+
+Esto descarga todas las librerias necesarias (Express, Firebase, EJS, etc.)
+
+
+PASO 3 — CONFIGURAR CREDENCIALES DE FIREBASE
+---------------------------------------------
+Copiar el archivo .env.example a .env:
+
+  copy .env.example .env
+
+Abrir .env con un editor de texto (Notepad, VS Code, etc.) y completar
+con los valores reales.
+
+El archivo .env debe quedar asi (con tus valores reales):
+
+--------------------------------------------------------------
+# Firebase Admin SDK
+# Pegar el JSON COMPLETO de la service account en UNA SOLA LINEA
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account","project_id":"engaged-card-450213-d7",...}
+
+# Firebase Client SDK (copiar de Firebase Console)
+FIREBASE_API_KEY=AIzaSyTU_AQUI_VA_TU_API_KEY
+FIREBASE_AUTH_DOMAIN=engaged-card-450213-d7.firebaseapp.com
+FIREBASE_PROJECT_ID=engaged-card-450213-d7
+FIREBASE_STORAGE_BUCKET=engaged-card-450213-d7.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=TU_SENDER_ID
+FIREBASE_APP_ID=1:TU_APP_ID
+
+# Server
+PORT=3000
+SESSION_SECRET=escribi-cualquier-texto-secreto-aqui
+NODE_ENV=development
+--------------------------------------------------------------
+
+COMO OBTENER LAS CREDENCIALES:
+
+A) Para FIREBASE_SERVICE_ACCOUNT (Admin SDK):
+
+   1. Ir a: https://console.firebase.google.com
+   2. Seleccionar proyecto: engaged-card-450213-d7
+   3. Hacer clic en el engranaje (⚙) → "Configuracion del proyecto"
+   4. Pestaña: "Cuentas de servicio"
+   5. Hacer clic en "Generar nueva clave privada"
+   6. Se descarga un archivo JSON. ABRIRLO con un editor de texto.
+   7. Copiar TODO el contenido (es un JSON largo)
+   8. Pegarlo en .env despues de FIREBASE_SERVICE_ACCOUNT=
+      IMPORTANTE: todo debe ir en UNA SOLA LINEA sin saltos de linea
+
+   ALTERNATIVA: Copiar el archivo JSON descargado a la carpeta raiz
+   del proyecto con este nombre exacto:
+     engaged-card-450213-d7-firebase-adminsdk-fbsvc-a956702c95.json
+   En ese caso, no es necesario configurar FIREBASE_SERVICE_ACCOUNT.
+
+B) Para las variables del Client SDK (API_KEY, AUTH_DOMAIN, etc.):
+
+   1. Ir a: https://console.firebase.google.com
+   2. Seleccionar proyecto: engaged-card-450213-d7
+   3. ⚙ → "Configuracion del proyecto"
+   4. Pestaña: "General"
+   5. En "Tus apps", buscar la app web (icono </>)
+   6. Hacer clic en "Configuracion de la app"
+   7. Copiar los valores del objeto firebaseConfig:
+      - apiKey
+      - authDomain
+      - projectId
+      - storageBucket
+      - messagingSenderId
+      - appId
+
+
+PASO 4 — INICIAR EL SERVIDOR
+-----------------------------
+
+  npm start
+
+El servidor arranca en: http://localhost:3000
+
+Abrir ese direccion en el navegador.
+
+
+PASO 5 — PRIMER USUARIO
+------------------------
+Al registrarte por primera vez, el sistema te asigna automaticamente
+el rol de ADMINISTRADOR.
+
+Los demas usuarios que se registren quedan como "Usuario" por defecto.
+Solo un Admin puede cambiar roles desde el panel de administracion.
+
+
+PASO 6 — ACCEDER AL SISTEMA
+----------------------------
+URL: http://localhost:3000/login
+
+Credenciales: las que creaste en el paso 5.
+
+
+COMANDOS UTILES
+---------------
+  npm start          Iniciar servidor (produccion)
+  npm run dev        Iniciar con auto-reload (desarrollo)
+  npm run backup     Exportar backup JSON de Firestore
+  npm run restore    Restaurar backup a Firestore
+
+
+SOLUCION DE PROBLEMAS
+---------------------
+
+PROBLEMA: "Error parsing JSON" al iniciar
+SOLUCION: El JSON de FIREBASE_SERVICE_ACCOUNT esta malformado.
+          Verificar que este en una sola linea sin saltos de carro.
+          pegar en https://jsonlint.com para validar.
+
+PROBLEMA: "Firebase: No service account found"
+SOLUCION: No se encontro la service account. Verificar que:
+          - El archivo JSON este en la raiz del proyecto, O
+          - La variable FIREBASE_SERVICE_ACCOUNT este en .env
+
+PROBLEMA: "Port 3000 already in use"
+SOLUCION: Cambiar el puerto en .env:
+            PORT=3001
+
+PROBLEMA: "Cannot find module" despues de npm install
+SOLUCION: Borrar node_modules y package-lock.json, y repetir:
+            rmdir /s /q node_modules
+            del package-lock.json
+            npm install
+
+
+ESTRUCTURA DEL PROYECTO
+------------------------
+
+Herramientas/
+├── server.js                  # Entry point (Express + rutas)
+├── .env                       # Credenciales (NO se sube a git)
+├── .env.example               # Plantilla de credenciales
+├── package.json               # Dependencias y scripts
+├── vercel.json                # Config de deploy en Vercel
+├── firebase.json              # Config Firestore + Storage
+├── firestore.rules            # Reglas de seguridad Firestore
+├── firestore.indexes.json     # Indices de Firestore
+├── storage.rules              # Reglas de Firebase Storage
+├── config/
+│   └── firebase.js            # Inicializacion Firebase Admin SDK
+├── middleware/
+│   └── auth.js                # verifyToken, requireAdmin, loadUser
+├── routes/
+│   ├── auth.js                # Login, registro, sesion
+│   ├── vehicles.js            # CRUD vehiculos + combustible/repuestos
+│   └── admin.js               # Dashboard, reportes, backup, alertas
+├── views/                     # Templates EJS
+│   ├── dashboard.ejs          # Dashboard principal
+│   ├── login.ejs              # Pagina de login
+│   ├── vehicles.ejs           # Listado de vehiculos
+│   ├── vehicle-detail.ejs     # Detalle de vehiculo
+│   ├── reports.ejs            # Reportes financieros
+│   ├── qr-sticker.ejs         # Sticker QR individual
+│   ├── qr-stickers-bulk.ejs   # Impresion masiva de stickers
+│   ├── vehicle-qr-public.ejs  # Pagina publica del QR
+│   └── partials/              # Partials (head, sidebar, footer, menu)
+├── public/
+│   ├── css/                   # Estilos
+│   ├── img/                   # Imagenes (logo, etc.)
+│   └── js/                    # JavaScript del cliente
+│       ├── auth-client.js     # Helpers auth + CRUD general
+│       ├── dashboard.js       # Dashboard (charts, alertas)
+│       ├── vehicles.js        # CRUD vehiculos + filtros + import
+│       ├── vehicle-detail.js  # Detalle vehiculo + historial
+│       └── reports.js         # Reportes (charts + export Excel/PDF)
+├── scripts/                   # Utilidades de administracion
+│   ├── clean-and-reimport.js  # Limpiar y reimportar desde Excel
+│   ├── renumber-internos.js   # Renumerar internos V001-V0XX
+│   ├── export-firebase.js     # Backup de Firestore
+│   ├── restore-firebase.js    # Restaurar backup
+│   ├── deploy-rules.js        # Deploy reglas Firestore
+│   └── export-vehiculos.xlsx  # Exportar vehiculos a Excel
+└── SETUP.md                   # Esta guia de instalacion
+
+
+STACK TECNICO
+-------------
+- Runtime: Node.js + Express
+- Templates: EJS
+- Database: Firebase Firestore
+- Auth: Firebase Auth (Google + email/password)
+- Frontend: Tailwind CSS 3, Chart.js 4, SweetAlert2
+- Export: SheetJS (Excel), jsPDF + autotable (PDF)
+- QR: qrcodejs + html5-qrcode
+- Deploy: Vercel (https://herramientas-five.vercel.app)
+
+
+CREDENCIALES DE ACCESO (pedir al administrador)
+------------------------------------------------
+- Email: ssaavedra1969@gmail.com
+- Contrasena: [pedir al administrador]
+
+
+NOTA SOBRE BACKUPS
+------------------
+El sistema genera backups en la carpeta Backups/ (no se sube a git).
+Si necesitas copiar backups a otra PC, copiar manualmente la carpeta
+Backups/ y pegarla en la raiz del proyecto en la otra PC.
+
+
+============================================================
+  Fin de la guia de instalacion
+  Grupo Falpat SRL — Sistema de Control Vehicular
+  ============================================================
