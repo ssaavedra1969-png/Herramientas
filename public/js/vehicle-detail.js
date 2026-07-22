@@ -186,13 +186,19 @@ function generateQR() {
 
   container.innerHTML = '';
 
-  const qrUrl = window.location.href;
+  const pathParts = window.location.pathname.split('/');
+  const vehicleId = pathParts[pathParts.length - 1];
+  const qrUrl = window.location.origin + '/vehicle/' + vehicleId + '/qr';
+
+  const stickerLink = document.getElementById('qr-sticker-link');
+  if (stickerLink) stickerLink.href = '/vehicle/' + vehicleId + '/qr-sticker';
+
   if (typeof QRCode !== 'undefined') {
     qrCodeInstance = new QRCode(container, {
       text: qrUrl,
       width: 280,
       height: 280,
-      colorDark: '#1a1a2e',
+      colorDark: '#000000',
       colorLight: '#ffffff',
       correctLevel: QRCode.CorrectLevel.H
     });

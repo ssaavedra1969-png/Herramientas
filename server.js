@@ -11,7 +11,6 @@ const { loadUser, requireAuth, requireAdminPage } = require('./middleware/auth')
 const authRoutes = require('./routes/auth');
 const vehiclesRoutes = require('./routes/vehicles');
 
-const maintenanceRoutes = require('./routes/maintenance');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
@@ -42,7 +41,6 @@ app.use(loadUser);
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehiclesRoutes);
 
-app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.get('/login', (req, res) => {
@@ -95,14 +93,41 @@ app.get('/vehicle/:id', requireAuth, (req, res) => {
   });
 });
 
+app.get('/vehicle/:id/qr', async (req, res) => {
+  try {
+    const { db } = require('./config/firebase');
+    const doc = await db.collection('vehicles').doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).send('Vehículo no encontrado');
+    const v = doc.data();
+    let currentUserData = null;
+    if (res.locals.currentUserData) {
+      currentUserData = { role: res.locals.currentUserData.role, displayName: res.locals.currentUserData.displayName };
+    }
+    res.render('vehicle-qr-public', {
+      vehicle: { id: doc.id, ...v },
+      clientConfig: res.locals.clientConfig,
+      currentUserData
+    });
+  } catch (e) {
+    res.status(500).send('Error del servidor');
+  }
+});
 
-app.get('/maintenance', requireAuth, (req, res) => {
-  res.render('maintenance', {
-    title: 'Mantenimiento',
-    clientConfig: res.locals.clientConfig,
-    currentUser: res.locals.currentUser,
-    currentUserData: res.locals.currentUserData
-  });
+app.get('/vehicle/:id/qr-sticker', requireAuth, async (req, res) => {
+  try {
+    const { db } = require('./config/firebase');
+    const doc = await db.collection('vehicles').doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).send('Vehículo no encontrado');
+    const v = doc.data();
+    const baseUrl = req.protocol + '://' + req.get('host');
+    res.render('qr-sticker', {
+      vehicle: { id: doc.id, ...v },
+      qrUrl: baseUrl + '/vehicle/' + doc.id + '/qr',
+      baseUrl
+    });
+  } catch (e) {
+    res.status(500).send('Error del servidor');
+  }
 });
 
 app.get('/reports', requireAuth, (req, res) => {
