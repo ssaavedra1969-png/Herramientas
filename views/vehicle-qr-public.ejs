@@ -14,143 +14,115 @@
     .text-gradient-primary { background: linear-gradient(135deg, #6C3CE1, #00D4FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .admin-bar { position: sticky; top: 0; z-index: 50; background: rgba(10,10,26,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(108,60,225,0.2); }
     .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .btn-edit { background: linear-gradient(135deg, #6C3CE1, #00D4FF); color: #fff; padding: 8px 16px; border-radius: 10px; font-weight: 700; font-size: 13px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-    .btn-edit:active { transform: scale(0.97); }
+    .btn-primary { background: linear-gradient(135deg, #6C3CE1, #00D4FF); color: #fff; padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+    .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: #F1F3F8; padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+    .btn-secondary:active { background: rgba(255,255,255,0.15); }
+    .login-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(10,10,26,0.97); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .login-overlay.hidden { display: none; }
+    .input-field { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(108,60,225,0.25); border-radius: 10px; color: #F1F3F8; font-size: 15px; outline: none; }
+    .input-field:focus { border-color: #6C3CE1; box-shadow: 0 0 0 2px rgba(108,60,225,0.2); }
+    .input-field::placeholder { color: #5C6378; }
   </style>
 </head>
 <body class="text-[#F1F3F8]">
-  <% if (currentUserData && currentUserData.role === 'Admin') { %>
-  <div class="admin-bar px-4 py-2 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <div class="w-7 h-7 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-full flex items-center justify-center text-xs font-bold text-white"><%= (currentUserData.displayName || 'A').charAt(0).toUpperCase() %></div>
-      <span class="text-xs text-[#8E94A8]"><%= currentUserData.displayName %></span>
-    </div>
-    <a href="/vehicle/<%= vehicle.id %>" class="btn-edit">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-      Editar vehículo
-    </a>
-  </div>
-  <% } %>
 
-  <div class="p-4 md:p-8">
+  <div class="p-4 pb-8">
     <div class="max-w-lg mx-auto">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-12 h-12 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-xl flex items-center justify-center shadow-lg shadow-[#6C3CE1]/30 flex-shrink-0">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-11 h-11 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-xl flex items-center justify-center shadow-lg shadow-[#6C3CE1]/30 flex-shrink-0">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
         </div>
-        <div>
-          <h1 class="text-lg sm:text-xl font-bold text-gradient-primary">Grupo Falpat SRL</h1>
-          <p class="text-[#8E94A8] text-xs sm:text-sm">Sistema de Control de Mantenimiento</p>
+        <div class="flex-1">
+          <h1 class="text-lg font-bold text-gradient-primary">Grupo Falpat SRL</h1>
+          <p class="text-[#8E94A8] text-[11px]">Control de Mantenimiento</p>
         </div>
+        <a href="/login" class="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#8E94A8] text-[11px] font-medium transition border border-white/10 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+          Admin
+        </a>
       </div>
 
-      <div class="glass-card rounded-2xl p-4 sm:p-6 mb-4">
-        <div class="flex items-center justify-between mb-3">
+      <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
+        <div class="flex items-center justify-between mb-2">
           <div>
-            <p class="text-[#8E94A8] text-[10px] sm:text-xs uppercase tracking-wider">Patente</p>
-            <p class="text-2xl sm:text-3xl font-black text-[#F1F3F8] tracking-wider"><%= vehicle.patente || '—' %></p>
+            <p class="text-[#8E94A8] text-[10px] uppercase tracking-wider">Patente</p>
+            <p class="text-2xl sm:text-3xl font-black text-[#F1F3F8] tracking-wider leading-tight"><%= vehicle.patente || '—' %></p>
           </div>
           <div class="text-right">
-            <p class="text-[#8E94A8] text-[10px] sm:text-xs uppercase tracking-wider">Interno</p>
+            <p class="text-[#8E94A8] text-[10px] uppercase tracking-wider">Interno</p>
             <p class="text-xl sm:text-2xl font-bold text-gradient-primary"><%= vehicle.interno || '—' %></p>
           </div>
         </div>
 
-        <% const estadoColor = vehicle.estadoGeneral === 'Bueno' ? 'bg-green-500/20 text-green-400' : vehicle.estadoGeneral === 'Regular' ? 'bg-yellow-500/20 text-yellow-400' : vehicle.estadoGeneral === 'Malo' ? 'bg-red-500/20 text-red-400' : 'bg-gray-500/20 text-gray-400'; %>
-        <div class="mb-3">
-          <span class="status-badge <%= estadoColor %>"><%= vehicle.estadoGeneral || 'Sin estado' %></span>
+        <% const ec = vehicle.estadoGeneral === 'Bueno' ? 'bg-green-500/20 text-green-400' : vehicle.estadoGeneral === 'Regular' ? 'bg-yellow-500/20 text-yellow-400' : vehicle.estadoGeneral === 'Malo' ? 'bg-red-500/20 text-red-400' : 'bg-gray-500/20 text-gray-400'; %>
+        <div class="mb-2">
+          <span class="status-badge <%= ec %>"><%= vehicle.estadoGeneral || 'Sin estado' %></span>
         </div>
 
-        <div class="h-px bg-[#6C3CE1]/20 my-3"></div>
-        <div class="grid grid-cols-2 gap-3 text-xs sm:text-sm">
-          <div>
-            <p class="text-[#8E94A8] text-[10px]">Marca</p>
-            <p class="font-semibold text-[#F1F3F8]"><%= vehicle.marca || '—' %></p>
-          </div>
-          <div>
-            <p class="text-[#8E94A8] text-[10px]">Modelo</p>
-            <p class="font-semibold text-[#F1F3F8]"><%= vehicle.modelo || '—' %></p>
-          </div>
-          <div>
-            <p class="text-[#8E94A8] text-[10px]">Tipo</p>
-            <p class="font-semibold text-[#F1F3F8]"><%= vehicle.tipo || '—' %></p>
-          </div>
-          <div>
-            <p class="text-[#8E94A8] text-[10px]">Año</p>
-            <p class="font-semibold text-[#F1F3F8]"><%= vehicle.año || '—' %></p>
-          </div>
-          <% if (vehicle.subtipo) { %>
-          <div>
-            <p class="text-[#8E94A8] text-[10px]">Subtipo</p>
-            <p class="font-semibold text-[#F1F3F8]"><%= vehicle.subtipo %></p>
-          </div>
-          <% } %>
-          <% if (vehicle.empresa) { %>
-          <div>
-            <p class="text-[#8E94A8] text-[10px]">Empresa</p>
-            <p class="font-semibold text-[#F1F3F8]"><%= vehicle.empresa %></p>
-          </div>
-          <% } %>
-          <% if (vehicle.conductorHabitual) { %>
-          <div>
-            <p class="text-[#8E94A8] text-[10px]">Conductor</p>
-            <p class="font-semibold text-[#F1F3F8]"><%= vehicle.conductorHabitual %></p>
-          </div>
-          <% } %>
-          <% if (vehicle.centroTrabajo) { %>
-          <div>
-            <p class="text-[#8E94A8] text-[10px]">Centro de Trabajo</p>
-            <p class="font-semibold text-[#F1F3F8]"><%= vehicle.centroTrabajo %></p>
-          </div>
-          <% } %>
+        <div class="h-px bg-[#6C3CE1]/15 my-3"></div>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+          <div><p class="text-[#8E94A8] text-[10px]">Marca</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.marca || '—' %></p></div>
+          <div><p class="text-[#8E94A8] text-[10px]">Modelo</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.modelo || '—' %></p></div>
+          <div><p class="text-[#8E94A8] text-[10px]">Tipo</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.tipo || '—' %></p></div>
+          <div><p class="text-[#8E94A8] text-[10px]">Año</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.año || '—' %></p></div>
+          <% if (vehicle.subtipo) { %><div><p class="text-[#8E94A8] text-[10px]">Subtipo</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.subtipo %></p></div><% } %>
+          <% if (vehicle.marca !== vehicle.marcaChasis && vehicle.marcaChasis) { %><div><p class="text-[#8E94A8] text-[10px]">Marca Chasis</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.marcaChasis %></p></div><% } %>
+          <% if (vehicle.chasis) { %><div><p class="text-[#8E94A8] text-[10px]">Chasis</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.chasis %></p></div><% } %>
+          <% if (vehicle.numeroMotor) { %><div><p class="text-[#8E94A8] text-[10px]">Motor</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.numeroMotor %></p></div><% } %>
+          <% if (vehicle.capacidadCarga) { %><div><p class="text-[#8E94A8] text-[10px]">Cap. Carga</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.capacidadCarga %></p></div><% } %>
+          <% if (vehicle.empresa) { %><div><p class="text-[#8E94A8] text-[10px]">Empresa</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.empresa %></p></div><% } %>
+          <% if (vehicle.centroTrabajo) { %><div><p class="text-[#8E94A8] text-[10px]">Centro Trabajo</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.centroTrabajo %></p></div><% } %>
+          <% if (vehicle.conductorHabitual) { %><div><p class="text-[#8E94A8] text-[10px]">Conductor</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.conductorHabitual %></p></div><% } %>
         </div>
       </div>
 
-      <div class="glass-card rounded-2xl p-4 sm:p-6 mb-4">
-        <h2 class="text-base sm:text-lg font-bold text-gradient-primary mb-3">Estado</h2>
+      <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
+        <h2 class="text-sm font-bold text-gradient-primary mb-3">Estado Operativo</h2>
         <div class="grid grid-cols-2 gap-3">
-          <div class="glass-card rounded-xl p-3 text-center">
-            <p class="text-[#8E94A8] text-[10px] mb-1">Kilometraje</p>
-            <p class="text-base sm:text-xl font-bold text-[#F1F3F8]"><%= vehicle.kilometraje ? Number(vehicle.kilometraje).toLocaleString('es-AR') + ' km' : '—' %></p>
+          <div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5">
+            <p class="text-[#8E94A8] text-[10px] mb-0.5">Kilometraje</p>
+            <p class="text-base sm:text-lg font-bold text-[#F1F3F8]"><%= vehicle.kilometraje ? Number(vehicle.kilometraje).toLocaleString('es-AR') + ' km' : '—' %></p>
           </div>
-          <div class="glass-card rounded-xl p-3 text-center">
-            <p class="text-[#8E94A8] text-[10px] mb-1">Horómetro</p>
-            <p class="text-base sm:text-xl font-bold text-[#F1F3F8]"><%= vehicle.horometro ? vehicle.horometro + ' h' : '—' %></p>
+          <div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5">
+            <p class="text-[#8E94A8] text-[10px] mb-0.5">Horómetro</p>
+            <p class="text-base sm:text-lg font-bold text-[#F1F3F8]"><%= vehicle.horometro ? vehicle.horometro + ' h' : '—' %></p>
           </div>
-          <% if (vehicle.vtv && vehicle.vtv.fechaVencimiento) { 
-            const vencVTV = vehicle.vtv.fechaVencimiento?.toDate ? vehicle.vtv.fechaVencimiento.toDate() : new Date(vehicle.vtv.fechaVencimiento);
-            const hoy = new Date();
-            const diasVTV = Math.ceil((vencVTV - hoy) / (1000*60*60*24));
-            const colorVTV = diasVTV <= 0 ? 'text-red-400' : diasVTV <= 30 ? 'text-yellow-400' : 'text-green-400';
-            const badgeVTV = diasVTV <= 0 ? 'bg-red-500/20 text-red-400' : diasVTV <= 30 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400';
+          <% if (vehicle.vtv && (vehicle.vtv.fechaVencimiento || vehicle.vtv.fechaRealizacion)) { 
+            const fVTV = vehicle.vtv.fechaVencimiento?.toDate ? vehicle.vtv.fechaVencimiento.toDate() : vehicle.vtv.fechaRealizacion?.toDate ? vehicle.vtv.fechaRealizacion.toDate() : null;
+            if (fVTV) {
+              const dV = Math.ceil((fVTV - new Date()) / 86400000);
+              const cV = dV <= 0 ? 'text-red-400' : dV <= 30 ? 'text-yellow-400' : 'text-green-400';
+              const bV = dV <= 0 ? 'bg-red-500/20 text-red-400' : dV <= 30 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400';
           %>
-          <div class="glass-card rounded-xl p-3 text-center">
-            <p class="text-[#8E94A8] text-[10px] mb-1">VTV vence</p>
-            <p class="text-sm sm:text-lg font-bold <%= colorVTV %>"><%= vencVTV.toLocaleDateString('es-AR') %></p>
-            <span class="status-badge <%= badgeVTV %> mt-1"><%= diasVTV <= 0 ? 'Vencida' : diasVTV + ' días' %></span>
+          <div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5">
+            <p class="text-[#8E94A8] text-[10px] mb-0.5">VTV</p>
+            <p class="text-sm sm:text-base font-bold <%= cV %>"><%= fVTV.toLocaleDateString('es-AR') %></p>
+            <span class="status-badge <%= bV %> mt-1"><%= dV <= 0 ? 'Vencida' : dV + ' días' %></span>
           </div>
-          <% } %>
-          <% if (vehicle.seguro && vehicle.seguro.fechaVencimiento) { 
-            const vencSeg = vehicle.seguro.fechaVencimiento?.toDate ? vehicle.seguro.fechaVencimiento.toDate() : new Date(vehicle.seguro.fechaVencimiento);
-            const hoy = new Date();
-            const diasSeg = Math.ceil((vencSeg - hoy) / (1000*60*60*24));
-            const colorSeg = diasSeg <= 0 ? 'text-red-400' : diasSeg <= 30 ? 'text-yellow-400' : 'text-green-400';
-            const badgeSeg = diasSeg <= 0 ? 'bg-red-500/20 text-red-400' : diasSeg <= 30 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400';
+          <% } } %>
+          <% if (vehicle.seguro && (vehicle.seguro.fechaVencimiento || vehicle.seguro.fechaRealizacion)) {
+            const fSeg = vehicle.seguro.fechaVencimiento?.toDate ? vehicle.seguro.fechaVencimiento.toDate() : vehicle.seguro.fechaRealizacion?.toDate ? vehicle.seguro.fechaRealizacion.toDate() : null;
+            if (fSeg) {
+              const dS = Math.ceil((fSeg - new Date()) / 86400000);
+              const cS = dS <= 0 ? 'text-red-400' : dS <= 30 ? 'text-yellow-400' : 'text-green-400';
+              const bS = dS <= 0 ? 'bg-red-500/20 text-red-400' : dS <= 30 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400';
           %>
-          <div class="glass-card rounded-xl p-3 text-center">
-            <p class="text-[#8E94A8] text-[10px] mb-1">Seguro vence</p>
-            <p class="text-sm sm:text-lg font-bold <%= colorSeg %>"><%= vencSeg.toLocaleDateString('es-AR') %></p>
-            <span class="status-badge <%= badgeSeg %> mt-1"><%= diasSeg <= 0 ? 'Vencido' : diasSeg + ' días' %></span>
+          <div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5">
+            <p class="text-[#8E94A8] text-[10px] mb-0.5">Seguro</p>
+            <p class="text-sm sm:text-base font-bold <%= cS %>"><%= fSeg.toLocaleDateString('es-AR') %></p>
+            <span class="status-badge <%= bS %> mt-1"><%= dS <= 0 ? 'Vencido' : dS + ' días' %></span>
           </div>
-          <% } %>
+          <% } } %>
           <% if (vehicle.trompo) { %>
-          <div class="glass-card rounded-xl p-3 text-center col-span-2">
+          <div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5 col-span-2">
             <p class="text-[#8E94A8] text-[10px] mb-1">Trompo</p>
-            <div class="grid grid-cols-2 gap-2 mt-1">
-              <div><span class="text-[#8E94A8] text-[10px]">Marca:</span> <span class="font-semibold text-[#F1F3F8] text-xs"><%= vehicle.marcaTrompo || '—' %></span></div>
-              <div><span class="text-[#8E94A8] text-[10px]">Serie:</span> <span class="font-semibold text-[#F1F3F8] text-xs"><%= vehicle.serieTrompo || '—' %></span></div>
-              <div><span class="text-[#8E94A8] text-[10px]">Modelo:</span> <span class="font-semibold text-[#F1F3F8] text-xs"><%= vehicle.modeloTrompo || '—' %></span></div>
-              <div><span class="text-[#8E94A8] text-[10px]">Capacidad:</span> <span class="font-semibold text-[#F1F3F8] text-xs"><%= vehicle.cargaM3Trompo || '—' %></span></div>
+            <div class="grid grid-cols-2 gap-1 text-[11px]">
+              <div><span class="text-[#8E94A8]">Marca:</span> <span class="font-semibold text-[#F1F3F8]"><%= vehicle.marcaTrompo || '—' %></span></div>
+              <div><span class="text-[#8E94A8]">Serie:</span> <span class="font-semibold text-[#F1F3F8]"><%= vehicle.serieTrompo || '—' %></span></div>
+              <div><span class="text-[#8E94A8]">Modelo:</span> <span class="font-semibold text-[#F1F3F8]"><%= vehicle.modeloTrompo || '—' %></span></div>
+              <div><span class="text-[#8E94A8]">Capacidad:</span> <span class="font-semibold text-[#F1F3F8]"><%= vehicle.cargaM3Trompo || '—' %></span></div>
             </div>
           </div>
           <% } %>
@@ -158,14 +130,51 @@
       </div>
 
       <% if (vehicle.observaciones) { %>
-      <div class="glass-card rounded-2xl p-4 sm:p-6 mb-4">
-        <h2 class="text-base sm:text-lg font-bold text-gradient-primary mb-2">Observaciones</h2>
-        <p class="text-[#8E94A8] text-xs sm:text-sm"><%= vehicle.observaciones %></p>
+      <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
+        <h2 class="text-sm font-bold text-gradient-primary mb-1">Observaciones</h2>
+        <p class="text-[#8E94A8] text-xs"><%= vehicle.observaciones %></p>
       </div>
       <% } %>
 
-      <div class="text-center mt-6 pb-4">
-        <p class="text-[#5C6378] text-[10px] sm:text-xs">Grupo Falpat SRL — Sistema de Control de Mantenimiento</p>
+      <% if (vehicle.proximoServiceKm || vehicle.proximoServiceFecha) { 
+        const fSvc = vehicle.proximoServiceFecha?.toDate ? vehicle.proximoServiceFecha.toDate() : (vehicle.proximoServiceFecha ? new Date(vehicle.proximoServiceFecha) : null);
+      %>
+      <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
+        <h2 class="text-sm font-bold text-gradient-primary mb-2">Próximo Service</h2>
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <% if (vehicle.proximoServiceKm) { %><div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5"><p class="text-[#8E94A8] text-[10px]">Kilometraje</p><p class="font-bold text-[#F1F3F8]"><%= Number(vehicle.proximoServiceKm).toLocaleString('es-AR') %> km</p></div><% } %>
+          <% if (fSvc) { 
+            const dSvc = Math.ceil((fSvc - new Date()) / 86400000);
+            const cSvc = dSvc <= 0 ? 'text-red-400' : dSvc <= 7 ? 'text-yellow-400' : 'text-green-400';
+          %><div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5"><p class="text-[#8E94A8] text-[10px]">Fecha</p><p class="font-bold <%= cSvc %>"><%= fSvc.toLocaleDateString('es-AR') %></p></div>
+          <% } %>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="text-center mt-4 pb-4">
+        <p class="text-[#5C6378] text-[10px]">Grupo Falpat SRL — Control de Mantenimiento</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="login-modal" class="login-overlay hidden">
+    <div class="w-full max-w-sm">
+      <div class="glass-card rounded-2xl p-6" style="background:rgba(15,15,35,0.95); border:1px solid rgba(108,60,225,0.3);">
+        <div class="text-center mb-6">
+          <div class="w-14 h-14 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-[#6C3CE1]/30">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <h2 class="text-lg font-bold text-[#F1F3F8]">Acceso Admin</h2>
+          <p class="text-[#8E94A8] text-xs mt-1">Ingresá tus credenciales para editar</p>
+        </div>
+        <div id="login-error" class="hidden mb-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center"></div>
+        <div class="space-y-3">
+          <input type="email" id="login-email" class="input-field" placeholder="Email" autocomplete="email">
+          <input type="password" id="login-password" class="input-field" placeholder="Contraseña" autocomplete="current-password">
+          <button onclick="doLogin()" id="btn-login" class="btn-primary">Ingresar</button>
+          <button onclick="closeLoginModal()" class="btn-secondary">Cancelar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -175,6 +184,45 @@
     if (firebaseConfig && firebaseConfig.apiKey && !firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
+
+    function openLoginModal() {
+      document.getElementById('login-modal').classList.remove('hidden');
+      document.getElementById('login-email').focus();
+    }
+    function closeLoginModal() {
+      document.getElementById('login-modal').classList.add('hidden');
+      document.getElementById('login-error').classList.add('hidden');
+    }
+    async function doLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-password').value;
+      const errDiv = document.getElementById('login-error');
+      const btn = document.getElementById('btn-login');
+      if (!email || !pass) { errDiv.textContent = 'Completá email y contraseña'; errDiv.classList.remove('hidden'); return; }
+      btn.textContent = 'Ingresando...';
+      btn.disabled = true;
+      errDiv.classList.add('hidden');
+      try {
+        await firebase.auth().signInWithEmailAndPassword(email, pass);
+        const idToken = await firebase.auth().currentUser.getIdToken();
+        const res = await fetch('/api/auth/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken }) });
+        if (res.ok) { window.location.reload(); }
+        else { const d = await res.json(); errDiv.textContent = d.error || 'Error al iniciar sesión'; errDiv.classList.remove('hidden'); }
+      } catch (e) {
+        let msg = 'Error al iniciar sesión';
+        if (e.code === 'auth/user-not-found') msg = 'Usuario no encontrado';
+        else if (e.code === 'auth/wrong-password') msg = 'Contraseña incorrecta';
+        else if (e.code === 'auth/invalid-email') msg = 'Email inválido';
+        else if (e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Esperá un momento';
+        else msg = e.message;
+        errDiv.textContent = msg;
+        errDiv.classList.remove('hidden');
+      }
+      btn.textContent = 'Ingresar';
+      btn.disabled = false;
+    }
+    document.getElementById('login-password')?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('login-email')?.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
   </script>
 </body>
 </html>
