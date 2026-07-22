@@ -145,13 +145,11 @@
               <svg class="w-4 h-4 md:w-5 md:h-5 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               Equipamiento — Trompo
             </h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-xs md:text-sm" id="vg-trompo-fields">
-              <div><span class="text-[#8E94A8]">Tipo Trompo</span><br><span class="text-[#F1F3F8]" id="vg-trompo-tipo">-</span></div>
-              <div><span class="text-[#8E94A8]">N° Serie</span><br><span class="text-[#F1F3F8]" id="vg-trompo-numeroSerie">-</span></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs md:text-sm" id="vg-trompo-fields">
               <div><span class="text-[#8E94A8]">Marca</span><br><span class="text-[#F1F3F8]" id="vg-trompo-marca">-</span></div>
-              <div><span class="text-[#8E94A8]">Capacidad</span><br><span class="text-[#F1F3F8]" id="vg-trompo-capacidad">-</span></div>
+              <div><span class="text-[#8E94A8]">N° Serie</span><br><span class="text-[#F1F3F8]" id="vg-trompo-numeroSerie">-</span></div>
               <div><span class="text-[#8E94A8]">Modelo</span><br><span class="text-[#F1F3F8]" id="vg-trompo-modelo">-</span></div>
-              <div><span class="text-[#8E94A8]">Otros</span><br><span class="text-[#F1F3F8]" id="vg-trompo-otro">-</span></div>
+              <div><span class="text-[#8E94A8]">Carga M3</span><br><span class="text-[#F1F3F8]" id="vg-trompo-cargaM3">-</span></div>
             </div>
             <div class="mt-3 pt-3 border-t border-[#6C3CE1]/10">
               <span class="text-[#8E94A8] text-xs">Empresa</span><br>
@@ -558,37 +556,36 @@
               <svg class="w-5 h-5 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               Datos del Trompo
             </h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label class="block text-sm font-medium text-[#8E94A8] mb-1">¿Tiene Trompo?</label>
-                <select id="v-cargaTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-                  <option value="No" class="bg-[#0A0A1A]">No</option>
-                  <option value="Sí" class="bg-[#0A0A1A]">Sí</option>
-                </select>
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" id="v-trompo" class="sr-only peer">
+                  <div class="relative w-10 h-5 bg-[#2E3247] rounded-full peer-checked:bg-[#6C3CE1] transition-colors">
+                    <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-[#F1F3F8] rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                  <span class="text-sm text-[#8E94A8]">Activo</span>
+                </label>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo Trompo</label>
-                <input type="text" id="v-trompo-tipo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Hormigonera, Mixer...">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° de Serie</label>
-                <input type="text" id="v-trompo-numeroSerie" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Serie">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-[#8E94A8] mb-1">Marca</label>
-                <input type="text" id="v-trompo-marca" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Marca">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-[#8E94A8] mb-1">Capacidad</label>
-                <input type="text" id="v-trompo-capacidad" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="8 M³">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-[#8E94A8] mb-1">Modelo</label>
-                <input type="text" id="v-trompo-modelo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Modelo">
-              </div>
-              <div class="sm:col-span-2 lg:col-span-3">
-                <label class="block text-sm font-medium text-[#8E94A8] mb-1">Otros datos</label>
-                <input type="text" id="v-trompo-otro" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Especificaciones adicionales">
+            </div>
+            <div id="v-trompo-fields" class="hidden">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 p-4 bg-[#6C3CE1]/5 rounded-xl border border-[#6C3CE1]/20">
+                <div>
+                  <label class="block text-sm font-medium text-[#8E94A8] mb-1">Marca Trompo</label>
+                  <input type="text" id="v-marcaTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Marina">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-[#8E94A8] mb-1">Nro Serie Trompo</label>
+                  <input type="text" id="v-serieTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="ST-12345">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-[#8E94A8] mb-1">Modelo Trompo</label>
+                  <input type="text" id="v-modeloTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Modelo X">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-[#8E94A8] mb-1">Carga M3 Trompo</label>
+                  <input type="text" id="v-cargaM3Trompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="8 M3">
+                </div>
               </div>
             </div>
           </div>

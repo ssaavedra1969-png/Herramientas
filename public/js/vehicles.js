@@ -4,6 +4,11 @@ let csvValidatedData = [];
 let patenteSet = new Set();
 let selectedIds = new Set();
 
+function parseTrompoRaw(val) {
+  const s = String(val || '').trim().toLowerCase().replace(/['"]/g, '');
+  return s === 'si' || s === 'sí';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initRealtimeListener();
@@ -28,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
       applyFilters();
     });
   });
+  document.getElementById('v-trompo')?.addEventListener('change', (e) => {
+    document.getElementById('v-trompo-fields').classList.toggle('hidden', !e.target.checked);
+  });
 });
 
 function initMobileMenu() {
@@ -51,6 +59,7 @@ function initRealtimeListener() {
     patenteSet = new Set(allVehicles.map(v => (v.patente || '').toUpperCase()));
     populateFilterDropdowns();
     document.getElementById('filter-count').textContent = allVehicles.length;
+    document.getElementById('total-vehicles').textContent = allVehicles.length;
     renderVehicles(allVehicles);
   }, (error) => {
     console.error('Error loading vehicles:', error);
@@ -73,6 +82,11 @@ function fmap(v) {
     chasis: v.chasis || '',
     numeroMotor: v.numeroMotor || '',
     capacidadCarga: v.capacidadCarga || null,
+    trompo: v.trompo === true,
+    marcaTrompo: v.marcaTrompo || null,
+    serieTrompo: v.serieTrompo || null,
+    modeloTrompo: v.modeloTrompo || null,
+    cargaM3Trompo: v.cargaM3Trompo || null,
     kilometraje: v.kilometraje || 0,
     horometro: v.horometro || 0,
     estadoGeneral: v.estadoGeneral || v.estado || 'Bueno',
@@ -84,7 +98,7 @@ function fmap(v) {
       centroMedicion: '',
       resultado: 'Pendiente'
     },
-    seguro: v.seguro || { compañía: '', poliza: '', tipo: '', fechaVencimiento: null, costo: null },
+    seguro: v.seguro || { compania: '', poliza: '', tipo: '', fechaVencimiento: null, costo: null },
     proximoServiceKm: v.proximoServiceKm || null,
     proximoServiceFecha: v.proximoServiceFecha || null,
     centroTrabajo: v.centroTrabajo || '',
@@ -102,7 +116,7 @@ function renderVehicles(vehicles) {
   if (!tbody) return;
 
   const admin = isAdmin();
-  const colCount = admin ? 8 : 7;
+  const colCount = admin ? 9 : 8;
 
   if (vehicles.length === 0) {
     tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-8 text-gray-400">No hay vehículos registrados</td></tr>`;
@@ -115,6 +129,9 @@ function renderVehicles(vehicles) {
     const checkboxCell = admin ? `<td class="py-3 pr-3" onclick="event.stopPropagation()">
       <input type="checkbox" class="row-checkbox accent-[#6C3CE1]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
     </td>` : '';
+    const trompoBadge = mv.trompo
+      ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#6C3CE1]/20 text-[#A78BFA]">Si<span class="w-1.5 h-1.5 rounded-full bg-[#A78BFA]"></span></span>`
+      : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#2E3247] text-[#5C6378]">No<span class="w-1.5 h-1.5 rounded-full bg-[#5C6378]"></span></span>`;
     return `
       <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10 cursor-pointer" onclick="rowClick('${v.id}', event)">
         ${checkboxCell}
@@ -123,6 +140,7 @@ function renderVehicles(vehicles) {
         <td class="py-3 pr-3">${mv.marca || ''} ${mv.modelo || ''}</td>
         <td class="py-3 pr-3">${mv.tipo || '—'}</td>
         <td class="py-3 pr-3">${mv.subtipo || '—'}</td>
+        <td class="py-3 pr-3">${trompoBadge}</td>
         <td class="py-3 pr-3 text-xs">${mv.centroTrabajo || '—'}</td>
         <td class="py-3 no-print" onclick="event.stopPropagation()">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
       </tr>`;
@@ -171,15 +189,7 @@ function deleteSelectedVehicles() {
 }
 
 function hasTrompo(v) {
-  const raw = v.trompo;
-  const isNested = raw && typeof raw === 'object';
-  const t = isNested ? raw : {};
-  const carga = v.cargaTrompo || '';
-  if (carga === 'No' || carga === 'no') return false;
-  if (carga === 'Sí' || carga === 'Si' || raw === 'Sí' || raw === 'Si' || raw === true) return true;
-  if (isNested && (t.tipo || t.numeroSerie || t.marca || t.capacidad || t.modelo || t.otro)) return true;
-  if (v.marcaTrompo || v.serieTrompo || v.modeloTrompo || v.cargaM3Trompo) return true;
-  return false;
+  return v.trompo === true;
 }
 
 function applyFilters() {
@@ -214,6 +224,7 @@ function applyFilters() {
   if (trompoFilter === 'no') filtered = filtered.filter(v => !hasTrompo(v));
 
   document.getElementById('filter-count').textContent = filtered.length;
+  document.getElementById('total-vehicles').textContent = filtered.length;
   renderVehicles(filtered);
 }
 
@@ -274,6 +285,12 @@ function openVehicleModal(vehicleId = null) {
     document.getElementById('v-chasis').value = v.chasis;
     document.getElementById('v-numeroMotor').value = v.numeroMotor;
     document.getElementById('v-capacidadCarga').value = v.capacidadCarga || '';
+    document.getElementById('v-trompo').checked = v.trompo;
+    document.getElementById('v-trompo-fields').classList.toggle('hidden', !v.trompo);
+    document.getElementById('v-marcaTrompo').value = v.marcaTrompo || '';
+    document.getElementById('v-serieTrompo').value = v.serieTrompo || '';
+    document.getElementById('v-modeloTrompo').value = v.modeloTrompo || '';
+    document.getElementById('v-cargaM3Trompo').value = v.cargaM3Trompo || '';
     document.getElementById('v-tipo').value = v.tipo;
     document.getElementById('v-subtipo').value = v.subtipo;
     document.getElementById('v-kilometraje').value = v.kilometraje;
@@ -282,7 +299,7 @@ function openVehicleModal(vehicleId = null) {
     document.getElementById('v-vtvCosto').value = v.vtv?.costo || '';
     document.getElementById('v-vtvCentro').value = v.vtv?.centroMedicion || '';
     document.getElementById('v-vtvResultado').value = v.vtv?.resultado || 'Pendiente';
-    document.getElementById('v-seguroCompania').value = v.seguro?.compañía || '';
+    document.getElementById('v-seguroCompania').value = v.seguro?.compania || v.seguro?.compañía || '';
     document.getElementById('v-seguroPoliza').value = v.seguro?.poliza || '';
     document.getElementById('v-seguroTipo').value = v.seguro?.tipo || '';
     setDateField('v-seguroVencimiento', v.seguro?.fechaVencimiento || null);
@@ -358,7 +375,11 @@ async function saveVehicle(e) {
     chasis: document.getElementById('v-chasis').value.trim() || '',
     numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
     capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
-    cargaTrompo: document.getElementById('v-cargaTrompo').value.trim() || '',
+    trompo: document.getElementById('v-trompo').checked,
+    marcaTrompo: document.getElementById('v-trompo').checked ? (document.getElementById('v-marcaTrompo').value.trim() || null) : null,
+    serieTrompo: document.getElementById('v-trompo').checked ? (document.getElementById('v-serieTrompo').value.trim() || null) : null,
+    modeloTrompo: document.getElementById('v-trompo').checked ? (document.getElementById('v-modeloTrompo').value.trim() || null) : null,
+    cargaM3Trompo: document.getElementById('v-trompo').checked ? (document.getElementById('v-cargaM3Trompo').value.trim() || null) : null,
     tipo: document.getElementById('v-tipo').value,
     subtipo: document.getElementById('v-subtipo').value,
     kilometraje: parseInt(document.getElementById('v-kilometraje').value) || 0,
@@ -370,7 +391,7 @@ async function saveVehicle(e) {
       resultado: document.getElementById('v-vtvResultado').value || 'Pendiente'
     },
     seguro: {
-      compañía: document.getElementById('v-seguroCompania').value.trim() || '',
+      compania: document.getElementById('v-seguroCompania').value.trim() || '',
       poliza: document.getElementById('v-seguroPoliza').value.trim() || '',
       tipo: document.getElementById('v-seguroTipo').value || '',
       fechaVencimiento: getDateValue('v-seguroVencimiento'),
@@ -509,8 +530,8 @@ function closeCsvImport() {
 }
 
 function downloadCsvTemplate() {
-  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','tipo','subtipo','capacidadCarga','cargaTrompo','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','conductorHabitual','empresa','centroTrabajo','observaciones'];
-  const sample = ['ABC123','V-00001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','mixer','Indumix','25000','8 M3','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','FRAFIL SRL','Lujan','Último cambio de cubiertas a los 140.000 km'];
+  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','tipo','subtipo','capacidadCarga','trompo','marcaTrompo','serieTrompo','modeloTrompo','cargaM3Trompo','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','conductorHabitual','empresa','centroTrabajo','observaciones'];
+  const sample = ['ABC123','V001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','mixer','Indumix','25000','Si','Marina','ST-12345','Modelo X','8 M3','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','FRAFIL SRL','Lujan','Último cambio de cubiertas a los 140.000 km'];
   const BOM = '\uFEFF';
   const csv = BOM + headers.join(',') + '\n' + sample.join(',') + '\n';
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -554,7 +575,6 @@ function parseVehicleRows(rows) {
     const numeroMotor = (row.numeroMotor || '').toString().trim();
     const tipo = (row.tipo || '').toString().trim();
     const subtipo = (row.subtipo || '').toString().trim();
-    const cargaTrompo = (row.cargaTrompo || '').toString().trim();
     const empresa = (row.empresa || '').toString().trim();
 
     // Skip completely empty rows
@@ -576,7 +596,11 @@ function parseVehicleRows(rows) {
       valid.push({
         patente, interno, marca, modelo, año, chasis, numeroMotor, tipo, subtipo,
         capacidadCarga: parseFloat(row.capacidadCarga) || null,
-        cargaTrompo,
+        trompoRaw: (row.trompoRaw || '').toString().trim(),
+        marcaTrompo: (row.marcaTrompo || '').toString().trim(),
+        serieTrompo: (row.serieTrompo || '').toString().trim(),
+        modeloTrompo: (row.modeloTrompo || '').toString().trim(),
+        cargaM3Trompo: (row.cargaM3Trompo || '').toString().trim(),
         kilometraje: parseFloat(row.kilometraje) || 0,
         vtvFechaRealizacion: row.vtvFechaRealizacion || '',
         vtvVencimiento: row.vtvVencimiento || '',
@@ -700,7 +724,9 @@ function validateCsvImport() {
             'id':'interno','patente':'patente','marca':'marca','modelo':'modelo',
             'año':'año','aÃ±o':'año','chasis':'chasis','nro motor':'numeroMotor',
             'tipo':'tipo','subtipo':'subtipo','capacidad':'capacidadCarga',
-            'carga trompo':'cargaTrompo','kilometraje':'kilometraje',
+            'trompo':'trompoRaw','marca trompo':'marcaTrompo','nro serie trompo':'serieTrompo',
+            'modelo trompo':'modeloTrompo','carga m3 trompo':'cargaM3Trompo',
+            'kilometraje':'kilometraje',
             'vtv realizacion':'vtvFechaRealizacion','vtv vencimiento':'vtvVencimiento',
             'vtv costo':'vtvCosto','vtv centro':'vtvCentro','vtv resultado':'vtvResultado',
             'seguro compania':'seguroCompania','seguro poliza':'seguroPoliza',
@@ -761,10 +787,10 @@ async function executeCsvImport() {
   const internosUsar = [];
   for (const row of csvValidatedData) {
     let interno;
-    if (row.interno && /^V-\d+$/i.test(String(row.interno).trim())) {
+    if (row.interno && /^V\d{3}$/i.test(String(row.interno).trim())) {
       interno = String(row.interno).trim().toUpperCase();
     } else {
-      interno = `V-${String(seqNum).padStart(5, '0')}`;
+      interno = `V${String(seqNum).padStart(3, '0')}`;
       seqNum++;
     }
     internosUsar.push(interno);
@@ -788,11 +814,11 @@ async function executeCsvImport() {
   for (let i = 0; i < csvValidatedData.length; i++) {
     const row = csvValidatedData[i];
     const interno = internosUsar[i];
-    const m = interno.match(/^V-0*(\d+)$/);
+    const m = interno.match(/^V0*(\d+)$/);
     if (m) { const n = parseInt(m[1], 10); if (n > maxNum) maxNum = n; }
     const seguro = {};
     if (row.seguroCompania || row.seguroPoliza || row.seguroVencimiento || row.seguroTipo || row.seguroCosto) {
-      seguro.compañía = row.seguroCompania || '';
+      seguro.compania = row.seguroCompania || '';
       seguro.poliza = row.seguroPoliza || '';
       seguro.tipo = row.seguroTipo || '';
       seguro.costo = parseFloat(row.seguroCosto) || null;
@@ -809,7 +835,11 @@ async function executeCsvImport() {
       tipo: row.tipo,
       subtipo: row.subtipo || '',
       capacidadCarga: row.capacidadCarga || null,
-      cargaTrompo: row.cargaTrompo || '',
+      trompo: parseTrompoRaw(row.trompoRaw),
+      marcaTrompo: row.marcaTrompo || null,
+      serieTrompo: row.serieTrompo || null,
+      modeloTrompo: row.modeloTrompo || null,
+      cargaM3Trompo: row.cargaM3Trompo || null,
       kilometraje: row.kilometraje || 0,
       vtv: {
         fechaRealizacion: toTimestamp(row.vtvFechaRealizacion),

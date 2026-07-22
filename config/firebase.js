@@ -24,7 +24,7 @@ function getServiceAccount() {
     const cleaned = process.env.FIREBASE_SERVICE_ACCOUNT
       .replace(/^['"]/, '').replace(/['"]$/, '');
     const result = parseJSON(cleaned);
-    if (result) return result;
+    if (result && result.private_key) return result;
   }
 
   const localFile = path.join(__dirname, '..', 'engaged-card-450213-d7-firebase-adminsdk-fbsvc-a956702c95.json');

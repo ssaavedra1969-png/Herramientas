@@ -37,6 +37,17 @@
         </div>
       </div>
 
+      <!-- Contador total -->
+      <div class="mt-6 glass-card rounded-xl p-6 flex items-center gap-4 border border-[#6C3CE1]/10">
+        <div class="w-12 h-12 rounded-full bg-[#6C3CE1]/15 flex items-center justify-center">
+          <svg class="w-6 h-6 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-[#8E94A8] uppercase tracking-wider">Total de Vehículos</p>
+          <p class="text-4xl font-bold text-gradient-primary" id="total-vehicles">0</p>
+        </div>
+      </div>
+
       <div class="mt-6 glass-card rounded-xl overflow-hidden">
         <!-- Search bar -->
         <div class="p-4 border-b border-[#6C3CE1]/10">
@@ -174,12 +185,13 @@
                 <th class="pb-3 font-medium">Marca / Modelo</th>
                 <th class="pb-3 font-medium">Tipo</th>
                 <th class="pb-3 font-medium">Sub Tipo</th>
+                <th class="pb-3 font-medium">Trompo</th>
                 <th class="pb-3 font-medium">Centro</th>
                 <th class="pb-3 font-medium no-print">Acciones</th>
               </tr>
             </thead>
             <tbody id="vehiculos-table-body">
-              <tr><td colspan="<%= currentUserData?.role === 'Admin' ? 8 : 7 %>" class="text-center py-8 text-[#5C6378]">Cargando vehículos...</td></tr>
+              <tr><td colspan="<%= currentUserData?.role === 'Admin' ? 9 : 8 %>" class="text-center py-8 text-[#5C6378]">Cargando vehículos...</td></tr>
             </tbody>
           </table>
         </div>
@@ -311,9 +323,36 @@
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Capacidad de Carga (kg)</label>
             <input type="number" id="v-capacidadCarga" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="25000" step="100">
            </div>
-           <div>
-             <label class="block text-sm font-medium text-[#8E94A8] mb-1">Carga Trompo</label>
-             <input type="text" id="v-cargaTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="8 M3">
+           <div class="flex items-end gap-2 pt-6">
+             <label class="flex items-center gap-3 cursor-pointer">
+               <input type="checkbox" id="v-trompo" class="sr-only peer">
+               <div class="relative w-10 h-5 bg-[#2E3247] rounded-full peer-checked:bg-[#6C3CE1] transition-colors">
+                 <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-[#F1F3F8] rounded-full transition-transform peer-checked:translate-x-5"></div>
+               </div>
+               <span class="text-sm font-medium text-[#8E94A8]">Trompo</span>
+             </label>
+           </div>
+         </div>
+
+         <!-- Campos condicionales del Trompo -->
+         <div id="v-trompo-fields" class="hidden">
+           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-4 bg-[#6C3CE1]/5 rounded-xl border border-[#6C3CE1]/20">
+             <div>
+               <label class="block text-sm font-medium text-[#8E94A8] mb-1">Marca Trompo</label>
+               <input type="text" id="v-marcaTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Marina">
+             </div>
+             <div>
+               <label class="block text-sm font-medium text-[#8E94A8] mb-1">Nro Serie Trompo</label>
+               <input type="text" id="v-serieTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="ST-12345">
+             </div>
+             <div>
+               <label class="block text-sm font-medium text-[#8E94A8] mb-1">Modelo Trompo</label>
+               <input type="text" id="v-modeloTrompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Modelo X">
+             </div>
+             <div>
+               <label class="block text-sm font-medium text-[#8E94A8] mb-1">Carga M3 Trompo</label>
+               <input type="text" id="v-cargaM3Trompo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="8 M3">
+             </div>
            </div>
          </div>
        </div>

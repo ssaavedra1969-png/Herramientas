@@ -130,7 +130,7 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
       if (v.seguro?.fechaVencimiento || v.seguro?.costo) {
         totalSeguro += Number(v.seguro.costo) || 0;
         ultimosMovimientos.push({
-          tipo: 'Seguro', patente, desc: `Seguro · ${v.seguro.compañía || '—'}`,
+          tipo: 'Seguro', patente, desc: `Seguro · ${v.seguro.compania || v.seguro.compañía || '—'}`,
           importe: Number(v.seguro.costo) || 0, fecha: v.seguro.fechaVencimiento
         });
       }
@@ -298,7 +298,7 @@ router.get('/report', verifyToken, async (req, res) => {
               const costoS = Number(v.seguro.costo) || 0;
               items.push({
                 fecha, categoria: 'Seguro', vehiculo: patente,
-                detalle: `Seguro · ${v.seguro.compañía || '—'} · Póliza ${v.seguro.poliza || '—'}`,
+                detalle: `Seguro · ${v.seguro.compania || v.seguro.compañía || '—'} · Póliza ${v.seguro.poliza || '—'}`,
                 monto: costoS
               });
               totalSeguro += costoS;
@@ -451,8 +451,8 @@ router.get('/report/export', verifyToken, async (req, res) => {
               catTotals.Seguro += costoS;
               rows.push({
                 fecha, categoria: 'Seguro', vehiculo: patente, interno: vInfo.interno,
-                detalle: `Seguro · ${v.seguro.compañía || '—'}`,
-                monto: costoS, proveedor: v.seguro.compañía || '', observaciones: ''
+                detalle: `Seguro · ${v.seguro.compania || v.seguro.compañía || '—'}`,
+                monto: costoS, proveedor: v.seguro.compania || v.seguro.compañía || '', observaciones: ''
               });
             }
           }

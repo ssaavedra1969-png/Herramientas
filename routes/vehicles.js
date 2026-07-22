@@ -27,6 +27,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
   try {
     const seguro = req.body.seguro || {};
     const vtv = req.body.vtv || {};
+    const trompoEnabled = req.body.trompo === true;
     const data = {
       patente: req.body.patente?.toUpperCase().trim(),
       interno: req.body.interno?.trim(),
@@ -38,15 +39,11 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       chasis: req.body.chasis?.trim() || '',
       numeroMotor: req.body.numeroMotor?.trim() || '',
       capacidadCarga: parseFloat(req.body.capacidadCarga) || null,
-      cargaTrompo: req.body.cargaTrompo?.trim() || '',
-      trompo: {
-        tipo: req.body.trompo?.tipo?.trim() || '',
-        numeroSerie: req.body.trompo?.numeroSerie?.trim() || '',
-        marca: req.body.trompo?.marca?.trim() || '',
-        capacidad: req.body.trompo?.capacidad?.trim() || '',
-        modelo: req.body.trompo?.modelo?.trim() || '',
-        otro: req.body.trompo?.otro?.trim() || ''
-      },
+      trompo: trompoEnabled,
+      marcaTrompo: trompoEnabled ? (req.body.marcaTrompo?.trim() || null) : null,
+      serieTrompo: trompoEnabled ? (req.body.serieTrompo?.trim() || null) : null,
+      modeloTrompo: trompoEnabled ? (req.body.modeloTrompo?.trim() || null) : null,
+      cargaM3Trompo: trompoEnabled ? (req.body.cargaM3Trompo?.trim() || null) : null,
       kilometraje: parseInt(req.body.kilometraje) || 0,
       horometro: parseInt(req.body.horometro) || 0,
       estadoGeneral: req.body.estadoGeneral || 'Bueno',
@@ -59,7 +56,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
         resultado: vtv.resultado || 'Pendiente'
       },
       seguro: {
-        compañía: seguro.compañía || '',
+        compania: seguro.compania || seguro.compañía || '',
         poliza: seguro.poliza || '',
         tipo: seguro.tipo || '',
         fechaVencimiento: seguro.fechaVencimiento ? new Date(seguro.fechaVencimiento) : null,
@@ -84,7 +81,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
 
     const existing = await db.collection('vehicles').where('patente', '==', data.patente).get();
     if (!existing.empty) {
-      return res.status(409).json({ error: 'Ya existe un vehículo con esa patente' });
+      return res.status(409).json({ error: 'Ya existe un vehiculo con esa patente' });
     }
 
     const docRef = await db.collection('vehicles').add(data);
@@ -101,6 +98,7 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
 
     const seguro = req.body.seguro || {};
     const vtv = req.body.vtv || {};
+    const trompoEnabled = req.body.trompo === true;
     const data = {
       patente: req.body.patente?.toUpperCase().trim(),
       interno: req.body.interno?.trim(),
@@ -112,15 +110,11 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
       chasis: req.body.chasis?.trim() || '',
       numeroMotor: req.body.numeroMotor?.trim() || '',
       capacidadCarga: parseFloat(req.body.capacidadCarga) || null,
-      cargaTrompo: req.body.cargaTrompo?.trim() || '',
-      trompo: {
-        tipo: req.body.trompo?.tipo?.trim() || '',
-        numeroSerie: req.body.trompo?.numeroSerie?.trim() || '',
-        marca: req.body.trompo?.marca?.trim() || '',
-        capacidad: req.body.trompo?.capacidad?.trim() || '',
-        modelo: req.body.trompo?.modelo?.trim() || '',
-        otro: req.body.trompo?.otro?.trim() || ''
-      },
+      trompo: trompoEnabled,
+      marcaTrompo: trompoEnabled ? (req.body.marcaTrompo?.trim() || null) : null,
+      serieTrompo: trompoEnabled ? (req.body.serieTrompo?.trim() || null) : null,
+      modeloTrompo: trompoEnabled ? (req.body.modeloTrompo?.trim() || null) : null,
+      cargaM3Trompo: trompoEnabled ? (req.body.cargaM3Trompo?.trim() || null) : null,
       kilometraje: parseInt(req.body.kilometraje) || 0,
       horometro: parseInt(req.body.horometro) || 0,
       estadoGeneral: req.body.estadoGeneral || 'Bueno',
@@ -133,7 +127,7 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
         resultado: vtv.resultado || 'Pendiente'
       },
       seguro: {
-        compañía: seguro.compañía || '',
+        compania: seguro.compania || seguro.compañía || '',
         poliza: seguro.poliza || '',
         tipo: seguro.tipo || '',
         fechaVencimiento: seguro.fechaVencimiento ? new Date(seguro.fechaVencimiento) : null,
@@ -246,26 +240,32 @@ router.delete('/:id/repuestos/:entryId', verifyToken, requireAdmin, async (req, 
 
 router.get('/template/excel', verifyToken, async (req, res) => {
   try {
-    const path = require('path');
-    const fs = require('fs');
-    const { execFile } = require('child_process');
-    const outDir = path.join(__dirname, '..', 'Entrada');
-    const outFile = path.join(outDir, 'plantilla_vehiculos.xlsx');
-    const script = path.join(__dirname, '..', 'gen_plantilla.py');
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const ws = workbook.addWorksheet('Vehículos');
 
-    // Generate via Python (pip install openpyxl required)
-    await new Promise((resolve, reject) => {
-      execFile('python', [script, outFile], { cwd: path.join(__dirname, '..'), timeout: 30000 }, (err, stdout) => {
-        if (err) reject(new Error(`Error generando plantilla: ${err.message}`));
-        else resolve();
-      });
+    const headers = [
+      'patente','interno','marca','modelo','año','chasis','numeroMotor',
+      'tipo','subtipo','capacidadCarga','trompo','marcaTrompo','serieTrompo',
+      'modeloTrompo','cargaM3Trompo','kilometraje','vtvFechaRealizacion',
+      'vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania',
+      'seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto',
+      'proximoServiceKm','proximoServiceFecha','conductorHabitual','empresa',
+      'centroTrabajo','observaciones'
+    ];
+
+    ws.addRow(headers);
+
+    ws.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF6C3CE1' } };
+      cell.alignment = { horizontal: 'center' };
     });
-
-    if (!fs.existsSync(outFile)) throw new Error('No se generó el archivo');
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename=plantilla_vehiculos.xlsx');
-    res.sendFile(outFile);
+    await workbook.xlsx.write(res);
+    res.end();
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

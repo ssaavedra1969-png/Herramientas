@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
   loadVehicle();
   initCombustibleForm();
   initRepuestoForm();
+  document.getElementById('v-trompo')?.addEventListener('change', (e) => {
+    document.getElementById('v-trompo-fields').classList.toggle('hidden', !e.target.checked);
+  });
 });
 
 async function loadVehicle() {
@@ -72,26 +75,18 @@ function renderGeneralInfo() {
 function renderTrompo() {
   const card = document.getElementById('vg-trompo-card');
   if (!card) return;
-  const raw = vehicleData.trompo;
-  const isNested = raw && typeof raw === 'object';
-  const t = isNested ? raw : {};
-  const hasTrompoFlag = raw === 'Si' || raw === true;
-  const carga = vehicleData.cargaTrompo || '';
-  const hasAny = hasTrompoFlag || carga || t.tipo || t.numeroSerie || t.marca || t.capacidad || t.modelo || t.otro || vehicleData.marcaTrompo || vehicleData.serieTrompo || vehicleData.modeloTrompo || vehicleData.cargaM3Trompo;
-  if (!hasAny) { card.classList.add('hidden'); return; }
+  if (!vehicleData.trompo) { card.classList.add('hidden'); return; }
   card.classList.remove('hidden');
-  setText('vg-trompo-tipo', (t.tipo || (carga ? 'Mixer' : '-') ));
-  setText('vg-trompo-numeroSerie', (t.numeroSerie || vehicleData.serieTrompo || '-'));
-  setText('vg-trompo-marca', (t.marca || vehicleData.marcaTrompo || vehicleData.subtipo || '-'));
-  setText('vg-trompo-capacidad', (t.capacidad || vehicleData.cargaM3Trompo || carga || '-'));
-  setText('vg-trompo-modelo', (t.modelo || vehicleData.modeloTrompo || '-'));
-  setText('vg-trompo-otro', (t.otro || '-'));
+  setText('vg-trompo-marca', vehicleData.marcaTrompo || '-');
+  setText('vg-trompo-numeroSerie', vehicleData.serieTrompo || '-');
+  setText('vg-trompo-modelo', vehicleData.modeloTrompo || '-');
+  setText('vg-trompo-cargaM3', vehicleData.cargaM3Trompo || '-');
   setText('vg-trompo-empresa', vehicleData.empresa || 'Grupo Falpat SRL');
 }
 
 function renderSeguro() {
   const s = vehicleData.seguro || {};
-  setText('vg-seguroCompania', s.compañía || '-');
+  setText('vg-seguroCompania', s.compania || s.compañía || '-');
   setText('vg-seguroPoliza', s.poliza || '-');
   setText('vg-seguroTipo', s.tipo || '-');
   setText('vg-seguroVencimiento', formatDate(s.fechaVencimiento));
@@ -368,19 +363,12 @@ function openEditVehicle() {
   document.getElementById('v-chasis').value = vehicleData.chasis || '';
   document.getElementById('v-numeroMotor').value = vehicleData.numeroMotor || '';
   document.getElementById('v-capacidadCarga').value = vehicleData.capacidadCarga || '';
-  const raw = vehicleData.trompo;
-  const isNested = raw && typeof raw === 'object';
-  const t = isNested ? raw : {};
-  const hasTrompoFlag = raw === 'Si' || raw === true;
-  const carga = vehicleData.cargaTrompo || '';
-  const hasTrompoAny = hasTrompoFlag || carga || t.tipo || t.numeroSerie || t.marca || t.capacidad || t.modelo || t.otro || vehicleData.marcaTrompo || vehicleData.serieTrompo || vehicleData.modeloTrompo || vehicleData.cargaM3Trompo;
-  document.getElementById('v-cargaTrompo').value = hasTrompoAny ? 'Sí' : 'No';
-  document.getElementById('v-trompo-tipo').value = t.tipo || (carga ? 'Mixer' : '');
-  document.getElementById('v-trompo-numeroSerie').value = t.numeroSerie || vehicleData.serieTrompo || '';
-  document.getElementById('v-trompo-marca').value = t.marca || vehicleData.marcaTrompo || vehicleData.subtipo || '';
-  document.getElementById('v-trompo-capacidad').value = t.capacidad || vehicleData.cargaM3Trompo || carga || '';
-  document.getElementById('v-trompo-modelo').value = t.modelo || vehicleData.modeloTrompo || '';
-  document.getElementById('v-trompo-otro').value = t.otro || '';
+  document.getElementById('v-trompo').checked = vehicleData.trompo === true;
+  document.getElementById('v-trompo-fields').classList.toggle('hidden', !vehicleData.trompo);
+  document.getElementById('v-marcaTrompo').value = vehicleData.marcaTrompo || '';
+  document.getElementById('v-serieTrompo').value = vehicleData.serieTrompo || '';
+  document.getElementById('v-modeloTrompo').value = vehicleData.modeloTrompo || '';
+  document.getElementById('v-cargaM3Trompo').value = vehicleData.cargaM3Trompo || '';
   const trompoSection = document.getElementById('v-trompo-section');
   if (trompoSection) trompoSection.classList.remove('hidden');
   document.getElementById('v-tipo').value = vehicleData.tipo || '';
@@ -391,7 +379,7 @@ function openEditVehicle() {
   document.getElementById('v-vtvCosto').value = vehicleData.vtv?.costo || '';
   document.getElementById('v-vtvCentro').value = vehicleData.vtv?.centroMedicion || '';
   document.getElementById('v-vtvResultado').value = vehicleData.vtv?.resultado || 'Pendiente';
-  document.getElementById('v-seguroCompania').value = vehicleData.seguro?.compañía || '';
+  document.getElementById('v-seguroCompania').value = vehicleData.seguro?.compania || vehicleData.seguro?.compañía || '';
   document.getElementById('v-seguroPoliza').value = vehicleData.seguro?.poliza || '';
   document.getElementById('v-seguroTipo').value = vehicleData.seguro?.tipo || '';
   setDateField('v-seguroVencimiento', vehicleData.seguro?.fechaVencimiento || null);
@@ -441,19 +429,11 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     chasis: document.getElementById('v-chasis').value.trim() || '',
     numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
     capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
-    cargaTrompo: document.getElementById('v-cargaTrompo').value.trim() || '',
-    trompo: {
-      tipo: document.getElementById('v-trompo-tipo').value.trim() || '',
-      numeroSerie: document.getElementById('v-trompo-numeroSerie').value.trim() || '',
-      marca: document.getElementById('v-trompo-marca').value.trim() || '',
-      capacidad: document.getElementById('v-trompo-capacidad').value.trim() || '',
-      modelo: document.getElementById('v-trompo-modelo').value.trim() || '',
-      otro: document.getElementById('v-trompo-otro').value.trim() || ''
-    },
-    marcaTrompo: document.getElementById('v-trompo-marca').value.trim() || '',
-    serieTrompo: document.getElementById('v-trompo-numeroSerie').value.trim() || '',
-    modeloTrompo: document.getElementById('v-trompo-modelo').value.trim() || '',
-    cargaM3Trompo: document.getElementById('v-trompo-capacidad').value.trim() || '',
+    trompo: document.getElementById('v-trompo').checked,
+    marcaTrompo: document.getElementById('v-trompo').checked ? (document.getElementById('v-marcaTrompo').value.trim() || null) : null,
+    serieTrompo: document.getElementById('v-trompo').checked ? (document.getElementById('v-serieTrompo').value.trim() || null) : null,
+    modeloTrompo: document.getElementById('v-trompo').checked ? (document.getElementById('v-modeloTrompo').value.trim() || null) : null,
+    cargaM3Trompo: document.getElementById('v-trompo').checked ? (document.getElementById('v-cargaM3Trompo').value.trim() || null) : null,
     tipo: document.getElementById('v-tipo').value,
     subtipo: document.getElementById('v-subtipo').value,
     kilometraje: parseInt(document.getElementById('v-kilometraje').value) || 0,
@@ -465,7 +445,7 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
       resultado: document.getElementById('v-vtvResultado').value || 'Pendiente'
     },
     seguro: {
-      compañía: document.getElementById('v-seguroCompania').value.trim() || '',
+      compania: document.getElementById('v-seguroCompania').value.trim() || '',
       poliza: document.getElementById('v-seguroPoliza').value.trim() || '',
       tipo: document.getElementById('v-seguroTipo').value || '',
       fechaVencimiento: getDateValue('v-seguroVencimiento'),
