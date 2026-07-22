@@ -43,6 +43,9 @@ app.use('/api/vehicles', vehiclesRoutes);
 
 app.use('/api/admin', adminRoutes);
 
+const alertsRoutes = require('./routes/alerts');
+app.use('/api', alertsRoutes);
+
 app.get('/login', (req, res) => {
   if (res.locals.currentUser) return res.redirect('/dashboard');
   const error = req.query.error;
