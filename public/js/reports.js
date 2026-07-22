@@ -87,6 +87,8 @@ function renderAll() {
   renderVTV(vtv);
   renderSeguro(seg);
   renderVehiculos();
+  renderEmpresas(comb, rep, vtv, seg);
+  renderCostoVehiculo(comb, rep, vtv, seg);
 }
 
 function fc(n) { return '$ ' + Number(n || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -380,4 +382,126 @@ function exportSectionPDF(section) {
   doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', 148, 200, { align: 'center' });
   doc.save(`reporte-${section}-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
+}
+
+function setDateRange(period) {
+  const desde = document.getElementById('filtro-desde');
+  const hasta = document.getElementById('filtro-hasta');
+  const now = new Date();
+  let d = new Date();
+  switch (period) {
+    case 'month': d.setMonth(now.getMonth()); d.setDate(1); break;
+    case 'quarter': d.setMonth(now.getMonth() - 2); d.setDate(1); break;
+    case 'year': d.setFullYear(now.getFullYear()); d.setMonth(0); d.setDate(1); break;
+    case 'last3': d.setMonth(now.getMonth() - 3); break;
+    case 'last6': d.setMonth(now.getMonth() - 6); break;
+    case 'all': d = new Date(2020, 0, 1); break;
+  }
+  desde.value = d.toISOString().split('T')[0];
+  hasta.value = now.toISOString().split('T')[0];
+  loadData();
+}
+
+function renderEmpresas(comb, rep, vtv, seg) {
+  const porEmpresa = {};
+  allData.forEach(d => {
+    const e = d.vehiculo ? (vehicleMeta[Object.keys(vehicleMeta).find(k => vehicleMeta[k].patente === d.vehiculo)]?.empresa || '') : '';
+    const key = e || 'Sin empresa';
+    if (!porEmpresa[key]) porEmpresa[key] = { combustible: 0, repuestos: 0, vtv: 0, seguro: 0, total: 0 };
+    porEmpresa[key][d.categoria === 'Combustible' ? 'combustible' : d.categoria === 'Repuestos' ? 'repuestos' : d.categoria === 'VTV' ? 'vtv' : 'seguro'] += d.monto;
+    porEmpresa[key].total += d.monto;
+  });
+
+  const entries = Object.entries(porEmpresa).sort((a, b) => b[1].total - a[1].total);
+  const tbody = document.getElementById('empresas-table');
+  if (tbody) {
+    if (!entries.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-[#5C6378]">Sin datos</td></tr>';
+    } else {
+      tbody.innerHTML = entries.map(([e, v]) => `
+        <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
+          <td class="py-2 pr-3 text-xs font-medium">${e}</td>
+          <td class="py-2 pr-3 text-xs">${allVehiclesBasic.filter(v2 => (v2.empresa || 'Sin empresa') === e).length}</td>
+          <td class="py-2 pr-3 text-xs text-[#6C3CE1]">${fc(v.combustible)}</td>
+          <td class="py-2 pr-3 text-xs text-[#10B981]">${fc(v.repuestos)}</td>
+          <td class="py-2 pr-3 text-xs text-[#F59E0B]">${fc(v.vtv)}</td>
+          <td class="py-2 pr-3 text-xs text-[#8B5CF6]">${fc(v.seguro)}</td>
+          <td class="py-2 text-right text-xs font-bold">${fc(v.total)}</td>
+        </tr>`).join('');
+    }
+  }
+
+  if (charts['empresas-gasto']) charts['empresas-gasto'].destroy();
+  if (charts['empresas-donut']) charts['empresas-donut'].destroy();
+
+  if (entries.length) {
+    const labels = entries.map(e => e[0]);
+    const data = entries.map(e => e[1].total);
+    const colors = labels.map((_, i) => `hsl(${(i * 137.5) % 360}, 70%, 50%)`);
+    const ctxBar = document.getElementById('chart-empresas-gasto');
+    if (ctxBar) charts['empresas-gasto'] = new Chart(ctxBar, { type: 'bar', data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { color: '#8E94A8', callback: v => '$' + v } }, y: { grid: { display: false }, ticks: { color: '#8E94A8' } } } } });
+
+    const ctxDonut = document.getElementById('chart-empresas-donut');
+    if (ctxDonut) charts['empresas-donut'] = new Chart(ctxDonut, { type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { color: '#8E94A8', padding: 6, font: { size: 10 } } } } } });
+  }
+}
+
+function renderCostoVehiculo(comb, rep, vtv, seg) {
+  const porVehiculo = {};
+  allData.forEach(d => {
+    const pat = d.vehiculo || '—';
+    if (!porVehiculo[pat]) porVehiculo[pat] = { combustible: 0, repuestos: 0, vtv: 0, seguro: 0, total: 0 };
+    porVehiculo[pat][d.categoria === 'Combustible' ? 'combustible' : d.categoria === 'Repuestos' ? 'repuestos' : d.categoria === 'VTV' ? 'vtv' : 'seguro'] += d.monto;
+    porVehiculo[pat].total += d.monto;
+  });
+
+  const entries = Object.entries(porVehiculo).sort((a, b) => b[1].total - a[1].total);
+  const tbody = document.getElementById('costovehiculo-table');
+  const foot = document.getElementById('costovehiculo-foot');
+
+  if (tbody) {
+    if (!entries.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-[#5C6378]">Sin datos</td></tr>';
+      if (foot) foot.classList.add('hidden');
+    } else {
+      tbody.innerHTML = entries.map(([p, v]) => `
+        <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
+          <td class="py-2 pr-3 text-xs font-medium">${p}</td>
+          <td class="py-2 pr-3 text-xs text-[#6C3CE1]">${fc(v.combustible)}</td>
+          <td class="py-2 pr-3 text-xs text-[#10B981]">${fc(v.repuestos)}</td>
+          <td class="py-2 pr-3 text-xs text-[#F59E0B]">${fc(v.vtv)}</td>
+          <td class="py-2 pr-3 text-xs text-[#8B5CF6]">${fc(v.seguro)}</td>
+          <td class="py-2 text-right text-xs font-bold">${fc(v.total)}</td>
+        </tr>`).join('');
+      if (foot) {
+        foot.classList.remove('hidden');
+        const tot = entries.reduce((s, [, v]) => s + v.total, 0);
+        document.getElementById('cv-foot-comb').textContent = fc(entries.reduce((s, [, v]) => s + v.combustible, 0));
+        document.getElementById('cv-foot-rep').textContent = fc(entries.reduce((s, [, v]) => s + v.repuestos, 0));
+        document.getElementById('cv-foot-vtv').textContent = fc(entries.reduce((s, [, v]) => s + v.vtv, 0));
+        document.getElementById('cv-foot-seg').textContent = fc(entries.reduce((s, [, v]) => s + v.seguro, 0));
+        document.getElementById('cv-foot-total').textContent = fc(tot);
+      }
+    }
+  }
+
+  if (charts['costo-vehiculo']) charts['costo-vehiculo'].destroy();
+  if (entries.length) {
+    const top = entries.slice(0, 15);
+    const labels = top.map(e => e[0]);
+    const ctxBar = document.getElementById('chart-costo-vehiculo');
+    if (ctxBar) charts['costo-vehiculo'] = new Chart(ctxBar, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Combustible', data: top.map(e => e[1].combustible), backgroundColor: '#6C3CE1', borderRadius: 4 },
+          { label: 'Repuestos', data: top.map(e => e[1].repuestos), backgroundColor: '#10B981', borderRadius: 4 },
+          { label: 'VTV', data: top.map(e => e[1].vtv), backgroundColor: '#F59E0B', borderRadius: 4 },
+          { label: 'Seguro', data: top.map(e => e[1].seguro), backgroundColor: '#8B5CF6', borderRadius: 4 }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { labels: { color: '#8E94A8' } } }, scales: { x: { stacked: true, beginAtZero: true, ticks: { color: '#8E94A8', callback: v => '$' + v } }, y: { stacked: true, grid: { display: false }, ticks: { color: '#8E94A8' } } } }
+    });
+  }
 }

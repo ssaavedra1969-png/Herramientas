@@ -1,5 +1,6 @@
 let chartCombustible = null;
 let chartGastoVehiculos = null;
+let chartDonutGastos = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -34,6 +35,19 @@ function initRealtimeListeners() {
     const all = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     const active = all.filter(d => d.estadoGeneral !== 'Baja').length;
     document.getElementById('card-vehiculos').textContent = active;
+
+    const now = new Date();
+    let vtvCount = 0, seguroCount = 0;
+    all.forEach(v => {
+      if (v.estadoGeneral === 'Baja') return;
+      const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
+      if (vtvDays !== null && vtvDays <= 30) vtvCount++;
+      const segDays = daysUntil(v.seguro?.fechaVencimiento);
+      if (segDays !== null && segDays <= 30) seguroCount++;
+    });
+    document.getElementById('card-vtv-proximas').textContent = vtvCount;
+    document.getElementById('card-seguro-proximos').textContent = seguroCount;
+
     renderEmpresas(all);
     renderAlertasVTV(all);
   }, (error) => {
@@ -49,6 +63,8 @@ function initRealtimeListeners() {
 
       renderCombustibleChart(data.combustibleChart);
       renderGastoVehiculosChart(Object.fromEntries(data.gastoVehiculos.map(g => [g.vehiculo, g.monto])));
+      renderDonutGastos(data.donut);
+      renderGastoMes(data.donut, data.combustibleChart);
     } catch (e) {
       console.error('Error loading financial data:', e);
       document.querySelectorAll('[id^="chart-"]').forEach(el => {
@@ -58,6 +74,20 @@ function initRealtimeListeners() {
   }
 
   fetchFinancialData();
+}
+
+function renderGastoMes(donut, combustibleChart) {
+  if (!donut) return;
+  const now = new Date();
+  const mesActual = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  let gastoMes = 0;
+  if (combustibleChart) {
+    const mesData = combustibleChart.find(d => d.mes === mesActual);
+    if (mesData) gastoMes += mesData.importe || 0;
+  }
+  gastoMes += donut.repuestos || 0;
+  const el = document.getElementById('card-gasto-mes');
+  if (el) el.textContent = '$' + Math.round(gastoMes).toLocaleString('es-AR');
 }
 
 function renderEmpresas(vehicles) {
@@ -121,19 +151,24 @@ function renderAlertasVTV(vehicles) {
   const alertas = [];
   vehicles.forEach(v => {
     if (v.estadoGeneral === 'Baja') return;
-    const days = daysUntil(v.vtv?.fechaVencimiento);
-    if (getAlertLevel(days) === 'none') return;
-    alertas.push({ days, label: `${v.patente || '—'} · ${v.interno || ''}`, date: v.vtv?.fechaVencimiento });
+    const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
+    if (vtvDays !== null && getAlertLevel(vtvDays) !== 'none') {
+      alertas.push({ days: vtvDays, tipo: 'VTV', label: `${v.patente || '—'} · ${v.interno || ''}`, date: v.vtv?.fechaVencimiento });
+    }
+    const segDays = daysUntil(v.seguro?.fechaVencimiento);
+    if (segDays !== null && getAlertLevel(segDays) !== 'none') {
+      alertas.push({ days: segDays, tipo: 'Seguro', label: `${v.patente || '—'} · ${v.interno || ''}`, date: v.seguro?.fechaVencimiento });
+    }
   });
 
   if (alertas.length === 0) {
-    container.innerHTML = '<p class="text-green-500 text-sm">Todas las VTV están al día</p>';
+    container.innerHTML = '<p class="text-green-500 text-sm">Todas las VTV y Seguros están al día</p>';
     return;
   }
 
   alertas.sort((a, b) => (a.days || 999) - (b.days || 999));
 
-  container.innerHTML = alertas.slice(0, 10).map(a => {
+  container.innerHTML = alertas.slice(0, 15).map(a => {
     const level = getAlertLevel(a.days);
     const levelClass = level === 'critical' ? 'border-l-4 border-red-500 bg-red-900/20' : level === 'warning' ? 'border-l-4 border-yellow-500 bg-yellow-900/20' : 'border-l-4 border-blue-500 bg-blue-900/20';
     const icon = level === 'critical' ? '🔴' : level === 'warning' ? '🟡' : '🔵';
@@ -141,16 +176,47 @@ function renderAlertasVTV(vehicles) {
     return `
       <div class="${levelClass} p-2.5 rounded-lg text-sm flex items-start justify-between">
         <div>
-          <p class="font-medium text-[#F1F3F8] text-xs">VTV · ${a.label}</p>
+          <p class="font-medium text-[#F1F3F8] text-xs">${a.tipo} · ${a.label}</p>
           <p class="text-[#8E94A8] text-xs mt-0.5">${label} · ${formatDate(a.date)}</p>
         </div>
         <span class="text-base flex-shrink-0 ml-2">${icon}</span>
       </div>`;
   }).join('');
 
-  if (alertas.length > 10) {
-    container.innerHTML += `<p class="text-[#5C6378] text-xs text-center pt-2">+${alertas.length - 10} más</p>`;
+  if (alertas.length > 15) {
+    container.innerHTML += `<p class="text-[#5C6378] text-xs text-center pt-2">+${alertas.length - 15} más</p>`;
   }
+}
+
+function renderDonutGastos(donut) {
+  const ctx = document.getElementById('chart-donut-gastos');
+  if (!ctx || !donut) return;
+  if (chartDonutGastos) chartDonutGastos.destroy();
+
+  const entries = [
+    ['Combustible', donut.combustible || 0],
+    ['Repuestos', donut.repuestos || 0],
+    ['VTV', donut.vtv || 0],
+    ['Seguro', donut.seguro || 0]
+  ].filter(e => e[1] > 0);
+
+  if (entries.length === 0) entries.push(['Sin datos', 1]);
+
+  chartDonutGastos = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: entries.map(e => e[0]),
+      datasets: [{ data: entries.map(e => e[1]), backgroundColor: ['#6C3CE1', '#10B981', '#F59E0B', '#8B5CF6'], borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#8E94A8', padding: 8, font: { size: 10 } } },
+        tooltip: { callbacks: { label: ctx => `${ctx.label}: $${ctx.raw.toLocaleString('es-AR')}` } }
+      }
+    }
+  });
 }
 
 function renderGastoVehiculosChart(gastoPorVehiculo) {
@@ -176,6 +242,3 @@ function renderGastoVehiculosChart(gastoPorVehiculo) {
     }
   });
 }
-
-
-

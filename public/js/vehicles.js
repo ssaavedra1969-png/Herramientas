@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('filter-subtipo')?.addEventListener('change', applyFilters);
   document.getElementById('filter-centro')?.addEventListener('change', applyFilters);
   document.getElementById('filter-empresa')?.addEventListener('change', applyFilters);
+  document.getElementById('filter-estado')?.addEventListener('change', applyFilters);
   document.querySelectorAll('[data-trompo-filter]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-trompo-filter]').forEach(b => {
@@ -199,6 +200,7 @@ function applyFilters() {
   const subtipo = document.getElementById('filter-subtipo').value;
   const centro = document.getElementById('filter-centro').value;
   const empresa = document.getElementById('filter-empresa').value;
+  const estado = document.getElementById('filter-estado')?.value || '';
   const activeTrompoBtn = document.querySelector('[data-trompo-filter].bg-\\[\\#6C3CE1\\]\\/30');
   const trompoFilter = activeTrompoBtn ? activeTrompoBtn.dataset.trompoFilter : 'all';
 
@@ -220,6 +222,7 @@ function applyFilters() {
   if (subtipo) filtered = filtered.filter(v => (v.subtipo || '') === subtipo);
   if (centro) filtered = filtered.filter(v => (v.centroTrabajo || '') === centro);
   if (empresa) filtered = filtered.filter(v => (v.empresa || '') === empresa);
+  if (estado) filtered = filtered.filter(v => (v.estadoGeneral || v.estado || 'Activo') === estado);
   if (trompoFilter === 'yes') filtered = filtered.filter(v => hasTrompo(v));
   if (trompoFilter === 'no') filtered = filtered.filter(v => !hasTrompo(v));
 
@@ -235,6 +238,7 @@ function resetFilters() {
   document.getElementById('filter-subtipo').value = '';
   document.getElementById('filter-centro').value = '';
   document.getElementById('filter-empresa').value = '';
+  if (document.getElementById('filter-estado')) document.getElementById('filter-estado').value = '';
   document.querySelectorAll('[data-trompo-filter]').forEach((btn, i) => {
     btn.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
     btn.classList.add('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');
@@ -940,4 +944,25 @@ document.addEventListener('click', (e) => {
 function toggleImportMenu() {
   const menu = document.getElementById('import-menu');
   if (menu) menu.classList.toggle('hidden');
+}
+
+function exportVehiclesExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('Librería XLSX no cargada', 'error');
+    return;
+  }
+  const headers = ['Interno', 'Patente', 'Marca', 'Modelo', 'Año', 'Tipo', 'Subtipo', 'Trompo', 'Estado', 'Empresa', 'Centro', 'Kilometraje', 'Chasis', 'N° Motor', 'Conductor'];
+  const rows = allVehicles.map(v => [
+    v.interno || '', v.patente || '', v.marca || '', v.modelo || '', v.anio || v.año || '',
+    v.tipo || '', v.subtipo || '', v.trompo ? 'Si' : 'No',
+    v.estadoGeneral || v.estado || 'Activo', v.empresa || '', v.centroTrabajo || '',
+    v.kilometraje || 0, v.chasis || '', v.numeroMotor || '', v.conductorHabitual || ''
+  ]);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = headers.map((h, i) => ({ wch: [8, 10, 16, 16, 6, 18, 14, 7, 8, 18, 14, 12, 20, 16, 16][i] || 12 }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Vehículos');
+  const now = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `vehiculos-${now}.xlsx`);
+  showToast('Excel exportado correctamente', 'success');
 }

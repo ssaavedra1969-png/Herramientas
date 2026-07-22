@@ -548,6 +548,8 @@ function startCombustibleListener() {
       const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       window.allCombustibleData = items;
       renderCombustible(items);
+      renderHistorialChart();
+      renderHistorial();
     }, err => {
       console.error('combustible error:', err);
       document.getElementById('combustible-table-body').innerHTML =
@@ -563,6 +565,7 @@ function startRepuestosListener() {
       const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       window.allRepuestosData = items;
       renderRepuestos(items);
+      renderHistorial();
     }, err => {
       console.error('repuestos error:', err);
       document.getElementById('repuestos-table-body').innerHTML =
@@ -939,4 +942,109 @@ function downloadBarcodePDF() {
     </body></html>`);
     win.document.close();
   });
+}
+
+let chartCombustibleTiempo = null;
+
+function renderHistorialChart() {
+  const ctx = document.getElementById('chart-combustible-tiempo');
+  if (!ctx) return;
+  const items = window.allCombustibleData || [];
+  if (chartCombustibleTiempo) chartCombustibleTiempo.destroy();
+
+  if (!items.length) {
+    chartCombustibleTiempo = null;
+    return;
+  }
+
+  const sorted = [...items].sort((a, b) => {
+    const da = a.fecha?.toDate ? a.fecha.toDate() : new Date(a.fecha);
+    const db2 = b.fecha?.toDate ? b.fecha.toDate() : new Date(b.fecha);
+    return da - db2;
+  });
+
+  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const byMonth = {};
+  sorted.forEach(c => {
+    const d = c.fecha?.toDate ? c.fecha.toDate() : new Date(c.fecha);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (!byMonth[key]) byMonth[key] = { litros: 0, importe: 0 };
+    byMonth[key].litros += Number(c.litros) || 0;
+    byMonth[key].importe += Number(c.importe) || 0;
+  });
+
+  const keys = Object.keys(byMonth).sort();
+  const labels = keys.map(k => { const [y, m] = k.split('-'); return `${months[parseInt(m) - 1]} ${y}`; });
+
+  chartCombustibleTiempo = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Importe ($)', data: keys.map(k => byMonth[k].importe), borderColor: '#6C3CE1', backgroundColor: 'rgba(108,60,225,0.1)', fill: true, tension: 0.3, yAxisID: 'y' },
+        { label: 'Litros', data: keys.map(k => byMonth[k].litros), borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#8E94A8', font: { size: 11 } } } },
+      scales: {
+        y: { beginAtZero: true, position: 'left', ticks: { color: '#8E94A8', callback: v => '$' + v } },
+        y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#8E94A8', callback: v => v + 'L' } },
+        x: { grid: { display: false }, ticks: { color: '#8E94A8', font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+function renderHistorial() {
+  const tbody = document.getElementById('historial-table-body');
+  if (!tbody) return;
+
+  const combustible = (window.allCombustibleData || []).map(c => ({
+    fecha: c.fecha?.toDate ? c.fecha.toDate() : new Date(c.fecha),
+    tipo: 'Combustible',
+    detalle: `${c.litros?.toFixed(1) || 0}L ${c.tipo || ''} · ${c.proveedor || ''}`.trim(),
+    monto: Number(c.importe) || 0,
+    color: '#6C3CE1'
+  }));
+
+  const repuestos = (window.allRepuestosData || []).map(r => ({
+    fecha: r.fecha?.toDate ? r.fecha.toDate() : new Date(r.fecha),
+    tipo: 'Repuesto',
+    detalle: `${r.pieza || ''} · ${r.proveedor || ''}`.trim(),
+    monto: Number(r.costo) || 0,
+    color: '#10B981'
+  }));
+
+  const all = [...combustible, ...repuestos].sort((a, b) => b.fecha - a.fecha);
+
+  if (!all.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-[#5C6378]">Sin movimientos registrados</td></tr>';
+    return;
+  }
+
+  let totalComb = combustible.reduce((s, c) => s + c.monto, 0);
+  let totalRep = repuestos.reduce((s, r) => s + r.monto, 0);
+
+  tbody.innerHTML = all.map(item => `
+    <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
+      <td class="py-2 pr-2 text-xs">${item.fecha.toLocaleDateString('es-AR')}</td>
+      <td class="py-2 pr-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:${item.color}20;color:${item.color}">${item.tipo}</span></td>
+      <td class="py-2 pr-2 text-xs">${item.detalle}</td>
+      <td class="py-2 text-right text-xs font-medium" style="color:${item.color}">$${item.monto.toLocaleString('es-AR')}</td>
+    </tr>
+  `).join('') + `
+    <tr class="border-t-2 border-[#6C3CE1]/30 font-bold">
+      <td colspan="3" class="py-2 text-right text-xs text-[#8E94A8]">Total Combustible</td>
+      <td class="py-2 text-right text-xs text-[#6C3CE1]">$${totalComb.toLocaleString('es-AR')}</td>
+    </tr>
+    <tr class="border-b border-[#6C3CE1]/30 font-bold">
+      <td colspan="3" class="py-2 text-right text-xs text-[#8E94A8]">Total Repuestos</td>
+      <td class="py-2 text-right text-xs text-[#10B981]">$${totalRep.toLocaleString('es-AR')}</td>
+    </tr>
+    <tr class="font-bold">
+      <td colspan="3" class="py-2 text-right text-xs text-[#F1F3F8]">TOTAL</td>
+      <td class="py-2 text-right text-sm text-[#F1F3F8]">$${(totalComb + totalRep).toLocaleString('es-AR')}</td>
+    </tr>`;
 }

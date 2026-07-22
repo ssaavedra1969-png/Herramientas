@@ -36,6 +36,7 @@
           <button onclick="switchTab('resumen')" id="tab-resumen" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap bg-[#6C3CE1]/10 text-[#6C3CE1]">Resumen</button>
           <button onclick="switchTab('combustible')" id="tab-combustible" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Combustible</button>
           <button onclick="switchTab('repuestos')" id="tab-repuestos" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Repuestos</button>
+          <button onclick="switchTab('historial')" id="tab-historial" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Historial</button>
           <button onclick="switchTab('codigobarras')" id="tab-codigobarras" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Código Barras</button>
           <button onclick="switchTab('qr')" id="tab-qr" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">QR</button>
         </div>
@@ -353,6 +354,38 @@
               </thead>
               <tbody id="repuestos-table-body">
                 <tr><td colspan="7" class="text-center py-8 text-[#5C6378]">Cargando historial...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: HISTORIAL ═══ -->
+      <div id="tab-content-historial" class="tab-content hidden space-y-4">
+        <div class="glass-card rounded-xl p-4 md:p-5">
+          <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 md:w-5 md:h-5 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Consumo de Combustible en el Tiempo
+          </h3>
+          <div style="position:relative;height:220px;"><canvas id="chart-combustible-tiempo"></canvas></div>
+        </div>
+        <div class="glass-card rounded-xl p-4 md:p-5">
+          <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 md:w-5 md:h-5 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Historial Completo
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10 text-xs">
+                  <th class="pb-2 font-medium">Fecha</th>
+                  <th class="pb-2 font-medium">Tipo</th>
+                  <th class="pb-2 font-medium">Detalle</th>
+                  <th class="pb-2 font-medium text-right">Monto</th>
+                </tr>
+              </thead>
+              <tbody id="historial-table-body">
+                <tr><td colspan="4" class="text-center py-8 text-[#5C6378]">Cargando historial...</td></tr>
               </tbody>
             </table>
           </div>
