@@ -265,13 +265,11 @@
       </div>
 
       <div id="tab-vehiculos" class="report-section hidden">
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Vehículos</p><p class="text-xl font-bold text-[#F1F3F8]" id="vb-total">0</p></div>
           <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Con Trompo</p><p class="text-xl font-bold text-[#F1F3F8]" id="vb-trompo">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">VTV Vencidas</p><p class="text-xl font-bold text-red-400" id="vb-vtv-venc">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">VTV Próx. 30d</p><p class="text-xl font-bold text-yellow-400" id="vb-vtv-prox">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Seguro Vencido</p><p class="text-xl font-bold text-red-400" id="vb-seg-venc">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Seguro Próx. 30d</p><p class="text-xl font-bold text-yellow-400" id="vb-seg-prox">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Tipos</p><p class="text-xl font-bold text-[#F1F3F8]" id="vb-tipos">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Empresas</p><p class="text-xl font-bold text-[#F1F3F8]" id="vb-empresas">0</p></div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           <div class="glass-card rounded-xl p-5">
@@ -291,19 +289,20 @@
           <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
             <table class="w-full text-xs">
               <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
-                <th class="pb-2 pr-2 font-medium">Patente</th>
                 <th class="pb-2 pr-2 font-medium">Interno</th>
+                <th class="pb-2 pr-2 font-medium">Patente</th>
                 <th class="pb-2 pr-2 font-medium">Marca</th>
                 <th class="pb-2 pr-2 font-medium">Modelo</th>
                 <th class="pb-2 pr-2 font-medium">Año</th>
                 <th class="pb-2 pr-2 font-medium">Tipo</th>
-                <th class="pb-2 pr-2 font-medium">Empresa</th>
-                <th class="pb-2 pr-2 font-medium">Conductor</th>
-                <th class="pb-2 pr-2 font-medium">Km</th>
-                <th class="pb-2 pr-2 font-medium">VTV</th>
-                <th class="pb-2 pr-2 font-medium">Seguro</th>
+                <th class="pb-2 pr-2 font-medium">Subtipo</th>
                 <th class="pb-2 pr-2 font-medium">Trompo</th>
-                <th class="pb-2 font-medium">Próx. Service</th>
+                <th class="pb-2 pr-2 font-medium">Marca Trompo</th>
+                <th class="pb-2 pr-2 font-medium">Serie Trompo</th>
+                <th class="pb-2 pr-2 font-medium">Modelo Trompo</th>
+                <th class="pb-2 pr-2 font-medium">Carga M3</th>
+                <th class="pb-2 pr-2 font-medium">Chasis</th>
+                <th class="pb-2 font-medium">Nro. Motor</th>
               </tr></thead>
               <tbody id="vb-table"></tbody>
             </table>

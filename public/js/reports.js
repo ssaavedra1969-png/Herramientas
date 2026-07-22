@@ -241,47 +241,32 @@ function renderSeguro(data) {
 
 function renderVehiculos() {
   const vs = allVehiclesBasic;
-  const now = new Date();
-  const fmtDate = (s) => s ? new Date(s).toLocaleDateString('es-AR') : '—';
-  const fmtDateColor = (s) => {
-    if (!s) return '—';
-    const d = new Date(s);
-    const diff = Math.ceil((d - now) / 86400000);
-    const txt = d.toLocaleDateString('es-AR');
-    if (diff <= 0) return `<span class="text-red-400 font-medium">${txt} ⚠</span>`;
-    if (diff <= 30) return `<span class="text-yellow-400 font-medium">${txt}</span>`;
-    return `<span class="text-[#F1F3F8]">${txt}</span>`;
-  };
-
   const total = vs.length;
   const trompo = vs.filter(v => v.trompo).length;
-  const vtvVenc = vs.filter(v => v.vtvDiasRestantes !== null && v.vtvDiasRestantes <= 0).length;
-  const vtvProx = vs.filter(v => v.vtvDiasRestantes !== null && v.vtvDiasRestantes > 0 && v.vtvDiasRestantes <= 30).length;
-  const segVenc = vs.filter(v => v.seguroDiasRestantes !== null && v.seguroDiasRestantes <= 0).length;
-  const segProx = vs.filter(v => v.seguroDiasRestantes !== null && v.seguroDiasRestantes > 0 && v.seguroDiasRestantes <= 30).length;
+  const tipos = new Set(vs.map(v => v.tipo).filter(Boolean)).size;
+  const empresas = new Set(vs.map(v => v.empresa).filter(Boolean)).size;
 
   document.getElementById('vb-total').textContent = total;
   document.getElementById('vb-trompo').textContent = trompo;
-  document.getElementById('vb-vtv-venc').textContent = vtvVenc;
-  document.getElementById('vb-vtv-prox').textContent = vtvProx;
-  document.getElementById('vb-seg-venc').textContent = segVenc;
-  document.getElementById('vb-seg-prox').textContent = segProx;
+  document.getElementById('vb-tipos').textContent = tipos;
+  document.getElementById('vb-empresas').textContent = empresas;
   document.getElementById('vb-count').textContent = total + ' vehículos';
 
   document.getElementById('vb-table').innerHTML = vs.map(v => `<tr class="border-b border-[#6C3CE1]/5 hover:bg-white/[0.02]">
-    <td class="py-2 pr-2 text-[#F1F3F8] font-medium">${v.patente||'—'}</td>
     <td class="py-2 pr-2 text-[#8E94A8]">${v.interno||'—'}</td>
+    <td class="py-2 pr-2 text-[#F1F3F8] font-medium">${v.patente||'—'}</td>
     <td class="py-2 pr-2 text-[#8E94A8]">${v.marca||'—'}</td>
     <td class="py-2 pr-2 text-[#8E94A8]">${v.modelo||'—'}</td>
     <td class="py-2 pr-2 text-[#8E94A8]">${v.anio||'—'}</td>
     <td class="py-2 pr-2 text-[#8E94A8]">${v.tipo||'—'}</td>
-    <td class="py-2 pr-2 text-[#8E94A8]">${v.empresa||'—'}</td>
-    <td class="py-2 pr-2 text-[#8E94A8]">${v.conductor||'—'}</td>
-    <td class="py-2 pr-2 text-[#8E94A8]">${v.kilometraje ? Number(v.kilometraje).toLocaleString('es-AR') : '—'}</td>
-    <td class="py-2 pr-2">${fmtDateColor(v.vtvVencimiento)}</td>
-    <td class="py-2 pr-2">${fmtDateColor(v.seguroVencimiento)}</td>
+    <td class="py-2 pr-2 text-[#8E94A8]">${v.subtipo||'—'}</td>
     <td class="py-2 pr-2">${v.trompo ? '<span class="text-[#6C3CE1] font-medium">Si</span>' : '<span class="text-[#5C6378]">No</span>'}</td>
-    <td class="py-2 text-[#8E94A8]">${v.proximoServiceFecha ? fmtDate(v.proximoServiceFecha) + (v.proximoServiceKm ? ' (' + Number(v.proximoServiceKm).toLocaleString('es-AR') + ' km)' : '') : v.proximoServiceKm ? Number(v.proximoServiceKm).toLocaleString('es-AR') + ' km' : '—'}</td>
+    <td class="py-2 pr-2 text-[#8E94A8]">${v.marcaTrompo||'—'}</td>
+    <td class="py-2 pr-2 text-[#8E94A8]">${v.serieTrompo||'—'}</td>
+    <td class="py-2 pr-2 text-[#8E94A8]">${v.modeloTrompo||'—'}</td>
+    <td class="py-2 pr-2 text-[#8E94A8]">${v.cargaM3Trompo||'—'}</td>
+    <td class="py-2 pr-2 text-[#8E94A8]">${v.chasis||'—'}</td>
+    <td class="py-2 text-[#8E94A8]">${v.numeroMotor||'—'}</td>
   </tr>`).join('');
 
   renderVBTipo(vs);
@@ -325,24 +310,15 @@ function exportSectionExcel(section) {
   if (section === 'vehiculos') {
     const vs = allVehiclesBasic;
     const rows = vs.map(v => ({
-      'Patente': v.patente, 'Interno': v.interno, 'Marca': v.marca, 'Modelo': v.modelo,
-      'Año': v.anio, 'Tipo': v.tipo, 'Subtipo': v.subtipo, 'Empresa': v.empresa,
-      'Conductor': v.conductor, 'Kilometraje': v.kilometraje, 'Horómetro': v.horometro,
-      'Capacidad Carga': v.capacidadCarga, 'Estado': v.estadoGeneral,
-      'VTV Resultado': v.vtvResultado, 'VTV Centro': v.vtvCentro,
-      'VTV Vencimiento': v.vtvVencimiento ? new Date(v.vtvVencimiento).toLocaleDateString('es-AR') : '',
-      'VTV Costo': v.vtvCosto || '',
-      'Seguro Compañía': v.seguroCompania, 'Seguro Póliza': v.seguroPoliza,
-      'Seguro Vencimiento': v.seguroVencimiento ? new Date(v.seguroVencimiento).toLocaleDateString('es-AR') : '',
-      'Seguro Costo': v.seguroCosto || '',
-      'Próx. Service Km': v.proximoServiceKm, 'Próx. Service Fecha': v.proximoServiceFecha ? new Date(v.proximoServiceFecha).toLocaleDateString('es-AR') : '',
+      'Interno': v.interno, 'Patente': v.patente, 'Marca': v.marca, 'Modelo': v.modelo,
+      'Año': v.anio, 'Tipo': v.tipo, 'Subtipo': v.subtipo,
       'Trompo': v.trompo ? 'Si' : 'No',
       'Marca Trompo': v.marcaTrompo, 'Serie Trompo': v.serieTrompo,
       'Modelo Trompo': v.modeloTrompo, 'Carga M3 Trompo': v.cargaM3Trompo,
-      'Observaciones': v.observaciones
+      'Chasis': v.chasis, 'Nro. Motor': v.numeroMotor
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
-    ws['!cols'] = [{ wch: 12 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 6 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 6 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 30 }];
+    ws['!cols'] = [{ wch: 10 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 6 }, { wch: 18 }, { wch: 18 }, { wch: 8 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 20 }, { wch: 20 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Ficha Vehículos');
     XLSX.writeFile(wb, `ficha-vehiculos-${new Date().toISOString().split('T')[0]}.xlsx`);
@@ -374,29 +350,21 @@ function exportSectionPDF(section) {
 
   if (section === 'vehiculos') {
     const vs = allVehiclesBasic;
-    const now = new Date();
-    const rows = vs.map(v => {
-      const vtv = v.vtvVencimiento ? new Date(v.vtvVencimiento).toLocaleDateString('es-AR') : '—';
-      const seg = v.seguroVencimiento ? new Date(v.seguroVencimiento).toLocaleDateString('es-AR') : '—';
-      const vtvMark = v.vtvDiasRestantes !== null && v.vtvDiasRestantes <= 0 ? '*' : '';
-      const segMark = v.seguroDiasRestantes !== null && v.seguroDiasRestantes <= 0 ? '*' : '';
-      return [v.patente||'—', v.interno||'—', v.marca||'—', v.modelo||'—', v.anio||'—', v.tipo||'—', v.empresa||'—', v.conductor||'—', v.kilometraje||'—', vtv+vtvMark, seg+segMark, v.trompo?'Si':'No'];
-    });
+    const rows = vs.map(v => [
+      v.interno||'—', v.patente||'—', v.marca||'—', v.modelo||'—', v.anio||'—',
+      v.tipo||'—', v.subtipo||'—', v.trompo?'Si':'No',
+      v.marcaTrompo||'', v.serieTrompo||'', v.modeloTrompo||'', v.cargaM3Trompo||'',
+      v.chasis||'', v.numeroMotor||''
+    ]);
     doc.autoTable({
       startY: 34,
-      head: [['Patente', 'Interno', 'Marca', 'Modelo', 'Año', 'Tipo', 'Empresa', 'Conductor', 'Km', 'VTV Venc.', 'Seguro Venc.', 'Trompo']],
+      head: [['Interno', 'Patente', 'Marca', 'Modelo', 'Año', 'Tipo', 'Subtipo', 'Trompo', 'Marca T.', 'Serie T.', 'Modelo T.', 'Carga M3', 'Chasis', 'Nro. Motor']],
       body: rows,
       theme: 'grid',
-      headStyles: { fillColor: [108, 60, 225], fontSize: 7 },
-      bodyStyles: { fontSize: 6 },
-      columnStyles: { 0: { cellWidth: 18 }, 1: { cellWidth: 14 }, 2: { cellWidth: 20 }, 3: { cellWidth: 20 }, 4: { cellWidth: 10 }, 5: { cellWidth: 22 }, 6: { cellWidth: 25 }, 7: { cellWidth: 25 }, 8: { cellWidth: 14 }, 9: { cellWidth: 18 }, 10: { cellWidth: 18 }, 11: { cellWidth: 12 } }
+      headStyles: { fillColor: [108, 60, 225], fontSize: 6 },
+      bodyStyles: { fontSize: 5.5 },
+      columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 16 }, 2: { cellWidth: 18 }, 3: { cellWidth: 18 }, 4: { cellWidth: 10 }, 5: { cellWidth: 18 }, 6: { cellWidth: 18 }, 7: { cellWidth: 10 }, 8: { cellWidth: 16 }, 9: { cellWidth: 16 }, 10: { cellWidth: 16 }, 11: { cellWidth: 12 }, 12: { cellWidth: 22 }, 13: { cellWidth: 22 } }
     });
-    const finalY = doc.lastAutoTable.finalY || 34;
-    if (finalY < 180) {
-      doc.setFontSize(8);
-      doc.setTextColor(255, 100, 100);
-      doc.text('* = Vencido', 14, finalY + 6);
-    }
   } else {
     const data = getSectionData(section);
     const rows = data.map(d => [d.fecha.toLocaleDateString('es-AR'), d.categoria, d.vehiculo||'', (d.detalle||'').substring(0, 40), fc(d.monto)]);
