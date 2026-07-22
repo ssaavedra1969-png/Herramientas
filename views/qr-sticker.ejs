@@ -18,10 +18,11 @@
     .sticker-detail { font-size: 7pt; color: #555; line-height: 1.4; }
     .sticker-footer { background: #f0f0f5; padding: 1.5mm 4mm; display: flex; align-items: center; justify-content: space-between; border-top: 0.5px solid #ddd; }
     .sticker-footer span { font-size: 6pt; color: #888; font-family: 'Segoe UI', Arial, sans-serif; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
     @media print {
       body { background: #fff !important; padding: 0; margin: 0; }
       .no-print { display: none !important; }
-      .sticker { box-shadow: none; margin: 0; page-break-inside: avoid; }
+      .sticker { box-shadow: none; margin: 0; page-break-inside: avoid; border-radius: 0; }
     }
   </style>
 </head>
@@ -80,10 +81,7 @@
         </div>
         <div class="sticker-info">
           <div class="sticker-patente"><%= vehicle.patente || '—' %></div>
-          <div class="sticker-detail" style="margin-top:1.5mm;">
-            <div style="font-size:8pt;font-weight:700;color:#1a1a2e;"><%= vehicle.marca || '' %> <%= vehicle.modelo || '' %></div>
-            <div style="font-size:6.5pt;color:#666;margin-top:0.5mm;"><%= vehicle.tipo || '' %><%= vehicle.subtipo ? ' · ' + vehicle.subtipo : '' %><%= vehicle.anio ? ' · ' + vehicle.año : '' %></div>
-          </div>
+          <div style="font-size:8pt;font-weight:700;color:#1a1a2e;margin-top:1.5mm;"><%= vehicle.marca || '' %> <%= vehicle.modelo || '' %></div>
         </div>
       </div>
 

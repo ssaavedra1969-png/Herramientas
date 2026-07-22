@@ -130,6 +130,22 @@ app.get('/vehicle/:id/qr-sticker', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/vehicles/qr-stickers-bulk', requireAuth, requireAdminPage, async (req, res) => {
+  try {
+    const { db } = require('./config/firebase');
+    const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
+    const baseUrl = req.protocol + '://' + req.get('host');
+    const vehicles = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data(),
+      qrUrl: baseUrl + '/vehicle/' + d.id + '/qr'
+    }));
+    res.render('qr-stickers-bulk', { vehicles, baseUrl });
+  } catch (e) {
+    res.status(500).send('Error del servidor');
+  }
+});
+
 app.get('/reports', requireAuth, (req, res) => {
   res.render('reports', {
     title: 'Reportes',
