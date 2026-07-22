@@ -38,40 +38,10 @@ router.put('/users/:id', verifyToken, requireAdmin, async (req, res) => {
 
 router.get('/dashboard', verifyToken, async (req, res) => {
   try {
-    const [vehiclesSnap, maintenanceSnap] = await Promise.all([
-      db.collection('vehicles').get(),
-      db.collection('maintenance').get()
-    ]);
-
+    const vehiclesSnap = await db.collection('vehicles').get();
     const now = new Date();
-
     const vehiculosActivos = vehiclesSnap.docs.filter(d => d.data().estado === 'Activo').length;
-
-    let vencidosHoy = 0;
-    let proximos7 = 0;
-    const monthlyData = {};
-
-    maintenanceSnap.docs.forEach(d => {
-      const m = d.data();
-      const venc = m.proximaFechaVencimiento?.toDate ? m.proximaFechaVencimiento.toDate() : new Date(m.proximaFechaVencimiento);
-      const diff = Math.ceil((venc - now) / (1000 * 60 * 60 * 24));
-
-      if (diff <= 0 && m.estado !== 'Realizado') vencidosHoy++;
-      else if (diff <= 7 && m.estado !== 'Realizado') proximos7++;
-
-      if (m.fechaRealizacion) {
-        const d2 = m.fechaRealizacion.toDate ? m.fechaRealizacion.toDate() : new Date(m.fechaRealizacion);
-        const key = `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, '0')}`;
-        monthlyData[key] = (monthlyData[key] || 0) + 1;
-      }
-    });
-
-    res.json({
-      vehiculosActivos,
-      vencidosHoy,
-      proximos7,
-      monthlyData
-    });
+    res.json({ vehiculosActivos, vencidosHoy: 0, proximos7: 0, monthlyData: {} });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -84,17 +54,15 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
     const gastoPorVehiculo = {};
     const ultimosMovimientos = [];
     let totalRepuestos = 0;
-    let totalMantenimiento = 0;
     let totalVTV = 0;
     let totalSeguro = 0;
 
     for (const vDoc of vehiclesSnap.docs) {
       const v = vDoc.data();
       const patente = v.patente || '—';
-      const batchSize = 100;
 
       const combSnap = await vDoc.ref.collection('combustible')
-        .orderBy('fecha', 'desc').limit(batchSize).get();
+        .orderBy('fecha', 'desc').limit(100).get();
 
       combSnap.docs.forEach(d => {
         const c = d.data();
@@ -113,13 +81,8 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
           importe: Number(c.importe) || 0, fecha: c.fecha
         });
       });
-    }
 
-    for (const vDoc of vehiclesSnap.docs) {
-      const v = vDoc.data();
-      const patente = v.patente || '—';
-
-      if (v.vtv?.fechaVencimiento || v.vtv?.fechaRealizacion || v.vtv?.costo) {
+      if (v.vtv?.costo) {
         totalVTV += Number(v.vtv.costo) || 0;
         ultimosMovimientos.push({
           tipo: 'VTV', patente, desc: `VTV · ${v.vtv.centroMedicion || '—'} · ${v.vtv.resultado || 'Pendiente'}`,
@@ -127,7 +90,7 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
         });
       }
 
-      if (v.seguro?.fechaVencimiento || v.seguro?.costo) {
+      if (v.seguro?.costo) {
         totalSeguro += Number(v.seguro.costo) || 0;
         ultimosMovimientos.push({
           tipo: 'Seguro', patente, desc: `Seguro · ${v.seguro.compania || v.seguro.compañía || '—'}`,
@@ -146,22 +109,7 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
       });
     }
 
-    const maintenanceSnap = await db.collection('maintenance')
-      .orderBy('fechaRealizacion', 'desc').limit(50).get();
-
-    maintenanceSnap.docs.forEach(d => {
-      const m = d.data();
-      if (m.costo) {
-        totalMantenimiento += Number(m.costo) || 0;
-        ultimosMovimientos.push({
-          tipo: 'Mantenimiento', patente: m.vehiculoPatente || '—',
-          desc: m.descripcion || '', importe: Number(m.costo) || 0, fecha: m.fechaRealizacion
-        });
-      }
-    });
-
     const totalCombustible = Object.values(combustibleData).reduce((s, v) => s + v.importe, 0);
-
     const sortedKeys = Object.keys(combustibleData).sort();
     const combustibleChart = sortedKeys.map(k => ({
       mes: k, litros: combustibleData[k].litros, importe: combustibleData[k].importe
@@ -178,7 +126,7 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
 
     res.json({
       combustibleChart,
-      donut: { combustible: totalCombustible, repuestos: totalRepuestos, mantenimiento: totalMantenimiento, vtv: totalVTV, seguro: totalSeguro },
+      donut: { combustible: totalCombustible, repuestos: totalRepuestos, vtv: totalVTV, seguro: totalSeguro },
       gastoVehiculos: gastoVehiculosEntries.map(([vehiculo, monto]) => ({ vehiculo, monto })),
       ultimosMovimientos: ultimosMovimientos.slice(0, 15)
     });
@@ -189,7 +137,7 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
 
 router.post('/backup', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const COLLECTIONS = ['vehicles', 'maintenance', 'users'];
+    const COLLECTIONS = ['vehicles', 'users'];
 
     function serializeTimestamps(data) {
       if (!data || typeof data !== 'object') return data;
@@ -247,23 +195,14 @@ router.get('/report', verifyToken, async (req, res) => {
     const filterDesde = desde ? new Date(desde) : new Date(0);
     const filterHasta = hasta ? new Date(hasta + 'T23:59:59') : new Date('2100-01-01');
 
-    const [vehiclesSnap, maintenanceSnap] = await Promise.all([
-      db.collection('vehicles').get(),
-      db.collection('maintenance').get()
-    ]);
-
-    const vehiclePatMap = {};
-    vehiclesSnap.docs.forEach(d => {
-      const v = d.data();
-      vehiclePatMap[d.id] = v.patente || '—';
-    });
+    const vehiclesSnap = await db.collection('vehicles').get();
 
     const items = [];
-    let totalComb = 0, totalRep = 0, totalMto = 0, totalVTV = 0, totalSeguro = 0;
+    let totalComb = 0, totalRep = 0, totalVTV = 0, totalSeguro = 0;
 
     for (const vDoc of vehiclesSnap.docs) {
       const v = vDoc.data();
-      const patente = vehiclePatMap[vDoc.id];
+      const patente = v.patente || '—';
 
       if (v.vtv?.fechaVencimiento || v.vtv?.fechaRealizacion) {
         const fecha = v.vtv.fechaVencimiento?.toDate
@@ -314,7 +253,7 @@ router.get('/report', verifyToken, async (req, res) => {
         if (fecha < filterDesde || fecha > filterHasta) return;
         if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
         if (categoria && categoria !== 'todas' && categoria !== 'Combustible') return;
-        items.push({ fecha, categoria: 'Combustible', vehiculo: patente, detalle: `${c.litros?.toFixed(1)}L ${c.tipo || ''}`, monto: Number(c.importe) || 0 });
+        items.push({ fecha, categoria: 'Combustible', vehiculo: patente, detalle: `${c.litros?.toFixed(1)}L ${c.tipo || ''}`, monto: Number(c.importe) || 0, proveedor: c.proveedor || '' });
         totalComb += Number(c.importe) || 0;
       });
 
@@ -325,26 +264,14 @@ router.get('/report', verifyToken, async (req, res) => {
         if (fecha < filterDesde || fecha > filterHasta) return;
         if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
         if (categoria && categoria !== 'todas' && categoria !== 'Repuestos') return;
-        items.push({ fecha, categoria: 'Repuestos', vehiculo: patente, detalle: r.pieza || '', monto: Number(r.costo) || 0 });
+        items.push({ fecha, categoria: 'Repuestos', vehiculo: patente, detalle: r.pieza || '', monto: Number(r.costo) || 0, proveedor: r.proveedor || '' });
         totalRep += Number(r.costo) || 0;
       });
     }
 
-    maintenanceSnap.docs.forEach(d => {
-      const m = d.data();
-      const fecha = m.fechaRealizacion?.toDate ? m.fechaRealizacion.toDate() : new Date(m.fechaRealizacion || m.createdAt);
-      if (fecha < filterDesde || fecha > filterHasta) return;
-      if (!m.costo) return;
-      const vehRef = m.vehiculoPatente || '—';
-      if (vehiculo && vehiculo !== 'todos' && !vehRef.toLowerCase().includes(vehiculo.toLowerCase())) return;
-      if (categoria && categoria !== 'todas' && categoria !== 'Mantenimiento') return;
-      items.push({ fecha, categoria: 'Mantenimiento', vehiculo: vehRef, detalle: m.descripcion || m.tipo || '', monto: Number(m.costo) || 0 });
-      totalMto += Number(m.costo) || 0;
-    });
-
     items.sort((a, b) => b.fecha - a.fecha);
 
-    res.json({ items, totales: { combustible: totalComb, repuestos: totalRep, mantenimiento: totalMto, vtv: totalVTV, seguro: totalSeguro } });
+    res.json({ items, totales: { combustible: totalComb, repuestos: totalRep, vtv: totalVTV, seguro: totalSeguro } });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -352,36 +279,23 @@ router.get('/report', verifyToken, async (req, res) => {
 
 router.get('/alerts', verifyToken, async (req, res) => {
   try {
-    const snapshot = await db.collection('maintenance').where('estado', '!=', 'Realizado').get();
+    const vehiclesSnap = await db.collection('vehicles').get();
     const now = new Date();
     const alerts = [];
-
-    snapshot.docs.forEach(d => {
-      const m = d.data();
-      const venc = m.proximaFechaVencimiento?.toDate ? m.proximaFechaVencimiento.toDate() : new Date(m.proximaFechaVencimiento);
-      const diff = Math.ceil((venc - now) / (1000 * 60 * 60 * 24));
-
-      let level = 'none';
-      let label = '';
-      if (diff <= 0) { level = 'critical'; label = 'Vencido'; }
-      else if (diff <= 1) { level = 'critical'; label = 'Vence hoy'; }
-      else if (diff <= 7) { level = 'warning'; label = 'Próximo a vencer'; }
-      else if (diff <= 15) { level = 'info'; label = 'Por vencer'; }
-
-      if (level !== 'none') {
-        alerts.push({
-          id: d.id,
-          level,
-          label,
-          days: diff,
-          descripcion: m.descripcion,
-          proximaFechaVencimiento: venc,
-          vehiculoPatente: m.vehiculoPatente,
-          tipo: m.tipo
-        });
+    for (const vDoc of vehiclesSnap.docs) {
+      const v = vDoc.data();
+      const patente = v.patente || '—';
+      if (v.vtv?.fechaVencimiento) {
+        const venc = v.vtv.fechaVencimiento.toDate ? v.vtv.fechaVencimiento.toDate() : new Date(v.vtv.fechaVencimiento);
+        const diff = Math.ceil((venc - now) / 86400000);
+        if (diff <= 30) alerts.push({ id: vDoc.id + '-vtv', level: diff <= 0 ? 'critical' : diff <= 7 ? 'warning' : 'info', label: diff <= 0 ? 'VTV Vencida' : 'VTV Próxima', days: diff, vehiculoPatente: patente, tipo: 'VTV' });
       }
-    });
-
+      if (v.seguro?.fechaVencimiento) {
+        const venc = v.seguro.fechaVencimiento.toDate ? v.seguro.fechaVencimiento.toDate() : new Date(v.seguro.fechaVencimiento);
+        const diff = Math.ceil((venc - now) / 86400000);
+        if (diff <= 30) alerts.push({ id: vDoc.id + '-seg', level: diff <= 0 ? 'critical' : diff <= 7 ? 'warning' : 'info', label: diff <= 0 ? 'Seguro Vencido' : 'Seguro Próximo', days: diff, vehiculoPatente: patente, tipo: 'Seguro' });
+      }
+    }
     alerts.sort((a, b) => a.days - b.days);
     res.json(alerts.slice(0, 50));
   } catch (error) {
@@ -400,9 +314,8 @@ router.get('/report/export', verifyToken, async (req, res) => {
     const filterHasta = hasta ? new Date(hasta + 'T23:59:59') : new Date('2100-01-01');
     const now = new Date();
 
-    const [vehiclesSnap, maintenanceSnap] = await Promise.all([
-      db.collection('vehicles').get(),
-      db.collection('maintenance').get()
+    const [vehiclesSnap] = await Promise.all([
+      db.collection('vehicles').get()
     ]);
 
     const vehicleMap = {};
@@ -412,7 +325,7 @@ router.get('/report/export', verifyToken, async (req, res) => {
     });
 
     const rows = [];
-    const catTotals = { Combustible: 0, Repuestos: 0, Mantenimiento: 0, VTV: 0, Seguro: 0 };
+    const catTotals = { Combustible: 0, Repuestos: 0, VTV: 0, Seguro: 0 };
 
     for (const vDoc of vehiclesSnap.docs) {
       const vInfo = vehicleMap[vDoc.id];
@@ -490,22 +403,6 @@ router.get('/report/export', verifyToken, async (req, res) => {
       });
     }
 
-    maintenanceSnap.docs.forEach(d => {
-      const m = d.data();
-      const fecha = m.fechaRealizacion?.toDate ? m.fechaRealizacion.toDate() : new Date(m.fechaRealizacion || m.createdAt);
-      if (fecha < filterDesde || fecha > filterHasta) return;
-      if (!m.costo) return;
-      const vehRef = m.vehiculoPatente || '—';
-      if (vehiculo && vehiculo !== 'todos' && !vehRef.toLowerCase().includes(vehiculo.toLowerCase())) return;
-      if (categoria && categoria !== 'todas' && categoria !== 'Mantenimiento') return;
-      catTotals.Mantenimiento += Number(m.costo) || 0;
-      rows.push({
-        fecha, categoria: 'Mantenimiento', vehiculo: vehRef, interno: '',
-        detalle: m.descripcion || m.tipo || 'Mantenimiento',
-        monto: Number(m.costo) || 0, proveedor: m.proveedor || m.taller || '', observaciones: m.observaciones || ''
-      });
-    });
-
     rows.sort((a, b) => b.fecha - a.fecha);
 
     const wb = new ExcelJS.Workbook();
@@ -516,7 +413,7 @@ router.get('/report/export', verifyToken, async (req, res) => {
     const wbProps = {
       title: 'Reporte de Gastos',
       subject: 'Gastos operativos',
-      keywords: 'gastos, combustible, repuestos, mantenimiento, grupo falpat',
+      keywords: 'gastos, combustible, repuestos, grupo falpat',
       category: 'Reportes',
       company: 'Grupo Falpat SRL',
       manager: 'Administración'
@@ -585,13 +482,13 @@ router.get('/report/export', verifyToken, async (req, res) => {
     ws.getRow(infoRow).height = 22;
 
     const summaryStartRow = 5;
-    const summaryHeaders = ['Total Combustible', 'Total Repuestos', 'Total Mantenimiento', 'Total VTV', 'Total Seguro', 'Gran Total'];
+    const summaryHeaders = ['Total Combustible', 'Total Repuestos', 'Total VTV', 'Total Seguro', 'Gran Total'];
     const summaryValues = [
-      catTotals.Combustible, catTotals.Repuestos, catTotals.Mantenimiento,
+      catTotals.Combustible, catTotals.Repuestos,
       catTotals.VTV, catTotals.Seguro,
-      catTotals.Combustible + catTotals.Repuestos + catTotals.Mantenimiento + catTotals.VTV + catTotals.Seguro
+      catTotals.Combustible + catTotals.Repuestos + catTotals.VTV + catTotals.Seguro
     ];
-    const summaryColors = [PRIMARY, '10B981', '3B82F6', '8B5CF6', 'F59E0B', 'FF3366'];
+    const summaryColors = [PRIMARY, '10B981', '8B5CF6', 'F59E0B', 'FF3366'];
 
     summaryHeaders.forEach((label, i) => {
       const col = i * 2 + 1;
@@ -640,7 +537,7 @@ router.get('/report/export', verifyToken, async (req, res) => {
     });
     headerRowObj.height = 28;
 
-    const catColors = { Combustible: PRIMARY, Repuestos: '10B981', Mantenimiento: '3B82F6' };
+    const catColors = { Combustible: PRIMARY, Repuestos: '10B981' };
 
     let rowNum = dataStartRow + 1;
     rows.forEach((r, idx) => {
@@ -711,7 +608,7 @@ router.get('/report/export', verifyToken, async (req, res) => {
     const footerRow = rowNum + 2;
     ws.mergeCells(footerRow, 1, footerRow, 8);
     const footerCell = ws.getCell(footerRow, 1);
-    footerCell.value = 'Grupo Falpat SRL — Sistema de Control de Mantenimiento — Documento generado automáticamente';
+    footerCell.value = 'Grupo Falpat SRL — Sistema de Control Vehicular — Documento generado automáticamente';
     footerCell.font = { name: 'Calibri', size: 8, italic: true, color: { argb: '5C6378' } };
     footerCell.alignment = { horizontal: 'center', vertical: 'middle' };
 

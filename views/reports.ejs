@@ -1,4 +1,9 @@
 <%- include('partials/head') %>
+<style>
+  .report-tab { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #8E94A8; background: transparent; border: 1px solid transparent; white-space: nowrap; transition: all 0.15s; cursor: pointer; }
+  .report-tab:hover { background: rgba(255,255,255,0.05); color: #F1F3F8; }
+  .report-tab.active { background: rgba(108,60,225,0.15); color: #F1F3F8; border-color: rgba(108,60,225,0.3); }
+</style>
 <div class="flex h-screen overflow-hidden">
   <%- include('partials/sidebar', { page: 'reports' }) %>
 
@@ -12,43 +17,14 @@
     </div>
 
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
         <div>
           <h1 class="text-2xl font-bold text-gradient-primary">Reportes</h1>
-          <p class="text-[#8E94A8] text-sm">Gastos consolidados</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="exportReporteXLSX()" class="px-4 py-2 bg-[#6C3CE1] hover:bg-[#6C3CE1] text-white rounded-lg text-sm font-medium transition flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Exportar CSV
-          </button>
+          <p class="text-[#8E94A8] text-sm">Análisis financiero por sección</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-6" id="report-summary-cards">
-        <div class="glass-card rounded-xl p-5 card-3d">
-          <p class="text-[#8E94A8] text-sm font-medium">Total Combustible</p>
-          <p class="text-2xl font-bold text-[#F1F3F8] mt-1" id="rep-total-combustible">-</p>
-        </div>
-        <div class="glass-card rounded-xl p-5 card-3d">
-          <p class="text-[#8E94A8] text-sm font-medium">Total Repuestos</p>
-          <p class="text-2xl font-bold text-[#F1F3F8] mt-1" id="rep-total-repuestos">-</p>
-        </div>
-        <div class="glass-card rounded-xl p-5 card-3d">
-          <p class="text-[#8E94A8] text-sm font-medium">Total Mantenimiento</p>
-          <p class="text-2xl font-bold text-[#F1F3F8] mt-1" id="rep-total-mantenimiento">-</p>
-        </div>
-        <div class="glass-card rounded-xl p-5 card-3d">
-          <p class="text-[#8E94A8] text-sm font-medium">Total VTV</p>
-          <p class="text-2xl font-bold text-[#F1F3F8] mt-1" id="rep-total-vtv">-</p>
-        </div>
-        <div class="glass-card rounded-xl p-5 card-3d">
-          <p class="text-[#8E94A8] text-sm font-medium">Total Seguro</p>
-          <p class="text-2xl font-bold text-[#F1F3F8] mt-1" id="rep-total-seguro">-</p>
-        </div>
-      </div>
-
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3 mt-6">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
         <div class="flex-1">
           <label class="block text-xs font-medium text-[#8E94A8] mb-1">Desde</label>
           <input type="date" id="filtro-desde" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8]">
@@ -58,66 +34,282 @@
           <input type="date" id="filtro-hasta" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8]">
         </div>
         <div class="flex-1">
-          <label class="block text-xs font-medium text-[#8E94A8] mb-1">Categoría</label>
-          <select id="filtro-categoria" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8]">
-            <option value="todas" class="bg-[#0A0A1A]">Todas</option>
-            <option value="Combustible" class="bg-[#0A0A1A]">Combustible</option>
-            <option value="Repuestos" class="bg-[#0A0A1A]">Repuestos</option>
-            <option value="Mantenimiento" class="bg-[#0A0A1A]">Mantenimiento</option>
-            <option value="VTV" class="bg-[#0A0A1A]">VTV</option>
-            <option value="Seguro" class="bg-[#0A0A1A]">Seguro</option>
-          </select>
-        </div>
-        <div class="flex-1">
           <label class="block text-xs font-medium text-[#8E94A8] mb-1">Vehículo</label>
           <select id="filtro-vehiculo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8]">
             <option value="todos" class="bg-[#0A0A1A]">Todos</option>
           </select>
         </div>
         <div class="flex items-end">
-          <button onclick="aplicarFiltros()" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-[#F1F3F8] rounded-lg text-sm font-medium transition border border-white/10">
-            Filtrar
-          </button>
+          <button onclick="applyFilters()" class="px-4 py-2 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-sm font-medium transition">Filtrar</button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        <div class="lg:col-span-2 glass-card rounded-xl p-5">
-          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Detalle de Gastos</h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
-                  <th class="pb-3 pr-3 font-medium">Fecha</th>
-                  <th class="pb-3 pr-3 font-medium">Categoría</th>
-                  <th class="pb-3 pr-3 font-medium">Vehículo</th>
-                  <th class="pb-3 pr-3 font-medium">Detalle</th>
-                  <th class="pb-3 pr-3 font-medium text-right">Monto</th>
-                </tr>
-              </thead>
-              <tbody id="report-table-body">
-                <tr><td colspan="5" class="text-center py-8 text-[#5C6378]">Cargando datos...</td></tr>
-              </tbody>
-              <tfoot id="report-table-foot" class="hidden">
-                <tr class="border-t border-[#6C3CE1]/10">
-                  <td colspan="4" class="pt-3 pr-3 text-right text-[#8E94A8] font-medium">Total:</td>
-                  <td class="pt-3 text-right text-[#F1F3F8] font-bold" id="report-total">$ 0,00</td>
-                </tr>
-              </tfoot>
-            </table>
+      <div class="flex gap-1 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
+        <button onclick="switchTab('resumen')" data-tab="resumen" class="report-tab active">Resumen</button>
+        <button onclick="switchTab('combustible')" data-tab="combustible" class="report-tab">Combustible</button>
+        <button onclick="switchTab('repuestos')" data-tab="repuestos" class="report-tab">Repuestos</button>
+        <button onclick="switchTab('vtv')" data-tab="vtv" class="report-tab">VTV</button>
+        <button onclick="switchTab('seguro')" data-tab="seguro" class="report-tab">Seguro</button>
+        <button onclick="switchTab('vehiculos')" data-tab="vehiculos" class="report-tab">Vehículos</button>
+      </div>
+
+      <div id="tab-resumen" class="report-section">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div class="glass-card rounded-xl p-4 card-3d"><p class="text-[#8E94A8] text-[11px] font-medium">Combustible</p><p class="text-xl font-bold text-[#F1F3F8] mt-1" id="res-total-comb">-</p></div>
+          <div class="glass-card rounded-xl p-4 card-3d"><p class="text-[#8E94A8] text-[11px] font-medium">Repuestos</p><p class="text-xl font-bold text-[#F1F3F8] mt-1" id="res-total-rep">-</p></div>
+          <div class="glass-card rounded-xl p-4 card-3d"><p class="text-[#8E94A8] text-[11px] font-medium">VTV</p><p class="text-xl font-bold text-[#F1F3F8] mt-1" id="res-total-vtv">-</p></div>
+          <div class="glass-card rounded-xl p-4 card-3d"><p class="text-[#8E94A8] text-[11px] font-medium">Seguro</p><p class="text-xl font-bold text-[#F1F3F8] mt-1" id="res-total-seg">-</p></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Gastos por Categoría</h3>
+            <div class="flex items-center justify-center h-[220px]"><canvas id="chart-donut" height="220"></canvas></div>
+          </div>
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Top 10 Vehículos (Gasto Total)</h3>
+            <div class="flex items-center justify-center h-[220px]"><canvas id="chart-top-vehicles" height="220"></canvas></div>
           </div>
         </div>
-        <div class="glass-card rounded-xl p-5">
-          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Gastos por Categoría</h3>
-          <div class="flex items-center justify-center h-[250px]">
-            <canvas id="chart-por-categoria" height="250"></canvas>
+        <div class="glass-card rounded-xl p-5 mt-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-[#F1F3F8]">Detalle de Gastos</h3>
+            <span class="text-[#5C6378] text-xs" id="res-count">0 registros</span>
+          </div>
+          <div class="overflow-x-auto max-h-[350px] overflow-y-auto">
+            <table class="w-full text-sm">
+              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+                <th class="pb-2 pr-3 font-medium text-xs">Fecha</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Cat.</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Detalle</th>
+                <th class="pb-2 text-right font-medium text-xs">Monto</th>
+              </tr></thead>
+              <tbody id="res-table"></tbody>
+              <tfoot id="res-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="4" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="res-grand-total">$ 0</td></tr></tfoot>
+            </table>
+          </div>
+          <div class="flex gap-2 mt-3 justify-end">
+            <button onclick="exportSectionExcel('resumen')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Excel
+            </button>
+            <button onclick="exportSectionPDF('resumen')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              PDF
+            </button>
           </div>
         </div>
       </div>
+
+      <div id="tab-combustible" class="report-section hidden">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Litros</p><p class="text-xl font-bold text-[#F1F3F8]" id="comb-litros">-</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Importe</p><p class="text-xl font-bold text-[#F1F3F8]" id="comb-importe">-</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Precio Promedio/L</p><p class="text-xl font-bold text-[#F1F3F8]" id="comb-promedio">-</p></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+          <div class="lg:col-span-2 glass-card rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Evolución Mensual</h3>
+            <div class="h-[220px]"><canvas id="chart-comb-mensual" height="220"></canvas></div>
+          </div>
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Por Tipo de Combustible</h3>
+            <div class="flex items-center justify-center h-[220px]"><canvas id="chart-comb-tipo" height="220"></canvas></div>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-[#F1F3F8]">Cargas Registradas</h3>
+            <span class="text-[#5C6378] text-xs" id="comb-count">0 registros</span>
+          </div>
+          <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
+            <table class="w-full text-sm">
+              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+                <th class="pb-2 pr-3 font-medium text-xs">Fecha</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Tipo</th>
+                <th class="pb-2 pr-3 font-medium text-xs text-right">Litros</th>
+                <th class="pb-2 pr-3 font-medium text-xs text-right">Importe</th>
+                <th class="pb-2 text-right font-medium text-xs">$ / L</th>
+              </tr></thead>
+              <tbody id="comb-table"></tbody>
+              <tfoot id="comb-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="3" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 pr-3 text-right text-[#F1F3F8] font-bold text-sm" id="comb-total-litros">0</td><td class="pt-2 pr-3 text-right text-[#F1F3F8] font-bold text-sm" id="comb-total-importe">$ 0</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="comb-total-promedio">-</td></tr></tfoot>
+            </table>
+          </div>
+          <div class="flex gap-2 mt-3 justify-end">
+            <button onclick="exportSectionExcel('combustible')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Excel
+            </button>
+            <button onclick="exportSectionPDF('combustible')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-repuestos" class="report-section hidden">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Repuestos</p><p class="text-xl font-bold text-[#F1F3F8]" id="rep-total">-</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Repuestos Únicos</p><p class="text-xl font-bold text-[#F1F3F8]" id="rep-unique">-</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Promedio / Repuesto</p><p class="text-xl font-bold text-[#F1F3F8]" id="rep-avg">-</p></div>
+        </div>
+        <div class="glass-card rounded-xl p-5 mb-4">
+          <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Top Repuestos (por gasto)</h3>
+          <div class="h-[220px]"><canvas id="chart-rep-top" height="220"></canvas></div>
+        </div>
+        <div class="glass-card rounded-xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-[#F1F3F8]">Repuestos Registrados</h3>
+            <span class="text-[#5C6378] text-xs" id="rep-count">0 registros</span>
+          </div>
+          <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
+            <table class="w-full text-sm">
+              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+                <th class="pb-2 pr-3 font-medium text-xs">Fecha</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Repuesto</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Proveedor</th>
+                <th class="pb-2 text-right font-medium text-xs">Costo</th>
+              </tr></thead>
+              <tbody id="rep-table"></tbody>
+              <tfoot id="rep-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="4" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="rep-grand-total">$ 0</td></tr></tfoot>
+            </table>
+          </div>
+          <div class="flex gap-2 mt-3 justify-end">
+            <button onclick="exportSectionExcel('repuestos')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Excel
+            </button>
+            <button onclick="exportSectionPDF('repuestos')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-vtv" class="report-section hidden">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total VTV</p><p class="text-xl font-bold text-[#F1F3F8]" id="vtv-total">-</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Vencidas</p><p class="text-xl font-bold text-red-400" id="vtv-vencidas">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Próx. 30 días</p><p class="text-xl font-bold text-yellow-400" id="vtv-proximas">0</p></div>
+        </div>
+        <div class="glass-card rounded-xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-[#F1F3F8]">VTV por Vehículo</h3>
+            <span class="text-[#5C6378] text-xs" id="vtv-count">0 registros</span>
+          </div>
+          <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
+            <table class="w-full text-sm">
+              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+                <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Centro</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Resultado</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Vencimiento</th>
+                <th class="pb-2 text-right font-medium text-xs">Costo</th>
+              </tr></thead>
+              <tbody id="vtv-table"></tbody>
+              <tfoot id="vtv-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="4" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="vtv-grand-total">$ 0</td></tr></tfoot>
+            </table>
+          </div>
+          <div class="flex gap-2 mt-3 justify-end">
+            <button onclick="exportSectionExcel('vtv')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Excel
+            </button>
+            <button onclick="exportSectionPDF('vtv')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-seguro" class="report-section hidden">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Seguro</p><p class="text-xl font-bold text-[#F1F3F8]" id="seg-total">-</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Vencidos</p><p class="text-xl font-bold text-red-400" id="seg-vencidos">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Próx. 30 días</p><p class="text-xl font-bold text-yellow-400" id="seg-proximos">0</p></div>
+        </div>
+        <div class="glass-card rounded-xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-[#F1F3F8]">Seguro por Vehículo</h3>
+            <span class="text-[#5C6378] text-xs" id="seg-count">0 registros</span>
+          </div>
+          <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
+            <table class="w-full text-sm">
+              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+                <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Compañía</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Póliza</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Vencimiento</th>
+                <th class="pb-2 text-right font-medium text-xs">Costo</th>
+              </tr></thead>
+              <tbody id="seg-table"></tbody>
+              <tfoot id="seg-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="4" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="seg-grand-total">$ 0</td></tr></tfoot>
+            </table>
+          </div>
+          <div class="flex gap-2 mt-3 justify-end">
+            <button onclick="exportSectionExcel('seguro')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Excel
+            </button>
+            <button onclick="exportSectionPDF('seguro')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-vehiculos" class="report-section hidden">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Vehículos</p><p class="text-xl font-bold text-[#F1F3F8]" id="veh-total">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Con Trompo</p><p class="text-xl font-bold text-[#F1F3F8]" id="veh-trompo">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Gasto Total / Veh.</p><p class="text-xl font-bold text-[#F1F3F8]" id="veh-promedio">-</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Gasto Comb. Total</p><p class="text-xl font-bold text-[#F1F3F8]" id="veh-comb-total">-</p></div>
+        </div>
+        <div class="glass-card rounded-xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-[#F1F3F8]">Resumen por Vehículo</h3>
+            <span class="text-[#5C6378] text-xs" id="veh-count">0 vehículos</span>
+          </div>
+          <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+            <table class="w-full text-sm">
+              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+                <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Marca</th>
+                <th class="pb-2 pr-3 font-medium text-xs">Tipo</th>
+                <th class="pb-2 pr-3 font-medium text-xs text-right">Combustible</th>
+                <th class="pb-2 pr-3 font-medium text-xs text-right">Repuestos</th>
+                <th class="pb-2 text-right font-medium text-xs">Total</th>
+              </tr></thead>
+              <tbody id="veh-table"></tbody>
+              <tfoot id="veh-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="3" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 pr-3 text-right text-[#F1F3F8] font-bold text-sm" id="veh-total-comb">$ 0</td><td class="pt-2 pr-3 text-right text-[#F1F3F8] font-bold text-sm" id="veh-total-rep">$ 0</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="veh-grand-total">$ 0</td></tr></tfoot>
+            </table>
+          </div>
+          <div class="flex gap-2 mt-3 justify-end">
+            <button onclick="exportSectionExcel('vehiculos')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Excel
+            </button>
+            <button onclick="exportSectionPDF('vehiculos')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 </div>
 
 <%- include('partials/mobile-menu', { page: 'reports' }) %>
-<script src="/js/reports.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="/js/reports.js?v=2"></script>
 <%- include('partials/footer') %>
