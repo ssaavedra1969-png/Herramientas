@@ -303,6 +303,61 @@ router.get('/alerts', verifyToken, async (req, res) => {
   }
 });
 
+router.get('/vehicles-basic', verifyToken, async (req, res) => {
+  try {
+    const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
+    const now = new Date();
+    const vehicles = snap.docs.map(d => {
+      const v = d.data();
+      const fd = (ts) => {
+        if (!ts) return null;
+        const dt = ts.toDate ? ts.toDate() : new Date(ts);
+        return isNaN(dt.getTime()) ? null : dt.toISOString();
+      };
+      const vtvVen = fd(v.vtv?.fechaVencimiento);
+      const segVen = fd(v.seguro?.fechaVencimiento);
+      const diffVtv = vtvVen ? Math.ceil((new Date(vtvVen) - now) / 86400000) : null;
+      const diffSeg = segVen ? Math.ceil((new Date(segVen) - now) / 86400000) : null;
+      return {
+        patente: v.patente || '',
+        interno: v.interno || '',
+        marca: v.marca || '',
+        modelo: v.modelo || '',
+        anio: v.anio || '',
+        tipo: v.tipo || '',
+        subtipo: v.subtipo || '',
+        empresa: v.empresa || '',
+        conductor: v.conductorHabitual || '',
+        kilometraje: v.kilometraje || '',
+        horometro: v.horometro || '',
+        capacidadCarga: v.capacidadCarga || '',
+        estadoGeneral: v.estadoGeneral || '',
+        vtvResultado: v.vtv?.resultado || '',
+        vtvCentro: v.vtv?.centroMedicion || '',
+        vtvVencimiento: vtvVen,
+        vtvDiasRestantes: diffVtv,
+        vtvCosto: Number(v.vtv?.costo) || 0,
+        seguroCompania: v.seguro?.compania || v.seguro?.compañía || '',
+        seguroPoliza: v.seguro?.poliza || '',
+        seguroVencimiento: segVen,
+        seguroDiasRestantes: diffSeg,
+        seguroCosto: Number(v.seguro?.costo) || 0,
+        proximoServiceKm: v.proximoServiceKm || '',
+        proximoServiceFecha: fd(v.proximoServiceFecha),
+        trompo: v.trompo || false,
+        marcaTrompo: v.marcaTrompo || '',
+        serieTrompo: v.serieTrompo || '',
+        modeloTrompo: v.modeloTrompo || '',
+        cargaM3Trompo: v.cargaM3Trompo || '',
+        observaciones: v.observaciones || ''
+      };
+    });
+    res.json({ vehicles, total: vehicles.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/report/export', verifyToken, async (req, res) => {
   try {
     const ExcelJS = require('exceljs');

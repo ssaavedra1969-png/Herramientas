@@ -265,29 +265,47 @@
       </div>
 
       <div id="tab-vehiculos" class="report-section hidden">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Vehículos</p><p class="text-xl font-bold text-[#F1F3F8]" id="veh-total">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Con Trompo</p><p class="text-xl font-bold text-[#F1F3F8]" id="veh-trompo">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Gasto Total / Veh.</p><p class="text-xl font-bold text-[#F1F3F8]" id="veh-promedio">-</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Gasto Comb. Total</p><p class="text-xl font-bold text-[#F1F3F8]" id="veh-comb-total">-</p></div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Vehículos</p><p class="text-xl font-bold text-[#F1F3F8]" id="vb-total">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Con Trompo</p><p class="text-xl font-bold text-[#F1F3F8]" id="vb-trompo">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">VTV Vencidas</p><p class="text-xl font-bold text-red-400" id="vb-vtv-venc">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">VTV Próx. 30d</p><p class="text-xl font-bold text-yellow-400" id="vb-vtv-prox">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Seguro Vencido</p><p class="text-xl font-bold text-red-400" id="vb-seg-venc">0</p></div>
+          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Seguro Próx. 30d</p><p class="text-xl font-bold text-yellow-400" id="vb-seg-prox">0</p></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Por Tipo de Vehículo</h3>
+            <div class="flex items-center justify-center h-[220px]"><canvas id="chart-vb-tipo" height="220"></canvas></div>
+          </div>
+          <div class="glass-card rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Por Empresa</h3>
+            <div class="flex items-center justify-center h-[220px]"><canvas id="chart-vb-empresa" height="220"></canvas></div>
+          </div>
         </div>
         <div class="glass-card rounded-xl p-5">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-[#F1F3F8]">Resumen por Vehículo</h3>
-            <span class="text-[#5C6378] text-xs" id="veh-count">0 vehículos</span>
+            <h3 class="text-sm font-semibold text-[#F1F3F8]">Ficha de Vehículos</h3>
+            <span class="text-[#5C6378] text-xs" id="vb-count">0 vehículos</span>
           </div>
           <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
-            <table class="w-full text-sm">
+            <table class="w-full text-xs">
               <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
-                <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
-                <th class="pb-2 pr-3 font-medium text-xs">Marca</th>
-                <th class="pb-2 pr-3 font-medium text-xs">Tipo</th>
-                <th class="pb-2 pr-3 font-medium text-xs text-right">Combustible</th>
-                <th class="pb-2 pr-3 font-medium text-xs text-right">Repuestos</th>
-                <th class="pb-2 text-right font-medium text-xs">Total</th>
+                <th class="pb-2 pr-2 font-medium">Patente</th>
+                <th class="pb-2 pr-2 font-medium">Interno</th>
+                <th class="pb-2 pr-2 font-medium">Marca</th>
+                <th class="pb-2 pr-2 font-medium">Modelo</th>
+                <th class="pb-2 pr-2 font-medium">Año</th>
+                <th class="pb-2 pr-2 font-medium">Tipo</th>
+                <th class="pb-2 pr-2 font-medium">Empresa</th>
+                <th class="pb-2 pr-2 font-medium">Conductor</th>
+                <th class="pb-2 pr-2 font-medium">Km</th>
+                <th class="pb-2 pr-2 font-medium">VTV</th>
+                <th class="pb-2 pr-2 font-medium">Seguro</th>
+                <th class="pb-2 pr-2 font-medium">Trompo</th>
+                <th class="pb-2 font-medium">Próx. Service</th>
               </tr></thead>
-              <tbody id="veh-table"></tbody>
-              <tfoot id="veh-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="3" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 pr-3 text-right text-[#F1F3F8] font-bold text-sm" id="veh-total-comb">$ 0</td><td class="pt-2 pr-3 text-right text-[#F1F3F8] font-bold text-sm" id="veh-total-rep">$ 0</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="veh-grand-total">$ 0</td></tr></tfoot>
+              <tbody id="vb-table"></tbody>
             </table>
           </div>
           <div class="flex gap-2 mt-3 justify-end">
