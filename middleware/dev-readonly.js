@@ -5,6 +5,10 @@ function devReadOnly(req, res, next) {
     return next();
   }
 
+  if (req.originalUrl.startsWith('/api/auth/')) {
+    return next();
+  }
+
   console.log(`[DEV READ-ONLY] Bloqueado: ${req.method} ${req.originalUrl}`);
   return res.status(403).json({
     error: 'Modo desarrollo read-only — no se permiten cambios',

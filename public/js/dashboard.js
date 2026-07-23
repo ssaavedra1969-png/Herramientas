@@ -187,6 +187,14 @@ function renderAlertasVTV(vehicles) {
     if (segDays !== null && getAlertLevel(segDays) !== 'none') {
       alertas.push({ days: segDays, tipo: 'Seguro', label: `${v.patente || '—'} · ${v.interno || ''}`, date: v.seguro?.fechaVencimiento });
     }
+    const dniDays = daysUntil(v.vencimientoDNI);
+    if (dniDays !== null && getAlertLevel(dniDays) !== 'none') {
+      alertas.push({ days: dniDays, tipo: 'DNI', label: `${v.patente || '—'} · ${v.interno || ''}`, date: v.vencimientoDNI });
+    }
+    const regDays = daysUntil(v.vencimientoRegistro);
+    if (regDays !== null && getAlertLevel(regDays) !== 'none') {
+      alertas.push({ days: regDays, tipo: 'Registro', label: `${v.patente || '—'} · ${v.interno || ''}`, date: v.vencimientoRegistro });
+    }
   });
 
   if (alertas.length === 0) {

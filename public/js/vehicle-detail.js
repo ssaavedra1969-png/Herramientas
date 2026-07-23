@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('v-trompo')?.addEventListener('change', (e) => {
     document.getElementById('v-trompo-fields').classList.toggle('hidden', !e.target.checked);
   });
-  ['v-patente','v-marca','v-modelo','v-anio','v-tipo','v-kilometraje','v-centroTrabajo','v-conductorHabitual','v-empresa'].forEach(id => {
+  ['v-patente','v-marca','v-modelo','v-anio','v-tipo','v-kilometraje','v-centroTrabajo','v-chofer','v-dni','v-registro','v-empresa'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', updateCompleteness);
   });
 
@@ -73,7 +73,11 @@ function renderGeneralInfo() {
   renderTrompo();
   setText('vg-kmhs', `${vehicleData.kilometraje?.toLocaleString() || 0} km`);
   setText('vg-centro', vehicleData.centroTrabajo || '-');
-  setText('vg-conductor', vehicleData.conductorHabitual || '-');
+  setText('vg-chofer', vehicleData.chofer || '-');
+  setText('vg-dni', vehicleData.dni || '-');
+  setText('vg-vencimientoDNI', formatDate(vehicleData.vencimientoDNI));
+  setText('vg-registro', vehicleData.registro || '-');
+  setText('vg-vencimientoRegistro', formatDate(vehicleData.vencimientoRegistro));
   setText('vg-empresa', vehicleData.empresa || '-');
   setText('vg-estadoGeneral', vehicleData.estadoGeneral || '-');
   setText('vg-horometro', vehicleData.horometro ? `${vehicleData.horometro} hs` : '-');
@@ -293,7 +297,7 @@ function printQR() {
         <div class="info-grid">
           <div class="info-item"><div class="label">Marca / Modelo</div><div class="value">${v.marca || ''} ${v.modelo || ''}</div></div>
           <div class="info-item"><div class="label">Tipo</div><div class="value">${v.tipo || ''} ${v.subtipo || ''}</div></div>
-          <div class="info-item"><div class="label">Conductor</div><div class="value">${v.conductorHabitual || '-'}</div></div>
+          <div class="info-item"><div class="label">Chofer</div><div class="value">${v.chofer || '-'}</div></div>
           <div class="info-item"><div class="label">Centro Trabajo</div><div class="value">${v.centroTrabajo || '-'}</div></div>
           <div class="info-item"><div class="label">Ano</div><div class="value">${v.año || '-'}</div></div>
           <div class="info-item"><div class="label">Estado</div><div class="value">${v.estadoGeneral || '-'}</div></div>
@@ -356,7 +360,7 @@ function downloadQR() {
   const items = [
     [leftX, 'Marca / Modelo', `${v.marca || ''} ${v.modelo || ''}`],
     [rightX, 'Tipo', `${v.tipo || ''} ${v.subtipo || ''}`],
-    [leftX + lineH, 'Conductor', v.conductorHabitual || '-'],
+    [leftX + lineH, 'Chofer', v.chofer || '-'],
     [rightX + lineH, 'Centro', v.centroTrabajo || '-'],
     [leftX + lineH * 2, 'Ano', v.año || '-'],
     [rightX + lineH * 2, 'Estado', v.estadoGeneral || '-']
@@ -430,7 +434,11 @@ function openEditVehicle() {
   document.getElementById('v-proximoServiceKm').value = vehicleData.proximoServiceKm || '';
   setDateField('v-proximoServiceFecha', vehicleData.proximoServiceFecha);
   document.getElementById('v-centroTrabajo').value = vehicleData.centroTrabajo || '';
-  document.getElementById('v-conductorHabitual').value = vehicleData.conductorHabitual || '';
+  document.getElementById('v-chofer').value = vehicleData.chofer || '';
+  document.getElementById('v-dni').value = vehicleData.dni || '';
+  setDateField('v-vencimientoDNI', vehicleData.vencimientoDNI || null);
+  document.getElementById('v-registro').value = vehicleData.registro || '';
+  setDateField('v-vencimientoRegistro', vehicleData.vencimientoRegistro || null);
   document.getElementById('v-empresa').value = vehicleData.empresa || '';
   document.getElementById('v-observaciones').value = vehicleData.observaciones || '';
   document.getElementById('v-foto').value = vehicleData.fotoURL || '';
@@ -440,7 +448,7 @@ function openEditVehicle() {
 }
 
 function updateCompleteness() {
-  const fields = ['v-patente', 'v-marca', 'v-modelo', 'v-anio', 'v-tipo', 'v-kilometraje', 'v-centroTrabajo', 'v-conductorHabitual', 'v-empresa'];
+  const fields = ['v-patente', 'v-marca', 'v-modelo', 'v-anio', 'v-tipo', 'v-kilometraje', 'v-centroTrabajo', 'v-chofer', 'v-dni', 'v-registro', 'v-empresa'];
   const filled = fields.filter(id => {
     const el = document.getElementById(id);
     return el && el.value && el.value.trim();
@@ -514,7 +522,11 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     proximoServiceKm: parseInt(document.getElementById('v-proximoServiceKm').value) || null,
     proximoServiceFecha: getDateValue('v-proximoServiceFecha'),
     centroTrabajo: document.getElementById('v-centroTrabajo').value,
-    conductorHabitual: document.getElementById('v-conductorHabitual').value.trim() || '',
+    chofer: document.getElementById('v-chofer').value.trim() || '',
+    dni: document.getElementById('v-dni').value.trim() || '',
+    vencimientoDNI: getDateValue('v-vencimientoDNI'),
+    registro: document.getElementById('v-registro').value.trim() || '',
+    vencimientoRegistro: getDateValue('v-vencimientoRegistro'),
     empresa: document.getElementById('v-empresa').value.trim() || '',
     observaciones: document.getElementById('v-observaciones').value.trim() || '',
     fotoURL: document.getElementById('v-foto').value.trim() || '',
@@ -843,7 +855,7 @@ function printBarcode() {
           <div class="info-grid">
             <div class="info-item"><div class="label">Marca / Modelo</div><div class="value">${v.marca || ''} ${v.modelo || ''}</div></div>
             <div class="info-item"><div class="label">Tipo</div><div class="value">${v.tipo || ''} ${v.subtipo || ''}</div></div>
-            <div class="info-item"><div class="label">Conductor</div><div class="value">${v.conductorHabitual || '-'}</div></div>
+            <div class="info-item"><div class="label">Chofer</div><div class="value">${v.chofer || '-'}</div></div>
             <div class="info-item"><div class="label">Centro Trabajo</div><div class="value">${v.centroTrabajo || '-'}</div></div>
             <div class="info-item"><div class="label">Ano</div><div class="value">${v.año || '-'}</div></div>
             <div class="info-item"><div class="label">Estado</div><div class="value">${v.estadoGeneral || '-'}</div></div>
@@ -909,7 +921,7 @@ function downloadBarcodePNG() {
     const items = [
       [leftX, 'Marca / Modelo', `${v.marca || ''} ${v.modelo || ''}`],
       [rightX, 'Tipo', `${v.tipo || ''} ${v.subtipo || ''}`],
-      [leftX + lineH, 'Conductor', v.conductorHabitual || '-'],
+      [leftX + lineH, 'Chofer', v.chofer || '-'],
       [rightX + lineH, 'Centro', v.centroTrabajo || '-'],
       [leftX + lineH * 2, 'Ano', v.año || '-'],
       [rightX + lineH * 2, 'Estado', v.estadoGeneral || '-']
@@ -984,7 +996,7 @@ function downloadBarcodePDF() {
           <div class="info-grid">
             <div class="info-item"><div class="label">Marca / Modelo</div><div class="value">${v.marca || ''} ${v.modelo || ''}</div></div>
             <div class="info-item"><div class="label">Tipo</div><div class="value">${v.tipo || ''} ${v.subtipo || ''}</div></div>
-            <div class="info-item"><div class="label">Conductor</div><div class="value">${v.conductorHabitual || '-'}</div></div>
+            <div class="info-item"><div class="label">Chofer</div><div class="value">${v.chofer || '-'}</div></div>
             <div class="info-item"><div class="label">Centro Trabajo</div><div class="value">${v.centroTrabajo || '-'}</div></div>
             <div class="info-item"><div class="label">Ano</div><div class="value">${v.año || '-'}</div></div>
             <div class="info-item"><div class="label">Estado</div><div class="value">${v.estadoGeneral || '-'}</div></div>

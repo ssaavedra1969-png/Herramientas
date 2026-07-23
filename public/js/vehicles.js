@@ -163,7 +163,11 @@ function fmap(v) {
     proximoServiceKm: v.proximoServiceKm || null,
     proximoServiceFecha: v.proximoServiceFecha || null,
     centroTrabajo: v.centroTrabajo || '',
-    conductorHabitual: v.conductorHabitual || '',
+    chofer: v.chofer || '',
+    dni: v.dni || '',
+    vencimientoDNI: v.vencimientoDNI || null,
+    registro: v.registro || '',
+    vencimientoRegistro: v.vencimientoRegistro || null,
     observaciones: v.observaciones || '',
     fotoURL: v.fotoURL || '',
     multas: v.multas || [],
@@ -488,7 +492,11 @@ function openVehicleModal(vehicleId = null) {
     document.getElementById('v-proximoServiceKm').value = v.proximoServiceKm || '';
     setDateField('v-proximoServiceFecha', v.proximoServiceFecha);
     document.getElementById('v-centroTrabajo').value = v.centroTrabajo;
-    document.getElementById('v-conductorHabitual').value = v.conductorHabitual;
+    document.getElementById('v-chofer').value = v.chofer || '';
+    document.getElementById('v-dni').value = v.dni || '';
+    setDateField('v-vencimientoDNI', v.vencimientoDNI || null);
+    document.getElementById('v-registro').value = v.registro || '';
+    setDateField('v-vencimientoRegistro', v.vencimientoRegistro || null);
     document.getElementById('v-observaciones').value = v.observaciones;
     document.getElementById('v-foto').value = v.fotoURL;
 
@@ -581,7 +589,11 @@ async function saveVehicle(e) {
     proximoServiceKm: parseInt(document.getElementById('v-proximoServiceKm').value) || null,
     proximoServiceFecha: getDateValue('v-proximoServiceFecha'),
     centroTrabajo: document.getElementById('v-centroTrabajo').value,
-    conductorHabitual: document.getElementById('v-conductorHabitual').value.trim() || '',
+    chofer: document.getElementById('v-chofer').value.trim() || '',
+    dni: document.getElementById('v-dni').value.trim() || '',
+    vencimientoDNI: getDateValue('v-vencimientoDNI'),
+    registro: document.getElementById('v-registro').value.trim() || '',
+    vencimientoRegistro: getDateValue('v-vencimientoRegistro'),
     empresa: document.getElementById('v-empresa').value.trim() || '',
     observaciones: document.getElementById('v-observaciones').value.trim() || '',
     fotoURL: document.getElementById('v-foto').value.trim() || '',
@@ -711,8 +723,8 @@ function closeCsvImport() {
 }
 
 function downloadCsvTemplate() {
-  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','tipo','subtipo','capacidadCarga','trompo','marcaTrompo','serieTrompo','modeloTrompo','cargaM3Trompo','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','conductorHabitual','empresa','centroTrabajo','observaciones'];
-  const sample = ['ABC123','V001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','mixer','Indumix','25000','Si','Marina','ST-12345','Modelo X','8 M3','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','FRAFIL SRL','Lujan','Último cambio de cubiertas a los 140.000 km'];
+  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','tipo','subtipo','capacidadCarga','trompo','marcaTrompo','serieTrompo','modeloTrompo','cargaM3Trompo','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','chofer','dni','vencimientoDNI','registro','vencimientoRegistro','empresa','centroTrabajo','observaciones'];
+  const sample = ['ABC123','V001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','mixer','Indumix','25000','Si','Marina','ST-12345','Modelo X','8 M3','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','30123456','2030-12-31','REG-2024-001','2028-06-30','FRAFIL SRL','Lujan','Último cambio de cubiertas a los 140.000 km'];
   const BOM = '\uFEFF';
   const csv = BOM + headers.join(',') + '\n' + sample.join(',') + '\n';
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -795,7 +807,11 @@ function parseVehicleRows(rows) {
         seguroCosto: parseFloat(row.seguroCosto) || null,
         proximoServiceKm: parseFloat(row.proximoServiceKm) || null,
         proximoServiceFecha: row.proximoServiceFecha || '',
-        conductorHabitual: (row.conductorHabitual || '').toString().trim(),
+        chofer: (row.chofer || '').toString().trim(),
+        dni: (row.dni || '').toString().trim(),
+        vencimientoDNI: row.vencimientoDNI || '',
+        registro: (row.registro || '').toString().trim(),
+        vencimientoRegistro: row.vencimientoRegistro || '',
         empresa: (row.empresa || '').toString().trim(),
         centroTrabajo: (row.centroTrabajo || '').toString().trim(),
         observaciones: (row.observaciones || '').toString().trim()
@@ -914,7 +930,8 @@ function validateCsvImport() {
             'seguro tipo':'seguroTipo','seguro vencimiento':'seguroVencimiento',
             'seguro costo':'seguroCosto','prox service km':'proximoServiceKm',
             'prox service fecha':'proximoServiceFecha',
-            'conductor':'conductorHabitual','empresa':'empresa',
+            'conductor':'chofer','chofer':'chofer','dni':'dni','vto dni':'vencimientoDNI',
+            'registro':'registro','vto registro':'vencimientoRegistro','empresa':'empresa',
             'centro trabajo':'centroTrabajo','observaciones':'observaciones'
           };
           rows = rows.map(r => {
@@ -1032,7 +1049,11 @@ async function executeCsvImport() {
       seguro: Object.keys(seguro).length ? seguro : {},
       proximoServiceKm: row.proximoServiceKm || null,
       proximoServiceFecha: toTimestamp(row.proximoServiceFecha),
-      conductorHabitual: row.conductorHabitual || '',
+      chofer: row.chofer || '',
+      dni: row.dni || '',
+      vencimientoDNI: toTimestamp(row.vencimientoDNI),
+      registro: row.registro || '',
+      vencimientoRegistro: toTimestamp(row.vencimientoRegistro),
       empresa: row.empresa || '',
       centroTrabajo: row.centroTrabajo || '',
       observaciones: row.observaciones || '',
@@ -1128,15 +1149,18 @@ function exportVehiclesExcel() {
     showToast('Librería XLSX no cargada', 'error');
     return;
   }
-  const headers = ['Interno', 'Patente', 'Marca', 'Modelo', 'Año', 'Tipo', 'Subtipo', 'Trompo', 'Estado', 'Empresa', 'Centro', 'Kilometraje', 'Chasis', 'N° Motor', 'Conductor'];
+  const headers = ['Interno', 'Patente', 'Marca', 'Modelo', 'Año', 'Tipo', 'Subtipo', 'Trompo', 'Estado', 'Empresa', 'Centro', 'Kilometraje', 'Chasis', 'N° Motor', 'Chofer', 'DNI', 'Vto. DNI', 'Registro', 'Vto. Registro'];
   const rows = allVehicles.map(v => [
     v.interno || '', v.patente || '', v.marca || '', v.modelo || '', v.anio || v.año || '',
     v.tipo || '', v.subtipo || '', v.trompo ? 'Si' : 'No',
     v.estadoGeneral || v.estado || 'Activo', v.empresa || '', v.centroTrabajo || '',
-    v.kilometraje || 0, v.chasis || '', v.numeroMotor || '', v.conductorHabitual || ''
+    v.kilometraje || 0, v.chasis || '', v.numeroMotor || '', v.chofer || '', v.dni || '',
+    v.vencimientoDNI ? new Date(v.vencimientoDNI.seconds ? v.vencimientoDNI.seconds * 1000 : v.vencimientoDNI).toLocaleDateString('es-AR') : '',
+    v.registro || '',
+    v.vencimientoRegistro ? new Date(v.vencimientoRegistro.seconds ? v.vencimientoRegistro.seconds * 1000 : v.vencimientoRegistro).toLocaleDateString('es-AR') : ''
   ]);
   const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-  ws['!cols'] = headers.map((h, i) => ({ wch: [8, 10, 16, 16, 6, 18, 14, 7, 8, 18, 14, 12, 20, 16, 16][i] || 12 }));
+  ws['!cols'] = headers.map((h, i) => ({ wch: [8, 10, 16, 16, 6, 18, 14, 7, 8, 18, 14, 12, 20, 16, 16, 12, 12, 16, 12][i] || 12 }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Vehículos');
   const now = new Date().toISOString().split('T')[0];
