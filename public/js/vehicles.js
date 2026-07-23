@@ -33,6 +33,17 @@ function getBrandLogo(marca) {
   return brandLogos[marca.toLowerCase().trim()] || '';
 }
 
+const truckFallbackSvg = '<svg class="w-10 h-10 text-[#6C3CE1]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>';
+
+function handlePhotoError(el, brandLogo) {
+  const fallback = brandLogo
+    ? '<div class="w-full h-32 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center">' +
+      '<div class="card-logo-wrap"><img src="' + brandLogo + '" class="card-logo-img"></div></div>'
+    : '<div class="w-full h-32 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center">' +
+      truckFallbackSvg + '</div>';
+  el.outerHTML = fallback;
+}
+
 function parseTrompoRaw(val) {
   const s = String(val || '').trim().toLowerCase().replace(/['"]/g, '');
   return s === 'si' || s === 'sí';
@@ -276,13 +287,16 @@ function renderVehicleCards(vehicles) {
 
     const hasPhoto = !!mv.fotoURL;
     const brandLogo = getBrandLogo(mv.marca);
+    const logoHtml = brandLogo
+      ? `<div class="card-logo-wrap"><img src="${brandLogo}" alt="${mv.marca}" class="card-logo-img" onerror="this.parentElement.remove()"></div>`
+      : '';
+    const fallbackBg = `<div class="w-full h-32 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center">${logoHtml || truckFallbackSvg}</div>`;
+
     const fotoHtml = hasPhoto
-      ? `<div class="relative w-full h-28">
-           <img src="${mv.fotoURL}" alt="${mv.patente}" class="w-full h-28 object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-28 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center\\'>' + (${brandLogo ? `'<img src=\\'${brandLogo}\\' class=\\'w-14 h-14 object-contain\\'>'` : `'\\''`}) + '</div>'">
+      ? `<div class="relative w-full h-32">
+           <img src="${mv.fotoURL}" alt="${mv.patente}" class="w-full h-32 object-cover" onerror="handlePhotoError(this, '${brandLogo}')">
          </div>`
-      : `<div class="w-full h-28 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center">
-           ${brandLogo ? `<img src="${brandLogo}" alt="${mv.marca}" class="w-14 h-14 object-contain" onerror="this.outerHTML='<svg class=\\'w-10 h-10 text-[#6C3CE1]/30\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z\\'/><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4\\'/></svg>'">` : `<svg class="w-10 h-10 text-[#6C3CE1]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>`}
-         </div>`;
+      : fallbackBg;
 
     return `
       <div class="vehicle-card fade-row" onclick="rowClick('${v.id}', event)">
