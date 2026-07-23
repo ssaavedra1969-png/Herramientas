@@ -274,10 +274,14 @@ function renderVehicleCards(vehicles) {
 
     const checkHtml = admin ? `<label class="card-check"><input type="checkbox" class="row-checkbox accent-[#6C3CE1]" value="${v.id}" ${checked ? 'checked' : ''} onchange="toggleRow('${v.id}', this.checked)"></label>` : '';
 
-    const fotoHtml = mv.fotoURL
-      ? `<img src="${mv.fotoURL}" alt="${mv.patente}" class="w-full h-28 object-cover" onerror="this.style.display='none'">`
+    const hasPhoto = !!mv.fotoURL;
+    const brandLogo = getBrandLogo(mv.marca);
+    const fotoHtml = hasPhoto
+      ? `<div class="relative w-full h-28">
+           <img src="${mv.fotoURL}" alt="${mv.patente}" class="w-full h-28 object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-28 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center\\'>' + (${brandLogo ? `'<img src=\\'${brandLogo}\\' class=\\'w-14 h-14 object-contain\\'>'` : `'\\''`}) + '</div>'">
+         </div>`
       : `<div class="w-full h-28 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center">
-          <svg class="w-10 h-10 text-[#6C3CE1]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>
+           ${brandLogo ? `<img src="${brandLogo}" alt="${mv.marca}" class="w-14 h-14 object-contain" onerror="this.outerHTML='<svg class=\\'w-10 h-10 text-[#6C3CE1]/30\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z\\'/><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4\\'/></svg>'">` : `<svg class="w-10 h-10 text-[#6C3CE1]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>`}
          </div>`;
 
     return `
@@ -285,12 +289,9 @@ function renderVehicleCards(vehicles) {
         ${checkHtml}
         ${fotoHtml}
         <div class="vehicle-card-header">
-          <div class="flex items-center gap-2">
-            ${getBrandLogo(mv.marca) ? `<img src="${getBrandLogo(mv.marca)}" alt="${mv.marca}" class="w-7 h-7 object-contain flex-shrink-0" onerror="this.style.display='none'">` : ''}
-            <div>
-              <div class="card-patente">${mv.patente || '—'}</div>
-              <div class="card-marca-modelo">${mv.marca || ''} ${mv.modelo || ''}</div>
-            </div>
+          <div>
+            <div class="card-patente">${mv.patente || '—'}</div>
+            <div class="card-marca-modelo">${mv.marca || ''} ${mv.modelo || ''}</div>
           </div>
           <div class="card-interno">${mv.interno || '—'}</div>
         </div>

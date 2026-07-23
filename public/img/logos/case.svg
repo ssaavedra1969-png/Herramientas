@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="white"/>
   <rect x="8" y="30" width="84" height="40" rx="4" fill="#E44D25"/>
   <text x="50" y="58" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="bold" fill="white" letter-spacing="2">CASE</text>
 </svg>
