@@ -3,7 +3,7 @@ let editingVehicleId = null;
 let csvValidatedData = [];
 let patenteSet = new Set();
 let selectedIds = new Set();
-let viewMode = localStorage.getItem('vehicles-view-mode') || 'table';
+let viewMode = localStorage.getItem('vehicles-view-mode') || 'card';
 let sortField = 'interno';
 let sortDir = 'asc';
 

@@ -408,6 +408,11 @@ main { position: relative; }
 @media (max-width: 640px) {
   h1 { font-size: 1.5rem !important; }
   h2 { font-size: 1.25rem !important; }
+  .card-logo-wrap { width: 80px; height: 80px; }
+  .card-logo-img { width: 60px; height: 60px; }
+  .vehicle-card-header { padding: 0.6rem 0.75rem 0.5rem; }
+  .card-patente { font-size: 1rem; }
+  .card-body { padding: 0.6rem 0.75rem; }
 }
 
 /* Vehicle card view */
