@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 
 const { loadUser, requireAuth, requireAdminPage } = require('./middleware/auth');
+const { devReadOnly } = require('./middleware/dev-readonly');
 const authRoutes = require('./routes/auth');
 const vehiclesRoutes = require('./routes/vehicles');
 
@@ -30,6 +31,11 @@ const apiLimiter = rateLimit({
 });
 
 app.use('/api/', apiLimiter);
+
+if (process.env.DEV_READ_ONLY === 'true') {
+  console.log('[DEV READ-ONLY] Modo solo lectura activado — los writes están bloqueados');
+  app.use('/api/', devReadOnly);
+}
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));

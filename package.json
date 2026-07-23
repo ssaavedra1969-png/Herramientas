@@ -7,7 +7,9 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "backup": "node scripts/export-firebase.js",
-    "restore": "node scripts/restore-firebase.js"
+    "restore": "node scripts/restore-firebase.js",
+    "dev:snapshot": "node scripts/snapshot-dev.js",
+    "dev:restore": "node scripts/restore-dev.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.6",

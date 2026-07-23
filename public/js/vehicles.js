@@ -413,8 +413,8 @@ async function saveVehicle(e) {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.tipo) {
-    showToast('Completá todos los campos obligatorios', 'error');
+  if (!data.patente) {
+    showToast('La patente es obligatoria', 'error');
     return;
   }
 

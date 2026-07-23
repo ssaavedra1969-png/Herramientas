@@ -75,8 +75,8 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       updatedAt: new Date()
     };
 
-    if (!data.patente || !data.marca || !data.modelo || !data.año || !data.chasis || !data.tipo) {
-      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    if (!data.patente) {
+      return res.status(400).json({ error: 'La patente es obligatoria' });
     }
 
     const existing = await db.collection('vehicles').where('patente', '==', data.patente).get();
