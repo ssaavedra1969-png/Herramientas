@@ -391,6 +391,37 @@ PENDIENTES FUTUROS
 - Alertas VTV/seguro con badges de color en la tabla de vehiculos
 
 
+SOLUCION DE PROBLEMAS — GIT PUSH (403 denied)
+----------------------------------------------
+Si `git push origin main` falla con:
+  "Permission to ssaavedra1969-png/Herramientas.git denied to letraymusica1969-design"
+
+CAUSA: El archivo C:\Users\<usuario>\.gitconfig tiene gh configurado
+como credential helper para GitHub, pero gh NO esta autenticado.
+Esto hace que gh intercepte las credenciales y devuelva datos
+del usuario equivocado.
+
+SOLUCION: Abrir C:\Users\<usuario>\.gitconfig y dejar solo esto:
+
+  [credential]
+      helper = manager
+
+Eliminar las lineas que dicen:
+  [credential "https://github.com"]
+      helper =
+      helper = !'C:\\Program Files\\GitHub CLI\\gh.exe' auth git-credential
+
+Esto hace que git use el Windows Credential Manager (popup automatico)
+o el askpass del IDE (Antigravity/VS Code).
+
+Si se necesita restaurar la config, crear una copia de seguridad
+del .gitconfig antes de modificar.
+
+Si el problema persiste, ejecutar:
+  git config --global credential.helper manager
+  git config --global --unset credential.https://github.com.helper
+
+
 ============================================================
   Fin de actualizaciones — 22 de julio de 2026
   ============================================================
