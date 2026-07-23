@@ -28,8 +28,8 @@
       <!-- TAB: VEHÍCULOS -->
       <div id="tab-vehiculos" class="tab-content">
         <!-- Summary Cards Row 1 -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#6C3CE1]/30 transition" onclick="showVehiculosModal()">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-[#8E94A8] text-xs font-medium">Vehículos Activos</p>
@@ -40,7 +40,7 @@
               </div>
             </div>
           </div>
-          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center">
+          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#F59E0B]/30 transition" onclick="showVtvAlertModal()">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-[#8E94A8] text-xs font-medium">VTV por vencer</p>
@@ -52,7 +52,7 @@
               </div>
             </div>
           </div>
-          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center">
+          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#8B5CF6]/30 transition" onclick="showSeguroModal()">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-[#8E94A8] text-xs font-medium">Seguro por vencer</p>
@@ -64,46 +64,21 @@
               </div>
             </div>
           </div>
-          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[#8E94A8] text-xs font-medium">Gasto del mes</p>
-                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-gasto-mes"><span class="skeleton skeleton-stat inline-block"></span></p>
-                <p class="text-xs text-[#5C6378] mt-1">combustible + repuestos</p>
-              </div>
-              <div class="w-10 h-10 bg-[#10B981]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Summary Cards Row 2: Empresas -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div class="glass-card rounded-xl p-5 card-3d flex flex-col min-h-[160px]">
-            <div class="flex items-center justify-between shrink-0">
-              <div>
-                <p class="text-[#8E94A8] text-sm font-medium">Empresas</p>
-                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-empresas"><span class="skeleton skeleton-stat inline-block"></span></p>
-              </div>
-              <div class="w-10 h-10 bg-[#10B981]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-              </div>
+        <div class="glass-card rounded-xl p-5 card-3d mt-4">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-lg font-semibold text-[#F1F3F8]">Empresas</p>
+              <p class="text-[#5C6378] text-xs">Click en una empresa para ver sus vehículos</p>
             </div>
-            <div id="empresas-list" class="mt-3 space-y-1 overflow-y-auto flex-1 pr-1">
-              <div class="space-y-2"><div class="skeleton skeleton-row" style="height:2rem"></div><div class="skeleton skeleton-row" style="height:2rem;width:75%"></div><div class="skeleton skeleton-row" style="height:2rem;width:50%"></div></div>
+            <div class="w-10 h-10 bg-[#10B981]/10 rounded-lg flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             </div>
           </div>
-          <div class="glass-card rounded-xl p-5 card-3d flex flex-col min-h-[160px]">
-            <div class="flex items-center justify-between shrink-0">
-              <div>
-                <p class="text-[#8E94A8] text-sm font-medium">Distribución de Gastos</p>
-              </div>
-              <div class="w-10 h-10 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
-              </div>
-            </div>
-            <div class="chart-container flex-1" style="position:relative;min-height:120px;"><canvas id="chart-donut-gastos"></canvas></div>
+          <div id="empresas-list" class="space-y-2 overflow-y-auto max-h-60 pr-1">
+            <div class="space-y-2"><div class="skeleton skeleton-row" style="height:2rem"></div><div class="skeleton skeleton-row" style="height:2rem;width:75%"></div><div class="skeleton skeleton-row" style="height:2rem;width:50%"></div></div>
           </div>
         </div>
 
@@ -115,17 +90,29 @@
           </div>
         </div>
 
-        <!-- Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Consumo de Combustible</h3>
-            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-combustible"></canvas></div>
-          </div>
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Gasto en Combustible por Vehículo</h3>
-            <div class="chart-container" style="position:relative;height:250px;"><canvas id="chart-gasto-vehiculos"></canvas></div>
+        <!-- Dashboard Detail Modal (genérico) -->
+        <div id="dash-modal" class="fixed inset-0 z-50 hidden">
+          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeDashModal()"></div>
+          <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="glass-card rounded-2xl w-full max-w-md overflow-hidden" style="border:1px solid rgba(108,60,222,0.25);box-shadow:0 25px 60px -12px rgba(0,0,0,0.9),0 0 40px rgba(108,60,222,0.1);">
+              <div id="dash-modal-header" class="px-5 pt-5 pb-3 flex items-center gap-3" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div id="dash-modal-icon" class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"></div>
+                <div class="flex-1">
+                  <h3 id="dash-modal-title" class="text-lg font-bold text-[#F1F3F8]"></h3>
+                  <p id="dash-modal-subtitle" class="text-[11px] text-[#8E94A8] mt-0.5"></p>
+                </div>
+                <button onclick="closeDashModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-[#5C6378] hover:text-[#F1F3F8] hover:bg-white/5 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div id="dash-modal-body" class="px-5 py-4 max-h-80 overflow-y-auto space-y-2"></div>
+              <div id="dash-modal-footer" class="px-5 py-3 border-t border-white/5 flex justify-end">
+                <button onclick="closeDashModal()" class="px-5 py-2 rounded-xl text-sm font-semibold transition" style="background:linear-gradient(135deg,#6C3CE1,#00D4FF);color:#fff;">Cerrar</button>
+              </div>
+            </div>
           </div>
         </div>
+
       </div>
 
     </main>
@@ -135,4 +122,7 @@
 <%- include('partials/mobile-menu', { page: 'dashboard' }) %>
 
 <script src="/js/dashboard.js?v=44e609d"></script>
+<script>
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDashModal(); });
+</script>
 <%- include('partials/footer') %>
