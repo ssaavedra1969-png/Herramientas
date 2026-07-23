@@ -24,6 +24,25 @@ Si hay conflictos: resolver manualmente (mirar qué línea quedó de cada lado),
 
 Si el hook detecta que el branch está desactualizado, bloquea el commit. Hacer `git pull origin main` antes de commitear. Para saltar el hook (NO recomendado): `git commit --no-verify`.
 
+### Rutina diaria (INICIO y CIERRE de cada sesión)
+
+**Al INICIAR sesión (antes de tocar archivos):**
+```bash
+git pull origin main
+npm start
+```
+
+**Al CERRAR sesión (antes de irse):**
+```bash
+git add .
+git commit -m "descripcion"
+git push origin main
+```
+
+Si el push falla: `git pull origin main` y repetir el push.
+
+La IA SIEMPRE debe ejecutar `git pull origin main` al inicio de cada sesión.
+
 Archivo completo de reglas: `GUIA-INSTALACION.txt` (sección "ANEXO — REGLAS PARA IA")
 
 ## Stack
