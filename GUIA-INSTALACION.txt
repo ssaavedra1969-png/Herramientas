@@ -423,5 +423,111 @@ Si el problema persiste, ejecutar:
 
 
 ============================================================
-  Fin de actualizaciones — 22 de julio de 2026
+  Fin de actualizaciones — 23 de julio de 2026
+  ============================================================
+
+ESTADO ACTUAL DEL PROYECTO
+---------------------------
+El sistema esta funcionando en produccion y desarrollo.
+- Produccion: https://falpat-control-de-vehiculos.vercel.app
+- Desarrollo local: http://localhost:3000
+
+Para iniciar el servidor local:
+  cd "C:\AI\Antigravity\FALPAT srl\Falpat Herramientas"
+  node server.js
+
+
+ULTIMOS CAMBIOS REALIZADOS
+---------------------------
+Commit: 8f33ba3 — 9 mejoras UI (23 de julio de 2026)
+
+1. FILTROS DINAMICOS EN VEHICULOS
+   - Los selects de Marca, Tipo, Subtipo, Centro y Empresa ahora
+     se pueblan automaticamente desde los datos reales de Firestore.
+   - Ya no hay opciones hardcodeadas en el HTML.
+   Archivos modificados:
+     - views/vehicles.ejs (selects vacios)
+     - public/js/vehicles.js (funcion populateFilterDropdowns)
+
+2. FOTO HERO DIFUMINADA EN DETALLE DE VEHICULO
+   - Al entrar al detalle de un vehiculo con foto, se muestra la
+     imagen de fondo con efecto blur (20px) y oscurecida.
+   - La imagen cubre todo el fondo del main con un degradado.
+   - En impresion se oculta automaticamente.
+   Archivos modificados:
+     - views/vehicle-detail.ejs (div hero)
+     - public/js/vehicle-detail.js (renderFoto actualizado)
+     - public/css/styles.css (estilos hero)
+
+3. ACCORDION EN MOBILE (detalle vehiculo)
+   - El tab bar se reemplaza por secciones colapsables en mobile.
+   - En desktop sigue el tab bar horizontal sticky.
+   Archivos modificados:
+     - views/vehicle-detail.ejs (accordion headers)
+     - public/js/vehicle-detail.js (toggleAccordion)
+     - public/css/styles.css (estilos accordion)
+
+4. ORDENAMIENTO DE COLUMNAS (tabla vehiculos)
+   - Click en los headers de la tabla para ordenar asc/desc.
+   - Flecha indicadora del campo activo.
+   Archivos modificados:
+     - views/vehicles.ejs (headers clickeables)
+     - public/js/vehicles.js (sortBy, sortField, sortDir)
+
+5. SKELETON LOADERS
+   - Shimmer animado reemplaza "Cargando..." en dashboard,
+     vehiculos y detalle.
+   Archivos modificados:
+     - views/dashboard.ejs
+     - views/vehicle-detail.ejs
+     - public/js/vehicles.js
+     - public/css/styles.css
+
+6. TRANSICIONES AL FILTRAR
+   - Animacion fade-in de filas/cards al cambiar filtros.
+   Archivos modificados:
+     - public/js/vehicles.js (clase fade-row)
+     - public/css/styles.css (animacion fadeInRow)
+
+7. BARRA DE COMPLETITUD EN MODAL DE EDICION
+   - Muestra % de campos completos en el header del modal.
+   - Se actualiza en tiempo real al escribir.
+   Archivos modificados:
+     - views/vehicle-detail.ejs (HTML bar)
+     - public/js/vehicle-detail.js (updateCompleteness)
+     - public/css/styles.css (estilos completeness)
+
+8. ANIMACION DE CONTEO EN DASHBOARD
+   - Los numeros de las stat cards se animan con easing al cargar.
+   Archivos modificados:
+     - public/js/dashboard.js (animateValue)
+
+9. DARK MODE CON GRADIENTES
+   - Gradientes radiales sutiles (purpura/cyan) en el fondo.
+   Archivos modificados:
+     - public/css/styles.css (body::after)
+
+
+COMO CONTINUAR
+--------------
+Para retomar el trabajo manana:
+
+1. Abrir terminal en la carpeta del proyecto.
+2. Iniciar servidor: node server.js
+3. Abrir http://localhost:3000 en el navegador.
+4. Probar los cambios localmente (filtros, skeleton, accordion, etc.).
+5. Cuando todo este bien, hacer deploy con:
+     vercel --prod
+6. IMPORTANTE: SIEMPRE probar en local ANTES de deployar a produccion.
+
+
+PENDIENTES FUTUROS
+------------------
+- Subida de fotos reales desde la PC (drag & drop + Firebase Storage)
+- Historial de combustible con graficos de eficiencia (litros/100km)
+- Alertas VTV/seguro con badges de color en la tabla de vehiculos
+
+
+============================================================
+  Fin de actualizaciones — 23 de julio de 2026
   ============================================================
