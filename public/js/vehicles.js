@@ -7,6 +7,32 @@ let viewMode = localStorage.getItem('vehicles-view-mode') || 'table';
 let sortField = 'interno';
 let sortDir = 'asc';
 
+const brandLogos = {
+  'mercedes benz': '/img/logos/mercedes-benz.svg',
+  'scania': '/img/logos/scania.svg',
+  'volvo': '/img/logos/volvo.svg',
+  'iveco': '/img/logos/iveco.svg',
+  'volkswagen': '/img/logos/volkswagen.svg',
+  'ford': '/img/logos/ford.svg',
+  'chevrolet': '/img/logos/chevrolet.svg',
+  'toyota': '/img/logos/toyota.svg',
+  'fiat': '/img/logos/fiat.svg',
+  'renault': '/img/logos/renault.svg',
+  'nissan': '/img/logos/nissan.svg',
+  'jcb': '/img/logos/jcb.svg',
+  'caterpillar': '/img/logos/caterpillar.svg',
+  'komatsu': '/img/logos/komatsu.svg',
+  'hyundai': '/img/logos/hyundai.svg',
+  'new holland': '/img/logos/new-holland.svg',
+  'john deere': '/img/logos/john-deere.svg',
+  'case': '/img/logos/case.svg'
+};
+
+function getBrandLogo(marca) {
+  if (!marca) return '';
+  return brandLogos[marca.toLowerCase().trim()] || '';
+}
+
 function parseTrompoRaw(val) {
   const s = String(val || '').trim().toLowerCase().replace(/['"]/g, '');
   return s === 'si' || s === 'sí';
@@ -259,9 +285,12 @@ function renderVehicleCards(vehicles) {
         ${checkHtml}
         ${fotoHtml}
         <div class="vehicle-card-header">
-          <div>
-            <div class="card-patente">${mv.patente || '—'}</div>
-            <div class="card-marca-modelo">${mv.marca || ''} ${mv.modelo || ''}</div>
+          <div class="flex items-center gap-2">
+            ${getBrandLogo(mv.marca) ? `<img src="${getBrandLogo(mv.marca)}" alt="${mv.marca}" class="w-7 h-7 object-contain flex-shrink-0" onerror="this.style.display='none'">` : ''}
+            <div>
+              <div class="card-patente">${mv.patente || '—'}</div>
+              <div class="card-marca-modelo">${mv.marca || ''} ${mv.modelo || ''}</div>
+            </div>
           </div>
           <div class="card-interno">${mv.interno || '—'}</div>
         </div>
