@@ -438,12 +438,17 @@ SIN EXCEPCION. VIOLARLAS GENERA PERDIDA DE CAMBIOS.
 
 REGLA 1 — SIEMPRE PULL ANTES DE MODIFICAR
 -------------------------------------------
-ANTES de editar CUALQUIER archivo, ejecutar:
+ANTES de editar CUALquier archivo, ejecutar el comando de
+sincronización completo:
 
-  git stash
-  git pull origin main
+  git stash && git pull origin main && git stash pop
 
-Si hay conflictos, NO resolver automaticamente. Preguntar al usuario.
+Si hay conflictos: resolver manualmente (mirar qué línea quedó
+de cada lado), luego git add . y git commit.
+
+Si el hook pre-commit bloquea el commit, es porque el branch
+está desactualizado. Hacer git pull origin main primero.
+Para saltar el hook (NO recomendado): git commit --no-verify.
 
 
 REGLA 2 — NUNCA EDITAR ARCHIVOS QUE OTRO GRUPO PUEDE CAMBIAR
