@@ -166,7 +166,76 @@ function animateValue(el, start, end, duration, prefix, suffix) {
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initRealtimeListeners();
+  initDashSearch();
+  initDashClock();
 });
+
+function initDashClock() {
+  const clockEl = document.getElementById('dash-clock');
+  const dateEl = document.getElementById('dash-date');
+  if (!clockEl || !dateEl) return;
+
+  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function tick() {
+    const now = new Date();
+    clockEl.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    dateEl.textContent = days[now.getDay()] + ' ' + now.getDate() + ' de ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  }
+
+  tick();
+  setInterval(tick, 1000);
+}
+
+function initDashSearch() {
+  const input = document.getElementById('dash-search');
+  const results = document.getElementById('dash-search-results');
+  if (!input || !results) return;
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (q.length < 2) { results.classList.add('hidden'); return; }
+    const matches = allVehicles.filter(v =>
+      (v.patente || '').toLowerCase().includes(q) ||
+      (v.interno || '').toLowerCase().includes(q) ||
+      (v.marca || '').toLowerCase().includes(q) ||
+      (v.modelo || '').toLowerCase().includes(q) ||
+      (v.empresa || '').toLowerCase().includes(q) ||
+      (v.centroTrabajo || '').toLowerCase().includes(q)
+    ).slice(0, 8);
+    if (matches.length === 0) {
+      results.innerHTML = '<div class="px-4 py-3 text-[#5C6378] text-sm">Sin resultados</div>';
+    } else {
+      results.innerHTML = matches.map(v => {
+        const extra = v.empresa ? `<span class="text-[10px] text-[#5C6378]">${v.empresa}</span>` : '';
+        return `<div class="px-4 py-2.5 cursor-pointer hover:bg-white/[0.04] transition flex items-center gap-3" onclick="window.location.href='/vehicle/${v.id}'">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0" style="background:rgba(108,60,222,0.15);color:#A78BFA;">${(v.interno || '?').substring(0,4)}</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[#F1F3F8] text-sm font-semibold truncate">${v.patente || '—'}</p>
+            <p class="text-[#5C6378] text-[10px] truncate">${v.marca || ''} ${v.modelo || ''}</p>
+          </div>
+          ${extra}
+        </div>`;
+      }).join('');
+    }
+    results.classList.remove('hidden');
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { results.classList.add('hidden'); input.blur(); }
+    if (e.key === 'Enter') {
+      const first = results.querySelector('[onclick]');
+      if (first) first.click();
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !results.contains(e.target)) results.classList.add('hidden');
+  });
+}
 
 function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
