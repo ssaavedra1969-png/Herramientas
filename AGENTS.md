@@ -6,11 +6,11 @@
 - **Database:** Firebase Firestore (project: `engaged-card-450213-d7`)
 - **Auth:** Firebase Auth (Google + email/password) + session cookies
 - **Frontend:** Tailwind CSS 3, Chart.js 4, SweetAlert2, PapaParse, XLSX
-- **Deploy:** Vercel (`vercel --prod`) → https://herramientas-five.vercel.app
+- **Deploy:** Vercel (`vercel --prod`) → https://falpat-control-de-vehiculos.vercel.app
 
 ## Proyecto local
 ```bash
-cd C:\AI\Antigravity\Herramientas
+cd "C:\AI\Antigravity\FALPAT srl\Falpat Herramientas"
 npm start           # Inicia servidor en puerto 3000
 vercel --prod       # Deploy a producción
 ```

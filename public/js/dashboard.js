@@ -2,6 +2,21 @@ let chartCombustible = null;
 let chartGastoVehiculos = null;
 let chartDonutGastos = null;
 
+function animateValue(el, start, end, duration, prefix, suffix) {
+  prefix = prefix || '';
+  suffix = suffix || '';
+  const startTime = performance.now();
+  const step = (now) => {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(start + (end - start) * eased);
+    el.textContent = prefix + current.toLocaleString('es-AR') + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initRealtimeListeners();
@@ -34,7 +49,10 @@ function initRealtimeListeners() {
   db.collection('vehicles').orderBy('interno').onSnapshot((snapshot) => {
     const all = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     const active = all.filter(d => d.estadoGeneral !== 'Baja').length;
-    document.getElementById('card-vehiculos').textContent = active;
+
+    const elVehiculos = document.getElementById('card-vehiculos');
+    const prevVehiculos = parseInt(elVehiculos.textContent) || 0;
+    animateValue(elVehiculos, prevVehiculos, active, 800);
 
     const now = new Date();
     let vtvCount = 0, seguroCount = 0;
@@ -45,8 +63,19 @@ function initRealtimeListeners() {
       const segDays = daysUntil(v.seguro?.fechaVencimiento);
       if (segDays !== null && segDays <= 30) seguroCount++;
     });
-    document.getElementById('card-vtv-proximas').textContent = vtvCount;
-    document.getElementById('card-seguro-proximos').textContent = seguroCount;
+
+    const elVtv = document.getElementById('card-vtv-proximas');
+    const prevVtv = parseInt(elVtv.textContent) || 0;
+    animateValue(elVtv, prevVtv, vtvCount, 800);
+
+    const elSeg = document.getElementById('card-seguro-proximos');
+    const prevSeg = parseInt(elSeg.textContent) || 0;
+    animateValue(elSeg, prevSeg, seguroCount, 800);
+
+    const elEmpresas = document.getElementById('card-empresas');
+    const empresas = [...new Set(all.map(v => v.empresa).filter(Boolean))];
+    const prevEmp = parseInt(elEmpresas.textContent) || 0;
+    animateValue(elEmpresas, prevEmp, empresas.length, 800);
 
     renderEmpresas(all);
     renderAlertasVTV(all);
@@ -95,7 +124,6 @@ function renderEmpresas(vehicles) {
   if (!container) return;
 
   const empresas = [...new Set(vehicles.map(v => v.empresa).filter(Boolean))].sort();
-  document.getElementById('card-empresas').textContent = empresas.length || '0';
 
   if (empresas.length === 0) {
     container.innerHTML = '<p class="text-[#5C6378] text-sm">Sin empresas registradas</p>';

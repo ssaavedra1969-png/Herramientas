@@ -33,7 +33,7 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-[#8E94A8] text-xs font-medium">Vehículos Activos</p>
-                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-vehiculos">-</p>
+                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-vehiculos"><span class="skeleton skeleton-stat inline-block"></span></p>
               </div>
               <div class="w-10 h-10 bg-[#6C3CE1]/10 rounded-lg flex items-center justify-center shrink-0">
                 <svg class="w-5 h-5 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
@@ -44,7 +44,7 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-[#8E94A8] text-xs font-medium">VTV por vencer</p>
-                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-vtv-proximas">-</p>
+                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-vtv-proximas"><span class="skeleton skeleton-stat inline-block"></span></p>
                 <p class="text-xs text-[#5C6378] mt-1">≤30 días</p>
               </div>
               <div class="w-10 h-10 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center shrink-0">
@@ -56,7 +56,7 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-[#8E94A8] text-xs font-medium">Seguro por vencer</p>
-                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-seguro-proximos">-</p>
+                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-seguro-proximos"><span class="skeleton skeleton-stat inline-block"></span></p>
                 <p class="text-xs text-[#5C6378] mt-1">≤30 días</p>
               </div>
               <div class="w-10 h-10 bg-[#8B5CF6]/10 rounded-lg flex items-center justify-center shrink-0">
@@ -68,7 +68,7 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-[#8E94A8] text-xs font-medium">Gasto del mes</p>
-                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-gasto-mes">-</p>
+                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-gasto-mes"><span class="skeleton skeleton-stat inline-block"></span></p>
                 <p class="text-xs text-[#5C6378] mt-1">combustible + repuestos</p>
               </div>
               <div class="w-10 h-10 bg-[#10B981]/10 rounded-lg flex items-center justify-center shrink-0">
@@ -84,14 +84,14 @@
             <div class="flex items-center justify-between shrink-0">
               <div>
                 <p class="text-[#8E94A8] text-sm font-medium">Empresas</p>
-                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-empresas">-</p>
+                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-empresas"><span class="skeleton skeleton-stat inline-block"></span></p>
               </div>
               <div class="w-10 h-10 bg-[#10B981]/10 rounded-lg flex items-center justify-center shrink-0">
                 <svg class="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
               </div>
             </div>
             <div id="empresas-list" class="mt-3 space-y-1 overflow-y-auto flex-1 pr-1">
-              <p class="text-[#5C6378] text-sm">Cargando...</p>
+              <div class="space-y-2"><div class="skeleton skeleton-row" style="height:2rem"></div><div class="skeleton skeleton-row" style="height:2rem;width:75%"></div><div class="skeleton skeleton-row" style="height:2rem;width:50%"></div></div>
             </div>
           </div>
           <div class="glass-card rounded-xl p-5 card-3d flex flex-col min-h-[160px]">

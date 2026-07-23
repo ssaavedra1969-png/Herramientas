@@ -20,13 +20,26 @@
     .info-bar strong { color: #F1F3F8; }
 
     .sticker-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 100mm);
-      grid-auto-rows: 70mm;
-      gap: 4mm;
-      justify-content: center;
       max-width: 1100px;
       margin: 0 auto;
+    }
+    .print-page {
+      width: 297mm;
+      height: 210mm;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, 100mm);
+      grid-template-rows: repeat(2, 70mm);
+      gap: 4mm;
+      justify-content: center;
+      align-content: center;
+      page-break-after: always;
+      break-after: page;
+      padding: 5mm;
+    }
+    .print-page:last-child {
+      page-break-after: auto;
+      break-after: auto;
     }
     .sticker {
       width: 100mm;
@@ -35,8 +48,6 @@
       border-radius: 4mm;
       overflow: hidden;
       position: relative;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     .sticker-header {
       background: linear-gradient(135deg, #6C3CE1, #00D4FF);
@@ -68,14 +79,12 @@
       left: 0;
       right: 0;
     }
-    .page-separator { display: none; }
-
     @media print {
+      @page { size: A4 landscape; margin: 5mm; }
       body { background: #fff !important; padding: 0; margin: 0; }
       .no-print { display: none !important; }
       .sticker { box-shadow: none; }
-      .sticker-grid { gap: 2mm; }
-      .page-separator { display: block; page-break-after: always; break-after: page; height: 0; }
+      .print-page { gap: 2mm; padding: 3mm; }
     }
   </style>
 </head>
@@ -103,41 +112,49 @@
   </div>
 
   <div class="sticker-grid" id="sticker-grid">
-    <% vehicles.forEach((v, i) => { %>
-      <% if (i > 0 && i % 4 === 0) { %><div class="page-separator"></div><% } %>
-      <div class="sticker">
-        <div class="sticker-header">
-          <div style="display:flex;align-items:center;gap:2mm;">
-            <div style="background:#fff;border-radius:2mm;width:8mm;height:8mm;display:flex;align-items:center;justify-content:center;">
-              <span style="color:#6C3CE1;font-size:9pt;font-weight:900;">GF</span>
-            </div>
-            <div style="display:flex;flex-direction:column;">
-              <span style="color:#fff;font-size:8pt;font-weight:700;letter-spacing:0.5px;">GRUPO FALPAT SRL</span>
-              <span style="color:rgba(255,255,255,0.8);font-size:6pt;">Control de Mantenimiento</span>
-            </div>
-          </div>
-          <div style="text-align:right;">
-            <span style="color:rgba(255,255,255,0.6);font-size:5.5pt;display:block;">Interno</span>
-            <span style="color:#fff;font-size:13pt;font-weight:900;letter-spacing:1px;line-height:1;"><%= v.interno || '—' %></span>
-          </div>
-        </div>
+    <% const perPage = 4; %>
+    <% for (let p = 0; p < Math.ceil(vehicles.length / perPage); p++) { %>
+      <div class="print-page">
+        <% for (let j = 0; j < perPage; j++) { %>
+          <% const i = p * perPage + j; %>
+          <% if (i < vehicles.length) { %>
+            <% const v = vehicles[i]; %>
+            <div class="sticker">
+              <div class="sticker-header">
+                <div style="display:flex;align-items:center;gap:2mm;">
+                  <div style="background:#fff;border-radius:2mm;width:8mm;height:8mm;display:flex;align-items:center;justify-content:center;">
+                    <span style="color:#6C3CE1;font-size:9pt;font-weight:900;">GF</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;">
+                    <span style="color:#fff;font-size:8pt;font-weight:700;letter-spacing:0.5px;">GRUPO FALPAT SRL</span>
+                    <span style="color:rgba(255,255,255,0.8);font-size:6pt;">Control de Mantenimiento</span>
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <span style="color:rgba(255,255,255,0.6);font-size:5.5pt;display:block;">Interno</span>
+                  <span style="color:#fff;font-size:13pt;font-weight:900;letter-spacing:1px;line-height:1;"><%= v.interno || '—' %></span>
+                </div>
+              </div>
 
-        <div class="sticker-body">
-          <div class="sticker-qr">
-            <div id="qr-<%= i %>"></div>
-          </div>
-          <div class="sticker-info">
-            <div class="sticker-patente"><%= v.patente || '—' %></div>
-            <div style="font-size:8pt;font-weight:700;color:#1a1a2e;margin-top:1.5mm;"><%= v.marca || '' %> <%= v.modelo || '' %></div>
-          </div>
-        </div>
+              <div class="sticker-body">
+                <div class="sticker-qr">
+                  <div id="qr-<%= i %>"></div>
+                </div>
+                <div class="sticker-info">
+                  <div class="sticker-patente"><%= v.patente || '—' %></div>
+                  <div style="font-size:8pt;font-weight:700;color:#1a1a2e;margin-top:1.5mm;"><%= v.marca || '' %> <%= v.modelo || '' %></div>
+                </div>
+              </div>
 
-        <div class="sticker-footer">
-          <span style="font-size:6.5pt;color:#333;font-weight:600;font-family:'Segoe UI',Arial,sans-serif;"><%= v.marca || '' %> <%= v.modelo || '' %></span>
-          <span style="font-size:6pt;color:#888;font-family:'Segoe UI',Arial,sans-serif;"><%= v.empresa || '' %></span>
-        </div>
+              <div class="sticker-footer">
+                <span style="font-size:6.5pt;color:#333;font-weight:600;font-family:'Segoe UI',Arial,sans-serif;"><%= v.marca || '' %> <%= v.modelo || '' %></span>
+                <span style="font-size:6pt;color:#888;font-family:'Segoe UI',Arial,sans-serif;"><%= v.empresa || '' %></span>
+              </div>
+            </div>
+          <% } %>
+        <% } %>
       </div>
-    <% }) %>
+    <% } %>
   </div>
 
   <script>

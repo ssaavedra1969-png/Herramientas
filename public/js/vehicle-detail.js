@@ -20,6 +20,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('v-trompo')?.addEventListener('change', (e) => {
     document.getElementById('v-trompo-fields').classList.toggle('hidden', !e.target.checked);
   });
+  ['v-patente','v-marca','v-modelo','v-anio','v-tipo','v-kilometraje','v-centroTrabajo','v-conductorHabitual','v-empresa'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updateCompleteness);
+  });
+
+  if (window.innerWidth < 768) {
+    const resumenChevron = document.querySelector('#accordion-header-resumen .accordion-chevron');
+    if (resumenChevron) resumenChevron.style.transform = 'rotate(180deg)';
+    document.getElementById('accordion-header-resumen')?.classList.add('accordion-active');
+  }
 });
 
 async function loadVehicle() {
@@ -149,9 +158,15 @@ function renderDocumentos() {
 function renderFoto() {
   const container = document.getElementById('vg-foto-container');
   const img = document.getElementById('vg-foto');
+  const hero = document.getElementById('vehicle-hero');
+  const heroImg = document.getElementById('vehicle-hero-img');
   if (vehicleData.fotoURL) {
     container.classList.remove('hidden');
     img.src = vehicleData.fotoURL;
+    if (hero && heroImg) {
+      hero.classList.remove('hidden');
+      heroImg.style.backgroundImage = `url(${vehicleData.fotoURL})`;
+    }
   } else {
     container.classList.add('hidden');
   }
@@ -177,6 +192,28 @@ function switchTab(tab) {
   }
   if (tab === 'codigobarras') {
     setTimeout(generateBarcode, 100);
+  }
+}
+
+function toggleAccordion(tab) {
+  const content = document.getElementById(`tab-content-${tab}`);
+  const header = document.getElementById(`accordion-header-${tab}`);
+  if (!content || !header) return;
+
+  const chevron = header.querySelector('.accordion-chevron');
+  const isOpen = !content.classList.contains('hidden');
+
+  if (isOpen) {
+    content.classList.add('hidden');
+    if (chevron) chevron.style.transform = '';
+    header.classList.remove('accordion-active');
+  } else {
+    content.classList.remove('hidden');
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
+    header.classList.add('accordion-active');
+
+    if (tab === 'qr') setTimeout(generateQR, 100);
+    if (tab === 'codigobarras') setTimeout(generateBarcode, 100);
   }
 }
 
@@ -399,6 +436,23 @@ function openEditVehicle() {
   document.getElementById('v-foto').value = vehicleData.fotoURL || '';
 
   showModal('modal-vehiculo');
+  updateCompleteness();
+}
+
+function updateCompleteness() {
+  const fields = ['v-patente', 'v-marca', 'v-modelo', 'v-anio', 'v-tipo', 'v-kilometraje', 'v-centroTrabajo', 'v-conductorHabitual', 'v-empresa'];
+  const filled = fields.filter(id => {
+    const el = document.getElementById(id);
+    return el && el.value && el.value.trim();
+  }).length;
+  const pct = Math.round((filled / fields.length) * 100);
+  const fillEl = document.getElementById('completeness-fill');
+  const textEl = document.getElementById('completeness-text');
+  if (fillEl) {
+    fillEl.style.width = pct + '%';
+    fillEl.className = 'completeness-fill ' + (pct < 40 ? 'low' : pct < 75 ? 'mid' : 'high');
+  }
+  if (textEl) textEl.textContent = pct + '%';
 }
 
 function closeVehicleModal() {

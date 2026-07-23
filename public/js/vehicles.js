@@ -3,6 +3,9 @@ let editingVehicleId = null;
 let csvValidatedData = [];
 let patenteSet = new Set();
 let selectedIds = new Set();
+let viewMode = localStorage.getItem('vehicles-view-mode') || 'table';
+let sortField = 'interno';
+let sortDir = 'asc';
 
 function parseTrompoRaw(val) {
   const s = String(val || '').trim().toLowerCase().replace(/['"]/g, '');
@@ -37,7 +40,59 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('v-trompo')?.addEventListener('change', (e) => {
     document.getElementById('v-trompo-fields').classList.toggle('hidden', !e.target.checked);
   });
+  setViewMode(viewMode, false);
 });
+
+function setViewMode(mode, save = true) {
+  viewMode = mode;
+  if (save) localStorage.setItem('vehicles-view-mode', mode);
+  const tableView = document.getElementById('view-table');
+  const cardView = document.getElementById('view-card');
+  const tableBtn = document.getElementById('view-table-btn');
+  const cardBtn = document.getElementById('view-card-btn');
+  if (mode === 'card') {
+    tableView?.classList.add('hidden');
+    cardView?.classList.remove('hidden');
+    tableBtn?.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
+    tableBtn?.classList.add('text-[#8E94A8]');
+    cardBtn?.classList.add('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
+    cardBtn?.classList.remove('text-[#8E94A8]');
+  } else {
+    tableView?.classList.remove('hidden');
+    cardView?.classList.add('hidden');
+    tableBtn?.classList.add('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
+    tableBtn?.classList.remove('text-[#8E94A8]');
+    cardBtn?.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
+    cardBtn?.classList.add('text-[#8E94A8]');
+  }
+  applyFilters();
+}
+
+function toggleFilters() {
+  const panel = document.getElementById('filter-panel');
+  panel?.classList.toggle('hidden');
+}
+
+function updateActiveFiltersCount() {
+  const marca = document.getElementById('filter-marca')?.value || '';
+  const tipo = document.getElementById('filter-tipo')?.value || '';
+  const subtipo = document.getElementById('filter-subtipo')?.value || '';
+  const centro = document.getElementById('filter-centro')?.value || '';
+  const empresa = document.getElementById('filter-empresa')?.value || '';
+  const estado = document.getElementById('filter-estado')?.value || '';
+  const activeTrompoBtn = document.querySelector('[data-trompo-filter].bg-\\[\\#6C3CE1\\]\\/30');
+  const trompo = activeTrompoBtn ? activeTrompoBtn.dataset.trompoFilter : 'all';
+  const count = [marca, tipo, subtipo, centro, empresa, trompo !== 'all' ? trompo : ''].filter(Boolean).length;
+  const badge = document.getElementById('active-filters-count');
+  if (badge) {
+    if (count > 0) {
+      badge.textContent = count;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+}
 
 function initMobileMenu() {
   document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
@@ -55,6 +110,11 @@ function setupModalClose(modalId) {
 }
 
 function initRealtimeListener() {
+  const tbody = document.getElementById('vehiculos-table-body');
+  const grid = document.getElementById('vehiculos-card-grid');
+  if (tbody) tbody.innerHTML = Array(5).fill('<tr><td colspan="9"><div class="skeleton skeleton-row"></div></td></tr>').join('');
+  if (grid) grid.innerHTML = Array(6).fill('<div><div class="skeleton skeleton-card"></div></div>').join('');
+
   db.collection('vehicles').orderBy('interno').onSnapshot((snapshot) => {
     allVehicles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     patenteSet = new Set(allVehicles.map(v => (v.patente || '').toUpperCase()));
@@ -113,6 +173,11 @@ function fmap(v) {
 }
 
 function renderVehicles(vehicles) {
+  renderVehicleTable(vehicles);
+  renderVehicleCards(vehicles);
+}
+
+function renderVehicleTable(vehicles) {
   const tbody = document.getElementById('vehiculos-table-body');
   if (!tbody) return;
 
@@ -134,7 +199,7 @@ function renderVehicles(vehicles) {
       ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#6C3CE1]/20 text-[#A78BFA]">Si<span class="w-1.5 h-1.5 rounded-full bg-[#A78BFA]"></span></span>`
       : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#2E3247] text-[#5C6378]">No<span class="w-1.5 h-1.5 rounded-full bg-[#5C6378]"></span></span>`;
     return `
-      <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10 cursor-pointer" onclick="rowClick('${v.id}', event)">
+      <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10 cursor-pointer fade-row" onclick="rowClick('${v.id}', event)">
         ${checkboxCell}
         <td class="py-3 pr-3">${mv.interno || '—'}</td>
         <td class="py-3 pr-3 font-medium">${mv.patente || '—'}</td>
@@ -145,6 +210,81 @@ function renderVehicles(vehicles) {
         <td class="py-3 pr-3 text-xs">${mv.centroTrabajo || '—'}</td>
         <td class="py-3 no-print" onclick="event.stopPropagation()">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
       </tr>`;
+  }).join('');
+}
+
+function renderVehicleCards(vehicles) {
+  const grid = document.getElementById('vehiculos-card-grid');
+  if (!grid) return;
+
+  const admin = isAdmin();
+
+  if (vehicles.length === 0) {
+    grid.innerHTML = '<div class="col-span-full text-center py-12 text-[#5C6378]">No hay vehículos registrados</div>';
+    return;
+  }
+
+  grid.innerHTML = vehicles.map(v => {
+    const mv = fmap(v);
+    const checked = selectedIds.has(v.id);
+
+    let vtvBadge = '';
+    if (mv.vtv?.fechaVencimiento) {
+      const venc = mv.vtv.fechaVencimiento?.toDate ? mv.vtv.fechaVencimiento.toDate() : new Date(mv.vtv.fechaVencimiento);
+      const hoy = new Date();
+      const dias = Math.ceil((venc - hoy) / (1000 * 60 * 60 * 24));
+      if (dias < 0) vtvBadge = `<span class="card-badge vtv-expired">VTV vencida</span>`;
+      else if (dias <= 30) vtvBadge = `<span class="card-badge vtv-warn">VTV ${dias}d</span>`;
+      else vtvBadge = `<span class="card-badge vtv-ok">VTV OK</span>`;
+    }
+
+    const trompoBadge = mv.trompo
+      ? '<span class="card-badge trompo-yes">Trompo</span>'
+      : '';
+
+    const checkHtml = admin ? `<label class="card-check"><input type="checkbox" class="row-checkbox accent-[#6C3CE1]" value="${v.id}" ${checked ? 'checked' : ''} onchange="toggleRow('${v.id}', this.checked)"></label>` : '';
+
+    const fotoHtml = mv.fotoURL
+      ? `<img src="${mv.fotoURL}" alt="${mv.patente}" class="w-full h-28 object-cover" onerror="this.style.display='none'">`
+      : `<div class="w-full h-28 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center">
+          <svg class="w-10 h-10 text-[#6C3CE1]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>
+         </div>`;
+
+    return `
+      <div class="vehicle-card fade-row" onclick="rowClick('${v.id}', event)">
+        ${checkHtml}
+        ${fotoHtml}
+        <div class="vehicle-card-header">
+          <div>
+            <div class="card-patente">${mv.patente || '—'}</div>
+            <div class="card-marca-modelo">${mv.marca || ''} ${mv.modelo || ''}</div>
+          </div>
+          <div class="card-interno">${mv.interno || '—'}</div>
+        </div>
+        <div class="vehicle-card-body">
+          <div class="flex items-center gap-2 flex-wrap mb-2">
+            ${vtvBadge}
+            ${trompoBadge}
+            ${mv.tipo ? `<span class="card-detail"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>${mv.tipo}</span>` : ''}
+          </div>
+          <div class="flex flex-col gap-1">
+            ${mv.centroTrabajo ? `<div class="card-detail"><svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>${mv.centroTrabajo}</div>` : ''}
+            ${mv.empresa ? `<div class="card-detail"><svg class="w-3 h-3 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>${mv.empresa}</div>` : ''}
+            ${mv.kilometraje ? `<div class="card-detail"><svg class="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>${Number(mv.kilometraje).toLocaleString('es-AR')} km</div>` : ''}
+          </div>
+        </div>
+        <div class="vehicle-card-footer">
+          <span class="text-xs text-[#5C6378]">${mv.año || ''}</span>
+          <div class="card-actions" onclick="event.stopPropagation()">
+            <button onclick="viewVehicle('${v.id}')" title="Ver detalle">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </button>
+            ${admin ? `<button onclick="deleteVehicle('${v.id}')" title="Eliminar">
+              <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>` : ''}
+          </div>
+        </div>
+      </div>`;
   }).join('');
 }
 
@@ -228,7 +368,40 @@ function applyFilters() {
 
   document.getElementById('filter-count').textContent = filtered.length;
   document.getElementById('total-vehicles').textContent = filtered.length;
+  updateActiveFiltersCount();
+
+  filtered.sort((a, b) => {
+    let va = a[sortField] ?? '';
+    let vb = b[sortField] ?? '';
+    if (sortField === 'marca') { va = `${a.marca || ''} ${a.modelo || ''}`.trim(); vb = `${b.marca || ''} ${b.modelo || ''}`.trim(); }
+    if (sortField === 'kilometraje') { va = Number(va) || 0; vb = Number(vb) || 0; }
+    if (sortField === 'año') { va = Number(va) || 0; vb = Number(vb) || 0; }
+    if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   renderVehicles(filtered);
+}
+
+function sortBy(field) {
+  if (sortField === field) {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortField = field;
+    sortDir = 'asc';
+  }
+  document.querySelectorAll('.sort-arrow').forEach(el => {
+    el.textContent = '';
+    el.classList.remove('text-[#6C3CE1]');
+  });
+  const activeArrow = document.querySelector(`.sort-arrow[data-field="${field}"]`);
+  if (activeArrow) {
+    activeArrow.textContent = sortDir === 'asc' ? '▲' : '▼';
+    activeArrow.classList.add('text-[#6C3CE1]');
+  }
+  applyFilters();
 }
 
 function resetFilters() {
@@ -251,18 +424,22 @@ function resetFilters() {
 }
 
 function populateFilterDropdowns() {
-  const empresas = [...new Set(allVehicles.map(v => v.empresa).filter(Boolean))].sort();
-  const selEmp = document.getElementById('filter-empresa');
-  if (selEmp) {
-    selEmp.innerHTML = '<option value="" class="bg-[#0A0A1A]">Empresa: Todas</option>' +
-      empresas.map(e => `<option value="${e}" class="bg-[#0A0A1A]">${e}</option>`).join('');
-  }
-  const subtipos = [...new Set(allVehicles.map(v => v.subtipo).filter(Boolean))].sort();
-  const selSub = document.getElementById('filter-subtipo');
-  if (selSub) {
-    selSub.innerHTML = '<option value="" class="bg-[#0A0A1A]">Sub Tipo: Todos</option>' +
-      subtipos.map(s => `<option value="${s}" class="bg-[#0A0A1A]">${s}</option>`).join('');
-  }
+  const uniqueValues = (field) => [...new Set(allVehicles.map(v => v[field]).filter(Boolean))].sort();
+
+  populateSelect('filter-marca', 'Todas', uniqueValues('marca'));
+  populateSelect('filter-tipo', 'Todos', uniqueValues('tipo'));
+  populateSelect('filter-subtipo', 'Todos', uniqueValues('subtipo'));
+  populateSelect('filter-centro', 'Todos', uniqueValues('centroTrabajo'));
+  populateSelect('filter-empresa', 'Todas', uniqueValues('empresa'));
+}
+
+function populateSelect(id, defaultLabel, values) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = `<option value="" class="bg-[#0A0A1A]">${defaultLabel}</option>` +
+    values.map(v => `<option value="${v}" class="bg-[#0A0A1A]">${v}</option>`).join('');
+  if (prev && values.includes(prev)) sel.value = prev;
 }
 
 function openVehicleModal(vehicleId = null) {

@@ -10,17 +10,20 @@
       <span class="w-8 h-8 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
     </div>
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
+      <!-- Header: Título + Contador + Acciones -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div class="flex items-center gap-3">
           <h1 class="text-2xl font-bold text-gradient-primary">Vehículos</h1>
-          <p class="text-[#8E94A8] text-sm">Gestión de flota vehicular</p>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#6C3CE1]/15 text-[#A78BFA] border border-[#6C3CE1]/20">
+            <span id="total-vehicles">0</span>
+          </span>
         </div>
         <div class="flex gap-2 flex-wrap">
           <a href="/vehicle/scan" class="btn-secondary text-sm flex items-center gap-1 px-4 py-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg> Escáner
           </a>
           <button onclick="exportVehiclesExcel()" class="btn-secondary text-sm flex items-center gap-1 px-4 py-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Exportar Excel
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Excel
           </button>
           <% if (currentUserData?.role === 'Admin') { %>
           <div class="relative" id="import-dropdown">
@@ -40,142 +43,97 @@
         </div>
       </div>
 
-      <!-- Contador total -->
-      <div class="mt-6 glass-card rounded-xl p-6 flex items-center gap-4 border border-[#6C3CE1]/10">
-        <div class="w-12 h-12 rounded-full bg-[#6C3CE1]/15 flex items-center justify-center">
-          <svg class="w-6 h-6 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>
-        </div>
-        <div>
-          <p class="text-sm font-medium text-[#8E94A8] uppercase tracking-wider">Total de Vehículos</p>
-          <p class="text-4xl font-bold text-gradient-primary" id="total-vehicles">0</p>
-        </div>
-      </div>
-
-      <div class="mt-6 glass-card rounded-xl overflow-hidden">
-        <!-- Search bar -->
-        <div class="p-4 border-b border-[#6C3CE1]/10">
-          <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5C6378]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="search-vehiculo" placeholder="Buscá por patente, marca, modelo, interno..." class="w-full pl-10 pr-4 py-3 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-xl text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon transition-all focus:border-[#6C3CE1]/60 focus:ring-1 focus:ring-[#6C3CE1]/30">
+      <!-- Search + Controls Bar -->
+      <div class="glass-card rounded-xl overflow-hidden mb-4">
+        <div class="flex items-center gap-2 p-3">
+          <!-- Search input -->
+          <div class="relative flex-1">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C6378]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="search-vehiculo" placeholder="Buscar por patente, marca, modelo, interno..." class="w-full pl-9 pr-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/15 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon transition-all focus:border-[#6C3CE1]/50">
           </div>
-        </div>
-        <!-- Filters -->
-        <div class="px-4 py-3 space-y-3 bg-[#0A0A1A]/30">
-          <div class="flex flex-wrap items-end gap-3">
-            <!-- Marca -->
-            <div class="flex flex-col gap-1 min-w-[140px]">
-              <label class="text-[10px] font-medium text-[#8E94A8] uppercase tracking-wider">Marca</label>
-              <select id="filter-marca" class="px-3 py-2 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-                <option value="" class="bg-[#0A0A1A]">Todas</option>
-                <option value="Mercedes Benz" class="bg-[#0A0A1A]">Mercedes Benz</option>
-                <option value="Scania" class="bg-[#0A0A1A]">Scania</option>
-                <option value="Volvo" class="bg-[#0A0A1A]">Volvo</option>
-                <option value="Iveco" class="bg-[#0A0A1A]">Iveco</option>
-                <option value="Volkswagen" class="bg-[#0A0A1A]">Volkswagen</option>
-                <option value="Ford" class="bg-[#0A0A1A]">Ford</option>
-                <option value="Chevrolet" class="bg-[#0A0A1A]">Chevrolet</option>
-                <option value="Toyota" class="bg-[#0A0A1A]">Toyota</option>
-                <option value="Fiat" class="bg-[#0A0A1A]">Fiat</option>
-                <option value="Renault" class="bg-[#0A0A1A]">Renault</option>
-                <option value="Nissan" class="bg-[#0A0A1A]">Nissan</option>
-                <option value="JCB" class="bg-[#0A0A1A]">JCB</option>
-                <option value="Caterpillar" class="bg-[#0A0A1A]">Caterpillar</option>
-                <option value="Komatsu" class="bg-[#0A0A1A]">Komatsu</option>
-                <option value="Hyundai" class="bg-[#0A0A1A]">Hyundai</option>
-                <option value="New Holland" class="bg-[#0A0A1A]">New Holland</option>
-                <option value="John Deere" class="bg-[#0A0A1A]">John Deere</option>
-                <option value="Case" class="bg-[#0A0A1A]">Case</option>
-                <option value="Terex" class="bg-[#0A0A1A]">Terex</option>
-                <option value="Agrale" class="bg-[#0A0A1A]">Agrale</option>
-                <option value="Randon" class="bg-[#0A0A1A]">Randon</option>
-              </select>
-            </div>
-            <!-- Tipo -->
-            <div class="flex flex-col gap-1 min-w-[140px]">
-              <label class="text-[10px] font-medium text-[#8E94A8] uppercase tracking-wider">Tipo</label>
-              <select id="filter-tipo" class="px-3 py-2 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-                <option value="" class="bg-[#0A0A1A]">Todos</option>
-                <option value="Camión volcador" class="bg-[#0A0A1A]">Camión volcador</option>
-                <option value="mixer" class="bg-[#0A0A1A]">Mixer</option>
-                <option value="hormigonera" class="bg-[#0A0A1A]">Hormigonera</option>
-                <option value="cisterna" class="bg-[#0A0A1A]">Cisterna</option>
-                <option value="jaula" class="bg-[#0A0A1A]">Jaula</option>
-                <option value="playo" class="bg-[#0A0A1A]">Playo</option>
-                <option value="regador" class="bg-[#0A0A1A]">Regador</option>
-                <option value="chasis" class="bg-[#0A0A1A]">Chasis</option>
-                <option value="Auto" class="bg-[#0A0A1A]">Auto</option>
-                <option value="Camioneta" class="bg-[#0A0A1A]">Camioneta</option>
-                <option value="Grua" class="bg-[#0A0A1A]">Grua</option>
-                <option value="Utilitario" class="bg-[#0A0A1A]">Utilitario</option>
-                <option value="Carga" class="bg-[#0A0A1A]">Carga</option>
-                <option value="Cargadora frontal" class="bg-[#0A0A1A]">Cargadora frontal</option>
-                <option value="Retroexcavadora" class="bg-[#0A0A1A]">Retroexcavadora</option>
-                <option value="Motoniveladora" class="bg-[#0A0A1A]">Motoniveladora</option>
-                <option value="Excavadora" class="bg-[#0A0A1A]">Excavadora</option>
-                <option value="Minicargadora" class="bg-[#0A0A1A]">Minicargadora</option>
-                <option value="Rodillo" class="bg-[#0A0A1A]">Rodillo</option>
-                <option value="Acoplado" class="bg-[#0A0A1A]">Acoplado</option>
-                <option value="Semirremolque" class="bg-[#0A0A1A]">Semirremolque</option>
-                <option value="Montacarga" class="bg-[#0A0A1A]">Montacarga</option>
-                <option value="Tolva" class="bg-[#0A0A1A]">Tolva</option>
-                <option value="Achelo" class="bg-[#0A0A1A]">Achelo</option>
-                <option value="Camion" class="bg-[#0A0A1A]">Camion</option>
-              </select>
-            </div>
-            <!-- Sub Tipo -->
-            <div class="flex flex-col gap-1 min-w-[140px]">
-              <label class="text-[10px] font-medium text-[#8E94A8] uppercase tracking-wider">Sub Tipo</label>
-              <select id="filter-subtipo" class="px-3 py-2 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-                <option value="" class="bg-[#0A0A1A]">Todos</option>
-              </select>
-            </div>
-            <!-- Centro -->
-            <div class="flex flex-col gap-1 min-w-[140px]">
-              <label class="text-[10px] font-medium text-[#8E94A8] uppercase tracking-wider">Centro</label>
-              <select id="filter-centro" class="px-3 py-2 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-                <option value="" class="bg-[#0A0A1A]">Todos</option>
-                <option value="Lujan" class="bg-[#0A0A1A]">Lujan</option>
-                <option value="Campana" class="bg-[#0A0A1A]">Campana</option>
-                <option value="Ituzaingo" class="bg-[#0A0A1A]">Ituzaingo</option>
-                <option value="Moreno" class="bg-[#0A0A1A]">Moreno</option>
-                <option value="Zarate" class="bg-[#0A0A1A]">Zarate</option>
-              </select>
-            </div>
-            <!-- Empresa -->
-            <div class="flex flex-col gap-1 min-w-[140px]">
-              <label class="text-[10px] font-medium text-[#8E94A8] uppercase tracking-wider">Empresa</label>
-              <select id="filter-empresa" class="px-3 py-2 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-                <option value="" class="bg-[#0A0A1A]">Todas</option>
-              </select>
-            </div>
-            <!-- Estado -->
-            <div class="flex flex-col gap-1 min-w-[120px]">
-              <label class="text-[10px] font-medium text-[#8E94A8] uppercase tracking-wider">Estado</label>
-              <select id="filter-estado" class="px-3 py-2 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
-                <option value="" class="bg-[#0A0A1A]">Todos</option>
-                <option value="Activo" class="bg-[#0A0A1A]">Activo</option>
-                <option value="Baja" class="bg-[#0A0A1A]">Baja</option>
-              </select>
-            </div>
-            <!-- Limpiar -->
-            <button onclick="resetFilters()" class="px-3 py-2 text-xs text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 transition-colors rounded-lg flex items-center gap-1.5 border border-transparent hover:border-[#6C3CE1]/20">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-              Limpiar
+          <!-- Filter toggle -->
+          <button id="filter-toggle-btn" onclick="toggleFilters()" class="px-3 py-2 text-xs font-medium text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 rounded-lg transition-colors flex items-center gap-1.5 border border-transparent hover:border-[#6C3CE1]/20 whitespace-nowrap">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+            Filtros
+            <span id="active-filters-count" class="hidden px-1.5 py-0.5 bg-[#6C3CE1]/30 text-[#A78BFA] rounded-full text-[10px] font-bold leading-none"></span>
+          </button>
+          <!-- Divider -->
+          <div class="w-px h-6 bg-[#6C3CE1]/10"></div>
+          <!-- View toggle -->
+          <div class="flex rounded-lg overflow-hidden border border-[#6C3CE1]/15 bg-[#0A0A1A]/40">
+            <button id="view-table-btn" onclick="setViewMode('table')" class="px-2.5 py-1.5 text-xs font-medium text-[#F1F3F8] bg-[#6C3CE1]/30 transition-colors flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M3 6h18M3 18h18"/></svg>
+              <span class="hidden sm:inline">Tabla</span>
+            </button>
+            <button id="view-card-btn" onclick="setViewMode('card')" class="px-2.5 py-1.5 text-xs font-medium text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 transition-colors flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+              <span class="hidden sm:inline">Cards</span>
             </button>
           </div>
-          <!-- Trompo filter row -->
-          <div class="flex flex-wrap items-center gap-3 pt-2 border-t border-[#6C3CE1]/5">
-            <span class="text-[10px] font-medium text-[#8E94A8] uppercase tracking-wider">Trompo</span>
-            <div class="flex rounded-lg overflow-hidden border border-[#6C3CE1]/15 bg-[#0A0A1A]/40">
-              <button data-trompo-filter="all" class="px-4 py-1.5 text-xs font-medium text-[#F1F3F8] bg-[#6C3CE1]/30 transition-colors">Todos</button>
-              <button data-trompo-filter="yes" class="px-4 py-1.5 text-xs font-medium text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 transition-colors">Con Trompo</button>
-              <button data-trompo-filter="no" class="px-4 py-1.5 text-xs font-medium text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 transition-colors">Sin Trompo</button>
+          <!-- Counter -->
+          <span class="text-xs text-[#8E94A8] whitespace-nowrap"><span id="filter-count">0</span> vehículo(s)</span>
+        </div>
+
+        <!-- Collapsible Filter Panel -->
+        <div id="filter-panel" class="hidden border-t border-[#6C3CE1]/10 bg-[#0A0A1A]/20">
+          <div class="p-3 space-y-2">
+            <!-- Row 1: Dropdowns -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              <div class="flex flex-col gap-0.5">
+                <label class="text-[9px] font-medium text-[#8E94A8] uppercase tracking-wider">Marca</label>
+                <select id="filter-marca" class="px-2 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+                  <option value="" class="bg-[#0A0A1A]">Todas</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <label class="text-[9px] font-medium text-[#8E94A8] uppercase tracking-wider">Tipo</label>
+                <select id="filter-tipo" class="px-2 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+                  <option value="" class="bg-[#0A0A1A]">Todos</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <label class="text-[9px] font-medium text-[#8E94A8] uppercase tracking-wider">Sub Tipo</label>
+                <select id="filter-subtipo" class="px-2 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+                  <option value="" class="bg-[#0A0A1A]">Todos</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <label class="text-[9px] font-medium text-[#8E94A8] uppercase tracking-wider">Centro</label>
+                <select id="filter-centro" class="px-2 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+                  <option value="" class="bg-[#0A0A1A]">Todos</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <label class="text-[9px] font-medium text-[#8E94A8] uppercase tracking-wider">Empresa</label>
+                <select id="filter-empresa" class="px-2 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+                  <option value="" class="bg-[#0A0A1A]">Todas</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <label class="text-[9px] font-medium text-[#8E94A8] uppercase tracking-wider">Estado</label>
+                <select id="filter-estado" class="px-2 py-1.5 bg-[#0A0A1A]/60 border border-[#6C3CE1]/15 rounded-lg text-xs text-[#F1F3F8] input-neon cursor-pointer">
+                  <option value="" class="bg-[#0A0A1A]">Todos</option>
+                  <option value="Activo" class="bg-[#0A0A1A]">Activo</option>
+                  <option value="Baja" class="bg-[#0A0A1A]">Baja</option>
+                </select>
+              </div>
+            </div>
+            <!-- Row 2: Trompo + Limpiar -->
+            <div class="flex items-center justify-between pt-1 border-t border-[#6C3CE1]/5">
+              <div class="flex items-center gap-2">
+                <span class="text-[9px] font-medium text-[#8E94A8] uppercase tracking-wider">Trompo</span>
+                <div class="flex rounded-md overflow-hidden border border-[#6C3CE1]/15 bg-[#0A0A1A]/40">
+                  <button data-trompo-filter="all" class="px-3 py-1 text-xs font-medium text-[#F1F3F8] bg-[#6C3CE1]/30 transition-colors">Todos</button>
+                  <button data-trompo-filter="yes" class="px-3 py-1 text-xs font-medium text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 transition-colors">Si</button>
+                  <button data-trompo-filter="no" class="px-3 py-1 text-xs font-medium text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 transition-colors">No</button>
+                </div>
+              </div>
+              <button onclick="resetFilters()" class="px-2.5 py-1 text-xs text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 transition-colors rounded-lg flex items-center gap-1 border border-transparent hover:border-[#6C3CE1]/20">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                Limpiar filtros
+              </button>
             </div>
           </div>
-        </div>
-        <div class="px-4 py-1.5 bg-[#6C3CE1]/5 border-b border-[#6C3CE1]/10 flex items-center justify-between">
-          <span class="text-xs text-[#8E94A8]"><span id="filter-count">0</span> vehículo(s)</span>
-          <button onclick="resetFilters()" class="text-xs text-[#6C3CE1]/70 hover:text-[#6C3CE1] transition-colors">Limpiar filtros</button>
         </div>
         <% if (currentUserData?.role === 'Admin') { %>
         <div id="bulk-bar" class="hidden flex items-center justify-between px-4 py-2 bg-[#6C3CE1]/10 border-b border-[#6C3CE1]/20 text-sm">
@@ -183,7 +141,7 @@
           <button onclick="deleteSelectedVehicles()" class="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition text-sm font-medium">🗑️ Eliminar seleccionados</button>
         </div>
         <% } %>
-        <div class="table-container p-4">
+        <div class="table-container p-4" id="view-table">
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
@@ -192,13 +150,13 @@
                   <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" class="accent-[#6C3CE1]">
                 </th>
                 <% } %>
-                <th class="pb-3 font-medium">Interno</th>
-                <th class="pb-3 font-medium">Patente</th>
-                <th class="pb-3 font-medium">Marca / Modelo</th>
-                <th class="pb-3 font-medium">Tipo</th>
-                <th class="pb-3 font-medium">Sub Tipo</th>
+                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#F1F3F8] transition-colors" onclick="sortBy('interno')">Interno <span class="sort-arrow text-[#6C3CE1]" data-field="interno">▲</span></th>
+                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#F1F3F8] transition-colors" onclick="sortBy('patente')">Patente <span class="sort-arrow" data-field="patente"></span></th>
+                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#F1F3F8] transition-colors" onclick="sortBy('marca')">Marca / Modelo <span class="sort-arrow" data-field="marca"></span></th>
+                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#F1F3F8] transition-colors" onclick="sortBy('tipo')">Tipo <span class="sort-arrow" data-field="tipo"></span></th>
+                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#F1F3F8] transition-colors" onclick="sortBy('subtipo')">Sub Tipo <span class="sort-arrow" data-field="subtipo"></span></th>
                 <th class="pb-3 font-medium">Trompo</th>
-                <th class="pb-3 font-medium">Centro</th>
+                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#F1F3F8] transition-colors" onclick="sortBy('centroTrabajo')">Centro <span class="sort-arrow" data-field="centroTrabajo"></span></th>
                 <th class="pb-3 font-medium no-print">Acciones</th>
               </tr>
             </thead>
@@ -206,6 +164,10 @@
               <tr><td colspan="<%= currentUserData?.role === 'Admin' ? 9 : 8 %>" class="text-center py-8 text-[#5C6378]">Cargando vehículos...</td></tr>
             </tbody>
           </table>
+        </div>
+        <div id="view-card" class="hidden p-4">
+          <div id="vehiculos-card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          </div>
         </div>
       </div>
     </main>
