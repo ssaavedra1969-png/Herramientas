@@ -4,11 +4,25 @@
 
 Este proyecto se desarrolla en paralelo en 2 PC. VIOLAR ESTAS REGLAS GENERA PERDIDA DE CAMBIOS.
 
-1. **SIEMPRE git pull ANTES de editar.** Ejecutar `git stash` + `git pull origin main` antes de tocar cualquier archivo.
+### Sincronización (SIEMPRE hacer esto antes de editar)
+
+```
+git stash && git pull origin main && git stash pop
+```
+
+Si hay conflictos: resolver manualmente (mirar qué línea quedó de cada lado), luego `git add .` y `git commit`.
+
+### Reglas
+
+1. **SIEMPRE git pull ANTES de editar.** Ejecutar el comando de sincronización de arriba antes de tocar cualquier archivo.
 2. **NUNCA commitear/pushear sin confirmar.** Si el usuario dice "probar en local", solo iniciar servidor. NO commitear.
 3. **Si el repo tiene cambios nuevos, AVISAR** antes de seguir. No asumir que el código local es el más reciente.
 4. **NUNCA sobreescribir producción.** No hacer cambios en archivos compartidos sin pull previo.
 5. **Si el usuario dice "volvió atras"**: NO intentar arreglar rápido. Hacer `git log` y explicar qué pasó.
+
+### Hook pre-commit
+
+Si el hook detecta que el branch está desactualizado, bloquea el commit. Hacer `git pull origin main` antes de commitear. Para saltar el hook (NO recomendado): `git commit --no-verify`.
 
 Archivo completo de reglas: `GUIA-INSTALACION.txt` (sección "ANEXO — REGLAS PARA IA")
 
