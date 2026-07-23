@@ -1,5 +1,17 @@
 # Grupo Falpat SRL — Sistema de Control de Mantenimiento
 
+## REGLAS CRITICAS — ANTES DE CUALQUIER TAREA
+
+Este proyecto se desarrolla en paralelo en 2 PC. VIOLAR ESTAS REGLAS GENERA PERDIDA DE CAMBIOS.
+
+1. **SIEMPRE git pull ANTES de editar.** Ejecutar `git stash` + `git pull origin main` antes de tocar cualquier archivo.
+2. **NUNCA commitear/pushear sin confirmar.** Si el usuario dice "probar en local", solo iniciar servidor. NO commitear.
+3. **Si el repo tiene cambios nuevos, AVISAR** antes de seguir. No asumir que el código local es el más reciente.
+4. **NUNCA sobreescribir producción.** No hacer cambios en archivos compartidos sin pull previo.
+5. **Si el usuario dice "volvió atras"**: NO intentar arreglar rápido. Hacer `git log` y explicar qué pasó.
+
+Archivo completo de reglas: `GUIA-INSTALACION.txt` (sección "ANEXO — REGLAS PARA IA")
+
 ## Stack
 - **Runtime:** Node.js + Express
 - **Templates:** EJS

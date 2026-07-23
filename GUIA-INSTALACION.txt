@@ -531,3 +531,109 @@ PENDIENTES FUTUROS
 ============================================================
   Fin de actualizaciones — 23 de julio de 2026
   ============================================================
+
+
+============================================================
+  ANEXO — REGLAS PARA IA (NO MODIFICAR)
+  ============================================================
+
+ESTE PROYECTO SE DESARROLLA EN PARALELO EN 2 PC.
+CUALQUIER IA QUE TRABAJE AQUI DEBE SEGUIR ESTAS REGLAS
+SIN EXCEPCION. VIOLARLAS GENERA PERDIDA DE CAMBIOS.
+
+
+REGLA 1 — SIEMPRE PULL ANTES DE MODIFICAR
+-------------------------------------------
+ANTES de editar CUALQUIER archivo, ejecutar:
+
+  git stash
+  git pull origin main
+
+Si hay conflictos, NO resolver automaticamente. Preguntar al usuario.
+
+
+REGLA 2 — NUNCA EDITAR ARCHIVOS QUE OTRO GRUPO PUEDE CAMBIAR
+--------------------------------------------------------------
+Archivos que SE COMPARTEN entre ambas PC y que NO se deben
+editar sin confirmar primero:
+
+  - views/*.ejs (todos los templates)
+  - public/js/*.js (todos los scripts del cliente)
+  - public/css/*.css
+  - routes/*.js
+  - config/*.js
+  - middleware/*.js
+
+Si necesitas editar alguno de estos archivos, PRIMERO hacer
+git pull y VERIFICAR que no hay cambios nuevos en el repo.
+
+
+REGLA 3 — NUNCA PUSHEAR CAMBIOS QUE EL USUARIO NO CONFIRMO
+------------------------------------------------------------
+Si el usuario pide un fix (ej: "quitar required"), hacer el
+cambio LOCALMENTE pero NUNCA hacer commit/push sin que el
+usuario diga "commitea" o "pushea".
+
+Si el usuario dice "probar en local", SOLO iniciar el servidor
+y mostrar la URL. NO commitear, NO pushear.
+
+
+REGLA 4 — SI EL REPO ESTA DESACTUALIZADO, AVISAR
+--------------------------------------------------
+Si al hacer git pull se descubren cambios nuevos, INFORMAR
+al usuario antes de seguir trabajando:
+
+  "El repo tiene cambios nuevos que no estaban acá.
+   Primero sincronizo, y después continuamos con tu pedido."
+
+
+REGLA 5 — NUNCA SOBRESCRIBIR PRODUCCION
+----------------------------------------
+Si el usuario tiene el proyecto corriendo en Vercel
+(falpat-control-de-vehiculos.vercel.app), NUNCA hacer
+cambios que afecten la version de produccion sin que
+el usuario lo autorice explicitamente.
+
+
+REGLA 6 — VERIFICAR ESTADO ANTES DE TRABAJAR
+----------------------------------------------
+Antes de empezar cualquier tarea:
+
+  1. git status  (verificar que working tree esta limpio)
+  2. git log --oneline -5  (ver ultimos commits)
+  3. git pull origin main  (sincronizar)
+  4. PREGUNTAR al usuario si puede seguir modificando archivos
+
+Si el working tree tiene cambios, preguntar que hacer con ellos
+antes de continuar.
+
+
+REGLA 7 — SI EL USUARIO DICE "VOLVIO ATRAS"
+--------------------------------------------
+Si el usuario reporta que "los cambios volvieron atras":
+1. NO intentar arreglar rapido
+2. Hacer git log --oneline -10 para ver que paso
+3. Explicar que paso con claridad
+4. Proponer solucion (pull, reset, o merge)
+
+
+HISTORIAL DE INCIDENTES
+------------------------
+23 de julio de 2026:
+  PROBLEMA: La IA modifico views/vehicles.ejs (quitar required)
+  sin antes sincronizar con el repo. El repo tenia commits
+  nuevos de la otra PC (filtros dinamicos, hero blur, accordion,
+  etc.) que NO estaban en la PC local. El commit de la IA se
+  hizo sobre codigo viejo, y al pushear, sobreescribio los
+  cambios de la otra PC.
+
+  CAUSA: La IA no ejecuto git pull antes de modificar archivos,
+  y commiteo/pusheo sin confirmar con el usuario.
+
+  SOLUCION: Se recupero todo haciendo pull desde la otra PC
+  que tenia los cambios correctos.
+
+
+============================================================
+  Fin del anexo — REGLAS PARA IA
+  ============================================================
