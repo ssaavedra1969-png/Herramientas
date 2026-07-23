@@ -431,58 +431,27 @@ main { position: relative; }
   width: 110px;
   height: 110px;
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #ffffff 0%, #f0f0f5 50%, #d8d8e0 100%);
-  box-shadow:
-    0 8px 28px rgba(0,0,0,0.45),
-    0 3px 10px rgba(0,0,0,0.3),
-    inset 0 3px 6px rgba(255,255,255,0.9),
-    inset 0 -3px 8px rgba(0,0,0,0.1);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px;
-  border: 2px solid rgba(255,255,255,0.3);
   position: relative;
-  overflow: hidden;
-}
-.card-logo-wrap::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 50%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%);
-  border-radius: 50% 50% 0 0;
-  pointer-events: none;
-}
-.card-logo-wrap::after {
-  content: '';
-  position: absolute;
-  top: 4px; left: 18px; right: 18px;
-  height: 8px;
-  background: radial-gradient(ellipse, rgba(255,255,255,0.7) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
 }
 .card-logo-img {
-  width: 78px;
-  height: 78px;
+  width: 90px;
+  height: 90px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)) drop-shadow(0 1px 3px rgba(0,0,0,0.3));
   position: relative;
   z-index: 1;
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
-.vehicle-card:hover .card-logo-wrap {
-  box-shadow:
-    0 8px 28px rgba(108,60,225,0.35),
-    0 2px 8px rgba(0,0,0,0.3),
-    inset 0 2px 4px rgba(255,255,255,0.9),
-    inset 0 -2px 6px rgba(0,0,0,0.08);
-  border-color: rgba(108,60,225,0.3);
-  transform: scale(1.05);
-  transition: all 0.3s ease;
+.vehicle-card:hover .card-logo-img {
+  transform: scale(1.08);
+  filter: drop-shadow(0 6px 20px rgba(108,60,225,0.5)) drop-shadow(0 2px 6px rgba(0,0,0,0.4));
 }
 .vehicle-card-header {
-  background: linear-gradient(135deg, rgba(108,60,225,0.12), rgba(0,212,255,0.08));
+  background: linear-gradient(135deg, rgba(108,60,225,0.08), rgba(0,212,255,0.05));
   padding: 0.75rem 1rem 0.65rem;
   display: flex;
   align-items: flex-start;

@@ -291,7 +291,7 @@ function renderVehicleCards(vehicles) {
     const logoHtml = brandLogo
       ? `<div class="card-logo-wrap"><img src="${brandLogo}" alt="${mv.marca}" class="card-logo-img" onerror="this.parentElement.remove()"></div>`
       : '';
-    const fallbackBg = `<div class="w-full h-40 bg-gradient-to-br from-[#6C3CE1]/15 via-[#3a2080]/5 to-[#00D4FF]/10 flex items-center justify-center">${logoHtml || truckFallbackSvg}</div>`;
+    const fallbackBg = `<div class="w-full h-40 bg-gradient-to-br from-[#6C3CE1]/8 to-[#00D4FF]/5 flex items-center justify-center">${logoHtml || truckFallbackSvg}</div>`;
 
     const fotoHtml = hasPhoto
       ? `<div class="relative w-full h-40">
