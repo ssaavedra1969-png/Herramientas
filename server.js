@@ -33,7 +33,7 @@ const apiLimiter = rateLimit({
 app.use('/api/', apiLimiter);
 
 if (process.env.DEV_READ_ONLY === 'true') {
-  console.log('[DEV READ-ONLY] Modo solo lectura activado — los writes están bloqueados');
+  console.log('[DEV] Read-only mode');
   app.use('/api/', devReadOnly);
 }
 

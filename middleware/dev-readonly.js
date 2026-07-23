@@ -9,7 +9,7 @@ function devReadOnly(req, res, next) {
     return next();
   }
 
-  console.log(`[DEV READ-ONLY] Bloqueado: ${req.method} ${req.originalUrl}`);
+  console.log(`[DEV] Blocked: ${req.method} ${req.originalUrl}`);
   return res.status(403).json({
     error: 'Modo desarrollo read-only — no se permiten cambios',
     method: req.method,
