@@ -37,9 +37,9 @@ const truckFallbackSvg = '<svg class="w-10 h-10 text-[#6C3CE1]/30" fill="none" s
 
 function handlePhotoError(el, brandLogo) {
   const fallback = brandLogo
-    ? '<div class="w-full h-32 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center">' +
+    ? '<div class="w-full h-36 bg-gradient-to-br from-[#6C3CE1]/15 via-[#3a2080]/5 to-[#00D4FF]/10 flex items-center justify-center">' +
       '<div class="card-logo-wrap"><img src="' + brandLogo + '" class="card-logo-img"></div></div>'
-    : '<div class="w-full h-32 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center">' +
+    : '<div class="w-full h-36 bg-gradient-to-br from-[#6C3CE1]/15 via-[#3a2080]/5 to-[#00D4FF]/10 flex items-center justify-center">' +
       truckFallbackSvg + '</div>';
   el.outerHTML = fallback;
 }
@@ -290,11 +290,11 @@ function renderVehicleCards(vehicles) {
     const logoHtml = brandLogo
       ? `<div class="card-logo-wrap"><img src="${brandLogo}" alt="${mv.marca}" class="card-logo-img" onerror="this.parentElement.remove()"></div>`
       : '';
-    const fallbackBg = `<div class="w-full h-32 bg-gradient-to-br from-[#6C3CE1]/10 to-[#00D4FF]/10 flex items-center justify-center">${logoHtml || truckFallbackSvg}</div>`;
+    const fallbackBg = `<div class="w-full h-36 bg-gradient-to-br from-[#6C3CE1]/15 via-[#3a2080]/5 to-[#00D4FF]/10 flex items-center justify-center">${logoHtml || truckFallbackSvg}</div>`;
 
     const fotoHtml = hasPhoto
-      ? `<div class="relative w-full h-32">
-           <img src="${mv.fotoURL}" alt="${mv.patente}" class="w-full h-32 object-cover" onerror="handlePhotoError(this, '${brandLogo}')">
+      ? `<div class="relative w-full h-36">
+           <img src="${mv.fotoURL}" alt="${mv.patente}" class="w-full h-36 object-cover" onerror="handlePhotoError(this, '${brandLogo}')">
          </div>`
       : fallbackBg;
 
