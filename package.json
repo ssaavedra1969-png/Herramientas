@@ -4,7 +4,7 @@
   "description": "Sistema de control de mantenimiento - Grupo Falpat SRL",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node start.js",
     "dev": "node --watch server.js",
     "backup": "node scripts/export-firebase.js",
     "restore": "node scripts/restore-firebase.js",
