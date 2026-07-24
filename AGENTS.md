@@ -82,9 +82,9 @@ views/
   partials/footer.ejs        # Firebase init + auth-client.js
 public/js/
   auth-client.js             # Helpers: isAdmin(), getAuthHeaders(), deleteWithBackup(), etc.
-  dashboard.js               # Listeners, charts, alertas VTV, empresas
-  vehicles.js                # CRUD, bulk delete, filtros, import CSV/Excel
-  vehicle-detail.js          # Combustible + repuestos CRUD
+  dashboard.js               # Dashboard: clock, search, modales alertas, fleet health, empresas, alertas VTV/choferes
+  vehicles.js                # CRUD, bulk delete, filtros, import CSV/Excel (modal edit NO cierra con click afuera)
+  vehicle-detail.js          # Combustible + repuestos CRUD (sin backdrop click-to-close en modal)
   maintenance.js             # CRUD mantenimientos
   reports.js                 # Reportes financieros
   admin.js                   # Roles de usuario
