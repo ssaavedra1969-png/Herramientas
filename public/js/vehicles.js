@@ -78,6 +78,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('v-trompo-fields').classList.toggle('hidden', !e.target.checked);
   });
   setViewMode(viewMode, false);
+
+  // Export modal: live preview on checkbox/input change
+  document.querySelectorAll('.export-field').forEach(cb => {
+    cb.addEventListener('change', updateExportPreview);
+  });
+  ['exp-empresa', 'exp-direccion', 'exp-telefono', 'exp-titulo', 'exp-subtitulo'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updateExportPreview);
+  });
 });
 
 function setViewMode(mode, save = true) {
@@ -1195,26 +1203,346 @@ function toggleImportMenu() {
   if (menu) menu.classList.toggle('hidden');
 }
 
-function exportVehiclesExcel() {
-  if (typeof XLSX === 'undefined') {
-    showToast('Librería XLSX no cargada', 'error');
+// ═══════════════════════════════════════════════════════════════
+// EXPORT MODAL — Field selection + Preview + Excel/CSV/PDF
+// ═══════════════════════════════════════════════════════════════
+
+let exportFormat = 'xlsx';
+
+const EXPORT_FIELD_DEFS = [
+  { key: 'interno',           label: 'N° Interno',     cat: 'id',  fn: v => v.interno || '' },
+  { key: 'patente',           label: 'Patente',        cat: 'id',  fn: v => v.patente || '' },
+  { key: 'marca',             label: 'Marca',          cat: 'id',  fn: v => v.marca || '' },
+  { key: 'modelo',            label: 'Modelo',         cat: 'id',  fn: v => v.modelo || '' },
+  { key: 'anio',              label: 'Año',            cat: 'id',  fn: v => v.anio || v.año || '' },
+  { key: 'tipo',              label: 'Tipo',           cat: 'id',  fn: v => v.tipo || '' },
+  { key: 'subtipo',           label: 'Subtipo',        cat: 'id',  fn: v => v.subtipo || '' },
+  { key: 'trompo',            label: 'Trompo',         cat: 'id',  fn: v => v.trompo ? 'Si' : 'No' },
+  { key: 'nroBet',            label: 'Nro BET',        cat: 'id',  fn: v => v.nroBet || '' },
+  { key: 'chasis',            label: 'Chasis',         cat: 'tec', fn: v => v.chasis || '' },
+  { key: 'numeroMotor',       label: 'N° Motor',       cat: 'tec', fn: v => v.numeroMotor || '' },
+  { key: 'kilometraje',       label: 'Kilometraje',    cat: 'tec', fn: v => v.kilometraje || 0 },
+  { key: 'horometro',         label: 'Horómetro',      cat: 'tec', fn: v => v.horometro || 0 },
+  { key: 'capacidadCarga',    label: 'Cap. Carga',     cat: 'tec', fn: v => v.capacidadCarga || '' },
+  { key: 'marcaTrompo',       label: 'Marca Trompo',   cat: 'tec', fn: v => v.marcaTrompo || '' },
+  { key: 'serieTrompo',       label: 'Serie Trompo',   cat: 'tec', fn: v => v.serieTrompo || '' },
+  { key: 'modeloTrompo',      label: 'Modelo Trompo',  cat: 'tec', fn: v => v.modeloTrompo || '' },
+  { key: 'cargaM3Trompo',     label: 'Carga M3',       cat: 'tec', fn: v => v.cargaM3Trompo || '' },
+  { key: 'estadoGeneral',     label: 'Estado',         cat: 'ope', fn: v => v.estadoGeneral || v.estado || 'Activo' },
+  { key: 'empresa',           label: 'Empresa',        cat: 'ope', fn: v => v.empresa || '' },
+  { key: 'centroTrabajo',     label: 'Centro Trabajo', cat: 'ope', fn: v => v.centroTrabajo || '' },
+  { key: 'chofer',            label: 'Chofer',         cat: 'ope', fn: v => v.chofer || '' },
+  { key: 'dni',               label: 'DNI',            cat: 'ope', fn: v => v.dni || '' },
+  { key: 'vencimientoDNI',    label: 'Vto. DNI',       cat: 'ope', fn: v => fmtDate(v.vencimientoDNI) },
+  { key: 'registro',          label: 'Registro',       cat: 'ope', fn: v => v.registro || '' },
+  { key: 'vencimientoRegistro', label: 'Vto. Registro', cat: 'ope', fn: v => fmtDate(v.vencimientoRegistro) },
+  { key: 'observaciones',     label: 'Observaciones',  cat: 'ope', fn: v => v.observaciones || '' },
+  { key: 'vtvVencimiento',    label: 'VTV Venc.',      cat: 'doc', fn: v => fmtDate(v.vtv?.fechaVencimiento || v.vencimientoVTV) },
+  { key: 'seguroVencimiento', label: 'Seguro Venc.',   cat: 'doc', fn: v => fmtDate(v.seguro?.fechaVencimiento) },
+  { key: 'proximoService',    label: 'Próx. Service',  cat: 'doc', fn: v => v.proximoServiceFecha ? fmtDate(v.proximoServiceFecha) + (v.proximoServiceKm ? ' / ' + v.proximoServiceKm + ' km' : '') : '' },
+  { key: 'fechaAlta',         label: 'Fecha Alta',     cat: 'doc', fn: v => fmtDate(v.fechaAlta) }
+];
+
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = d.seconds ? new Date(d.seconds * 1000) : new Date(d);
+  return isNaN(dt) ? '' : dt.toLocaleDateString('es-AR');
+}
+
+function openExportModal() {
+  const modal = document.getElementById('modal-export');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  exportFormat = 'xlsx';
+  updateFormatButtons();
+  updateExportPreview();
+  document.body.style.overflow = 'hidden';
+}
+
+function closeExportModal() {
+  const modal = document.getElementById('modal-export');
+  if (modal) modal.classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function setExportFormat(fmt) {
+  exportFormat = fmt;
+  updateFormatButtons();
+  updateExportPreview();
+}
+
+function updateFormatButtons() {
+  ['xlsx', 'csv', 'pdf'].forEach(f => {
+    const btn = document.getElementById('fmt-' + f);
+    if (!btn) return;
+    if (f === exportFormat) {
+      btn.className = 'export-fmt-btn flex-1 py-3 rounded-xl border-2 border-[#6C3CE1]/40 bg-[#6C3CE1]/15 text-[#A78BFA] font-semibold text-sm transition-all flex items-center justify-center gap-2';
+    } else {
+      btn.className = 'export-fmt-btn flex-1 py-3 rounded-xl border border-[#6C3CE1]/15 bg-[#0A0A1A]/30 text-[#8E94A8] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#6C3CE1]/30';
+    }
+  });
+}
+
+function getSelectedFields() {
+  return EXPORT_FIELD_DEFS.filter(fd => {
+    const cb = document.querySelector(`.export-field[value="${fd.key}"]`);
+    return cb && cb.checked;
+  });
+}
+
+function toggleAllExportFields(checked) {
+  document.querySelectorAll('.export-field').forEach(cb => { cb.checked = checked; });
+  updateExportPreview();
+}
+
+function getExportData() {
+  const fields = getSelectedFields();
+  const headers = fields.map(f => f.label);
+  const rows = allVehicles.map(v => fields.map(f => String(f.fn(v))));
+  return { headers, rows, fields };
+}
+
+function updateExportPreview() {
+  const fields = getSelectedFields();
+  const count = allVehicles.length;
+  const ncols = fields.length;
+
+  document.getElementById('exp-count').textContent = count;
+  document.getElementById('exp-stats').textContent = `${count} vehículos × ${ncols} campos = ${count * ncols} celdas`;
+
+  const preview = document.getElementById('exp-preview');
+  if (ncols === 0) {
+    preview.innerHTML = '<div class="p-6 text-center text-gray-400 text-sm">Seleccioná al menos un campo</div>';
     return;
   }
-  const headers = ['Interno', 'Patente', 'Marca', 'Modelo', 'Año', 'Tipo', 'Subtipo', 'Trompo', 'Estado', 'Empresa', 'Centro', 'Kilometraje', 'Chasis', 'N° Motor', 'Nro BET', 'Chofer', 'DNI', 'Vto. DNI', 'Registro', 'Vto. Registro'];
-  const rows = allVehicles.map(v => [
-    v.interno || '', v.patente || '', v.marca || '', v.modelo || '', v.anio || v.año || '',
-    v.tipo || '', v.subtipo || '', v.trompo ? 'Si' : 'No',
-    v.estadoGeneral || v.estado || 'Activo', v.empresa || '', v.centroTrabajo || '',
-    v.kilometraje || 0, v.chasis || '', v.numeroMotor || '', v.nroBet || '', v.chofer || '', v.dni || '',
-    v.vencimientoDNI ? new Date(v.vencimientoDNI.seconds ? v.vencimientoDNI.seconds * 1000 : v.vencimientoDNI).toLocaleDateString('es-AR') : '',
-    v.registro || '',
-    v.vencimientoRegistro ? new Date(v.vencimientoRegistro.seconds ? v.vencimientoRegistro.seconds * 1000 : v.vencimientoRegistro).toLocaleDateString('es-AR') : ''
-  ]);
-  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-  ws['!cols'] = headers.map((h, i) => ({ wch: [8, 10, 16, 16, 6, 18, 14, 7, 8, 18, 14, 12, 20, 16, 12, 16, 12, 12, 16, 12][i] || 12 }));
+
+  const empresa = document.getElementById('exp-empresa')?.value || '';
+  const direccion = document.getElementById('exp-direccion')?.value || '';
+  const telefono = document.getElementById('exp-telefono')?.value || '';
+  const titulo = document.getElementById('exp-titulo')?.value || 'Listado de Vehículos';
+  const subtitulo = document.getElementById('exp-subtitulo')?.value || '';
+  const ahora = new Date().toLocaleDateString('es-AR');
+
+  const previewRows = allVehicles.slice(0, 5);
+
+  let html = `<div style="font-family: Inter, Arial, sans-serif; font-size: 10px; color: #1a1a1a;">`;
+
+  // Header
+  html += `<div style="text-align:center; padding: 12px 8px 6px; border-bottom: 2px solid #2d1a6e;">`;
+  if (empresa) html += `<div style="font-size: 14px; font-weight: 800; color: #2d1a6e; letter-spacing: 1px;">${empresa.toUpperCase()}</div>`;
+  if (direccion) html += `<div style="font-size: 9px; color: #666;">${direccion}</div>`;
+  if (telefono) html += `<div style="font-size: 9px; color: #666;">Tel: ${telefono}</div>`;
+  html += `<div style="font-size: 9px; color: #999; margin-top: 4px;">══════════════════════════</div>`;
+  html += `<div style="font-size: 12px; font-weight: 700; color: #1a1a1a; margin-top: 6px;">${titulo}</div>`;
+  if (subtitulo) html += `<div style="font-size: 10px; color: #666;">${subtitulo}</div>`;
+  html += `</div>`;
+
+  // Table
+  html += `<table style="width:100%; border-collapse:collapse; margin-top:6px;"><thead><tr>`;
+  fields.forEach(f => {
+    html += `<th style="background:#2d1a6e; color:white; padding:4px 6px; text-align:left; font-size:9px; font-weight:600; white-space:nowrap;">${f.label}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+  previewRows.forEach((v, i) => {
+    const bg = i % 2 === 0 ? '#f8f7fc' : '#ffffff';
+    html += `<tr style="background:${bg};">`;
+    fields.forEach(f => {
+      html += `<td style="padding:3px 6px; border-bottom:1px solid #eee; font-size:9px; white-space:nowrap; max-width:100px; overflow:hidden; text-overflow:ellipsis;">${f.fn(v)}</td>`;
+    });
+    html += `</tr>`;
+  });
+  if (count > 5) {
+    html += `<tr><td colspan="${ncols}" style="text-align:center; padding:6px; color:#999; font-style:italic; font-size:9px;">... y ${count - 5} registros más</td></tr>`;
+  }
+  html += `</tbody></table>`;
+
+  // Footer
+  html += `<div style="border-top:1px solid #ddd; margin-top:6px; padding:6px 8px; display:flex; justify-content:space-between; font-size:8px; color:#999;">`;
+  html += `<span>Generado: ${ahora} — ${count} registros</span>`;
+  html += `<span>© ${empresa || 'Grupo Falpat SRL'} — Todos los derechos reservados</span>`;
+  html += `</div>`;
+
+  html += `</div>`;
+  preview.innerHTML = html;
+}
+
+function downloadExport() {
+  const { headers, rows } = getExportData();
+  if (headers.length === 0) {
+    showToast('Seleccioná al menos un campo', 'error');
+    return;
+  }
+  if (rows.length === 0) {
+    showToast('No hay vehículos para exportar', 'error');
+    return;
+  }
+
+  const empresa = document.getElementById('exp-empresa')?.value || 'Grupo Falpat SRL';
+  const direccion = document.getElementById('exp-direccion')?.value || '';
+  const telefono = document.getElementById('exp-telefono')?.value || '';
+  const titulo = document.getElementById('exp-titulo')?.value || 'Listado de Vehículos';
+  const subtitulo = document.getElementById('exp-subtitulo')?.value || '';
+  const ahora = new Date();
+  const fechaStr = ahora.toLocaleDateString('es-AR');
+  const now = ahora.toISOString().split('T')[0];
+
+  if (exportFormat === 'xlsx') downloadExcel(headers, rows, empresa, direccion, telefono, titulo, subtitulo, fechaStr, now);
+  else if (exportFormat === 'csv') downloadCSV(headers, rows, now);
+  else if (exportFormat === 'pdf') downloadPDF(headers, rows, empresa, direccion, telefono, titulo, subtitulo, fechaStr, now);
+}
+
+// ─── EXCEL ───
+function downloadExcel(headers, rows, empresa, direccion, telefono, titulo, subtitulo, fechaStr, now) {
+  if (typeof XLSX === 'undefined') { showToast('Librería XLSX no cargada', 'error'); return; }
+
+  const aoa = [];
+
+  // Header block
+  aoa.push([]);
+  if (empresa) aoa.push([empresa.toUpperCase()]);
+  if (direccion) aoa.push([direccion]);
+  if (telefono) aoa.push(['Tel: ' + telefono]);
+  aoa.push(['══════════════════════════════════════════════════════════════']);
+  aoa.push([titulo]);
+  if (subtitulo) aoa.push([subtitulo]);
+  aoa.push([]);
+
+  // Column headers
+  aoa.push(headers);
+  rows.forEach(r => aoa.push(r));
+
+  // Footer
+  aoa.push([]);
+  aoa.push([`Generado: ${fechaStr} — ${rows.length} registros`]);
+  aoa.push([`© ${empresa} — Todos los derechos reservados`]);
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+  // Styling: column widths
+  const colWidths = headers.map((h, i) => {
+    let maxLen = h.length;
+    rows.forEach(r => { if (r[i] && String(r[i]).length > maxLen) maxLen = String(r[i]).length; });
+    return { wch: Math.min(maxLen + 4, 30) };
+  });
+  ws['!cols'] = colWidths;
+
+  // Merge header cells
+  const mergeCount = 4 + (empresa ? 1 : 0) + (direccion ? 1 : 0) + (telefono ? 1 : 0) + (subtitulo ? 1 : 0);
+  ws['!merges'] = [
+    { s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } }
+  ];
+
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Vehículos');
-  const now = new Date().toISOString().split('T')[0];
   XLSX.writeFile(wb, `vehiculos-${now}.xlsx`);
-  showToast('Excel exportado correctamente', 'success');
+  showToast('Excel descargado correctamente', 'success');
+}
+
+// ─── CSV ───
+function downloadCSV(headers, rows, now) {
+  const allRows = [headers, ...rows];
+  const csv = Papa.unparse(allRows, { quotes: true });
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `vehiculos-${now}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV descargado correctamente', 'success');
+}
+
+// ─── PDF ───
+function downloadPDF(headers, rows, empresa, direccion, telefono, titulo, subtitulo, fechaStr, now) {
+  if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
+    showToast('Librería PDF no cargada', 'error');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf || jspdf;
+  const doc = new jsPDF({ orientation: headers.length > 8 ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 14;
+  let y = margin;
+
+  // ── Header ──
+  doc.setFillColor(45, 26, 110);
+  doc.rect(0, 0, pageW, 28, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  if (empresa) {
+    doc.text(empresa.toUpperCase(), pageW / 2, y + 2, { align: 'center' });
+    y += 6;
+  }
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  if (direccion) { doc.text(direccion, pageW / 2, y + 1, { align: 'center' }); y += 4; }
+  if (telefono) { doc.text('Tel: ' + telefono, pageW / 2, y + 1, { align: 'center' }); y += 4; }
+
+  // Title under header
+  y = 34;
+  doc.setTextColor(45, 26, 110);
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  doc.text(titulo, pageW / 2, y, { align: 'center' });
+  y += 5;
+  if (subtitulo) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text(subtitulo, pageW / 2, y, { align: 'center' });
+    y += 5;
+  }
+
+  // ── Table via autoTable ──
+  doc.autoTable({
+    startY: y + 2,
+    head: [headers],
+    body: rows,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [45, 26, 110],
+      textColor: [255, 255, 255],
+      fontSize: 7,
+      fontStyle: 'bold',
+      cellPadding: 2
+    },
+    bodyStyles: {
+      fontSize: 7,
+      cellPadding: 1.5,
+      textColor: [26, 26, 26]
+    },
+    alternateRowStyles: {
+      fillColor: [248, 247, 252]
+    },
+    styles: {
+      lineColor: [200, 200, 220],
+      lineWidth: 0.2,
+      overflow: 'linebreak',
+      font: 'helvetica'
+    },
+    margin: { left: margin, right: margin, bottom: 20 },
+    didDrawPage: function (data) {
+      // Footer on every page
+      doc.setFillColor(248, 247, 252);
+      doc.rect(0, pageH - 16, pageW, 16, 'F');
+      doc.setDrawColor(45, 26, 110);
+      doc.setLineWidth(0.3);
+      doc.line(margin, pageH - 16, pageW - margin, pageH - 16);
+
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Generado: ${fechaStr} — Página ${data.pageNumber}`, margin, pageH - 10);
+      doc.text(`© ${empresa} — Todos los derechos reservados`, pageW - margin, pageH - 10, { align: 'right' });
+    }
+  });
+
+  doc.save(`vehiculos-${now}.pdf`);
+  showToast('PDF descargado correctamente', 'success');
 }

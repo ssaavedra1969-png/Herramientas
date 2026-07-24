@@ -656,3 +656,7 @@ body::after {
 .completeness-fill.low { background: linear-gradient(90deg, #EF4444, #F59E0B); }
 .completeness-fill.mid { background: linear-gradient(90deg, #F59E0B, #10B981); }
 .completeness-fill.high { background: linear-gradient(90deg, #10B981, #00D4FF); }
+
+/* Export format buttons */
+.export-fmt-btn:hover { transform: translateY(-1px); }
+.export-fmt-btn:active { transform: translateY(0); }

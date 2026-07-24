@@ -23,9 +23,9 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
             <span class="hidden xs:inline">Escáner</span>
           </a>
-          <button onclick="exportVehiclesExcel()" class="btn-secondary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
+          <button onclick="openExportModal()" class="btn-secondary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span class="hidden sm:inline">Excel</span>
+            <span class="hidden sm:inline">Exportar</span>
           </button>
           <% if (currentUserData?.role === 'Admin') { %>
           <div class="relative" id="import-dropdown">
@@ -590,7 +590,228 @@
   </div>
 </div>
 
+<!-- Modal Exportar Vehículos -->
+<div id="modal-export" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-3 sm:p-4">
+  <div class="glass-card rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto modal-content">
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#6C3CE1]/10 sticky top-0 z-10" style="background: #141e2d;">
+      <h3 class="text-base sm:text-lg font-bold text-[#F1F3F8]">Exportar Vehículos</h3>
+      <button onclick="closeExportModal()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors p-1">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="p-4 sm:p-6 space-y-4">
+
+      <!-- Formato de salida -->
+      <div>
+        <label class="block text-xs font-semibold text-[#8E94A8] uppercase tracking-wider mb-2">Formato de salida</label>
+        <div class="flex gap-2">
+          <button onclick="setExportFormat('xlsx')" id="fmt-xlsx" class="export-fmt-btn flex-1 py-3 rounded-xl border-2 border-[#6C3CE1]/40 bg-[#6C3CE1]/15 text-[#A78BFA] font-semibold text-sm transition-all flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Excel (.xlsx)
+          </button>
+          <button onclick="setExportFormat('csv')" id="fmt-csv" class="export-fmt-btn flex-1 py-3 rounded-xl border border-[#6C3CE1]/15 bg-[#0A0A1A]/30 text-[#8E94A8] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#6C3CE1]/30">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            CSV (.csv)
+          </button>
+          <button onclick="setExportFormat('pdf')" id="fmt-pdf" class="export-fmt-btn flex-1 py-3 rounded-xl border border-[#6C3CE1]/15 bg-[#0A0A1A]/30 text-[#8E94A8] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#6C3CE1]/30">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            PDF (.pdf)
+          </button>
+        </div>
+      </div>
+
+      <!-- Datos de la empresa -->
+      <div class="glass-card rounded-xl p-4 space-y-3">
+        <label class="block text-xs font-semibold text-[#8E94A8] uppercase tracking-wider">Datos de la empresa</label>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs text-[#5C6378] mb-1">Nombre</label>
+            <input type="text" id="exp-empresa" value="Grupo Falpat SRL" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+          <div>
+            <label class="block text-xs text-[#5C6378] mb-1">Dirección</label>
+            <input type="text" id="exp-direccion" value="San Martín, Buenos Aires" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+          <div>
+            <label class="block text-xs text-[#5C6378] mb-1">Teléfono</label>
+            <input type="text" id="exp-telefono" value="" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Opcional">
+          </div>
+        </div>
+      </div>
+
+      <!-- Encabezado -->
+      <div class="glass-card rounded-xl p-4 space-y-3">
+        <label class="block text-xs font-semibold text-[#8E94A8] uppercase tracking-wider">Encabezado del documento</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-[#5C6378] mb-1">Título</label>
+            <input type="text" id="exp-titulo" value="Listado de Vehículos" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+          </div>
+          <div>
+            <label class="block text-xs text-[#5C6378] mb-1">Subtítulo</label>
+            <input type="text" id="exp-subtitulo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Ej: Julio 2026, Flota Completa...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Campos a incluir -->
+      <div class="glass-card rounded-xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-xs font-semibold text-[#8E94A8] uppercase tracking-wider">Campos a incluir</label>
+          <div class="flex gap-2">
+            <button onclick="toggleAllExportFields(true)" class="text-xs px-3 py-1 rounded-lg bg-[#6C3CE1]/10 text-[#A78BFA] hover:bg-[#6C3CE1]/20 transition">Marcar todos</button>
+            <button onclick="toggleAllExportFields(false)" class="text-xs px-3 py-1 rounded-lg bg-[#0A0A1A]/30 text-[#5C6378] hover:text-[#8E94A8] transition">Limpiar</button>
+          </div>
+        </div>
+
+        <!-- Identificación -->
+        <div class="mb-3">
+          <div class="text-[10px] font-bold text-[#5C6378] uppercase tracking-widest mb-2 border-b border-[#6C3CE1]/5 pb-1">Identificación</div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1.5">
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="interno" checked> N° Interno
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="patente" checked> Patente
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="marca" checked> Marca
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="modelo" checked> Modelo
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="anio" checked> Año
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="tipo" checked> Tipo
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="subtipo" checked> Subtipo
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="trompo" checked> Trompo
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="nroBet" checked> Nro BET
+            </label>
+          </div>
+        </div>
+
+        <!-- Técnico -->
+        <div class="mb-3">
+          <div class="text-[10px] font-bold text-[#5C6378] uppercase tracking-widest mb-2 border-b border-[#6C3CE1]/5 pb-1">Técnico</div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1.5">
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="chasis" checked> Chasis
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="numeroMotor" checked> N° Motor
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="kilometraje" checked> Kilometraje
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="horometro" checked> Horómetro
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="capacidadCarga" checked> Cap. Carga
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="marcaTrompo"> Marca Trompo
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="serieTrompo"> Serie Trompo
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="modeloTrompo"> Modelo Trompo
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="cargaM3Trompo"> Carga M3
+            </label>
+          </div>
+        </div>
+
+        <!-- Operación -->
+        <div class="mb-3">
+          <div class="text-[10px] font-bold text-[#5C6378] uppercase tracking-widest mb-2 border-b border-[#6C3CE1]/5 pb-1">Operación</div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1.5">
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="estadoGeneral" checked> Estado
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="empresa" checked> Empresa
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="centroTrabajo" checked> Centro Trabajo
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="chofer" checked> Chofer
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="dni" checked> DNI
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="vencimientoDNI"> Vto. DNI
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="registro"> Registro
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="vencimientoRegistro"> Vto. Registro
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="observaciones"> Observaciones
+            </label>
+          </div>
+        </div>
+
+        <!-- Documentación -->
+        <div>
+          <div class="text-[10px] font-bold text-[#5C6378] uppercase tracking-widest mb-2 border-b border-[#6C3CE1]/5 pb-1">Documentación</div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1.5">
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="vtvVencimiento"> VTV Venc.
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="seguroVencimiento"> Seguro Venc.
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="proximoService"> Próx. Service
+            </label>
+            <label class="flex items-center gap-2 text-sm text-[#F1F3F8] cursor-pointer hover:text-[#A78BFA] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#6C3CE1]" value="fechaAlta"> Fecha Alta
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista previa -->
+      <div class="glass-card rounded-xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-xs font-semibold text-[#8E94A8] uppercase tracking-wider">Vista previa</label>
+          <span class="text-xs text-[#5C6378]"><span id="exp-count">0</span> vehículos seleccionados</span>
+        </div>
+        <div id="exp-preview" class="rounded-lg bg-white overflow-x-auto" style="min-height: 120px;">
+          <div class="p-6 text-center text-gray-400 text-sm">Seleccioná campos para ver la vista previa</div>
+        </div>
+      </div>
+
+      <!-- Stats + Descargar -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+        <span class="text-xs text-[#5C6378]" id="exp-stats">0 vehículos × 0 campos = 0 celdas</span>
+        <button onclick="downloadExport()" class="btn-primary px-8 py-3 text-sm font-semibold flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Descargar Archivo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="/js/vehicles.js?v=44e609d"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="/js/vehicles.js?v=export-modal"></script>
 <%- include('partials/footer') %>
