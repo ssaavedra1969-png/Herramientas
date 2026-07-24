@@ -70,6 +70,7 @@ function renderGeneralInfo() {
   setText('vg-chasis', vehicleData.chasis || '-');
   setText('vg-numeroMotor', vehicleData.numeroMotor || '-');
   setText('vg-capacidadCarga', vehicleData.capacidadCarga ? `${vehicleData.capacidadCarga.toLocaleString()} kg` : '-');
+  setText('vg-nroBet', vehicleData.nroBet || '-');
   renderTrompo();
   setText('vg-kmhs', `${vehicleData.kilometraje?.toLocaleString() || 0} km`);
   setText('vg-centro', vehicleData.centroTrabajo || '-');
@@ -409,6 +410,7 @@ function openEditVehicle() {
   document.getElementById('v-anio').value = vehicleData.año || '';
   document.getElementById('v-chasis').value = vehicleData.chasis || '';
   document.getElementById('v-numeroMotor').value = vehicleData.numeroMotor || '';
+  document.getElementById('v-nroBet').value = vehicleData.nroBet || '';
   document.getElementById('v-capacidadCarga').value = vehicleData.capacidadCarga || '';
   document.getElementById('v-trompo').checked = vehicleData.trompo === true;
   document.getElementById('v-trompo-fields').classList.toggle('hidden', !vehicleData.trompo);
@@ -491,6 +493,7 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
     año: parseInt(document.getElementById('v-anio').value) || null,
     chasis: document.getElementById('v-chasis').value.trim() || '',
     numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
+    nroBet: document.getElementById('v-nroBet').value.trim() || '',
     capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
     trompo: document.getElementById('v-trompo').checked,
     marcaTrompo: document.getElementById('v-trompo').checked ? (document.getElementById('v-marcaTrompo').value.trim() || null) : null,

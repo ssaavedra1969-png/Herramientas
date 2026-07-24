@@ -179,6 +179,7 @@ function fmap(v) {
     año: v.año || v.anio || '',
     chasis: v.chasis || '',
     numeroMotor: v.numeroMotor || '',
+    nroBet: v.nroBet || '',
     capacidadCarga: v.capacidadCarga || null,
     trompo: v.trompo === true,
     marcaTrompo: v.marcaTrompo || null,
@@ -319,6 +320,7 @@ function renderVehicleCards(vehicles) {
             ${mv.centroTrabajo ? `<div class="card-detail"><svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>${mv.centroTrabajo}</div>` : ''}
             ${mv.empresa ? `<div class="card-detail"><svg class="w-3 h-3 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>${mv.empresa}</div>` : ''}
             ${mv.kilometraje ? `<div class="card-detail"><svg class="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>${Number(mv.kilometraje).toLocaleString('es-AR')} km</div>` : ''}
+            ${mv.nroBet ? `<div class="card-detail"><svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>BET: ${mv.nroBet}</div>` : ''}
           </div>
         </div>
         <div class="vehicle-card-footer">
@@ -402,7 +404,8 @@ function applyFilters() {
       (v.tipo || '').toLowerCase().includes(search) ||
       (v.subtipo || '').toLowerCase().includes(search) ||
       (v.centroTrabajo || '').toLowerCase().includes(search) ||
-      (v.empresa || '').toLowerCase().includes(search)
+      (v.empresa || '').toLowerCase().includes(search) ||
+      (v.nroBet || '').toLowerCase().includes(search)
     );
   }
   if (marca) filtered = filtered.filter(v => (v.marca || '') === marca);
@@ -513,6 +516,7 @@ function openVehicleModal(vehicleId = null) {
     document.getElementById('v-anio').value = v.año;
     document.getElementById('v-chasis').value = v.chasis;
     document.getElementById('v-numeroMotor').value = v.numeroMotor;
+    document.getElementById('v-nroBet').value = v.nroBet || '';
     document.getElementById('v-capacidadCarga').value = v.capacidadCarga || '';
     document.getElementById('v-trompo').checked = v.trompo;
     document.getElementById('v-trompo-fields').classList.toggle('hidden', !v.trompo);
@@ -607,6 +611,7 @@ async function saveVehicle(e) {
     año: parseInt(document.getElementById('v-anio').value) || null,
     chasis: document.getElementById('v-chasis').value.trim() || '',
     numeroMotor: document.getElementById('v-numeroMotor').value.trim() || '',
+    nroBet: document.getElementById('v-nroBet').value.trim() || '',
     capacidadCarga: parseFloat(document.getElementById('v-capacidadCarga').value) || null,
     trompo: document.getElementById('v-trompo').checked,
     marcaTrompo: document.getElementById('v-trompo').checked ? (document.getElementById('v-marcaTrompo').value.trim() || null) : null,
@@ -767,8 +772,8 @@ function closeCsvImport() {
 }
 
 function downloadCsvTemplate() {
-  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','tipo','subtipo','capacidadCarga','trompo','marcaTrompo','serieTrompo','modeloTrompo','cargaM3Trompo','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','chofer','dni','vencimientoDNI','registro','vencimientoRegistro','empresa','centroTrabajo','observaciones'];
-  const sample = ['ABC123','V001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','mixer','Indumix','25000','Si','Marina','ST-12345','Modelo X','8 M3','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','30123456','2030-12-31','REG-2024-001','2028-06-30','FRAFIL SRL','Lujan','Último cambio de cubiertas a los 140.000 km'];
+  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','nroBet','tipo','subtipo','capacidadCarga','trompo','marcaTrompo','serieTrompo','modeloTrompo','cargaM3Trompo','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','chofer','dni','vencimientoDNI','registro','vencimientoRegistro','empresa','centroTrabajo','observaciones'];
+  const sample = ['ABC123','V001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','BET-500','mixer','Indumix','25000','Si','Marina','ST-12345','Modelo X','8 M3','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','30123456','2030-12-31','REG-2024-001','2028-06-30','FRAFIL SRL','Lujan','Último cambio de cubiertas a los 140.000 km'];
   const BOM = '\uFEFF';
   const csv = BOM + headers.join(',') + '\n' + sample.join(',') + '\n';
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -810,6 +815,7 @@ function parseVehicleRows(rows) {
     const año = parseInt(row.año);
     const chasis = (row.chasis || '').toString().trim();
     const numeroMotor = (row.numeroMotor || '').toString().trim();
+    const nroBet = (row.nroBet || '').toString().trim();
     const tipo = (row.tipo || '').toString().trim();
     const subtipo = (row.subtipo || '').toString().trim();
     const empresa = (row.empresa || '').toString().trim();
@@ -831,7 +837,7 @@ function parseVehicleRows(rows) {
       errors.push({ fila: idx, patente: patente || '(sin patente)', errores: rowErrors.join(', ') });
     } else {
       valid.push({
-        patente, interno, marca, modelo, año, chasis, numeroMotor, tipo, subtipo,
+        patente, interno, marca, modelo, año, chasis, numeroMotor, nroBet, tipo, subtipo,
         capacidadCarga: parseFloat(row.capacidadCarga) || null,
         trompoRaw: (row.trompoRaw || '').toString().trim(),
         marcaTrompo: (row.marcaTrompo || '').toString().trim(),
@@ -963,7 +969,7 @@ function validateCsvImport() {
           // Normalize Excel column names to lowercase internal field names
           const headerMap = {
             'id':'interno','patente':'patente','marca':'marca','modelo':'modelo',
-            'año':'año','aÃ±o':'año','chasis':'chasis','nro motor':'numeroMotor',
+            'año':'año','aÃ±o':'año','chasis':'chasis',            'nro motor':'numeroMotor','nro bet':'nroBet',
             'tipo':'tipo','subtipo':'subtipo','capacidad':'capacidadCarga',
             'trompo':'trompoRaw','marca trompo':'marcaTrompo','nro serie trompo':'serieTrompo',
             'modelo trompo':'modeloTrompo','carga m3 trompo':'cargaM3Trompo',
@@ -1074,6 +1080,7 @@ async function executeCsvImport() {
       año: row.año,
       chasis: row.chasis,
       numeroMotor: row.numeroMotor || '',
+      nroBet: row.nroBet || '',
       tipo: row.tipo,
       subtipo: row.subtipo || '',
       capacidadCarga: row.capacidadCarga || null,
@@ -1193,18 +1200,18 @@ function exportVehiclesExcel() {
     showToast('Librería XLSX no cargada', 'error');
     return;
   }
-  const headers = ['Interno', 'Patente', 'Marca', 'Modelo', 'Año', 'Tipo', 'Subtipo', 'Trompo', 'Estado', 'Empresa', 'Centro', 'Kilometraje', 'Chasis', 'N° Motor', 'Chofer', 'DNI', 'Vto. DNI', 'Registro', 'Vto. Registro'];
+  const headers = ['Interno', 'Patente', 'Marca', 'Modelo', 'Año', 'Tipo', 'Subtipo', 'Trompo', 'Estado', 'Empresa', 'Centro', 'Kilometraje', 'Chasis', 'N° Motor', 'Nro BET', 'Chofer', 'DNI', 'Vto. DNI', 'Registro', 'Vto. Registro'];
   const rows = allVehicles.map(v => [
     v.interno || '', v.patente || '', v.marca || '', v.modelo || '', v.anio || v.año || '',
     v.tipo || '', v.subtipo || '', v.trompo ? 'Si' : 'No',
     v.estadoGeneral || v.estado || 'Activo', v.empresa || '', v.centroTrabajo || '',
-    v.kilometraje || 0, v.chasis || '', v.numeroMotor || '', v.chofer || '', v.dni || '',
+    v.kilometraje || 0, v.chasis || '', v.numeroMotor || '', v.nroBet || '', v.chofer || '', v.dni || '',
     v.vencimientoDNI ? new Date(v.vencimientoDNI.seconds ? v.vencimientoDNI.seconds * 1000 : v.vencimientoDNI).toLocaleDateString('es-AR') : '',
     v.registro || '',
     v.vencimientoRegistro ? new Date(v.vencimientoRegistro.seconds ? v.vencimientoRegistro.seconds * 1000 : v.vencimientoRegistro).toLocaleDateString('es-AR') : ''
   ]);
   const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-  ws['!cols'] = headers.map((h, i) => ({ wch: [8, 10, 16, 16, 6, 18, 14, 7, 8, 18, 14, 12, 20, 16, 16, 12, 12, 16, 12][i] || 12 }));
+  ws['!cols'] = headers.map((h, i) => ({ wch: [8, 10, 16, 16, 6, 18, 14, 7, 8, 18, 14, 12, 20, 16, 12, 16, 12, 12, 16, 12][i] || 12 }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Vehículos');
   const now = new Date().toISOString().split('T')[0];

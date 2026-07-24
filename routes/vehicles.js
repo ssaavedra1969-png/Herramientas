@@ -38,6 +38,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       año: req.body.año ? parseInt(req.body.año) : null,
       chasis: req.body.chasis?.trim() || '',
       numeroMotor: req.body.numeroMotor?.trim() || '',
+      nroBet: req.body.nroBet?.trim() || '',
       capacidadCarga: parseFloat(req.body.capacidadCarga) || null,
       trompo: trompoEnabled,
       marcaTrompo: trompoEnabled ? (req.body.marcaTrompo?.trim() || null) : null,
@@ -113,6 +114,7 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
       año: req.body.año ? parseInt(req.body.año) : null,
       chasis: req.body.chasis?.trim() || '',
       numeroMotor: req.body.numeroMotor?.trim() || '',
+      nroBet: req.body.nroBet?.trim() || '',
       capacidadCarga: parseFloat(req.body.capacidadCarga) || null,
       trompo: trompoEnabled,
       marcaTrompo: trompoEnabled ? (req.body.marcaTrompo?.trim() || null) : null,
@@ -253,7 +255,7 @@ router.get('/template/excel', verifyToken, async (req, res) => {
     const ws = workbook.addWorksheet('Vehículos');
 
     const headers = [
-      'patente','interno','marca','modelo','año','chasis','numeroMotor',
+      'patente','interno','marca','modelo','año','chasis','numeroMotor','nroBet',
       'tipo','subtipo','capacidadCarga','trompo','marcaTrompo','serieTrompo',
       'modeloTrompo','cargaM3Trompo','kilometraje','vtvFechaRealizacion',
       'vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania',
