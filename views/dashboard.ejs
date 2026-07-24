@@ -46,16 +46,13 @@
         <div id="dash-search-results" class="absolute left-0 right-0 mt-1 glass-card rounded-xl overflow-hidden z-50 hidden max-h-80 overflow-y-auto"></div>
       </div>
 
-      <!-- TABS -->
-      <div class="mt-6 flex gap-1 border-b border-[#6C3CE1]/20">
-        <button id="tab-btn-vehiculos" onclick="switchTab('vehiculos')" class="px-5 py-2.5 text-sm font-medium rounded-t-lg transition-all tab-btn-active text-[#6C3CE1] border-b-2 border-[#6C3CE1]">Vehículos</button>
-
-      </div>
+      <h2 class="text-xl font-bold text-gradient-primary mt-6 mb-1">Alertas</h2>
 
       <!-- TAB: VEHÍCULOS -->
       <div id="tab-vehiculos" class="tab-content">
-        <!-- Summary Cards Row 1 -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <!-- Alertas Vehículos -->
+        <p class="text-sm font-semibold text-[#8E94A8] mt-4 mb-2 uppercase tracking-wider">Vehículos</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#6C3CE1]/30 transition" onclick="showVehiculosModal()">
             <div class="flex items-center justify-between">
               <div>
@@ -93,6 +90,35 @@
           </div>
         </div>
 
+        <!-- Alertas Choferes -->
+        <p class="text-sm font-semibold text-[#8E94A8] mt-6 mb-2 uppercase tracking-wider">Choferes</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#EC4899]/30 transition" onclick="showRegistroModal()">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[#8E94A8] text-xs font-medium">Registro por vencer</p>
+                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-registro-proximos"><span class="skeleton skeleton-stat inline-block"></span></p>
+                <p class="text-xs text-[#5C6378] mt-1">≤30 días</p>
+              </div>
+              <div class="w-10 h-10 bg-[#EC4899]/10 rounded-lg flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-[#EC4899]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#F97316]/30 transition" onclick="showDniModal()">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[#8E94A8] text-xs font-medium">DNI por vencer</p>
+                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-dni-proximos"><span class="skeleton skeleton-stat inline-block"></span></p>
+                <p class="text-xs text-[#5C6378] mt-1">≤30 días</p>
+              </div>
+              <div class="w-10 h-10 bg-[#F97316]/10 rounded-lg flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-[#F97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Summary Cards Row 2: Empresas -->
         <div class="glass-card rounded-xl p-5 card-3d mt-4">
           <div class="flex items-center justify-between mb-4">
@@ -109,11 +135,39 @@
           </div>
         </div>
 
-        <!-- Alertas VTV + Seguro -->
-        <div class="glass-card rounded-xl p-5 mt-4">
-          <h3 class="text-lg font-semibold text-[#F1F3F8] mb-4">Alertas VTV / Seguro</h3>
-          <div id="alertas-vtv" class="space-y-2 max-h-72 overflow-y-auto pr-1">
-            <p class="text-[#5C6378] text-sm">Cargando alertas...</p>
+        <!-- Fleet Health -->
+        <div class="glass-card rounded-xl p-5 mt-4" style="border:1px solid rgba(16,185,129,0.15);">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#10B981,#059669);">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-[#F1F3F8]">Estado de la Flota</h3>
+              <p class="text-[#5C6378] text-xs">Documentación y vencimientos al día</p>
+            </div>
+          </div>
+          <div id="fleet-health-bar" class="mb-3">
+            <div class="h-3 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.06);">
+              <div id="fleet-health-fill" class="h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(90deg,#10B981,#059669);"></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="fleet-health-stats">
+            <div class="text-center p-2 rounded-lg" style="background:rgba(16,185,129,0.06);">
+              <p class="text-[#10B981] text-lg font-bold" id="fh-ok">—</p>
+              <p class="text-[#5C6378] text-[10px] uppercase tracking-wider">Al día</p>
+            </div>
+            <div class="text-center p-2 rounded-lg" style="background:rgba(249,115,22,0.06);">
+              <p class="text-[#F97316] text-lg font-bold" id="fh-warn">—</p>
+              <p class="text-[#5C6378] text-[10px] uppercase tracking-wider">Por vencer</p>
+            </div>
+            <div class="text-center p-2 rounded-lg" style="background:rgba(239,68,68,0.06);">
+              <p class="text-[#EF4444] text-lg font-bold" id="fh-crit">—</p>
+              <p class="text-[#5C6378] text-[10px] uppercase tracking-wider">Vencidos</p>
+            </div>
+            <div class="text-center p-2 rounded-lg" style="background:rgba(108,60,222,0.06);">
+              <p class="text-[#6C3CE1] text-lg font-bold" id="fh-total">—</p>
+              <p class="text-[#5C6378] text-[10px] uppercase tracking-wider">Total</p>
+            </div>
           </div>
         </div>
 

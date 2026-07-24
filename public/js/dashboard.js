@@ -148,6 +148,102 @@ function showSeguroModal() {
   openDashModal('Seguro por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#8B5CF6,#7C3AED)', iconSvg, body);
 }
 
+function showRegistroModal() {
+  const alerts = allVehicles.filter(v => {
+    if (v.estadoGeneral === 'Baja') return false;
+    const d = daysUntil(v.vencimientoRegistro);
+    return d !== null && d <= 30;
+  }).sort((a, b) => (daysUntil(a.vencimientoRegistro) || 999) - (daysUntil(b.vencimientoRegistro) || 999));
+  const iconSvg = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/></svg>';
+  if (alerts.length === 0) {
+    openDashModal('Registro por vencer', 'Todo al día', 'linear-gradient(135deg,#10B981,#059669)', '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>', '<div class="text-center py-6"><p class="text-green-400 font-medium">Todos los registros están al día</p></div>');
+    return;
+  }
+  const body = alerts.map(v => {
+    const d = daysUntil(v.vencimientoRegistro);
+    const isCritical = d <= 0;
+    const isWarning = d > 0 && d <= 7;
+    const borderColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#EC4899';
+    const bgColor = isCritical ? 'rgba(239,68,68,0.08)' : isWarning ? 'rgba(249,115,22,0.08)' : 'rgba(236,72,153,0.08)';
+    const textColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#EC4899';
+    const statusLabel = isCritical ? 'VENCIDO' : isWarning ? 'URGENTE' : 'PRÓXIMO';
+    const statusBg = isCritical ? 'rgba(239,68,68,0.15)' : isWarning ? 'rgba(249,115,22,0.15)' : 'rgba(236,72,153,0.15)';
+    const dateStr = v.vencimientoRegistro?.toDate ? v.vencimientoRegistro.toDate().toLocaleDateString('es-AR') : '—';
+    const registro = v.registro || '';
+    const chofer = v.chofer || v.conductorHabitual || '';
+    return `
+    <div class="rounded-xl p-3.5 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid ${borderColor};background:${bgColor};" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(236,72,153,0.15);color:#EC4899;">${(v.interno || '?').substring(0,4)}</div>
+          <div>
+            <p class="text-[#F1F3F8] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+            <p class="text-[#5C6378] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider" style="background:${statusBg};color:${textColor};">${statusLabel}</span>
+          <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencido' : d + ' días'}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-[11px] text-[#8E94A8] ml-[42px]">
+        <span>Vence: ${dateStr}</span>
+        ${registro ? `<span class="text-[#5C6378]">·</span><span>Reg: ${registro}</span>` : ''}
+        ${chofer ? `<span class="text-[#5C6378]">·</span><span>${chofer}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  openDashModal('Registro por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#EC4899,#DB2777)', iconSvg, body);
+}
+
+function showDniModal() {
+  const alerts = allVehicles.filter(v => {
+    if (v.estadoGeneral === 'Baja') return false;
+    const d = daysUntil(v.vencimientoDNI);
+    return d !== null && d <= 30;
+  }).sort((a, b) => (daysUntil(a.vencimientoDNI) || 999) - (daysUntil(b.vencimientoDNI) || 999));
+  const iconSvg = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/></svg>';
+  if (alerts.length === 0) {
+    openDashModal('DNI por vencer', 'Todo al día', 'linear-gradient(135deg,#10B981,#059669)', '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>', '<div class="text-center py-6"><p class="text-green-400 font-medium">Todos los DNI están al día</p></div>');
+    return;
+  }
+  const body = alerts.map(v => {
+    const d = daysUntil(v.vencimientoDNI);
+    const isCritical = d <= 0;
+    const isWarning = d > 0 && d <= 7;
+    const borderColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#F97316';
+    const bgColor = isCritical ? 'rgba(239,68,68,0.08)' : isWarning ? 'rgba(249,115,22,0.08)' : 'rgba(249,115,22,0.08)';
+    const textColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#F97316';
+    const statusLabel = isCritical ? 'VENCIDO' : isWarning ? 'URGENTE' : 'PRÓXIMO';
+    const statusBg = isCritical ? 'rgba(239,68,68,0.15)' : isWarning ? 'rgba(249,115,22,0.15)' : 'rgba(249,115,22,0.15)';
+    const dateStr = v.vencimientoDNI?.toDate ? v.vencimientoDNI.toDate().toLocaleDateString('es-AR') : '—';
+    const dni = v.dni || '';
+    const chofer = v.chofer || v.conductorHabitual || '';
+    return `
+    <div class="rounded-xl p-3.5 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid ${borderColor};background:${bgColor};" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(249,115,22,0.15);color:#F97316;">${(v.interno || '?').substring(0,4)}</div>
+          <div>
+            <p class="text-[#F1F3F8] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+            <p class="text-[#5C6378] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider" style="background:${statusBg};color:${textColor};">${statusLabel}</span>
+          <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencido' : d + ' días'}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-[11px] text-[#8E94A8] ml-[42px]">
+        <span>Vence: ${dateStr}</span>
+        ${dni ? `<span class="text-[#5C6378]">·</span><span>DNI: ${dni}</span>` : ''}
+        ${chofer ? `<span class="text-[#5C6378]">·</span><span>${chofer}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  openDashModal('DNI por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#F97316,#EA580C)', iconSvg, body);
+}
+
 function animateValue(el, start, end, duration, prefix, suffix) {
   prefix = prefix || '';
   suffix = suffix || '';
@@ -270,13 +366,17 @@ function initRealtimeListeners() {
     const prevVehiculos = parseInt(elVehiculos.textContent) || 0;
     animateValue(elVehiculos, prevVehiculos, active, 800);
 
-    let vtvCount = 0, seguroCount = 0;
+    let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0;
     all.forEach(v => {
       if (v.estadoGeneral === 'Baja') return;
       const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
       if (vtvDays !== null && vtvDays <= 30) vtvCount++;
       const segDays = daysUntil(v.seguro?.fechaVencimiento);
       if (segDays !== null && segDays <= 30) seguroCount++;
+      const regDays = daysUntil(v.vencimientoRegistro);
+      if (regDays !== null && regDays <= 30) registroCount++;
+      const dniDays = daysUntil(v.vencimientoDNI);
+      if (dniDays !== null && dniDays <= 30) dniCount++;
     });
 
     const elVtv = document.getElementById('card-vtv-proximas');
@@ -287,8 +387,16 @@ function initRealtimeListeners() {
     const prevSeg = parseInt(elSeg.textContent) || 0;
     animateValue(elSeg, prevSeg, seguroCount, 800);
 
+    const elReg = document.getElementById('card-registro-proximos');
+    const prevReg = parseInt(elReg.textContent) || 0;
+    animateValue(elReg, prevReg, registroCount, 800);
+
+    const elDni = document.getElementById('card-dni-proximos');
+    const prevDni = parseInt(elDni.textContent) || 0;
+    animateValue(elDni, prevDni, dniCount, 800);
+
     renderEmpresas(all);
-    renderAlertasVTV(all);
+    renderFleetHealth(all);
   }, (error) => {
     console.error('Error en snapshot de vehículos:', error);
   });
@@ -347,54 +455,44 @@ function showEmpresaModal(empresa) {
   openDashModal(empresa, subtitle, 'linear-gradient(135deg,#10B981,#059669)', iconSvg, body);
 }
 
-function renderAlertasVTV(vehicles) {
-  const container = document.getElementById('alertas-vtv');
-  if (!container) return;
+function renderFleetHealth(vehicles) {
+  const active = vehicles.filter(v => v.estadoGeneral !== 'Baja');
+  let ok = 0, warn = 0, crit = 0;
 
-  const alertas = [];
-  vehicles.forEach(v => {
-    if (v.estadoGeneral === 'Baja') return;
-    const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
-    if (vtvDays !== null && getAlertLevel(vtvDays) !== 'none') {
-      alertas.push({ days: vtvDays, tipo: 'VTV', label: `${v.patente || '—'} · ${v.interno || ''}`, date: v.vtv?.fechaVencimiento });
-    }
-    const segDays = daysUntil(v.seguro?.fechaVencimiento);
-    if (segDays !== null && getAlertLevel(segDays) !== 'none') {
-      alertas.push({ days: segDays, tipo: 'Seguro', label: `${v.patente || '—'} · ${v.interno || ''}`, date: v.seguro?.fechaVencimiento });
-    }
-    const dniDays = daysUntil(v.vencimientoDNI);
-    if (dniDays !== null && getAlertLevel(dniDays) !== 'none') {
-      alertas.push({ days: dniDays, tipo: 'DNI', label: `${v.patente || '—'} · ${v.interno || ''}`, date: v.vencimientoDNI });
-    }
-    const regDays = daysUntil(v.vencimientoRegistro);
-    if (regDays !== null && getAlertLevel(regDays) !== 'none') {
-      alertas.push({ days: regDays, tipo: 'Registro', label: `${v.patente || '—'} · ${v.interno || ''}`, date: v.vencimientoRegistro });
-    }
+  active.forEach(v => {
+    const checks = [
+      daysUntil(v.vtv?.fechaVencimiento),
+      daysUntil(v.seguro?.fechaVencimiento),
+      daysUntil(v.vencimientoDNI),
+      daysUntil(v.vencimientoRegistro)
+    ];
+    let worst = 'ok';
+    checks.forEach(d => {
+      if (d === null) return;
+      if (d <= 0) worst = 'crit';
+      else if (d <= 30 && worst !== 'crit') worst = 'warn';
+    });
+    if (worst === 'crit') crit++;
+    else if (worst === 'warn') warn++;
+    else ok++;
   });
 
-  if (alertas.length === 0) {
-    container.innerHTML = '<p class="text-green-500 text-sm">Todas las VTV y Seguros están al día</p>';
-    return;
+  const total = active.length;
+  const pct = total > 0 ? Math.round(((ok) / total) * 100) : 0;
+
+  const fill = document.getElementById('fleet-health-fill');
+  if (fill) {
+    const color = pct >= 80 ? 'linear-gradient(90deg,#10B981,#059669)' : pct >= 50 ? 'linear-gradient(90deg,#F59E0B,#F97316)' : 'linear-gradient(90deg,#EF4444,#DC2626)';
+    fill.style.width = pct + '%';
+    fill.style.background = color;
   }
 
-  alertas.sort((a, b) => (a.days || 999) - (b.days || 999));
-
-  container.innerHTML = alertas.slice(0, 15).map(a => {
-    const level = getAlertLevel(a.days);
-    const levelClass = level === 'critical' ? 'border-l-4 border-red-500 bg-red-900/20' : level === 'warning' ? 'border-l-4 border-yellow-500 bg-yellow-900/20' : 'border-l-4 border-blue-500 bg-blue-900/20';
-    const icon = level === 'critical' ? '\uD83D\uDD34' : level === 'warning' ? '\uD83D\uDFE1' : '\uD83D\uDD35';
-    const label = level === 'critical' ? 'Vencida' : level === 'warning' ? 'Próxima a vencer' : 'Por vencer';
-    return `
-      <div class="${levelClass} p-2.5 rounded-lg text-sm flex items-start justify-between">
-        <div>
-          <p class="font-medium text-[#F1F3F8] text-xs">${a.tipo} · ${a.label}</p>
-          <p class="text-[#8E94A8] text-xs mt-0.5">${label} · ${formatDate(a.date)}</p>
-        </div>
-        <span class="text-base flex-shrink-0 ml-2">${icon}</span>
-      </div>`;
-  }).join('');
-
-  if (alertas.length > 15) {
-    container.innerHTML += `<p class="text-[#5C6378] text-xs text-center pt-2">+${alertas.length - 15} más</p>`;
-  }
+  const elOk = document.getElementById('fh-ok');
+  const elWarn = document.getElementById('fh-warn');
+  const elCrit = document.getElementById('fh-crit');
+  const elTotal = document.getElementById('fh-total');
+  if (elOk) elOk.textContent = ok;
+  if (elWarn) elWarn.textContent = warn;
+  if (elCrit) elCrit.textContent = crit;
+  if (elTotal) elTotal.textContent = total;
 }

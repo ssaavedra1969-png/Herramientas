@@ -479,11 +479,6 @@ function getDateValue(id) {
   return val ? firebase.firestore.Timestamp.fromDate(new Date(val + 'T00:00:00')) : null;
 }
 
-document.addEventListener('click', (e) => {
-  const modal = document.getElementById('modal-vehiculo');
-  if (modal && e.target === modal) hideModal('modal-vehiculo');
-});
-
 document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!isAdmin()) return;

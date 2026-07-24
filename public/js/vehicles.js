@@ -54,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initRealtimeListener();
   document.getElementById('form-vehiculo')?.addEventListener('submit', saveVehicle);
-  setupModalClose('modal-vehiculo');
   setupModalClose('modal-csv-import');
   setupModalClose('modal-progress');
   document.getElementById('search-vehiculo')?.addEventListener('input', applyFilters);
