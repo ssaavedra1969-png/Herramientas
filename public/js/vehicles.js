@@ -1312,7 +1312,7 @@ function updateExportPreview() {
 
   const preview = document.getElementById('exp-preview');
   if (ncols === 0) {
-    preview.innerHTML = '<div class="p-6 text-center text-gray-400 text-sm">Seleccioná al menos un campo</div>';
+    preview.innerHTML = '<div class="p-6 text-center text-[#5C6378] text-sm">Seleccioná al menos un campo</div>';
     return;
   }
 
@@ -1325,41 +1325,44 @@ function updateExportPreview() {
 
   const previewRows = allVehicles.slice(0, 5);
 
-  let html = `<div style="font-family: Inter, Arial, sans-serif; font-size: 10px; color: #1a1a1a;">`;
+  let html = `<div style="font-family: Inter, sans-serif; font-size: 10px; color: #F1F3F8; background: #0A0A1A; border-radius: 8px; overflow: hidden;">`;
 
-  // Header
-  html += `<div style="text-align:center; padding: 12px 8px 6px; border-bottom: 2px solid #2d1a6e;">`;
-  if (empresa) html += `<div style="font-size: 14px; font-weight: 800; color: #2d1a6e; letter-spacing: 1px;">${empresa.toUpperCase()}</div>`;
-  if (direccion) html += `<div style="font-size: 9px; color: #666;">${direccion}</div>`;
-  if (telefono) html += `<div style="font-size: 9px; color: #666;">Tel: ${telefono}</div>`;
-  html += `<div style="font-size: 9px; color: #999; margin-top: 4px;">══════════════════════════</div>`;
-  html += `<div style="font-size: 12px; font-weight: 700; color: #1a1a1a; margin-top: 6px;">${titulo}</div>`;
-  if (subtitulo) html += `<div style="font-size: 10px; color: #666;">${subtitulo}</div>`;
+  // Header with gradient
+  html += `<div style="background: linear-gradient(135deg, #6C3CE1, #00D4FF); padding: 16px 12px 12px; text-align: center;">`;
+  if (empresa) html += `<div style="font-size: 15px; font-weight: 800; color: #fff; letter-spacing: 1.5px; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">${empresa.toUpperCase()}</div>`;
+  if (direccion) html += `<div style="font-size: 9px; color: rgba(255,255,255,0.8); margin-top: 2px;">${direccion}</div>`;
+  if (telefono) html += `<div style="font-size: 9px; color: rgba(255,255,255,0.7);">Tel: ${telefono}</div>`;
+  html += `</div>`;
+
+  // Title bar
+  html += `<div style="background: #141e2d; padding: 10px 12px; text-align: center; border-bottom: 2px solid #6C3CE1;">`;
+  html += `<div style="font-size: 12px; font-weight: 700; color: #F1F3F8;">${titulo}</div>`;
+  if (subtitulo) html += `<div style="font-size: 9px; color: #8E94A8; margin-top: 2px;">${subtitulo}</div>`;
   html += `</div>`;
 
   // Table
-  html += `<table style="width:100%; border-collapse:collapse; margin-top:6px;"><thead><tr>`;
+  html += `<div style="overflow-x: auto;"><table style="width:100%; border-collapse:collapse;"><thead><tr>`;
   fields.forEach(f => {
-    html += `<th style="background:#2d1a6e; color:white; padding:4px 6px; text-align:left; font-size:9px; font-weight:600; white-space:nowrap;">${f.label}</th>`;
+    html += `<th style="background: #6C3CE1; color: white; padding: 5px 8px; text-align: left; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space:nowrap;">${f.label}</th>`;
   });
   html += `</tr></thead><tbody>`;
   previewRows.forEach((v, i) => {
-    const bg = i % 2 === 0 ? '#f8f7fc' : '#ffffff';
+    const bg = i % 2 === 0 ? '#141e2d' : '#0f1520';
     html += `<tr style="background:${bg};">`;
     fields.forEach(f => {
-      html += `<td style="padding:3px 6px; border-bottom:1px solid #eee; font-size:9px; white-space:nowrap; max-width:100px; overflow:hidden; text-overflow:ellipsis;">${f.fn(v)}</td>`;
+      html += `<td style="padding: 4px 8px; border-bottom: 1px solid rgba(108,60,225,0.15); font-size: 9px; color: #F1F3F8; white-space:nowrap; max-width:120px; overflow:hidden; text-overflow:ellipsis;">${f.fn(v)}</td>`;
     });
     html += `</tr>`;
   });
   if (count > 5) {
-    html += `<tr><td colspan="${ncols}" style="text-align:center; padding:6px; color:#999; font-style:italic; font-size:9px;">... y ${count - 5} registros más</td></tr>`;
+    html += `<tr><td colspan="${ncols}" style="text-align:center; padding:8px; color:#8E94A8; font-style:italic; font-size:9px; background:#0A0A1A;">... y ${count - 5} registros más</td></tr>`;
   }
-  html += `</tbody></table>`;
+  html += `</tbody></table></div>`;
 
   // Footer
-  html += `<div style="border-top:1px solid #ddd; margin-top:6px; padding:6px 8px; display:flex; justify-content:space-between; font-size:8px; color:#999;">`;
+  html += `<div style="background: #141e2d; border-top: 1px solid rgba(108,60,225,0.2); padding: 8px 12px; display:flex; justify-content:space-between; font-size: 8px; color: #8E94A8;">`;
   html += `<span>Generado: ${ahora} — ${count} registros</span>`;
-  html += `<span>© ${empresa || 'Grupo Falpat SRL'} — Todos los derechos reservados</span>`;
+  html += `<span>© ${empresa || 'Grupo Falpat SRL'}</span>`;
   html += `</div>`;
 
   html += `</div>`;
@@ -1396,41 +1399,43 @@ function downloadExcel(headers, rows, empresa, direccion, telefono, titulo, subt
   if (typeof XLSX === 'undefined') { showToast('Librería XLSX no cargada', 'error'); return; }
 
   const aoa = [];
+  const mergeRange = { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } };
+  const merges = [];
 
   // Header block
-  aoa.push([]);
-  if (empresa) aoa.push([empresa.toUpperCase()]);
-  if (direccion) aoa.push([direccion]);
-  if (telefono) aoa.push(['Tel: ' + telefono]);
-  aoa.push(['══════════════════════════════════════════════════════════════']);
+  let headerRows = 0;
+  aoa.push([empresa.toUpperCase()]);
+  merges.push({ s: { r: headerRows, c: 0 }, e: { r: headerRows, c: headers.length - 1 } });
+  headerRows++;
+
+  if (direccion) { aoa.push([direccion]); merges.push({ s: { r: headerRows, c: 0 }, e: { r: headerRows, c: headers.length - 1 } }); headerRows++; }
+  if (telefono) { aoa.push(['Tel: ' + telefono]); merges.push({ s: { r: headerRows, c: 0 }, e: { r: headerRows, c: headers.length - 1 } }); headerRows++; }
+  aoa.push([]); headerRows++;
   aoa.push([titulo]);
-  if (subtitulo) aoa.push([subtitulo]);
-  aoa.push([]);
+  merges.push({ s: { r: headerRows, c: 0 }, e: { r: headerRows, c: headers.length - 1 } });
+  headerRows++;
+  if (subtitulo) { aoa.push([subtitulo]); merges.push({ s: { r: headerRows, c: 0 }, e: { r: headerRows, c: headers.length - 1 } }); headerRows++; }
+  aoa.push([]); headerRows++;
 
   // Column headers
   aoa.push(headers);
+  const headerRowIdx = aoa.length - 1;
   rows.forEach(r => aoa.push(r));
 
   // Footer
   aoa.push([]);
-  aoa.push([`Generado: ${fechaStr} — ${rows.length} registros`]);
-  aoa.push([`© ${empresa} — Todos los derechos reservados`]);
+  aoa.push([`Generado: ${fechaStr} — ${rows.length} registros — © ${empresa}`]);
 
   const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!merges'] = merges;
 
-  // Styling: column widths
+  // Column widths
   const colWidths = headers.map((h, i) => {
     let maxLen = h.length;
     rows.forEach(r => { if (r[i] && String(r[i]).length > maxLen) maxLen = String(r[i]).length; });
     return { wch: Math.min(maxLen + 4, 30) };
   });
   ws['!cols'] = colWidths;
-
-  // Merge header cells
-  const mergeCount = 4 + (empresa ? 1 : 0) + (direccion ? 1 : 0) + (telefono ? 1 : 0) + (subtitulo ? 1 : 0);
-  ws['!merges'] = [
-    { s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } }
-  ];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Vehículos');
@@ -1468,35 +1473,49 @@ function downloadPDF(headers, rows, empresa, direccion, telefono, titulo, subtit
   const margin = 14;
   let y = margin;
 
-  // ── Header ──
-  doc.setFillColor(45, 26, 110);
-  doc.rect(0, 0, pageW, 28, 'F');
+  // ── Gradient header ──
+  const headerH = 30;
+  const steps = 40;
+  for (let i = 0; i < steps; i++) {
+    const ratio = i / steps;
+    const r = Math.round(108 + (0 - 108) * ratio);
+    const g = Math.round(60 + (212 - 60) * ratio);
+    const b = Math.round(225 + (255 - 225) * ratio);
+    doc.setFillColor(r, g, b);
+    doc.rect(0, (headerH / steps) * i, pageW, headerH / steps + 0.5, 'F');
+  }
 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   if (empresa) {
-    doc.text(empresa.toUpperCase(), pageW / 2, y + 2, { align: 'center' });
-    y += 6;
+    doc.text(empresa.toUpperCase(), pageW / 2, y + 3, { align: 'center' });
+    y += 7;
   }
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   if (direccion) { doc.text(direccion, pageW / 2, y + 1, { align: 'center' }); y += 4; }
   if (telefono) { doc.text('Tel: ' + telefono, pageW / 2, y + 1, { align: 'center' }); y += 4; }
 
-  // Title under header
-  y = 34;
-  doc.setTextColor(45, 26, 110);
-  doc.setFontSize(13);
+  // ── Title bar ──
+  y = headerH + 4;
+  doc.setFillColor(20, 30, 45);
+  doc.rect(margin - 2, y - 4, pageW - (margin - 2) * 2, 10, 'F');
+  doc.setDrawColor(108, 60, 225);
+  doc.setLineWidth(0.4);
+  doc.line(margin - 2, y + 6, pageW - margin + 2, y + 6);
+
+  doc.setTextColor(241, 243, 248);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text(titulo, pageW / 2, y, { align: 'center' });
-  y += 5;
+  doc.text(titulo, pageW / 2, y + 2, { align: 'center' });
+  y += 8;
   if (subtitulo) {
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 100, 100);
+    doc.setTextColor(142, 148, 168);
     doc.text(subtitulo, pageW / 2, y, { align: 'center' });
-    y += 5;
+    y += 4;
   }
 
   // ── Table via autoTable ──
@@ -1506,37 +1525,39 @@ function downloadPDF(headers, rows, empresa, direccion, telefono, titulo, subtit
     body: rows,
     theme: 'grid',
     headStyles: {
-      fillColor: [45, 26, 110],
+      fillColor: [108, 60, 225],
       textColor: [255, 255, 255],
       fontSize: 7,
       fontStyle: 'bold',
-      cellPadding: 2
+      cellPadding: 2,
+      halign: 'left'
     },
     bodyStyles: {
       fontSize: 7,
       cellPadding: 1.5,
-      textColor: [26, 26, 26]
+      textColor: [241, 243, 248]
     },
     alternateRowStyles: {
-      fillColor: [248, 247, 252]
+      fillColor: [20, 30, 45]
     },
     styles: {
-      lineColor: [200, 200, 220],
-      lineWidth: 0.2,
+      fillColor: [15, 21, 32],
+      lineColor: [108, 60, 225],
+      lineWidth: 0.15,
       overflow: 'linebreak',
       font: 'helvetica'
     },
     margin: { left: margin, right: margin, bottom: 20 },
     didDrawPage: function (data) {
-      // Footer on every page
-      doc.setFillColor(248, 247, 252);
+      // Footer
+      doc.setFillColor(20, 30, 45);
       doc.rect(0, pageH - 16, pageW, 16, 'F');
-      doc.setDrawColor(45, 26, 110);
+      doc.setDrawColor(108, 60, 225);
       doc.setLineWidth(0.3);
       doc.line(margin, pageH - 16, pageW - margin, pageH - 16);
 
       doc.setFontSize(7);
-      doc.setTextColor(150, 150, 150);
+      doc.setTextColor(142, 148, 168);
       doc.setFont('helvetica', 'normal');
       doc.text(`Generado: ${fechaStr} — Página ${data.pageNumber}`, margin, pageH - 10);
       doc.text(`© ${empresa} — Todos los derechos reservados`, pageW - margin, pageH - 10, { align: 'right' });

@@ -133,6 +133,7 @@ COMANDOS UTILES
   npm run dev        Iniciar con auto-reload (desarrollo)
   npm run backup     Exportar backup JSON de Firestore
   npm run restore    Restaurar backup a Firestore
+<<<<<<< Updated upstream
   npm run dev:snapshot   Guardar snapshot antes de sesion de desarrollo
   npm run dev:restore    Restaurar base desde snapshot de desarrollo
 
@@ -210,6 +211,8 @@ En modo read-only:
   - Se muestra un banner amarillo "MODO DESARROLLO — Solo lectura"
   - Los READS funcionan normal (ver datos, navegar, etc.)
   - La restauracion borra todo lo modificado y reescribe el snapshot original
+=======
+>>>>>>> Stashed changes
 
 
 SOLUCION DE PROBLEMAS
@@ -422,6 +425,7 @@ PENDIENTES FUTUROS
 - Alertas VTV/seguro con badges de color en la tabla de vehiculos
 
 
+<<<<<<< Updated upstream
 SOLUCION DE PROBLEMAS — GIT PUSH (403 denied)
 ----------------------------------------------
 Si `git push origin main` falla con:
@@ -566,4 +570,8 @@ HISTORIAL DE INCIDENTES
 
 ============================================================
   Fin del anexo — REGLAS PARA IA
+=======
+============================================================
+  Fin de actualizaciones — 22 de julio de 2026
+>>>>>>> Stashed changes
   ============================================================
