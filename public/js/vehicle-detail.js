@@ -84,6 +84,25 @@ function renderGeneralInfo() {
   setText('vg-horometro', vehicleData.horometro ? `${vehicleData.horometro} hs` : '-');
   setText('vg-fechaUltimaRevision', formatDate(vehicleData.fechaUltimaRevision));
   setText('vg-fechaAlta', formatDate(vehicleData.fechaAlta) || formatDate(vehicleData.createdAt) || '-');
+  checkTitulo();
+}
+
+function checkTitulo() {
+  const patente = vehicleData.patente;
+  if (!patente) return;
+  const url = `/titulos/${patente}.pdf`;
+  fetch(url, { method: 'HEAD' }).then(r => {
+    if (r.ok) {
+      const btn = document.getElementById('btn-titulo');
+      if (btn) btn.classList.remove('hidden');
+    }
+  }).catch(() => {});
+}
+
+function openTitulo() {
+  const patente = vehicleData?.patente;
+  if (!patente) return;
+  window.open(`/titulos/${patente}.pdf`, '_blank');
 }
 
 function renderTrompo() {
