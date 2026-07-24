@@ -130,8 +130,11 @@
               <svg class="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             </div>
           </div>
-          <div id="empresas-list" class="space-y-2 overflow-y-auto max-h-60 pr-1">
-            <div class="space-y-2"><div class="skeleton skeleton-row" style="height:2rem"></div><div class="skeleton skeleton-row" style="height:2rem;width:75%"></div><div class="skeleton skeleton-row" style="height:2rem;width:50%"></div></div>
+          <div id="empresas-list" class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
+            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
+            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
+            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
           </div>
         </div>
 
@@ -202,7 +205,7 @@
 
 <%- include('partials/mobile-menu', { page: 'dashboard' }) %>
 
-<script src="/js/dashboard.js?v=44e609d"></script>
+<script src="/js/dashboard.js?v=empresas-grid"></script>
 <script>
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDashModal(); });
 </script>

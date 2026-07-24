@@ -409,21 +409,21 @@ function renderEmpresas(vehicles) {
   const empresas = [...new Set(vehicles.map(v => v.empresa).filter(Boolean))].sort();
 
   if (empresas.length === 0) {
-    container.innerHTML = '<p class="text-[#5C6378] text-sm">Sin empresas registradas</p>';
+    container.innerHTML = '<p class="col-span-full text-[#5C6378] text-sm text-center py-4">Sin empresas registradas</p>';
     return;
   }
 
   container.innerHTML = empresas.map(e => {
     const count = vehicles.filter(v => v.empresa === e && v.estadoGeneral !== 'Baja').length;
     return `
-      <div class="flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition hover:bg-white/[0.04]" style="border:1px solid rgba(16,185,129,0.12);background:rgba(16,185,129,0.04);" onclick="showEmpresaModal('${e.replace(/'/g, "\\'")}')">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#10B981,#059669);">
+      <div class="empresa-card rounded-xl p-3 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-[#10B981]/10" style="border:1px solid rgba(16,185,129,0.15);background:rgba(16,185,129,0.04);" onclick="showEmpresaModal('${e.replace(/'/g, "\\'")}')">
+        <div class="flex items-center gap-2.5 mb-2">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#10B981,#059669);">
             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/></svg>
           </div>
-          <span class="text-sm text-[#F1F3F8] font-medium">${e}</span>
+          <span class="text-xs sm:text-sm text-[#F1F3F8] font-semibold truncate">${e}</span>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center justify-between">
           <span class="text-xs text-[#10B981] font-bold">${count} vehículo${count !== 1 ? 's' : ''}</span>
           <svg class="w-3.5 h-3.5 text-[#5C6378]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </div>
