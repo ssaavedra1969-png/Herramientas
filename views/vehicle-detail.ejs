@@ -68,6 +68,7 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-xs md:text-sm">
               <div><span class="text-[#8E94A8]">Patente</span><br><span class="text-[#F1F3F8] font-semibold text-sm md:text-base" id="vg-patente">-</span></div>
               <div><span class="text-[#8E94A8]">Interno</span><br><span class="text-[#F1F3F8]" id="vg-interno">-</span></div>
+              <div><span class="text-[#8E94A8]">Nro BET</span><br><span class="text-[#F1F3F8]" id="vg-nroBet">-</span></div>
               <div><span class="text-[#8E94A8]">Fecha Alta</span><br><span class="text-[#F1F3F8]" id="vg-fechaAlta">-</span></div>
               <div><span class="text-[#8E94A8]">Marca</span><br><span class="text-[#F1F3F8]" id="vg-marca">-</span></div>
               <div><span class="text-[#8E94A8]">Modelo</span><br><span class="text-[#F1F3F8]" id="vg-modelo">-</span></div>
@@ -97,7 +98,6 @@
               <div><span class="text-[#8E94A8]">Chasis</span><br><span class="text-[#F1F3F8] text-xs md:text-sm" id="vg-chasis">-</span></div>
               <div><span class="text-[#8E94A8]">N° Motor</span><br><span class="text-[#F1F3F8] text-xs" id="vg-numeroMotor">-</span></div>
               <div><span class="text-[#8E94A8]">Cap. Carga</span><br><span class="text-[#F1F3F8]" id="vg-capacidadCarga">-</span></div>
-              <div><span class="text-[#8E94A8]">Nro BET</span><br><span class="text-[#F1F3F8]" id="vg-nroBet">-</span></div>
             </div>
           </div>
           <div class="glass-card rounded-xl p-4 md:p-5">
@@ -614,6 +614,10 @@
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° Interno</label>
             <input type="text" id="v-interno" readonly class="w-full px-3 py-2 bg-[#0A0A1A]/30 border border-[#6C3CE1]/10 rounded-lg text-sm text-[#5C6378] cursor-not-allowed">
           </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Nro BET</label>
+            <input type="text" id="v-nroBet" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Nro asignado por planta">
+          </div>
             <div>
               <label class="block text-sm font-medium text-[#8E94A8] mb-1">Marca *</label>
               <input type="text" id="v-marca" list="v-marca-list" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Escribí o seleccioná...">
@@ -641,10 +645,6 @@
           <div>
             <label class="block text-sm font-medium text-[#8E94A8] mb-1">N° de Motor</label>
             <input type="text" id="v-numeroMotor" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Motor XYZ-12345">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-[#8E94A8] mb-1">Nro BET</label>
-            <input type="text" id="v-nroBet" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon" placeholder="Nro asignado por planta">
           </div>
             <div>
               <label class="block text-sm font-medium text-[#8E94A8] mb-1">Tipo *</label>
