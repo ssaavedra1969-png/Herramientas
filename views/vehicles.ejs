@@ -11,24 +11,27 @@
     </div>
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
       <!-- Header: Título + Contador + Acciones -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-bold text-gradient-primary">Vehículos</h1>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#6C3CE1]/15 text-[#A78BFA] border border-[#6C3CE1]/20">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-4">
+        <div class="flex items-center gap-2">
+          <h1 class="text-xl sm:text-2xl font-bold text-gradient-primary">Vehículos</h1>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#6C3CE1]/15 text-[#A78BFA] border border-[#6C3CE1]/20">
             <span id="total-vehicles">0</span>
           </span>
         </div>
-        <div class="flex gap-2 flex-wrap">
-          <a href="/vehicle/scan" class="btn-secondary text-sm flex items-center gap-1 px-4 py-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg> Escáner
+        <div class="flex gap-1.5 sm:gap-2 flex-wrap">
+          <a href="/vehicle/scan" class="btn-secondary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
+            <span class="hidden xs:inline">Escáner</span>
           </a>
-          <button onclick="exportVehiclesExcel()" class="btn-secondary text-sm flex items-center gap-1 px-4 py-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Excel
+          <button onclick="exportVehiclesExcel()" class="btn-secondary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="hidden sm:inline">Excel</span>
           </button>
           <% if (currentUserData?.role === 'Admin') { %>
           <div class="relative" id="import-dropdown">
-            <button onclick="toggleImportMenu()" class="btn-primary text-sm flex items-center gap-1 px-4 py-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg> Importar
+            <button onclick="toggleImportMenu()" class="btn-primary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+              <span class="hidden sm:inline">Importar</span>
             </button>
             <div id="import-menu" class="hidden absolute right-0 mt-2 w-48 glass-card rounded-lg shadow-xl border border-[#6C3CE1]/10 z-10">
               <button onclick="openCsvImport()" class="w-full text-left px-4 py-3 text-sm text-[#F1F3F8] hover:bg-[#6C3CE1]/10 flex items-center gap-2 rounded-lg">
@@ -36,7 +39,7 @@
               </button>
             </div>
           </div>
-          <button onclick="openVehicleModal()" class="btn-primary text-sm flex items-center gap-1 px-4 py-2">
+          <button onclick="openVehicleModal()" class="btn-primary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Nuevo
           </button>
           <% } %>
@@ -45,27 +48,27 @@
 
       <!-- Search + Controls Bar -->
       <div class="glass-card rounded-xl overflow-hidden mb-4">
-        <div class="flex items-center gap-2 p-3">
+        <div class="flex items-center gap-2 p-2 sm:p-3 search-controls">
           <!-- Search input -->
-          <div class="relative flex-1">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C6378]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="search-vehiculo" placeholder="Buscar por patente, marca, modelo, interno..." class="w-full pl-9 pr-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/15 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon transition-all focus:border-[#6C3CE1]/50">
+          <div class="relative flex-1 min-w-0">
+            <svg class="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5C6378]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="search-vehiculo" placeholder="Buscar..." class="w-full pl-8 sm:pl-9 pr-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/15 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon transition-all focus:border-[#6C3CE1]/50">
           </div>
           <!-- Filter toggle -->
-          <button id="filter-toggle-btn" onclick="toggleFilters()" class="px-3 py-2 text-xs font-medium text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 rounded-lg transition-colors flex items-center gap-1.5 border border-transparent hover:border-[#6C3CE1]/20 whitespace-nowrap">
+          <button id="filter-toggle-btn" onclick="toggleFilters()" class="px-2 sm:px-3 py-2 text-xs font-medium text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 rounded-lg transition-colors flex items-center gap-1 border border-transparent hover:border-[#6C3CE1]/20 shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-            Filtros
+            <span class="hidden sm:inline">Filtros</span>
             <span id="active-filters-count" class="hidden px-1.5 py-0.5 bg-[#6C3CE1]/30 text-[#A78BFA] rounded-full text-[10px] font-bold leading-none"></span>
           </button>
           <!-- Divider -->
-          <div class="w-px h-6 bg-[#6C3CE1]/10"></div>
+          <div class="w-px h-5 bg-[#6C3CE1]/10 shrink-0"></div>
           <!-- View toggle -->
-          <div class="flex rounded-lg overflow-hidden border border-[#6C3CE1]/15 bg-[#0A0A1A]/40">
-            <button id="view-table-btn" onclick="setViewMode('table')" class="px-2.5 py-1.5 text-xs font-medium text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 transition-colors flex items-center gap-1">
+          <div class="flex rounded-lg overflow-hidden border border-[#6C3CE1]/15 bg-[#0A0A1A]/40 shrink-0">
+            <button id="view-table-btn" onclick="setViewMode('table')" class="px-2 py-1.5 text-xs font-medium text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 transition-colors flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M3 6h18M3 18h18"/></svg>
               <span class="hidden sm:inline">Tabla</span>
             </button>
-            <button id="view-card-btn" onclick="setViewMode('card')" class="px-2.5 py-1.5 text-xs font-medium text-[#F1F3F8] bg-[#6C3CE1]/30 transition-colors flex items-center gap-1">
+            <button id="view-card-btn" onclick="setViewMode('card')" class="px-2 py-1.5 text-xs font-medium text-[#F1F3F8] bg-[#6C3CE1]/30 transition-colors flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
               <span class="hidden sm:inline">Cards</span>
             </button>
@@ -166,7 +169,7 @@
           </table>
         </div>
         <div id="view-card" class="p-4">
-          <div id="vehiculos-card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div id="vehiculos-card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           </div>
         </div>
       </div>
@@ -179,13 +182,13 @@
 <!-- Modal Formulario Vehículo -->
 <div id="modal-vehiculo" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
   <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-6 border-b border-[#6C3CE1]/10 sticky top-0 z-10" style="background: #141e2d;">
-      <h3 class="text-lg font-bold text-[#F1F3F8]" id="modal-vehiculo-title">Nuevo Vehículo</h3>
-      <button onclick="closeVehicleModal()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#6C3CE1]/10 sticky top-0 z-10" style="background: #141e2d;">
+      <h3 class="text-base sm:text-lg font-bold text-[#F1F3F8]" id="modal-vehiculo-title">Nuevo Vehículo</h3>
+      <button onclick="closeVehicleModal()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors p-1">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
-    <form id="form-vehiculo" class="p-6 space-y-6">
+    <form id="form-vehiculo" class="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <input type="hidden" id="vehiculo-id">
 
       <!-- Sección: Datos Generales -->
@@ -536,27 +539,29 @@
       </div>
 
       <div class="flex justify-end gap-3 pt-4 border-t border-[#6C3CE1]/10">
-        <button type="button" onclick="closeVehicleModal()" class="px-4 py-2 text-[#8E94A8] hover:text-[#F1F3F8] text-sm transition-colors">Cancelar</button>
-        <button type="submit" class="btn-primary text-sm px-6 py-2">Guardar</button>
+        <button type="button" onclick="closeVehicleModal()" class="px-3 sm:px-4 py-2 text-[#8E94A8] hover:text-[#F1F3F8] text-sm transition-colors">Cancelar</button>
+        <button type="submit" class="btn-primary text-sm px-4 sm:px-6 py-2">Guardar</button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- Modal Importación CSV -->
-<div id="modal-csv-import" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+<div id="modal-csv-import" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-3 sm:p-4">
   <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-6 border-b border-[#6C3CE1]/10 sticky top-0 z-10" style="background: #141e2d;">
-      <h3 class="text-lg font-bold text-[#F1F3F8]">Importar vehículos</h3>
-      <button onclick="closeCsvImport()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors">
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#6C3CE1]/10 sticky top-0 z-10" style="background: #141e2d;">
+      <h3 class="text-base sm:text-lg font-bold text-[#F1F3F8]">Importar vehículos</h3>
+      <button onclick="closeCsvImport()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors p-1">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="p-6 space-y-4">
-      <div class="flex items-center gap-4 p-4 bg-[#6C3CE1]/10 rounded-lg border border-[#6C3CE1]/10">
-        <span class="text-sm text-[#F1F3F8]">1. Descargá la plantilla →</span>
-        <button onclick="downloadCsvTemplate()" class="btn-secondary text-xs px-3 py-1.5">CSV</button>
-        <button onclick="downloadExcelTemplate()" class="btn-secondary text-xs px-3 py-1.5">Excel (.xlsx)</button>
+    <div class="p-4 sm:p-6 space-y-3 sm:space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 sm:p-4 bg-[#6C3CE1]/10 rounded-lg border border-[#6C3CE1]/10">
+        <span class="text-sm text-[#F1F3F8]">1. Descargá la plantilla</span>
+        <div class="flex gap-2">
+          <button onclick="downloadCsvTemplate()" class="btn-secondary text-xs px-3 py-1.5">CSV</button>
+          <button onclick="downloadExcelTemplate()" class="btn-secondary text-xs px-3 py-1.5">Excel (.xlsx)</button>
+        </div>
       </div>
       <div>
         <label class="block text-sm font-medium text-[#8E94A8] mb-2">2. Seleccioná el archivo (CSV o Excel):</label>

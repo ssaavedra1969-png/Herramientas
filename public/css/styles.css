@@ -408,11 +408,31 @@ main { position: relative; }
 @media (max-width: 640px) {
   h1 { font-size: 1.5rem !important; }
   h2 { font-size: 1.25rem !important; }
+
+  /* iOS: prevent auto-zoom on inputs (< 16px triggers zoom) */
+  input[type="text"], input[type="number"], input[type="email"],
+  input[type="password"], input[type="search"], input[type="tel"],
+  input[type="url"], input[type="date"], select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Cards */
   .card-logo-wrap { width: 80px; height: 80px; }
   .card-logo-img { width: 58px; height: 58px; }
   .vehicle-card-header { padding: 0.6rem 0.75rem 0.5rem; }
   .card-patente { font-size: 1rem; }
-  .card-body { padding: 0.6rem 0.75rem; }
+  .vehicle-card-body { padding: 0.6rem 0.75rem; }
+  .vehicle-card-footer { padding: 0.4rem 0.75rem 0.6rem; }
+
+  /* Hamburger touch target */
+  #mobile-menu-btn { padding: 10px !important; }
+
+  /* Modal: reduce double padding */
+  .modal-content form { padding: 1rem !important; }
+
+  /* Search bar: let filter buttons shrink */
+  .search-controls { gap: 0.375rem !important; }
+  .search-controls .whitespace-nowrap { white-space: normal !important; }
 }
 
 /* Vehicle card view */
