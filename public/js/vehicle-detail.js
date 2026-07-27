@@ -88,6 +88,7 @@ function renderGeneralInfo() {
 }
 
 function checkTitulo() {
+  if (window.__SERVER_USER_DATA?.role !== 'Admin') return;
   const patente = vehicleData.patente;
   if (!patente) return;
   const url = `/titulos/${patente}.pdf`;
