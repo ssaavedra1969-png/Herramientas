@@ -53,6 +53,49 @@
           <div id="manual-result" class="mt-2 text-sm"></div>
         </div>
       </div>
+
+      <% if (currentUserData?.role === 'Admin') { %>
+      <div class="glass-card rounded-xl p-5 max-w-2xl mx-auto mt-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-[#10B981]/15 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-[#F1F3F8]">Leer Patente por Foto</h2>
+            <p class="text-[#8E94A8] text-xs">Sacá una foto o subí una imagen de la patente para identificar el vehículo</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 mb-4">
+          <button onclick="ocrOpenCamera()" id="btn-ocr-camera" class="btn-primary text-sm px-4 py-2 flex items-center gap-2 justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Sacar Foto
+          </button>
+          <label class="btn-secondary text-sm px-4 py-2 flex items-center gap-2 justify-center cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            Subir Imagen
+            <input type="file" accept="image/*" class="hidden" onchange="ocrHandleFile(event)">
+          </label>
+          <input type="file" id="ocr-camera-input" accept="image/*" capture="environment" class="hidden" onchange="ocrHandleFile(event)">
+        </div>
+
+        <div id="ocr-preview-container" class="hidden mb-4">
+          <img id="ocr-preview" class="w-full max-h-64 object-contain rounded-lg bg-[#0A0A1A]/80" alt="Preview">
+        </div>
+
+        <div id="ocr-status" class="hidden mb-4 p-3 bg-[#0A0A1A]/50 rounded-lg">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 animate-spin text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span id="ocr-status-text" class="text-sm text-[#8E94A8]">Procesando...</span>
+          </div>
+          <div id="ocr-progress-bar" class="mt-2 h-1.5 bg-[#6C3CE1]/15 rounded-full overflow-hidden">
+            <div id="ocr-progress-fill" class="h-full bg-gradient-to-r from-[#6C3CE1] to-[#00D4FF] rounded-full transition-all duration-300" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div id="ocr-result" class="hidden p-4 bg-[#0A0A1A]/50 rounded-lg"></div>
+      </div>
+      <% } %>
     </main>
   </div>
 </div>
@@ -60,5 +103,8 @@
 <%- include('partials/mobile-menu', { page: 'vehicles' }) %>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script src="/js/scanner.js?v=1"></script>
+<% if (currentUserData?.role === 'Admin') { %>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<% } %>
+<script src="/js/scanner.js?v=2"></script>
 <%- include('partials/footer') %>

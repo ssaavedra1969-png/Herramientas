@@ -181,3 +181,234 @@ function initMobileMenu() {
     document.getElementById('mobile-menu')?.classList.add('hidden');
   });
 }
+
+function ocrOpenCamera() {
+  document.getElementById('ocr-camera-input')?.click();
+}
+
+function ocrHandleFile(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const preview = document.getElementById('ocr-preview');
+  const previewContainer = document.getElementById('ocr-preview-container');
+  const status = document.getElementById('ocr-status');
+  const result = document.getElementById('ocr-result');
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    preview.src = e.target.result;
+    previewContainer.classList.remove('hidden');
+    result.classList.add('hidden');
+    ocrProcessImage(e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function ocrProcessImage(imageData) {
+  const status = document.getElementById('ocr-status');
+  const statusText = document.getElementById('ocr-status-text');
+  const progressFill = document.getElementById('ocr-progress-fill');
+  const result = document.getElementById('ocr-result');
+
+  status.classList.remove('hidden');
+  result.classList.add('hidden');
+  statusText.textContent = 'Cargando motor OCR...';
+  progressFill.style.width = '10%';
+
+  try {
+    const worker = await Tesseract.createWorker('eng', 1, {
+      logger: (m) => {
+        if (m.status === 'recognizing text') {
+          const pct = Math.round(m.progress * 100);
+          progressFill.style.width = pct + '%';
+          statusText.textContent = 'Reconociendo texto... ' + pct + '%';
+        }
+      }
+    });
+
+    statusText.textContent = 'Analizando imagen...';
+    progressFill.style.width = '30%';
+
+    const { data } = await worker.recognize(imageData);
+    await worker.terminate();
+
+    progressFill.style.width = '100%';
+    statusText.textContent = 'Procesamiento completo';
+
+    const rawText = data.text.replace(/\s+/g, ' ').trim();
+    console.log('[OCR] Texto completo:', rawText);
+
+    const candidates = ocrExtractPlates(rawText);
+    console.log('[OCR] Candidatos:', candidates);
+
+    if (candidates.length > 0) {
+      ocrShowCandidates(candidates, rawText);
+    } else {
+      result.classList.remove('hidden');
+      result.innerHTML = `
+        <div class="text-center">
+          <svg class="w-10 h-10 text-yellow-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+          <p class="text-yellow-400 font-medium">No se detectó patente</p>
+          <p class="text-[#5C6378] text-xs mt-1">Texto leído: "${rawText}"</p>
+          <div class="mt-3">
+            <label class="text-xs text-[#8E94A8]">Ingresá la patente manualmente:</label>
+            <div class="flex gap-2 mt-1">
+              <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon uppercase" maxlength="7">
+              <button onclick="ocrManualSearch()" class="btn-primary text-sm px-4 py-2">Buscar</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    setTimeout(() => { status.classList.add('hidden'); }, 2000);
+  } catch (err) {
+    console.error('[OCR] Error:', err);
+    statusText.textContent = 'Error al procesar';
+    progressFill.style.width = '0%';
+    result.classList.remove('hidden');
+    result.innerHTML = `
+      <div class="text-center">
+        <p class="text-red-400">Error: ${err.message}</p>
+      </div>
+    `;
+  }
+}
+
+function ocrExtractPlates(text) {
+  const upper = text.toUpperCase();
+  const candidates = [];
+  const seen = new Set();
+
+  const raw = upper.replace(/[^A-Z0-9]/g, '');
+  const strict = raw.match(/[A-Z]{2}\d{3}[A-Z]{1,2}/g);
+  if (strict) strict.forEach(p => { if (!seen.has(p)) { seen.add(p); candidates.push({ plate: p, score: 3 }); }});
+
+  const spaced = upper.match(/[A-Z]{2}\s*\d{3}\s*[A-Z]{1,2}/g);
+  if (spaced) spaced.forEach(p => {
+    const clean = p.replace(/\s/g, '');
+    if (!seen.has(clean)) { seen.add(clean); candidates.push({ plate: clean, score: 2 }); }
+  });
+
+  const mixed = upper.match(/[A-Z0-9]{2}\s*\d{3}\s*[A-Z0-9]{1,2}/g);
+  if (mixed) mixed.forEach(p => {
+    const clean = p.replace(/\s/g, '');
+    const letters = clean.replace(/[0-9]/g, '');
+    if (letters.length >= 3 && !seen.has(clean)) {
+      seen.add(clean);
+      candidates.push({ plate: clean, score: 1 });
+    }
+  });
+
+  const allTokens = raw.match(/[A-Z0-9]{5,7}/g);
+  if (allTokens) allTokens.forEach(t => {
+    if (!seen.has(t) && t.length >= 5 && t.length <= 7) {
+      seen.add(t);
+      candidates.push({ plate: t, score: 0 });
+    }
+  });
+
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates;
+}
+
+function ocrShowCandidates(candidates, rawText) {
+  const result = document.getElementById('ocr-result');
+  result.classList.remove('hidden');
+
+  const items = candidates.slice(0, 8).map(c => {
+    const label = c.score >= 2 ? 'Alta' : c.score === 1 ? 'Media' : 'Baja';
+    const color = c.score >= 2 ? '#10B981' : c.score === 1 ? '#F59E0B' : '#8E94A8';
+    return `
+      <button onclick="ocrLookupVehicle('${c.plate}')" class="flex items-center justify-between w-full px-3 py-2.5 bg-[#0A0A1A]/30 hover:bg-[#6C3CE1]/10 rounded-lg transition text-left">
+        <span class="text-[#F1F3F8] font-mono font-bold text-lg tracking-wider">${c.plate}</span>
+        <span style="color:${color}" class="text-xs font-medium">${label}</span>
+      </button>
+    `;
+  }).join('');
+
+  result.innerHTML = `
+    <p class="text-[#8E94A8] text-xs mb-3">Posibles patentes detectadas (tocá la correcta):</p>
+    <div class="space-y-1.5">${items}</div>
+    <div class="mt-3 pt-3 border-t border-white/5">
+      <label class="text-xs text-[#8E94A8]">¿No aparece? Ingresala manual:</label>
+      <div class="flex gap-2 mt-1">
+        <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon uppercase" maxlength="7">
+        <button onclick="ocrManualSearch()" class="btn-primary text-sm px-4 py-2">Buscar</button>
+      </div>
+    </div>
+  `;
+}
+
+function ocrManualSearch() {
+  const input = document.getElementById('ocr-manual-input');
+  const val = (input?.value || '').trim().toUpperCase();
+  if (!val) return;
+  ocrLookupVehicle(val);
+}
+
+async function ocrLookupVehicle(plate) {
+  const result = document.getElementById('ocr-result');
+  result.classList.remove('hidden');
+  result.innerHTML = `<p class="text-[#8E94A8] text-sm">Buscando "${plate}" en la base...</p>`;
+
+  try {
+    const snapshot = await db.collection('vehicles')
+      .where('patente', '==', plate.toUpperCase())
+      .get();
+
+    if (!snapshot.empty) {
+      const doc = snapshot.docs[0];
+      const v = doc.data();
+      result.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-[#10B981] font-semibold">Patente: ${plate}</p>
+            <p class="text-sm text-[#8E94A8] mt-1">${v.interno || ''} — ${v.marca || ''} ${v.modelo || ''}</p>
+            ${v.chofer ? `<p class="text-xs text-[#5C6378] mt-1">Chofer: ${v.chofer}</p>` : ''}
+          </div>
+          <button onclick="window.location.href='/vehicle/${doc.id}'" class="btn-primary text-sm px-4 py-2">
+            Ver Vehículo
+          </button>
+        </div>
+      `;
+    } else {
+      const snapshot2 = await db.collection('vehicles')
+        .where('interno', '==', plate.toUpperCase())
+        .get();
+
+      if (!snapshot2.empty) {
+        const doc = snapshot2.docs[0];
+        const v = doc.data();
+        result.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-[#10B981] font-semibold">Interno: ${plate}</p>
+              <p class="text-sm text-[#8E94A8] mt-1">${v.patente || ''} — ${v.marca || ''} ${v.modelo || ''}</p>
+            </div>
+            <button onclick="window.location.href='/vehicle/${doc.id}'" class="btn-primary text-sm px-4 py-2">
+              Ver Vehículo
+            </button>
+          </div>
+        `;
+      } else {
+        result.innerHTML = `
+          <div class="text-center">
+            <svg class="w-10 h-10 text-yellow-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            <p class="text-yellow-400 font-medium">Patente "${plate}" no encontrada en la base</p>
+            <div class="mt-3">
+              <label class="text-xs text-[#8E94A8]">Probá con otra patente:</label>
+              <div class="flex gap-2 mt-1">
+                <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon uppercase" maxlength="7">
+                <button onclick="ocrManualSearch()" class="btn-primary text-sm px-4 py-2">Buscar</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+  } catch (err) {
+    result.innerHTML = `<p class="text-red-400">Error al buscar: ${err.message}</p>`;
+  }
+}
