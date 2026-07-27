@@ -143,6 +143,13 @@
                 <div class="sticker-info">
                   <div class="sticker-patente"><%= v.patente || '—' %></div>
                   <div style="font-size:8pt;font-weight:700;color:#1a1a2e;margin-top:1.5mm;"><%= v.marca || '' %> <%= v.modelo || '' %></div>
+                  <% if (v.nroBet) { %>
+                  <div style="margin-top:2mm;">
+                    <div style="width:12mm;height:12mm;border-radius:50%;border:0.6mm solid #6C3CE1;display:flex;align-items:center;justify-content:center;">
+                      <span style="font-size:12pt;font-weight:900;color:#6C3CE1;line-height:1;"><%= v.nroBet %></span>
+                    </div>
+                  </div>
+                  <% } %>
                 </div>
               </div>
 
