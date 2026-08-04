@@ -302,7 +302,8 @@
               <input type="text" id="s-obs" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Notas">
             </div>
             <div class="sm:col-span-2 lg:col-span-3 flex justify-end">
-              <button type="submit" class="btn-primary text-sm px-4 sm:px-6 py-2">Agregar Service</button>
+              <button type="button" id="service-cancel-btn" class="hidden text-sm px-4 sm:px-6 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#8E94A8] hover:text-[#F1F3F8] mr-2" onclick="cancelServiceEdit()">Cancelar</button>
+              <button type="submit" id="service-submit-btn" class="btn-primary text-sm px-4 sm:px-6 py-2">Agregar Service</button>
             </div>
           </form>
           <% } %>
@@ -904,5 +905,5 @@
   <option value="Proveedor externo"></option>
 </datalist>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="/js/vehicle-detail.js?v=sincosto"></script>
+<script src="/js/vehicle-detail.js?v=editservice"></script>
 <%- include('partials/footer') %>

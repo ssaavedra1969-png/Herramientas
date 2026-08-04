@@ -4,6 +4,8 @@ let servicesUnsub = null;
 let repuestosUnsub = null;
 let currentTab = 'resumen';
 let qrCodeInstance = null;
+let editingServiceId = null;
+let proximoKmTouched = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   const pathParts = window.location.pathname.split('/');
@@ -661,7 +663,6 @@ function initServiceForm() {
     proximoKmEl.value = (km && intervalo) ? km + intervalo : '';
   };
 
-  let proximoKmTouched = false;
   proximoKmEl.addEventListener('input', () => { proximoKmTouched = true; });
 
   const updateFluido = () => {
@@ -708,20 +709,31 @@ function initServiceForm() {
         ? firebase.firestore.Timestamp.fromDate(new Date(proximoFechaStr + 'T00:00:00'))
         : null,
       proveedor: document.getElementById('s-proveedor').value.trim() || '',
-      observaciones: document.getElementById('s-obs').value.trim() || '',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      observaciones: document.getElementById('s-obs').value.trim() || ''
     };
     if (!fluidGroup.classList.contains('hidden') && fluidCheck.checked) {
       data.fluido = SERVICE_FLUIDO[tipoEl.value];
     }
     try {
       showLoading(true);
-      await db.collection('vehicles').doc(vehicleId).collection('services').add(data);
+      const ref = db.collection('vehicles').doc(vehicleId).collection('services');
+      if (editingServiceId) {
+        await ref.doc(editingServiceId).update(data);
+        showToast('Service actualizado');
+      } else {
+        data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        await ref.add(data);
+        showToast('Service registrado');
+      }
       await updateVehicleServiceSummary();
-      showToast('Service registrado');
       form.reset();
       document.getElementById('s-fecha').value = new Date().toISOString().split('T')[0];
       proximoKmTouched = false;
+      editingServiceId = null;
+      const submitBtn = document.getElementById('service-submit-btn');
+      if (submitBtn) submitBtn.textContent = 'Agregar Service';
+      const cancelBtn = document.getElementById('service-cancel-btn');
+      if (cancelBtn) cancelBtn.classList.add('hidden');
       updateProximoKm();
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
@@ -846,7 +858,7 @@ function renderServices(items) {
       <td class="py-2 pr-2">${s.km?.toLocaleString() || '-'}</td>
       <td class="py-2 pr-2">${s.proximoKm?.toLocaleString() || '-'}</td>
       <td class="py-2 pr-2">${s.proveedor || '-'}</td>
-      <td class="py-2 no-print"><button onclick="viewService('${s.id}')" class="text-[#8E94A8] hover:text-[#F1F3F8] mr-2" title="Ver detalle"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>${isAdmin() ? `<button onclick="deleteService('${s.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
+      <td class="py-2 no-print"><button onclick="viewService('${s.id}')" class="text-[#8E94A8] hover:text-[#F1F3F8] mr-2" title="Ver detalle"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>${isAdmin() ? `<button onclick="editService('${s.id}')" class="text-[#8E94A8] hover:text-[#F1F3F8] mr-2" title="Editar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>` : ''}${isAdmin() ? `<button onclick="deleteService('${s.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
     </tr>
   `).join('');
 }
@@ -924,6 +936,69 @@ async function deleteService(id) {
   } catch (err) {
     showToast('Error: ' + err.message, 'error');
   }
+}
+
+function editService(id) {
+  if (!isAdmin()) return;
+  const s = (window.allServicesData || []).find(x => x.id === id);
+  if (!s) return;
+  const toDateInput = (v) => {
+    if (!v) return '';
+    const d = v.toDate ? v.toDate() : new Date(v);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  editingServiceId = id;
+  proximoKmTouched = true;
+  const setVal = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val; };
+  setVal('s-fecha', toDateInput(s.fecha));
+  setVal('s-tipo', s.tipo || '');
+  setVal('s-km', s.km != null ? s.km : '');
+  setVal('s-intervalo', s.intervaloKm != null ? s.intervaloKm : '');
+  setVal('s-proximoKm', s.proximoKm != null ? s.proximoKm : '');
+  setVal('s-proximoFecha', toDateInput(s.proximoFecha));
+  setVal('s-proveedor', s.proveedor || '');
+  setVal('s-obs', s.observaciones || '');
+
+  const tipoVal = s.tipo || '';
+  const fluid = SERVICE_FLUIDO[tipoVal];
+  const fluidLabel = document.getElementById('s-fluid-label');
+  if (fluidLabel) fluidLabel.textContent = `Incluir ${fluid.toLowerCase()}`;
+  const fluidCheck = document.getElementById('s-incluyeFluido');
+  const fluidGroup = document.getElementById('s-fluid-group');
+  if (fluidGroup && fluidCheck) {
+    if (s.fluido) {
+      fluidCheck.checked = true;
+      fluidGroup.classList.remove('hidden');
+      fluidGroup.classList.add('flex');
+    } else {
+      fluidCheck.checked = false;
+      fluidGroup.classList.add('hidden');
+      fluidGroup.classList.remove('flex');
+    }
+  }
+
+  const submitBtn = document.getElementById('service-submit-btn');
+  if (submitBtn) submitBtn.textContent = 'Actualizar Service';
+  const cancelBtn = document.getElementById('service-cancel-btn');
+  if (cancelBtn) cancelBtn.classList.remove('hidden');
+  const form = document.getElementById('form-service');
+  if (form) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelServiceEdit() {
+  editingServiceId = null;
+  proximoKmTouched = false;
+  const form = document.getElementById('form-service');
+  if (form) form.reset();
+  const fechaEl = document.getElementById('s-fecha');
+  if (fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
+  const submitBtn = document.getElementById('service-submit-btn');
+  if (submitBtn) submitBtn.textContent = 'Agregar Service';
+  const cancelBtn = document.getElementById('service-cancel-btn');
+  if (cancelBtn) cancelBtn.classList.add('hidden');
+  const fluidGroup = document.getElementById('s-fluid-group');
+  if (fluidGroup) { fluidGroup.classList.add('hidden'); fluidGroup.classList.remove('flex'); }
 }
 
 async function deleteRepuesto(id) {
