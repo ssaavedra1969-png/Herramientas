@@ -707,7 +707,6 @@ function initServiceForm() {
       proximoFecha: proximoFechaStr
         ? firebase.firestore.Timestamp.fromDate(new Date(proximoFechaStr + 'T00:00:00'))
         : null,
-      costo: parseFloat(document.getElementById('s-costo').value) || null,
       proveedor: document.getElementById('s-proveedor').value.trim() || '',
       observaciones: document.getElementById('s-obs').value.trim() || '',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -779,7 +778,6 @@ function initRepuestoForm() {
     const data = {
       fecha: fechaStr ? firebase.firestore.Timestamp.fromDate(new Date(fechaStr + 'T00:00:00')) : null,
       pieza: document.getElementById('r-pieza').value.trim(),
-      costo: parseFloat(document.getElementById('r-costo').value) || null,
       proveedor: document.getElementById('r-proveedor').value.trim() || '',
       tipo: document.getElementById('r-tipo').value,
       km: parseInt(document.getElementById('r-km').value) || null,
@@ -809,12 +807,11 @@ function startServicesListener() {
       window.allServicesData = items;
       items.forEach(s => addServicioSuggestion(s.tipo));
       renderServices(items);
-      renderHistorialChart();
       renderHistorial();
     }, err => {
       console.error('services error:', err);
       const tb = document.getElementById('services-table-body');
-      if (tb) tb.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-red-500">Error al cargar</td></tr>';
+      if (tb) tb.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-500">Error al cargar</td></tr>';
     });
 }
 
@@ -831,7 +828,7 @@ function startRepuestosListener() {
     }, err => {
       console.error('repuestos error:', err);
       document.getElementById('repuestos-table-body').innerHTML =
-        '<tr><td colspan="7" class="text-center py-8 text-red-500">Error al cargar</td></tr>';
+        '<tr><td colspan="6" class="text-center py-8 text-red-500">Error al cargar</td></tr>';
     });
 }
 
@@ -839,7 +836,7 @@ function renderServices(items) {
   const tbody = document.getElementById('services-table-body');
   if (!tbody) return;
   if (!items.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-[#5C6378]">Sin services registrados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-[#5C6378]">Sin services registrados</td></tr>';
     return;
   }
   tbody.innerHTML = items.map(s => `
@@ -848,9 +845,8 @@ function renderServices(items) {
       <td class="py-2 pr-2 font-medium">${s.tipo || '-'}${s.fluido ? ` <span class="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#F59E0B]/15 text-[#F59E0B]">+ ${s.fluido}</span>` : ''}</td>
       <td class="py-2 pr-2">${s.km?.toLocaleString() || '-'}</td>
       <td class="py-2 pr-2">${s.proximoKm?.toLocaleString() || '-'}</td>
-      <td class="py-2 pr-2">${formatCurrency(s.costo)}</td>
       <td class="py-2 pr-2">${s.proveedor || '-'}</td>
-      <td class="py-2 no-print">${isAdmin() ? `<button onclick="deleteService('${s.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
+      <td class="py-2 no-print"><button onclick="viewService('${s.id}')" class="text-[#8E94A8] hover:text-[#F1F3F8] mr-2" title="Ver detalle"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>${isAdmin() ? `<button onclick="deleteService('${s.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
     </tr>
   `).join('');
 }
@@ -859,7 +855,7 @@ function renderRepuestos(items) {
   const tbody = document.getElementById('repuestos-table-body');
   if (!tbody) return;
   if (!items.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-[#5C6378]">Sin repuestos registrados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-[#5C6378]">Sin repuestos registrados</td></tr>';
     return;
   }
   tbody.innerHTML = items.map(r => `
@@ -867,10 +863,9 @@ function renderRepuestos(items) {
       <td class="py-2 pr-2">${formatDate(r.fecha)}</td>
       <td class="py-2 pr-2">${r.tipo || '-'}</td>
       <td class="py-2 pr-2 font-medium">${r.pieza || '-'}</td>
-      <td class="py-2 pr-2">${formatCurrency(r.costo)}</td>
       <td class="py-2 pr-2">${r.proveedor || '-'}</td>
       <td class="py-2 pr-2">${r.km?.toLocaleString() || '-'}</td>
-      <td class="py-2 no-print">${isAdmin() ? `<button onclick="deleteRepuesto('${r.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
+      <td class="py-2 no-print"><button onclick="viewRepuesto('${r.id}')" class="text-[#8E94A8] hover:text-[#F1F3F8] mr-2" title="Ver detalle"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>${isAdmin() ? `<button onclick="deleteRepuesto('${r.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
     </tr>
   `).join('');
 }
@@ -878,7 +873,7 @@ function renderRepuestos(items) {
 function exportServicesCSV() {
   const items = window.allServicesData || [];
   if (!items.length) { showToast('No hay datos para exportar', 'info'); return; }
-  const headers = ['Fecha', 'Servicio', 'Incluye', 'Km', 'Intervalo', 'Próximo Km', 'Próxima Fecha', 'Costo', 'Proveedor', 'Observaciones'];
+  const headers = ['Fecha', 'Servicio', 'Incluye', 'Km', 'Intervalo', 'Próximo Km', 'Próxima Fecha', 'Proveedor', 'Observaciones'];
   const rows = items.map(s => [
     formatDate(s.fecha),
     s.tipo || '',
@@ -887,7 +882,6 @@ function exportServicesCSV() {
     s.intervaloKm || '',
     s.proximoKm || '',
     formatDate(s.proximoFecha),
-    s.costo?.toFixed(2) || '',
     s.proveedor || '',
     s.observaciones || ''
   ]);
@@ -897,12 +891,11 @@ function exportServicesCSV() {
 function exportRepuestosCSV() {
   const items = window.allRepuestosData || [];
   if (!items.length) { showToast('No hay datos para exportar', 'info'); return; }
-  const headers = ['Fecha', 'Tipo', 'Pieza', 'Costo', 'Proveedor', 'Km', 'Observaciones'];
+  const headers = ['Fecha', 'Tipo', 'Pieza', 'Proveedor', 'Km', 'Observaciones'];
   const rows = items.map(r => [
     formatDate(r.fecha),
     r.tipo || '',
     r.pieza || '',
-    r.costo?.toFixed(2) || '',
     r.proveedor || '',
     r.km || '',
     r.observaciones || ''
@@ -941,6 +934,56 @@ async function deleteRepuesto(id) {
   } catch (err) {
     showToast('Error: ' + err.message, 'error');
   }
+}
+
+/* ───────── Detalle (modal) ───────── */
+
+function openDetailModal(title, rows) {
+  const body = document.getElementById('modal-detalle-body');
+  const t = document.getElementById('modal-detalle-title');
+  if (t) t.textContent = title;
+  if (body) {
+    body.innerHTML = rows.filter(([, v]) => v != null && v !== '' && v !== '-').map(([k, v]) => `
+      <div class="flex justify-between gap-4 py-2 border-b border-white/5">
+        <span class="text-[#8E94A8] text-sm shrink-0">${k}</span>
+        <span class="text-[#F1F3F8] text-sm text-right break-words">${v}</span>
+      </div>
+    `).join('') || '<p class="text-[#5C6378] text-sm">Sin datos</p>';
+  }
+  showModal('modal-detalle');
+}
+
+function closeDetailModal() {
+  hideModal('modal-detalle');
+}
+
+function viewService(id) {
+  const s = (window.allServicesData || []).find(x => x.id === id);
+  if (!s) return;
+  openDetailModal('Detalle de Service', [
+    ['Fecha', formatDate(s.fecha)],
+    ['Servicio', s.tipo],
+    ['Incluye', s.fluido],
+    ['Km', s.km != null ? s.km.toLocaleString('es-AR') : ''],
+    ['Intervalo (km)', s.intervaloKm != null ? s.intervaloKm.toLocaleString('es-AR') : ''],
+    ['Próximo km', s.proximoKm != null ? s.proximoKm.toLocaleString('es-AR') : ''],
+    ['Próxima fecha', formatDate(s.proximoFecha)],
+    ['Proveedor', s.proveedor],
+    ['Observaciones', s.observaciones]
+  ]);
+}
+
+function viewRepuesto(id) {
+  const r = (window.allRepuestosData || []).find(x => x.id === id);
+  if (!r) return;
+  openDetailModal('Detalle de Repuesto', [
+    ['Fecha', formatDate(r.fecha)],
+    ['Tipo', r.tipo],
+    ['Pieza', r.pieza],
+    ['Proveedor', r.proveedor],
+    ['Km', r.km != null ? r.km.toLocaleString('es-AR') : ''],
+    ['Observaciones', r.observaciones]
+  ]);
 }
 
 /* ───────── Barcode ───────── */
@@ -1210,104 +1253,79 @@ function downloadBarcodePDF() {
   });
 }
 
-let chartGastosTiempo = null;
-
-function renderHistorialChart() {
-  const ctx = document.getElementById('chart-gastos-tiempo');
-  if (!ctx) return;
-  if (chartGastosTiempo) chartGastosTiempo.destroy();
-
-  const services = window.allServicesData || [];
-  const repuestos = window.allRepuestosData || [];
-
-  const entries = [
-    ...services.map(s => ({ fecha: s.fecha?.toDate ? s.fecha.toDate() : new Date(s.fecha), monto: Number(s.costo) || 0 })),
-    ...repuestos.map(r => ({ fecha: r.fecha?.toDate ? r.fecha.toDate() : new Date(r.fecha), monto: Number(r.costo) || 0 }))
-  ].filter(e => !isNaN(e.fecha));
-
-  if (!entries.length) {
-    chartGastosTiempo = null;
-    return;
-  }
-
-  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-  const byMonth = {};
-  entries.forEach(c => {
-    const key = `${c.fecha.getFullYear()}-${String(c.fecha.getMonth() + 1).padStart(2, '0')}`;
-    if (!byMonth[key]) byMonth[key] = 0;
-    byMonth[key] += c.monto;
-  });
-
-  const keys = Object.keys(byMonth).sort();
-  const labels = keys.map(k => { const [y, m] = k.split('-'); return `${months[parseInt(m) - 1]} ${y}`; });
-
-  chartGastosTiempo = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Gastos ($)', data: keys.map(k => byMonth[k]), backgroundColor: 'rgba(108,60,225,0.6)', borderRadius: 6 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { color: '#8E94A8', callback: v => '$' + v } },
-        x: { grid: { display: false }, ticks: { color: '#8E94A8', font: { size: 10 } } }
-      }
-    }
-  });
-}
-
 function renderHistorial() {
   const tbody = document.getElementById('historial-table-body');
   if (!tbody) return;
 
-  const services = (window.allServicesData || []).map(s => ({
-    fecha: s.fecha?.toDate ? s.fecha.toDate() : new Date(s.fecha),
-    tipo: 'Service',
-    detalle: `${s.tipo || ''}${s.fluido ? ' + ' + s.fluido : ''} · ${s.proveedor || ''}`.trim(),
-    monto: Number(s.costo) || 0,
-    color: '#F59E0B'
-  }));
+  const toItem = (r, kind) => ({
+    id: r.id,
+    rec: r,
+    kind,
+    fecha: r.fecha ? (r.fecha.toDate ? r.fecha.toDate() : new Date(r.fecha)) : null
+  });
 
-  const repuestos = (window.allRepuestosData || []).map(r => ({
-    fecha: r.fecha?.toDate ? r.fecha.toDate() : new Date(r.fecha),
-    tipo: 'Repuesto',
-    detalle: `${r.pieza || ''} · ${r.proveedor || ''}`.trim(),
-    monto: Number(r.costo) || 0,
-    color: '#10B981'
-  }));
+  const services = (window.allServicesData || []).map(r => toItem(r, 'service'));
+  const repuestos = (window.allRepuestosData || []).map(r => toItem(r, 'repuesto'));
 
-  const all = [...services, ...repuestos].sort((a, b) => b.fecha - a.fecha);
-
-  if (!all.length) {
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-[#5C6378]">Sin movimientos registrados</td></tr>';
+  if (!services.length && !repuestos.length) {
+    tbody.innerHTML = '<tr><td class="text-center py-8 text-[#5C6378]">Sin movimientos registrados</td></tr>';
     return;
   }
 
-  let totalServ = services.reduce((s, c) => s + c.monto, 0);
-  let totalRep = repuestos.reduce((s, r) => s + r.monto, 0);
+  const line = (item) => {
+    const r = item.rec;
+    const parts = [];
+    parts.push(item.fecha ? item.fecha.toLocaleDateString('es-AR') : '-');
+    if (item.kind === 'service') {
+      parts.push(r.tipo || '');
+      if (r.fluido) parts.push('+ ' + r.fluido);
+      if (r.km != null) parts.push(r.km.toLocaleString('es-AR') + ' km');
+      if (r.proximoKm != null) parts.push('→ ' + r.proximoKm.toLocaleString('es-AR') + ' km');
+      if (r.proveedor) parts.push(r.proveedor);
+      if (r.observaciones) parts.push('«' + r.observaciones + '»');
+    } else {
+      parts.push(r.tipo || '');
+      if (r.pieza) parts.push(r.pieza);
+      if (r.km != null) parts.push(r.km.toLocaleString('es-AR') + ' km');
+      if (r.proveedor) parts.push(r.proveedor);
+      if (r.observaciones) parts.push('«' + r.observaciones + '»');
+    }
+    return parts.filter(Boolean).join(' · ');
+  };
 
-  tbody.innerHTML = all.map(item => `
-    <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
-      <td class="py-2 pr-2 text-xs">${item.fecha.toLocaleDateString('es-AR')}</td>
-      <td class="py-2 pr-2"><span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:${item.color}20;color:${item.color}">${item.tipo}</span></td>
-      <td class="py-2 pr-2 text-xs">${item.detalle}</td>
-      <td class="py-2 text-right text-xs font-medium" style="color:${item.color}">$${item.monto.toLocaleString('es-AR')}</td>
-    </tr>
-  `).join('') + `
-    <tr class="border-t-2 border-[#6C3CE1]/30 font-bold">
-      <td colspan="3" class="py-2 text-right text-xs text-[#8E94A8]">Total Services</td>
-      <td class="py-2 text-right text-xs text-[#F59E0B]">$${totalServ.toLocaleString('es-AR')}</td>
-    </tr>
-    <tr class="border-b border-[#6C3CE1]/30 font-bold">
-      <td colspan="3" class="py-2 text-right text-xs text-[#8E94A8]">Total Repuestos</td>
-      <td class="py-2 text-right text-xs text-[#10B981]">$${totalRep.toLocaleString('es-AR')}</td>
-    </tr>
-    <tr class="font-bold">
-      <td colspan="3" class="py-2 text-right text-xs text-[#F1F3F8]">TOTAL</td>
-      <td class="py-2 text-right text-sm text-[#F1F3F8]">$${(totalServ + totalRep).toLocaleString('es-AR')}</td>
+  const rowHtml = (item) => `
+    <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10 cursor-pointer" onclick="${item.kind === 'service' ? 'viewService' : 'viewRepuesto'}('${item.id}')" title="Ver detalle">
+      <td class="py-2 px-3 text-xs text-[#F1F3F8] break-words">${line(item)}</td>
     </tr>`;
+
+  const sections = [
+    { title: 'Services', color: '#F59E0B', kind: 'service', items: services },
+    { title: 'Repuestos', color: '#10B981', kind: 'repuesto', items: repuestos }
+  ];
+
+  let body = '';
+  sections.forEach(sec => {
+    if (!sec.items.length) return;
+    const groups = {};
+    sec.items.forEach(item => {
+      const k = (item.rec.tipo || '').trim() || 'Sin tipo';
+      (groups[k] = groups[k] || []).push(item);
+    });
+    body += `
+      <tr class="bg-[#6C3CE1]/15">
+        <td class="py-2 px-3 text-xs font-bold text-[#F1F3F8]">
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium mr-2" style="background:${sec.color}20;color:${sec.color}">${sec.title}</span>
+          ${sec.items.length} registro(s)
+        </td>
+      </tr>`;
+    Object.keys(groups).sort((a, b) => a.localeCompare(b, 'es')).forEach(tipo => {
+      const items = groups[tipo].slice().sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
+      body += `
+      <tr class="bg-[#0A0A1A]/40">
+        <td class="py-1.5 px-3 text-xs font-semibold text-[#8E94A8]">${tipo}</td>
+      </tr>` + items.map(rowHtml).join('');
+    });
+  });
+
+  tbody.innerHTML = body;
 }

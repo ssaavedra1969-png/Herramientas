@@ -294,10 +294,6 @@
               <input type="date" id="s-proximoFecha" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
             </div>
             <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Costo ($)</label>
-              <input type="number" id="s-costo" step="0.01" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="25000">
-            </div>
-            <div>
               <label class="block text-xs font-medium text-[#8E94A8] mb-1">Proveedor / Taller</label>
               <input type="text" id="s-proveedor" list="proveedores-list" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Taller Falpat">
             </div>
@@ -326,13 +322,12 @@
                   <th class="pb-2 font-medium">Servicio</th>
                   <th class="pb-2 font-medium">Km</th>
                   <th class="pb-2 font-medium">Próx. km</th>
-                  <th class="pb-2 font-medium">Costo</th>
                   <th class="pb-2 font-medium">Proveedor</th>
                   <th class="pb-2 font-medium no-print">Acciones</th>
                 </tr>
               </thead>
               <tbody id="services-table-body">
-                <tr><td colspan="7" class="py-4"><div class="space-y-2"><div class="skeleton skeleton-row"></div><div class="skeleton skeleton-row" style="width:80%"></div><div class="skeleton skeleton-row" style="width:60%"></div></div></td></tr>
+                <tr><td colspan="6" class="py-4"><div class="space-y-2"><div class="skeleton skeleton-row"></div><div class="skeleton skeleton-row" style="width:80%"></div><div class="skeleton skeleton-row" style="width:60%"></div></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -371,10 +366,6 @@
               <input type="text" id="r-pieza" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Filtro de aceite">
             </div>
             <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Costo ($)</label>
-              <input type="number" id="r-costo" step="0.01" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="15000">
-            </div>
-            <div>
               <label class="block text-xs font-medium text-[#8E94A8] mb-1">Proveedor</label>
               <input type="text" id="r-proveedor" list="proveedores-list" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Taller Falpat">
             </div>
@@ -406,14 +397,13 @@
                   <th class="pb-2 font-medium">Fecha</th>
                   <th class="pb-2 font-medium">Tipo</th>
                   <th class="pb-2 font-medium">Pieza</th>
-                  <th class="pb-2 font-medium">Costo</th>
                   <th class="pb-2 font-medium">Proveedor</th>
                   <th class="pb-2 font-medium">Km</th>
                   <th class="pb-2 font-medium no-print">Acciones</th>
                 </tr>
               </thead>
               <tbody id="repuestos-table-body">
-                <tr><td colspan="7" class="py-4"><div class="space-y-2"><div class="skeleton skeleton-row"></div><div class="skeleton skeleton-row" style="width:80%"></div><div class="skeleton skeleton-row" style="width:60%"></div></div></td></tr>
+                <tr><td colspan="6" class="py-4"><div class="space-y-2"><div class="skeleton skeleton-row"></div><div class="skeleton skeleton-row" style="width:80%"></div><div class="skeleton skeleton-row" style="width:60%"></div></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -433,28 +423,19 @@
       <div id="tab-content-historial" class="tab-content hidden space-y-4">
         <div class="glass-card rounded-xl p-4 md:p-5">
           <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
-            <svg class="w-4 h-4 md:w-5 md:h-5 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            Gastos (Services + Repuestos) en el Tiempo
-          </h3>
-          <div style="position:relative;height:220px;"><canvas id="chart-gastos-tiempo"></canvas></div>
-        </div>
-        <div class="glass-card rounded-xl p-4 md:p-5">
-          <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
             <svg class="w-4 h-4 md:w-5 md:h-5 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             Historial Completo
           </h3>
+          <p class="text-xs text-[#8E94A8] mb-3">Agrupado por sección y tipo de servicio/repuesto. Hacé click en una fila para ver el detalle.</p>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10 text-xs">
-                  <th class="pb-2 font-medium">Fecha</th>
-                  <th class="pb-2 font-medium">Tipo</th>
-                  <th class="pb-2 font-medium">Detalle</th>
-                  <th class="pb-2 font-medium text-right">Monto</th>
+                  <th class="pb-2 font-medium">Registros</th>
                 </tr>
               </thead>
               <tbody id="historial-table-body">
-                <tr><td colspan="4" class="py-4"><div class="space-y-2"><div class="skeleton skeleton-row"></div><div class="skeleton skeleton-row" style="width:70%"></div></div></td></tr>
+                <tr><td colspan="1" class="py-4"><div class="space-y-2"><div class="skeleton skeleton-row"></div><div class="skeleton skeleton-row" style="width:70%"></div></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -898,6 +879,19 @@
   </div>
 </div>
 
+<!-- Modal Detalle Service/Repuesto -->
+<div id="modal-detalle" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-3 sm:p-4">
+  <div class="glass-card rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto modal-content">
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#6C3CE1]/10 sticky top-0 z-10" style="background: #141e2d;">
+      <h3 class="text-base sm:text-lg font-bold text-[#F1F3F8]" id="modal-detalle-title">Detalle</h3>
+      <button onclick="closeDetailModal()" class="text-[#8E94A8] hover:text-[#F1F3F8] transition-colors p-1">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="modal-detalle-body" class="p-4 sm:p-6 space-y-3"></div>
+  </div>
+</div>
+
 <datalist id="servicios-list"></datalist>
 <datalist id="repuesto-tipo-list">
   <option value="Mantenimiento"></option>
@@ -910,5 +904,5 @@
   <option value="Proveedor externo"></option>
 </datalist>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="/js/vehicle-detail.js?v=services-tabs"></script>
+<script src="/js/vehicle-detail.js?v=sincosto"></script>
 <%- include('partials/footer') %>
