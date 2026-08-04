@@ -618,6 +618,24 @@ const SERVICE_FLUIDO = {
   'Cambio pastillas de freno': 'Cambio líquido de frenos'
 };
 
+function addServicioSuggestion(name) {
+  if (!name) return;
+  const dl = document.getElementById('servicios-list');
+  if (!dl || [...dl.options].some(o => o.value === name)) return;
+  const opt = document.createElement('option');
+  opt.value = name;
+  dl.appendChild(opt);
+}
+
+function addRepuestoTipoSuggestion(name) {
+  if (!name) return;
+  const dl = document.getElementById('repuesto-tipo-list');
+  if (!dl || [...dl.options].some(o => o.value === name)) return;
+  const opt = document.createElement('option');
+  opt.value = name;
+  dl.appendChild(opt);
+}
+
 function initServiceForm() {
   const form = document.getElementById('form-service');
   if (!form) return;
@@ -630,6 +648,11 @@ function initServiceForm() {
   const fluidGroup = document.getElementById('s-fluid-group');
   const fluidCheck = document.getElementById('s-incluyeFluido');
   const fluidLabel = document.getElementById('s-fluid-label');
+
+  const serviciosList = document.getElementById('servicios-list');
+  if (serviciosList) {
+    serviciosList.innerHTML = Object.keys(SERVICE_DEFAULT_KM).map(s => `<option value="${s}"></option>`).join('');
+  }
 
   const updateProximoKm = () => {
     if (proximoKmTouched) return;
@@ -655,7 +678,8 @@ function initServiceForm() {
     }
   };
 
-  tipoEl.addEventListener('change', () => {
+  tipoEl.addEventListener('input', () => {
+    addServicioSuggestion(tipoEl.value);
     const def = SERVICE_DEFAULT_KM[tipoEl.value];
     if (def) {
       intervaloEl.value = def;
@@ -783,6 +807,7 @@ function startServicesListener() {
     .onSnapshot(snapshot => {
       const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       window.allServicesData = items;
+      items.forEach(s => addServicioSuggestion(s.tipo));
       renderServices(items);
       renderHistorialChart();
       renderHistorial();
@@ -800,6 +825,7 @@ function startRepuestosListener() {
     .onSnapshot(snapshot => {
       const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       window.allRepuestosData = items;
+      items.forEach(r => addRepuestoTipoSuggestion(r.tipo));
       renderRepuestos(items);
       renderHistorial();
     }, err => {

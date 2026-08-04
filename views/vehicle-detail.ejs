@@ -269,26 +269,7 @@
             </div>
             <div>
               <label class="block text-xs font-medium text-[#8E94A8] mb-1">Servicio</label>
-              <select id="s-tipo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-                <option value="">Seleccionar...</option>
-                <option value="Cambio de aceite">Cambio de aceite</option>
-                <option value="Cambio filtro de aceite">Cambio filtro de aceite</option>
-                <option value="Cambio filtro de combustible">Cambio filtro de combustible</option>
-                <option value="Cambio filtro de aire">Cambio filtro de aire</option>
-                <option value="Cambio filtro de habitáculo">Cambio filtro de habitáculo</option>
-                <option value="Alineación">Alineación</option>
-                <option value="Balanceo">Balanceo</option>
-                <option value="Control de caja">Control de caja</option>
-                <option value="Control de diferencial">Control de diferencial</option>
-                <option value="Caja y diferencial">Caja y diferencial</option>
-                <option value="Control de neumáticos">Control de neumáticos</option>
-                <option value="Cambio pastillas de freno">Cambio pastillas de freno</option>
-                <option value="Cambio líquido de frenos">Cambio líquido de frenos</option>
-                <option value="Cambio correa de distribución">Cambio correa de distribución</option>
-                <option value="Control de batería">Control de batería</option>
-                <option value="Control de refrigerante">Control de refrigerante</option>
-                <option value="Otro">Otro</option>
-              </select>
+              <input type="text" id="s-tipo" list="servicios-list" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Cambio filtro de aceite">
             </div>
             <div id="s-fluid-group" class="hidden items-center">
               <label class="flex items-center gap-2 text-sm text-[#8E94A8] cursor-pointer mt-5">
@@ -383,12 +364,7 @@
             </div>
             <div>
               <label class="block text-xs font-medium text-[#8E94A8] mb-1">Tipo</label>
-              <select id="r-tipo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-                <option value="Mantenimiento" class="bg-[#0A0A1A]">Mantenimiento</option>
-                <option value="Reparación" class="bg-[#0A0A1A]">Reparación</option>
-                <option value="Reemplazo" class="bg-[#0A0A1A]">Reemplazo</option>
-                <option value="Mejora" class="bg-[#0A0A1A]">Mejora</option>
-              </select>
+              <input type="text" id="r-tipo" list="repuesto-tipo-list" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Mantenimiento">
             </div>
             <div>
               <label class="block text-xs font-medium text-[#8E94A8] mb-1">Pieza</label>
@@ -922,6 +898,13 @@
   </div>
 </div>
 
+<datalist id="servicios-list"></datalist>
+<datalist id="repuesto-tipo-list">
+  <option value="Mantenimiento"></option>
+  <option value="Reparación"></option>
+  <option value="Reemplazo"></option>
+  <option value="Mejora"></option>
+</datalist>
 <datalist id="proveedores-list">
   <option value="Taller Falpat"></option>
   <option value="Proveedor externo"></option>
