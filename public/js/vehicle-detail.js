@@ -963,7 +963,7 @@ function editService(id) {
   const tipoVal = s.tipo || '';
   const fluid = SERVICE_FLUIDO[tipoVal];
   const fluidLabel = document.getElementById('s-fluid-label');
-  if (fluidLabel) fluidLabel.textContent = `Incluir ${fluid.toLowerCase()}`;
+  if (fluid && fluidLabel) fluidLabel.textContent = `Incluir ${fluid.toLowerCase()}`;
   const fluidCheck = document.getElementById('s-incluyeFluido');
   const fluidGroup = document.getElementById('s-fluid-group');
   if (fluidGroup && fluidCheck) {
