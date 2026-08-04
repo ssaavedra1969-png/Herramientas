@@ -244,6 +244,69 @@ function showDniModal() {
   openDashModal('DNI por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#F97316,#EA580C)', iconSvg, body);
 }
 
+function serviceDue(v) {
+  if (v.estadoGeneral === 'Baja') return false;
+  const km = v.kilometraje;
+  if (v.proximoServiceKm != null && km != null) {
+    return (v.proximoServiceKm - km) <= 500;
+  }
+  const d = daysUntil(v.proximoServiceFecha);
+  return d !== null && d <= 30;
+}
+
+function showServiceModal() {
+  const alerts = allVehicles.filter(v => serviceDue(v)).map(v => ({
+    v,
+    remainKm: v.proximoServiceKm != null && v.kilometraje != null ? v.proximoServiceKm - v.kilometraje : null,
+    days: daysUntil(v.proximoServiceFecha)
+  })).sort((a, b) => {
+    if (a.remainKm != null && b.remainKm != null) return a.remainKm - b.remainKm;
+    if (a.remainKm != null) return -1;
+    if (b.remainKm != null) return 1;
+    return (a.days ?? 999) - (b.days ?? 999);
+  });
+  const iconSvg = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>';
+  if (alerts.length === 0) {
+    openDashModal('Service por vencer', 'Todo al día', 'linear-gradient(135deg,#10B981,#059669)', '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>', '<div class="text-center py-6"><p class="text-green-400 font-medium">Todos los services están al día</p></div>');
+    return;
+  }
+  const body = alerts.map(({ v, remainKm, days }) => {
+    const isCritical = (remainKm != null && remainKm <= 0) || (remainKm == null && days <= 0);
+    const isWarning = !isCritical && ((remainKm != null && remainKm <= 100) || (remainKm == null && days <= 7));
+    const borderColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#F59E0B';
+    const bgColor = isCritical ? 'rgba(239,68,68,0.08)' : isWarning ? 'rgba(249,115,22,0.08)' : 'rgba(245,158,11,0.08)';
+    const textColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#F59E0B';
+    const statusLabel = isCritical ? 'VENCIDO' : isWarning ? 'URGENTE' : 'PRÓXIMO';
+    const statusBg = isCritical ? 'rgba(239,68,68,0.15)' : isWarning ? 'rgba(249,115,22,0.15)' : 'rgba(245,158,11,0.15)';
+    const detail = remainKm != null
+      ? `${remainKm <= 0 ? 'Vencido por' : 'Faltan'} ${Math.abs(remainKm).toLocaleString()} km`
+      : `${days <= 0 ? 'Vencido' : days + ' días'}`;
+    const proxStr = v.proximoServiceKm != null ? v.proximoServiceKm.toLocaleString() + ' km' : (v.proximoServiceFecha?.toDate ? v.proximoServiceFecha.toDate().toLocaleDateString('es-AR') : '—');
+    const tipo = v.proximoServiceTipo || '';
+    return `
+    <div class="rounded-xl p-3.5 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid ${borderColor};background:${bgColor};" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(108,60,222,0.15);color:#A78BFA;">${(v.interno || '?').substring(0,4)}</div>
+          <div>
+            <p class="text-[#F1F3F8] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+            <p class="text-[#5C6378] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider" style="background:${statusBg};color:${textColor};">${statusLabel}</span>
+          <p class="text-xs font-bold mt-1" style="color:${textColor};">${detail}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-[11px] text-[#8E94A8] ml-[42px]">
+        <span>Próx.: ${proxStr}</span>
+        ${tipo ? `<span class="text-[#5C6378]">·</span><span>${tipo}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  openDashModal('Service por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con service próximo`, 'linear-gradient(135deg,#EF4444,#DC2626)', iconSvg, body);
+}
+
 function animateValue(el, start, end, duration, prefix, suffix) {
   prefix = prefix || '';
   suffix = suffix || '';
@@ -366,7 +429,7 @@ function initRealtimeListeners() {
     const prevVehiculos = parseInt(elVehiculos.textContent) || 0;
     animateValue(elVehiculos, prevVehiculos, active, 800);
 
-    let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0;
+    let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0, serviceCount = 0;
     all.forEach(v => {
       if (v.estadoGeneral === 'Baja') return;
       const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
@@ -377,6 +440,7 @@ function initRealtimeListeners() {
       if (regDays !== null && regDays <= 30) registroCount++;
       const dniDays = daysUntil(v.vencimientoDNI);
       if (dniDays !== null && dniDays <= 30) dniCount++;
+      if (serviceDue(v)) serviceCount++;
     });
 
     const elVtv = document.getElementById('card-vtv-proximas');
@@ -394,6 +458,12 @@ function initRealtimeListeners() {
     const elDni = document.getElementById('card-dni-proximos');
     const prevDni = parseInt(elDni.textContent) || 0;
     animateValue(elDni, prevDni, dniCount, 800);
+
+    const elService = document.getElementById('card-service-proximos');
+    if (elService) {
+      const prevService = parseInt(elService.textContent) || 0;
+      animateValue(elService, prevService, serviceCount, 800);
+    }
 
     renderEmpresas(all);
     renderFleetHealth(all);

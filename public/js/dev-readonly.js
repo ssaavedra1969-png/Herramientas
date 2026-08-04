@@ -76,12 +76,10 @@
       console.warn('[DEV READ-ONLY] Blocked Firestore.delete()');
       return Promise.resolve();
     };
+    const origCollection = DocRef.prototype.collection;
     DocRef.prototype.collection = function() {
-      const ref = arguments[0];
-      const colRef = DocRef.prototype.__proto__.collection
-        ? DocRef.prototype.__proto__.collection.apply(this, arguments)
-        : null;
-      if (colRef && colRef.__proto__ && colRef.__proto__.add) {
+      const colRef = origCollection ? origCollection.apply(this, arguments) : null;
+      if (colRef && typeof colRef.add === 'function') {
         patchCollectionRef(colRef.constructor);
       }
       return colRef;

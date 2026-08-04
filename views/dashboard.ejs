@@ -88,6 +88,18 @@
               </div>
             </div>
           </div>
+          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#EF4444]/30 transition" onclick="showServiceModal()">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[#8E94A8] text-xs font-medium">Service por vencer</p>
+                <p class="text-3xl font-bold text-[#F1F3F8] mt-1" id="card-service-proximos"><span class="skeleton skeleton-stat inline-block"></span></p>
+                <p class="text-xs text-[#5C6378] mt-1">próx. km · ≤30 días</p>
+              </div>
+              <div class="w-10 h-10 bg-[#EF4444]/10 rounded-lg flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-[#EF4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Alertas Choferes -->
@@ -205,7 +217,7 @@
 
 <%- include('partials/mobile-menu', { page: 'dashboard' }) %>
 
-<script src="/js/dashboard.js?v=empresas-grid"></script>
+<script src="/js/dashboard.js?v=services-alertas"></script>
 <script>
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDashModal(); });
 </script>

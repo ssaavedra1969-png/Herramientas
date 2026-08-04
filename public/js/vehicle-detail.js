@@ -1,6 +1,6 @@
 let vehicleId = null;
 let vehicleData = null;
-let combustibleUnsub = null;
+let servicesUnsub = null;
 let repuestosUnsub = null;
 let currentTab = 'resumen';
 let qrCodeInstance = null;
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   loadVehicle();
-  initCombustibleForm();
+  initServiceForm();
   initRepuestoForm();
   document.getElementById('v-trompo')?.addEventListener('change', (e) => {
     document.getElementById('v-trompo-fields').classList.toggle('hidden', !e.target.checked);
@@ -55,8 +55,16 @@ async function loadVehicle() {
   setText('qr-empresa', vehicleData.empresa || 'Grupo Falpat SRL');
   setText('qr-vehiculo-id', `Int. ${vehicleData.interno || ''} — ${vehicleData.patente || ''}`);
 
-  startCombustibleListener();
-  startRepuestosListener();
+  try {
+    startServicesListener();
+  } catch (e) {
+    console.error('Error al iniciar listener de services:', e);
+  }
+  try {
+    startRepuestosListener();
+  } catch (e) {
+    console.error('Error al iniciar listener de repuestos:', e);
+  }
 }
 
 function renderGeneralInfo() {
@@ -139,6 +147,28 @@ function renderVTV() {
 function renderService() {
   setText('vg-proximoServiceKm', vehicleData.proximoServiceKm ? `${vehicleData.proximoServiceKm.toLocaleString()} km` : '-');
   setText('vg-proximoServiceFecha', formatDate(vehicleData.proximoServiceFecha));
+  const listEl = document.getElementById('service-next-list');
+  if (!listEl) return;
+  const summary = vehicleData.serviceSummary || {};
+  const entries = Object.entries(summary)
+    .map(([tipo, s]) => ({ tipo, ...s }))
+    .filter(s => s && (s.proximoKm != null || s.proximoFecha))
+    .sort((a, b) => {
+      const ak = a.proximoKm != null ? a.proximoKm : Infinity;
+      const bk = b.proximoKm != null ? b.proximoKm : Infinity;
+      return ak - bk;
+    })
+    .slice(0, 6);
+  if (!entries.length) {
+    listEl.innerHTML = '<div class="text-[#5C6378] italic">Sin services registrados</div>';
+    return;
+  }
+  listEl.innerHTML = entries.map(e => `
+    <div class="flex items-center justify-between gap-2">
+      <span class="text-[#F1F3F8]">${e.tipo}</span>
+      <span class="text-[#8E94A8] whitespace-nowrap">${e.proximoKm != null ? e.proximoKm.toLocaleString() + ' km' : formatDate(e.proximoFecha)}</span>
+    </div>
+  `).join('');
 }
 
 function renderMultas() {
@@ -564,28 +594,112 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
   }
 });
 
-function initCombustibleForm() {
-  const form = document.getElementById('form-combustible');
+const SERVICE_DEFAULT_KM = {
+  'Cambio de aceite': 10000,
+  'Cambio filtro de aceite': 10000,
+  'Cambio filtro de combustible': 20000,
+  'Cambio filtro de aire': 30000,
+  'Cambio filtro de habitáculo': 15000,
+  'Alineación': 10000,
+  'Balanceo': 10000,
+  'Control de caja': 50000,
+  'Control de diferencial': 50000,
+  'Caja y diferencial': 50000,
+  'Control de neumáticos': 10000,
+  'Cambio pastillas de freno': 40000,
+  'Cambio líquido de frenos': 40000,
+  'Cambio correa de distribución': 90000,
+  'Control de batería': 30000,
+  'Control de refrigerante': 30000
+};
+
+const SERVICE_FLUIDO = {
+  'Cambio filtro de aceite': 'Cambio de aceite',
+  'Cambio pastillas de freno': 'Cambio líquido de frenos'
+};
+
+function initServiceForm() {
+  const form = document.getElementById('form-service');
   if (!form) return;
-  document.getElementById('c-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('s-fecha').value = new Date().toISOString().split('T')[0];
+
+  const tipoEl = document.getElementById('s-tipo');
+  const kmEl = document.getElementById('s-km');
+  const intervaloEl = document.getElementById('s-intervalo');
+  const proximoKmEl = document.getElementById('s-proximoKm');
+  const fluidGroup = document.getElementById('s-fluid-group');
+  const fluidCheck = document.getElementById('s-incluyeFluido');
+  const fluidLabel = document.getElementById('s-fluid-label');
+
+  const updateProximoKm = () => {
+    if (proximoKmTouched) return;
+    const km = parseInt(kmEl.value) || 0;
+    const intervalo = parseInt(intervaloEl.value) || 0;
+    proximoKmEl.value = (km && intervalo) ? km + intervalo : '';
+  };
+
+  let proximoKmTouched = false;
+  proximoKmEl.addEventListener('input', () => { proximoKmTouched = true; });
+
+  const updateFluido = () => {
+    const fluido = SERVICE_FLUIDO[tipoEl.value];
+    if (fluido) {
+      fluidLabel.textContent = `Incluir ${fluido.toLowerCase()}`;
+      fluidCheck.checked = true;
+      fluidGroup.classList.remove('hidden');
+      fluidGroup.classList.add('flex');
+    } else {
+      fluidCheck.checked = false;
+      fluidGroup.classList.add('hidden');
+      fluidGroup.classList.remove('flex');
+    }
+  };
+
+  tipoEl.addEventListener('change', () => {
+    const def = SERVICE_DEFAULT_KM[tipoEl.value];
+    if (def) {
+      intervaloEl.value = def;
+      updateProximoKm();
+    }
+    updateFluido();
+  });
+  kmEl.addEventListener('input', updateProximoKm);
+  intervaloEl.addEventListener('input', updateProximoKm);
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!isAdmin()) return;
+    const km = parseInt(kmEl.value) || null;
+    const intervalo = parseInt(intervaloEl.value) || null;
+    const proximoKm = parseInt(proximoKmEl.value) || (km && intervalo ? km + intervalo : null);
+    const fechaStr = document.getElementById('s-fecha').value;
+    const proximoFechaStr = document.getElementById('s-proximoFecha').value;
     const data = {
-      fecha: firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('c-fecha').value + 'T00:00:00')),
-      litros: parseFloat(document.getElementById('c-litros').value),
-      importe: parseFloat(document.getElementById('c-importe').value),
-      tipo: document.getElementById('c-tipo').value,
-      km: parseInt(document.getElementById('c-km').value) || null,
-      proveedor: document.getElementById('c-proveedor').value.trim() || '',
-      observaciones: document.getElementById('c-obs').value.trim() || '',
+      fecha: fechaStr ? firebase.firestore.Timestamp.fromDate(new Date(fechaStr + 'T00:00:00')) : null,
+      tipo: tipoEl.value,
+      km: km,
+      intervaloKm: intervalo,
+      proximoKm: proximoKm,
+      proximoFecha: proximoFechaStr
+        ? firebase.firestore.Timestamp.fromDate(new Date(proximoFechaStr + 'T00:00:00'))
+        : null,
+      costo: parseFloat(document.getElementById('s-costo').value) || null,
+      proveedor: document.getElementById('s-proveedor').value.trim() || '',
+      observaciones: document.getElementById('s-obs').value.trim() || '',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
+    if (!fluidGroup.classList.contains('hidden') && fluidCheck.checked) {
+      data.fluido = SERVICE_FLUIDO[tipoEl.value];
+    }
     try {
       showLoading(true);
-      await db.collection('vehicles').doc(vehicleId).collection('combustible').add(data);
-      showToast('Carga de combustible registrada');
+      await db.collection('vehicles').doc(vehicleId).collection('services').add(data);
+      await updateVehicleServiceSummary();
+      showToast('Service registrado');
       form.reset();
-      document.getElementById('c-fecha').value = new Date().toISOString().split('T')[0];
+      document.getElementById('s-fecha').value = new Date().toISOString().split('T')[0];
+      proximoKmTouched = false;
+      updateProximoKm();
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     } finally {
@@ -594,16 +708,54 @@ function initCombustibleForm() {
   });
 }
 
+async function updateVehicleServiceSummary() {
+  try {
+    const snap = await db.collection('vehicles').doc(vehicleId).collection('services').get();
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const summary = {};
+    let minKm = null;
+    let minFecha = null;
+    items.forEach(s => {
+      const tipo = s.tipo || 'Otro';
+      const cur = summary[tipo];
+      const curDate = cur && cur.fecha ? (cur.fecha.toDate ? cur.fecha.toDate().getTime() : new Date(cur.fecha).getTime()) : 0;
+      const newDate = s.fecha ? (s.fecha.toDate ? s.fecha.toDate().getTime() : new Date(s.fecha).getTime()) : 0;
+      if (!cur || newDate >= curDate) {
+        summary[tipo] = { fecha: s.fecha || null, km: s.km || null, proximoKm: s.proximoKm || null, proximoFecha: s.proximoFecha || null };
+      }
+      if (s.proximoKm != null && (minKm === null || s.proximoKm < minKm)) {
+        minKm = s.proximoKm;
+        minFecha = s.proximoFecha || null;
+      }
+    });
+    const update = {
+      serviceSummary: summary,
+      proximoServiceKm: minKm,
+      proximoServiceFecha: minFecha,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    await db.collection('vehicles').doc(vehicleId).update(update);
+    if (vehicleData) {
+      vehicleData = { ...vehicleData, ...update };
+      renderService();
+    }
+  } catch (err) {
+    console.error('updateServiceSummary error:', err);
+  }
+}
+
 function initRepuestoForm() {
   const form = document.getElementById('form-repuesto');
   if (!form) return;
   document.getElementById('r-fecha').value = new Date().toISOString().split('T')[0];
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!isAdmin()) return;
+    const fechaStr = document.getElementById('r-fecha').value;
     const data = {
-      fecha: firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('r-fecha').value + 'T00:00:00')),
+      fecha: fechaStr ? firebase.firestore.Timestamp.fromDate(new Date(fechaStr + 'T00:00:00')) : null,
       pieza: document.getElementById('r-pieza').value.trim(),
-      costo: parseFloat(document.getElementById('r-costo').value),
+      costo: parseFloat(document.getElementById('r-costo').value) || null,
       proveedor: document.getElementById('r-proveedor').value.trim() || '',
       tipo: document.getElementById('r-tipo').value,
       km: parseInt(document.getElementById('r-km').value) || null,
@@ -624,20 +776,20 @@ function initRepuestoForm() {
   });
 }
 
-function startCombustibleListener() {
-  if (combustibleUnsub) combustibleUnsub();
-  combustibleUnsub = db.collection('vehicles').doc(vehicleId).collection('combustible')
+function startServicesListener() {
+  if (servicesUnsub) servicesUnsub();
+  servicesUnsub = db.collection('vehicles').doc(vehicleId).collection('services')
     .orderBy('fecha', 'desc')
     .onSnapshot(snapshot => {
       const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      window.allCombustibleData = items;
-      renderCombustible(items);
+      window.allServicesData = items;
+      renderServices(items);
       renderHistorialChart();
       renderHistorial();
     }, err => {
-      console.error('combustible error:', err);
-      document.getElementById('combustible-table-body').innerHTML =
-        '<tr><td colspan="7" class="text-center py-8 text-red-500">Error al cargar</td></tr>';
+      console.error('services error:', err);
+      const tb = document.getElementById('services-table-body');
+      if (tb) tb.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-red-500">Error al cargar</td></tr>';
     });
 }
 
@@ -657,22 +809,22 @@ function startRepuestosListener() {
     });
 }
 
-function renderCombustible(items) {
-  const tbody = document.getElementById('combustible-table-body');
+function renderServices(items) {
+  const tbody = document.getElementById('services-table-body');
   if (!tbody) return;
   if (!items.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-[#5C6378]">Sin cargas registradas</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-[#5C6378]">Sin services registrados</td></tr>';
     return;
   }
-  tbody.innerHTML = items.map(c => `
+  tbody.innerHTML = items.map(s => `
     <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
-      <td class="py-2 pr-2">${formatDate(c.fecha)}</td>
-      <td class="py-2 pr-2">${c.litros?.toFixed(1) || '-'}</td>
-      <td class="py-2 pr-2">${formatCurrency(c.importe)}</td>
-      <td class="py-2 pr-2">${c.tipo || '-'}</td>
-      <td class="py-2 pr-2">${c.km?.toLocaleString() || '-'}</td>
-      <td class="py-2 pr-2">${c.proveedor || '-'}</td>
-      <td class="py-2 no-print">${isAdmin() ? `<button onclick="deleteCombustible('${c.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
+      <td class="py-2 pr-2">${formatDate(s.fecha)}</td>
+      <td class="py-2 pr-2 font-medium">${s.tipo || '-'}${s.fluido ? ` <span class="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#F59E0B]/15 text-[#F59E0B]">+ ${s.fluido}</span>` : ''}</td>
+      <td class="py-2 pr-2">${s.km?.toLocaleString() || '-'}</td>
+      <td class="py-2 pr-2">${s.proximoKm?.toLocaleString() || '-'}</td>
+      <td class="py-2 pr-2">${formatCurrency(s.costo)}</td>
+      <td class="py-2 pr-2">${s.proveedor || '-'}</td>
+      <td class="py-2 no-print">${isAdmin() ? `<button onclick="deleteService('${s.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
     </tr>
   `).join('');
 }
@@ -687,42 +839,45 @@ function renderRepuestos(items) {
   tbody.innerHTML = items.map(r => `
     <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
       <td class="py-2 pr-2">${formatDate(r.fecha)}</td>
+      <td class="py-2 pr-2">${r.tipo || '-'}</td>
       <td class="py-2 pr-2 font-medium">${r.pieza || '-'}</td>
       <td class="py-2 pr-2">${formatCurrency(r.costo)}</td>
       <td class="py-2 pr-2">${r.proveedor || '-'}</td>
-      <td class="py-2 pr-2">${r.tipo || '-'}</td>
       <td class="py-2 pr-2">${r.km?.toLocaleString() || '-'}</td>
       <td class="py-2 no-print">${isAdmin() ? `<button onclick="deleteRepuesto('${r.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
     </tr>
   `).join('');
 }
 
-function exportCombustibleCSV() {
-  const items = window.allCombustibleData || [];
+function exportServicesCSV() {
+  const items = window.allServicesData || [];
   if (!items.length) { showToast('No hay datos para exportar', 'info'); return; }
-  const headers = ['Fecha', 'Litros', 'Importe', 'Tipo', 'Km', 'Proveedor', 'Observaciones'];
-  const rows = items.map(c => [
-    formatDate(c.fecha),
-    c.litros?.toFixed(2) || '',
-    c.importe?.toFixed(2) || '',
-    c.tipo || '',
-    c.km || '',
-    c.proveedor || '',
-    c.observaciones || ''
+  const headers = ['Fecha', 'Servicio', 'Incluye', 'Km', 'Intervalo', 'Próximo Km', 'Próxima Fecha', 'Costo', 'Proveedor', 'Observaciones'];
+  const rows = items.map(s => [
+    formatDate(s.fecha),
+    s.tipo || '',
+    s.fluido || '',
+    s.km || '',
+    s.intervaloKm || '',
+    s.proximoKm || '',
+    formatDate(s.proximoFecha),
+    s.costo?.toFixed(2) || '',
+    s.proveedor || '',
+    s.observaciones || ''
   ]);
-  downloadCSV(`combustible-${vehicleData?.patente || vehicleId}.csv`, headers, rows);
+  downloadCSV(`services-${vehicleData?.patente || vehicleId}.csv`, headers, rows);
 }
 
 function exportRepuestosCSV() {
   const items = window.allRepuestosData || [];
   if (!items.length) { showToast('No hay datos para exportar', 'info'); return; }
-  const headers = ['Fecha', 'Pieza', 'Costo', 'Proveedor', 'Tipo', 'Km', 'Observaciones'];
+  const headers = ['Fecha', 'Tipo', 'Pieza', 'Costo', 'Proveedor', 'Km', 'Observaciones'];
   const rows = items.map(r => [
     formatDate(r.fecha),
+    r.tipo || '',
     r.pieza || '',
     r.costo?.toFixed(2) || '',
     r.proveedor || '',
-    r.tipo || '',
     r.km || '',
     r.observaciones || ''
   ]);
@@ -741,11 +896,12 @@ function downloadCSV(filename, headers, rows) {
   showToast(`CSV exportado: ${filename}`);
 }
 
-async function deleteCombustible(id) {
-  if (!isAdmin() || !confirm('¿Eliminar esta carga de combustible?')) return;
+async function deleteService(id) {
+  if (!isAdmin() || !confirm('¿Eliminar este service?')) return;
   try {
-    await db.collection('vehicles').doc(vehicleId).collection('combustible').doc(id).delete();
-    showToast('Carga eliminada');
+    await db.collection('vehicles').doc(vehicleId).collection('services').doc(id).delete();
+    await updateVehicleServiceSummary();
+    showToast('Service eliminado');
   } catch (err) {
     showToast('Error: ' + err.message, 'error');
   }
@@ -1028,53 +1184,50 @@ function downloadBarcodePDF() {
   });
 }
 
-let chartCombustibleTiempo = null;
+let chartGastosTiempo = null;
 
 function renderHistorialChart() {
-  const ctx = document.getElementById('chart-combustible-tiempo');
+  const ctx = document.getElementById('chart-gastos-tiempo');
   if (!ctx) return;
-  const items = window.allCombustibleData || [];
-  if (chartCombustibleTiempo) chartCombustibleTiempo.destroy();
+  if (chartGastosTiempo) chartGastosTiempo.destroy();
 
-  if (!items.length) {
-    chartCombustibleTiempo = null;
+  const services = window.allServicesData || [];
+  const repuestos = window.allRepuestosData || [];
+
+  const entries = [
+    ...services.map(s => ({ fecha: s.fecha?.toDate ? s.fecha.toDate() : new Date(s.fecha), monto: Number(s.costo) || 0 })),
+    ...repuestos.map(r => ({ fecha: r.fecha?.toDate ? r.fecha.toDate() : new Date(r.fecha), monto: Number(r.costo) || 0 }))
+  ].filter(e => !isNaN(e.fecha));
+
+  if (!entries.length) {
+    chartGastosTiempo = null;
     return;
   }
 
-  const sorted = [...items].sort((a, b) => {
-    const da = a.fecha?.toDate ? a.fecha.toDate() : new Date(a.fecha);
-    const db2 = b.fecha?.toDate ? b.fecha.toDate() : new Date(b.fecha);
-    return da - db2;
-  });
-
   const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   const byMonth = {};
-  sorted.forEach(c => {
-    const d = c.fecha?.toDate ? c.fecha.toDate() : new Date(c.fecha);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    if (!byMonth[key]) byMonth[key] = { litros: 0, importe: 0 };
-    byMonth[key].litros += Number(c.litros) || 0;
-    byMonth[key].importe += Number(c.importe) || 0;
+  entries.forEach(c => {
+    const key = `${c.fecha.getFullYear()}-${String(c.fecha.getMonth() + 1).padStart(2, '0')}`;
+    if (!byMonth[key]) byMonth[key] = 0;
+    byMonth[key] += c.monto;
   });
 
   const keys = Object.keys(byMonth).sort();
   const labels = keys.map(k => { const [y, m] = k.split('-'); return `${months[parseInt(m) - 1]} ${y}`; });
 
-  chartCombustibleTiempo = new Chart(ctx, {
-    type: 'line',
+  chartGastosTiempo = new Chart(ctx, {
+    type: 'bar',
     data: {
       labels,
       datasets: [
-        { label: 'Importe ($)', data: keys.map(k => byMonth[k].importe), borderColor: '#6C3CE1', backgroundColor: 'rgba(108,60,225,0.1)', fill: true, tension: 0.3, yAxisID: 'y' },
-        { label: 'Litros', data: keys.map(k => byMonth[k].litros), borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3, yAxisID: 'y1' }
+        { label: 'Gastos ($)', data: keys.map(k => byMonth[k]), backgroundColor: 'rgba(108,60,225,0.6)', borderRadius: 6 }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: '#8E94A8', font: { size: 11 } } } },
+      plugins: { legend: { display: false } },
       scales: {
-        y: { beginAtZero: true, position: 'left', ticks: { color: '#8E94A8', callback: v => '$' + v } },
-        y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#8E94A8', callback: v => v + 'L' } },
+        y: { beginAtZero: true, ticks: { color: '#8E94A8', callback: v => '$' + v } },
         x: { grid: { display: false }, ticks: { color: '#8E94A8', font: { size: 10 } } }
       }
     }
@@ -1085,12 +1238,12 @@ function renderHistorial() {
   const tbody = document.getElementById('historial-table-body');
   if (!tbody) return;
 
-  const combustible = (window.allCombustibleData || []).map(c => ({
-    fecha: c.fecha?.toDate ? c.fecha.toDate() : new Date(c.fecha),
-    tipo: 'Combustible',
-    detalle: `${c.litros?.toFixed(1) || 0}L ${c.tipo || ''} · ${c.proveedor || ''}`.trim(),
-    monto: Number(c.importe) || 0,
-    color: '#6C3CE1'
+  const services = (window.allServicesData || []).map(s => ({
+    fecha: s.fecha?.toDate ? s.fecha.toDate() : new Date(s.fecha),
+    tipo: 'Service',
+    detalle: `${s.tipo || ''}${s.fluido ? ' + ' + s.fluido : ''} · ${s.proveedor || ''}`.trim(),
+    monto: Number(s.costo) || 0,
+    color: '#F59E0B'
   }));
 
   const repuestos = (window.allRepuestosData || []).map(r => ({
@@ -1101,14 +1254,14 @@ function renderHistorial() {
     color: '#10B981'
   }));
 
-  const all = [...combustible, ...repuestos].sort((a, b) => b.fecha - a.fecha);
+  const all = [...services, ...repuestos].sort((a, b) => b.fecha - a.fecha);
 
   if (!all.length) {
     tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-[#5C6378]">Sin movimientos registrados</td></tr>';
     return;
   }
 
-  let totalComb = combustible.reduce((s, c) => s + c.monto, 0);
+  let totalServ = services.reduce((s, c) => s + c.monto, 0);
   let totalRep = repuestos.reduce((s, r) => s + r.monto, 0);
 
   tbody.innerHTML = all.map(item => `
@@ -1120,8 +1273,8 @@ function renderHistorial() {
     </tr>
   `).join('') + `
     <tr class="border-t-2 border-[#6C3CE1]/30 font-bold">
-      <td colspan="3" class="py-2 text-right text-xs text-[#8E94A8]">Total Combustible</td>
-      <td class="py-2 text-right text-xs text-[#6C3CE1]">$${totalComb.toLocaleString('es-AR')}</td>
+      <td colspan="3" class="py-2 text-right text-xs text-[#8E94A8]">Total Services</td>
+      <td class="py-2 text-right text-xs text-[#F59E0B]">$${totalServ.toLocaleString('es-AR')}</td>
     </tr>
     <tr class="border-b border-[#6C3CE1]/30 font-bold">
       <td colspan="3" class="py-2 text-right text-xs text-[#8E94A8]">Total Repuestos</td>
@@ -1129,6 +1282,6 @@ function renderHistorial() {
     </tr>
     <tr class="font-bold">
       <td colspan="3" class="py-2 text-right text-xs text-[#F1F3F8]">TOTAL</td>
-      <td class="py-2 text-right text-sm text-[#F1F3F8]">$${(totalComb + totalRep).toLocaleString('es-AR')}</td>
+      <td class="py-2 text-right text-sm text-[#F1F3F8]">$${(totalServ + totalRep).toLocaleString('es-AR')}</td>
     </tr>`;
 }

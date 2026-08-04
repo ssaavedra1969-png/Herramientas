@@ -6,6 +6,9 @@ let selectedIds = new Set();
 let viewMode = localStorage.getItem('vehicles-view-mode') || 'card';
 let sortField = 'interno';
 let sortDir = 'asc';
+let trompoFilter = 'all';
+
+const normStr = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 const brandLogos = {
   'mercedes benz': '/img/logos/mercedes-benz.svg',
@@ -65,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('filter-estado')?.addEventListener('change', applyFilters);
   document.querySelectorAll('[data-trompo-filter]').forEach(btn => {
     btn.addEventListener('click', () => {
+      trompoFilter = btn.dataset.trompoFilter;
       document.querySelectorAll('[data-trompo-filter]').forEach(b => {
         b.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
         b.classList.add('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');
@@ -125,8 +129,7 @@ function updateActiveFiltersCount() {
   const centro = document.getElementById('filter-centro')?.value || '';
   const empresa = document.getElementById('filter-empresa')?.value || '';
   const estado = document.getElementById('filter-estado')?.value || '';
-  const activeTrompoBtn = document.querySelector('[data-trompo-filter].bg-\\[\\#6C3CE1\\]\\/30');
-  const trompo = activeTrompoBtn ? activeTrompoBtn.dataset.trompoFilter : 'all';
+  const trompo = trompoFilter;
   const count = [marca, tipo, subtipo, centro, empresa, trompo !== 'all' ? trompo : ''].filter(Boolean).length;
   const badge = document.getElementById('active-filters-count');
   if (badge) {
@@ -416,28 +419,27 @@ function hasTrompo(v) {
 }
 
 function applyFilters() {
-  const search = (document.getElementById('search-vehiculo').value || '').toLowerCase();
+  const search = normStr(document.getElementById('search-vehiculo').value);
   const marca = document.getElementById('filter-marca').value;
   const tipo = document.getElementById('filter-tipo').value;
   const subtipo = document.getElementById('filter-subtipo').value;
   const centro = document.getElementById('filter-centro').value;
   const empresa = document.getElementById('filter-empresa').value;
   const estado = document.getElementById('filter-estado')?.value || '';
-  const activeTrompoBtn = document.querySelector('[data-trompo-filter].bg-\\[\\#6C3CE1\\]\\/30');
-  const trompoFilter = activeTrompoBtn ? activeTrompoBtn.dataset.trompoFilter : 'all';
+  const trompoFilterLocal = trompoFilter;
 
   let filtered = allVehicles;
   if (search) {
     filtered = filtered.filter(v =>
-      (v.patente || '').toLowerCase().includes(search) ||
-      (v.marca || '').toLowerCase().includes(search) ||
-      (v.modelo || '').toLowerCase().includes(search) ||
-      (v.interno || v.numeroInterno || '').toLowerCase().includes(search) ||
-      (v.tipo || '').toLowerCase().includes(search) ||
-      (v.subtipo || '').toLowerCase().includes(search) ||
-      (v.centroTrabajo || '').toLowerCase().includes(search) ||
-      (v.empresa || '').toLowerCase().includes(search) ||
-      (v.nroBet || '').toLowerCase().includes(search)
+      normStr(v.patente).includes(search) ||
+      normStr(v.marca).includes(search) ||
+      normStr(v.modelo).includes(search) ||
+      normStr(v.interno || v.numeroInterno).includes(search) ||
+      normStr(v.tipo).includes(search) ||
+      normStr(v.subtipo).includes(search) ||
+      normStr(v.centroTrabajo).includes(search) ||
+      normStr(v.empresa).includes(search) ||
+      normStr(v.nroBet).includes(search)
     );
   }
   if (marca) filtered = filtered.filter(v => (v.marca || '') === marca);
@@ -445,9 +447,9 @@ function applyFilters() {
   if (subtipo) filtered = filtered.filter(v => (v.subtipo || '') === subtipo);
   if (centro) filtered = filtered.filter(v => (v.centroTrabajo || '') === centro);
   if (empresa) filtered = filtered.filter(v => (v.empresa || '') === empresa);
-  if (estado) filtered = filtered.filter(v => (v.estadoGeneral || v.estado || 'Activo') === estado);
-  if (trompoFilter === 'yes') filtered = filtered.filter(v => hasTrompo(v));
-  if (trompoFilter === 'no') filtered = filtered.filter(v => !hasTrompo(v));
+  if (estado) filtered = filtered.filter(v => (v.estadoGeneral === 'Baja' || v.estado === 'Baja' ? 'Baja' : 'Activo') === estado);
+  if (trompoFilterLocal === 'yes') filtered = filtered.filter(v => hasTrompo(v));
+  if (trompoFilterLocal === 'no') filtered = filtered.filter(v => !hasTrompo(v));
 
   document.getElementById('filter-count').textContent = filtered.length;
   document.getElementById('total-vehicles').textContent = filtered.length;
@@ -495,6 +497,7 @@ function resetFilters() {
   document.getElementById('filter-centro').value = '';
   document.getElementById('filter-empresa').value = '';
   if (document.getElementById('filter-estado')) document.getElementById('filter-estado').value = '';
+  trompoFilter = 'all';
   document.querySelectorAll('[data-trompo-filter]').forEach((btn, i) => {
     btn.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
     btn.classList.add('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');

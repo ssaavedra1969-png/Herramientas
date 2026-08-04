@@ -45,7 +45,7 @@
       <div class="hidden md:block sticky top-0 z-10 mb-4 -mx-4 md:-mx-6 px-4 md:px-6 pt-2 pb-0" style="background: #0A0A1A;">
         <div class="flex gap-1 glass-card rounded-xl p-1 overflow-x-auto">
           <button onclick="switchTab('resumen')" id="tab-resumen" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap bg-[#6C3CE1]/10 text-[#6C3CE1]">Resumen</button>
-          <button onclick="switchTab('combustible')" id="tab-combustible" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Combustible</button>
+          <button onclick="switchTab('services')" id="tab-services" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Services</button>
           <button onclick="switchTab('repuestos')" id="tab-repuestos" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Repuestos</button>
           <button onclick="switchTab('historial')" id="tab-historial" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Historial</button>
           <button onclick="switchTab('codigobarras')" id="tab-codigobarras" class="tab-btn flex-1 py-2.5 text-center rounded-lg text-sm font-medium transition whitespace-nowrap text-[#8E94A8] hover:text-[#F1F3F8]">Código Barras</button>
@@ -157,6 +157,12 @@
               <div class="flex justify-between"><span class="text-[#8E94A8]">Próx. (km)</span><span class="text-[#F1F3F8]" id="vg-proximoServiceKm">-</span></div>
               <div class="flex justify-between"><span class="text-[#8E94A8]">Próx. (fecha)</span><span class="text-[#F1F3F8]" id="vg-proximoServiceFecha">-</span></div>
             </div>
+            <div class="mt-3 pt-3 border-t border-[#6C3CE1]/10">
+              <span class="text-[#8E94A8] text-xs font-medium">Próximos services</span>
+              <div id="service-next-list" class="mt-1.5 space-y-1.5 text-xs">
+                <div class="text-[#5C6378] italic">Sin services registrados</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -238,72 +244,95 @@
         <% } %>
       </div>
 
-      <!-- ═══ TAB: COMBUSTIBLE ═══ -->
-      <div class="md:hidden accordion-header glass-card rounded-xl mb-2 cursor-pointer select-none" onclick="toggleAccordion('combustible')" id="accordion-header-combustible">
+      <!-- ═══ TAB: SERVICES ═══ -->
+      <div class="md:hidden accordion-header glass-card rounded-xl mb-2 cursor-pointer select-none" onclick="toggleAccordion('services')" id="accordion-header-services">
         <div class="flex items-center justify-between px-4 py-3">
           <div class="flex items-center gap-3">
-            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            <span class="font-semibold text-[#F1F3F8] text-sm">Combustible</span>
+            <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span class="font-semibold text-[#F1F3F8] text-sm">Services</span>
           </div>
           <svg class="w-5 h-5 text-[#8E94A8] accordion-chevron transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </div>
       </div>
-      <div id="tab-content-combustible" class="tab-content hidden space-y-4">
+      <div id="tab-content-services" class="tab-content hidden space-y-4">
         <div class="glass-card rounded-xl p-5">
           <h3 class="text-md font-semibold text-[#F1F3F8] mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            Carga de Combustible
+            <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Service / Mantenimiento Periódico
           </h3>
 
           <% if (currentUserData?.role === 'Admin') { %>
-          <form id="form-combustible" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 p-4 bg-[#0A0A1A]/30 rounded-lg">
+          <form id="form-service" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 p-4 bg-[#0A0A1A]/30 rounded-lg">
             <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Fecha *</label>
-              <input type="date" id="c-fecha" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Fecha</label>
+              <input type="date" id="s-fecha" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
             </div>
             <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Litros *</label>
-              <input type="number" id="c-litros" required step="0.01" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="100">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Importe ($) *</label>
-              <input type="number" id="c-importe" required step="0.01" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="25000">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Tipo</label>
-              <select id="c-tipo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-                <option value="Gasoil" class="bg-[#0A0A1A]">Gasoil</option>
-                <option value="Nafta Súper" class="bg-[#0A0A1A]">Nafta Súper</option>
-                <option value="Nafta Premium" class="bg-[#0A0A1A]">Nafta Premium</option>
-                <option value="GNC" class="bg-[#0A0A1A]">GNC</option>
-                <option value="GLP" class="bg-[#0A0A1A]">GLP</option>
-                <option value="Biodiesel" class="bg-[#0A0A1A]">Biodiesel</option>
-                <option value="AdBlue" class="bg-[#0A0A1A]">AdBlue (ARLA 32)</option>
-                <option value="Lubricentro" class="bg-[#0A0A1A]">Lubricentro / Aceite</option>
-                <option value="Otro" class="bg-[#0A0A1A]">Otro</option>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Servicio</label>
+              <select id="s-tipo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+                <option value="">Seleccionar...</option>
+                <option value="Cambio de aceite">Cambio de aceite</option>
+                <option value="Cambio filtro de aceite">Cambio filtro de aceite</option>
+                <option value="Cambio filtro de combustible">Cambio filtro de combustible</option>
+                <option value="Cambio filtro de aire">Cambio filtro de aire</option>
+                <option value="Cambio filtro de habitáculo">Cambio filtro de habitáculo</option>
+                <option value="Alineación">Alineación</option>
+                <option value="Balanceo">Balanceo</option>
+                <option value="Control de caja">Control de caja</option>
+                <option value="Control de diferencial">Control de diferencial</option>
+                <option value="Caja y diferencial">Caja y diferencial</option>
+                <option value="Control de neumáticos">Control de neumáticos</option>
+                <option value="Cambio pastillas de freno">Cambio pastillas de freno</option>
+                <option value="Cambio líquido de frenos">Cambio líquido de frenos</option>
+                <option value="Cambio correa de distribución">Cambio correa de distribución</option>
+                <option value="Control de batería">Control de batería</option>
+                <option value="Control de refrigerante">Control de refrigerante</option>
+                <option value="Otro">Otro</option>
               </select>
+            </div>
+            <div id="s-fluid-group" class="hidden items-center">
+              <label class="flex items-center gap-2 text-sm text-[#8E94A8] cursor-pointer mt-5">
+                <input type="checkbox" id="s-incluyeFluido" class="w-4 h-4 accent-[#6C3CE1]" checked>
+                <span id="s-fluid-label">Incluir cambio de aceite</span>
+              </label>
             </div>
             <div>
               <label class="block text-xs font-medium text-[#8E94A8] mb-1">Km actual</label>
-              <input type="number" id="c-km" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="0">
+              <input type="number" id="s-km" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="0">
             </div>
             <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Proveedor</label>
-              <input type="text" id="c-proveedor" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Estación YPF">
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Intervalo (km)</label>
+              <input type="number" id="s-intervalo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="10000">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Próx. km</label>
+              <input type="number" id="s-proximoKm" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Automático (editable)">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Próx. fecha</label>
+              <input type="date" id="s-proximoFecha" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Costo ($)</label>
+              <input type="number" id="s-costo" step="0.01" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="25000">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Proveedor / Taller</label>
+              <input type="text" id="s-proveedor" list="proveedores-list" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Taller Falpat">
             </div>
             <div class="sm:col-span-2 lg:col-span-3">
               <label class="block text-xs font-medium text-[#8E94A8] mb-1">Observaciones</label>
-              <input type="text" id="c-obs" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Notas">
+              <input type="text" id="s-obs" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Notas">
             </div>
             <div class="sm:col-span-2 lg:col-span-3 flex justify-end">
-              <button type="submit" class="btn-primary text-sm px-4 sm:px-6 py-2">Agregar Carga</button>
+              <button type="submit" class="btn-primary text-sm px-4 sm:px-6 py-2">Agregar Service</button>
             </div>
           </form>
           <% } %>
 
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm text-[#8E94A8]">Historial de cargas</span>
-            <button onclick="exportCombustibleCSV()" class="text-xs px-3 py-1.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#8E94A8] hover:text-[#F1F3F8] flex items-center gap-1 transition">
+            <span class="text-sm text-[#8E94A8]">Historial de services</span>
+            <button onclick="exportServicesCSV()" class="text-xs px-3 py-1.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#8E94A8] hover:text-[#F1F3F8] flex items-center gap-1 transition">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Exportar CSV
             </button>
@@ -313,15 +342,15 @@
               <thead>
                 <tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
                   <th class="pb-2 font-medium">Fecha</th>
-                  <th class="pb-2 font-medium">Litros</th>
-                  <th class="pb-2 font-medium">Importe</th>
-                  <th class="pb-2 font-medium">Tipo</th>
+                  <th class="pb-2 font-medium">Servicio</th>
                   <th class="pb-2 font-medium">Km</th>
+                  <th class="pb-2 font-medium">Próx. km</th>
+                  <th class="pb-2 font-medium">Costo</th>
                   <th class="pb-2 font-medium">Proveedor</th>
                   <th class="pb-2 font-medium no-print">Acciones</th>
                 </tr>
               </thead>
-              <tbody id="combustible-table-body">
+              <tbody id="services-table-body">
                 <tr><td colspan="7" class="py-4"><div class="space-y-2"><div class="skeleton skeleton-row"></div><div class="skeleton skeleton-row" style="width:80%"></div><div class="skeleton skeleton-row" style="width:60%"></div></div></td></tr>
               </tbody>
             </table>
@@ -349,20 +378,8 @@
           <% if (currentUserData?.role === 'Admin') { %>
           <form id="form-repuesto" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 p-4 bg-[#0A0A1A]/30 rounded-lg">
             <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Fecha *</label>
-              <input type="date" id="r-fecha" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Pieza *</label>
-              <input type="text" id="r-pieza" required class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Filtro de aceite">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Costo ($) *</label>
-              <input type="number" id="r-costo" required step="0.01" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="15000">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Proveedor</label>
-              <input type="text" id="r-proveedor" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Autorepuestos S.A.">
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Fecha</label>
+              <input type="date" id="r-fecha" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
             </div>
             <div>
               <label class="block text-xs font-medium text-[#8E94A8] mb-1">Tipo</label>
@@ -372,6 +389,18 @@
                 <option value="Reemplazo" class="bg-[#0A0A1A]">Reemplazo</option>
                 <option value="Mejora" class="bg-[#0A0A1A]">Mejora</option>
               </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Pieza</label>
+              <input type="text" id="r-pieza" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Filtro de aceite">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Costo ($)</label>
+              <input type="number" id="r-costo" step="0.01" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="15000">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[#8E94A8] mb-1">Proveedor</label>
+              <input type="text" id="r-proveedor" list="proveedores-list" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon" placeholder="Taller Falpat">
             </div>
             <div>
               <label class="block text-xs font-medium text-[#8E94A8] mb-1">Km</label>
@@ -399,10 +428,10 @@
               <thead>
                 <tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
                   <th class="pb-2 font-medium">Fecha</th>
+                  <th class="pb-2 font-medium">Tipo</th>
                   <th class="pb-2 font-medium">Pieza</th>
                   <th class="pb-2 font-medium">Costo</th>
                   <th class="pb-2 font-medium">Proveedor</th>
-                  <th class="pb-2 font-medium">Tipo</th>
                   <th class="pb-2 font-medium">Km</th>
                   <th class="pb-2 font-medium no-print">Acciones</th>
                 </tr>
@@ -429,9 +458,9 @@
         <div class="glass-card rounded-xl p-4 md:p-5">
           <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
             <svg class="w-4 h-4 md:w-5 md:h-5 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            Consumo de Combustible en el Tiempo
+            Gastos (Services + Repuestos) en el Tiempo
           </h3>
-          <div style="position:relative;height:220px;"><canvas id="chart-combustible-tiempo"></canvas></div>
+          <div style="position:relative;height:220px;"><canvas id="chart-gastos-tiempo"></canvas></div>
         </div>
         <div class="glass-card rounded-xl p-4 md:p-5">
           <h3 class="text-sm md:text-md font-semibold text-[#F1F3F8] mb-3 flex items-center gap-2">
@@ -893,6 +922,10 @@
   </div>
 </div>
 
+<datalist id="proveedores-list">
+  <option value="Taller Falpat"></option>
+  <option value="Proveedor externo"></option>
+</datalist>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="/js/vehicle-detail.js?v=1"></script>
+<script src="/js/vehicle-detail.js?v=services-tabs"></script>
 <%- include('partials/footer') %>

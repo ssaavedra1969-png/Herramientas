@@ -3,6 +3,44 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 
+function parseFecha(val) {
+  if (!val) return null;
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+async function recomputeServiceSummary(vehicleId) {
+  const snap = await db.collection('vehicles').doc(vehicleId).collection('services').get();
+  const summary = {};
+  let minKm = null;
+  let minFecha = null;
+  let nextTipo = null;
+  snap.forEach(doc => {
+    const s = doc.data();
+    const tipo = s.tipo || 'Otro';
+    if (!summary[tipo]) summary[tipo] = null;
+    const cur = summary[tipo];
+    const curDate = cur && cur.fecha ? (cur.fecha.seconds ? cur.fecha.seconds * 1000 : new Date(cur.fecha).getTime()) : 0;
+    const newDate = s.fecha ? (s.fecha.seconds ? s.fecha.seconds * 1000 : new Date(s.fecha).getTime()) : 0;
+    if (!cur || newDate >= curDate) {
+      summary[tipo] = { fecha: s.fecha || null, km: s.km || null, proximoKm: s.proximoKm || null, proximoFecha: s.proximoFecha || null };
+    }
+    if (s.proximoKm != null && (minKm === null || s.proximoKm < minKm)) {
+      minKm = s.proximoKm;
+      minFecha = s.proximoFecha || null;
+      nextTipo = tipo;
+    }
+  });
+  const update = {
+    serviceSummary: summary,
+    proximoServiceKm: minKm,
+    proximoServiceFecha: minFecha,
+    proximoServiceTipo: nextTipo,
+    updatedAt: new Date()
+  };
+  await db.collection('vehicles').doc(vehicleId).update(update);
+}
+
 router.get('/', verifyToken, async (req, res) => {
   try {
     const snapshot = await db.collection('vehicles').orderBy('interno', 'asc').get();
@@ -242,6 +280,54 @@ router.post('/:id/repuestos', verifyToken, requireAdmin, async (req, res) => {
 router.delete('/:id/repuestos/:entryId', verifyToken, requireAdmin, async (req, res) => {
   try {
     await db.collection('vehicles').doc(req.params.id).collection('repuestos').doc(req.params.entryId).delete();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/:id/services', verifyToken, async (req, res) => {
+  try {
+    const snap = await db.collection('vehicles').doc(req.params.id).collection('services')
+      .orderBy('fecha', 'desc').get();
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/services', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const km = parseInt(req.body.km) || null;
+    const intervalo = parseInt(req.body.intervalo) || null;
+    const proximoKm = req.body.proximoKm != null && req.body.proximoKm !== ''
+      ? parseInt(req.body.proximoKm)
+      : (km != null && intervalo != null ? km + intervalo : null);
+    const data = {
+      fecha: parseFecha(req.body.fecha) || new Date(),
+      tipo: req.body.tipo?.trim() || 'Otro',
+      km: km,
+      intervaloKm: intervalo,
+      proximoKm: proximoKm,
+      proximoFecha: parseFecha(req.body.proximoFecha),
+      costo: req.body.costo ? parseFloat(req.body.costo) : null,
+      proveedor: req.body.proveedor?.trim() || '',
+      observaciones: req.body.observaciones?.trim() || '',
+      createdAt: new Date()
+    };
+    const ref = await db.collection('vehicles').doc(req.params.id).collection('services').add(data);
+    await recomputeServiceSummary(req.params.id);
+    res.status(201).json({ id: ref.id, ...data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/:id/services/:entryId', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    await db.collection('vehicles').doc(req.params.id).collection('services').doc(req.params.entryId).delete();
+    await recomputeServiceSummary(req.params.id);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
