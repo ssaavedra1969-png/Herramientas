@@ -167,9 +167,7 @@ function initRealtimeListener() {
     allVehicles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     patenteSet = new Set(allVehicles.map(v => (v.patente || '').toUpperCase()));
     populateFilterDropdowns();
-    document.getElementById('filter-count').textContent = allVehicles.length;
-    document.getElementById('total-vehicles').textContent = allVehicles.length;
-    renderVehicles(allVehicles);
+    applyFilters();
   }, (error) => {
     console.error('Error loading vehicles:', error);
     const colCount = isAdmin() ? 8 : 7;
