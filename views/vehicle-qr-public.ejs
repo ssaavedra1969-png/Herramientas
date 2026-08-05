@@ -73,63 +73,20 @@
           <% if (vehicle.numeroMotor) { %><div><p class="text-[#8E94A8] text-[10px]">Motor</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.numeroMotor %></p></div><% } %>
           <% if (vehicle.capacidadCarga) { %><div><p class="text-[#8E94A8] text-[10px]">Cap. Carga</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.capacidadCarga %></p></div><% } %>
           <% if (vehicle.empresa) { %><div><p class="text-[#8E94A8] text-[10px]">Empresa</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.empresa %></p></div><% } %>
-          <% if (vehicle.centroTrabajo) { %><div><p class="text-[#8E94A8] text-[10px]">Centro Trabajo</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.centroTrabajo %></p></div><% } %>
-          <% if (vehicle.chofer) { %><div><p class="text-[#8E94A8] text-[10px]">Chofer</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.chofer %></p></div><% } %>
-          <% if (vehicle.dni) { %><div><p class="text-[#8E94A8] text-[10px]">DNI</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.dni %></p></div><% } %>
-          <% if (vehicle.registro) { %><div><p class="text-[#8E94A8] text-[10px]">Registro</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.registro %></p></div><% } %>
         </div>
       </div>
 
+      <% if (vehicle.chofer || vehicle.dni || vehicle.registro || vehicle.centroTrabajo) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
-        <h2 class="text-sm font-bold text-gradient-primary mb-3">Estado Operativo</h2>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5">
-            <p class="text-[#8E94A8] text-[10px] mb-0.5">Kilometraje</p>
-            <p class="text-base sm:text-lg font-bold text-[#F1F3F8]"><%= vehicle.kilometraje ? Number(vehicle.kilometraje).toLocaleString('es-AR') + ' km' : '—' %></p>
-          </div>
-          <div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5">
-            <p class="text-[#8E94A8] text-[10px] mb-0.5">Horómetro</p>
-            <p class="text-base sm:text-lg font-bold text-[#F1F3F8]"><%= vehicle.horometro ? vehicle.horometro + ' h' : '—' %></p>
-          </div>
-          <% if (vehicle.vtv && (vehicle.vtv.fechaVencimiento || vehicle.vtv.fechaRealizacion)) { 
-            const fVTV = vehicle.vtv.fechaVencimiento?.toDate ? vehicle.vtv.fechaVencimiento.toDate() : vehicle.vtv.fechaRealizacion?.toDate ? vehicle.vtv.fechaRealizacion.toDate() : null;
-            if (fVTV) {
-              const dV = Math.ceil((fVTV - new Date()) / 86400000);
-              const cV = dV <= 0 ? 'text-red-400' : dV <= 30 ? 'text-yellow-400' : 'text-green-400';
-              const bV = dV <= 0 ? 'bg-red-500/20 text-red-400' : dV <= 30 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400';
-          %>
-          <div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5">
-            <p class="text-[#8E94A8] text-[10px] mb-0.5">VTV</p>
-            <p class="text-sm sm:text-base font-bold <%= cV %>"><%= fVTV.toLocaleDateString('es-AR') %></p>
-            <span class="status-badge <%= bV %> mt-1"><%= dV <= 0 ? 'Vencida' : dV + ' días' %></span>
-          </div>
-          <% } } %>
-          <% if (vehicle.seguro && (vehicle.seguro.fechaVencimiento || vehicle.seguro.fechaRealizacion)) {
-            const fSeg = vehicle.seguro.fechaVencimiento?.toDate ? vehicle.seguro.fechaVencimiento.toDate() : vehicle.seguro.fechaRealizacion?.toDate ? vehicle.seguro.fechaRealizacion.toDate() : null;
-            if (fSeg) {
-              const dS = Math.ceil((fSeg - new Date()) / 86400000);
-              const cS = dS <= 0 ? 'text-red-400' : dS <= 30 ? 'text-yellow-400' : 'text-green-400';
-              const bS = dS <= 0 ? 'bg-red-500/20 text-red-400' : dS <= 30 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400';
-          %>
-          <div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5">
-            <p class="text-[#8E94A8] text-[10px] mb-0.5">Seguro</p>
-            <p class="text-sm sm:text-base font-bold <%= cS %>"><%= fSeg.toLocaleDateString('es-AR') %></p>
-            <span class="status-badge <%= bS %> mt-1"><%= dS <= 0 ? 'Vencido' : dS + ' días' %></span>
-          </div>
-          <% } } %>
-          <% if (vehicle.trompo) { %>
-          <div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5 col-span-2">
-            <p class="text-[#8E94A8] text-[10px] mb-1">Trompo</p>
-            <div class="grid grid-cols-2 gap-1 text-[11px]">
-              <div><span class="text-[#8E94A8]">Marca:</span> <span class="font-semibold text-[#F1F3F8]"><%= vehicle.marcaTrompo || '—' %></span></div>
-              <div><span class="text-[#8E94A8]">Serie:</span> <span class="font-semibold text-[#F1F3F8]"><%= vehicle.serieTrompo || '—' %></span></div>
-              <div><span class="text-[#8E94A8]">Modelo:</span> <span class="font-semibold text-[#F1F3F8]"><%= vehicle.modeloTrompo || '—' %></span></div>
-              <div><span class="text-[#8E94A8]">Capacidad:</span> <span class="font-semibold text-[#F1F3F8]"><%= vehicle.cargaM3Trompo || '—' %></span></div>
-            </div>
-          </div>
-          <% } %>
+        <h2 class="text-sm font-bold text-gradient-primary mb-3">Chofer</h2>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+          <% if (vehicle.chofer) { %><div><p class="text-[#8E94A8] text-[10px]">Chofer</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.chofer %></p></div><% } %>
+          <% if (vehicle.dni) { %><div><p class="text-[#8E94A8] text-[10px]">DNI</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.dni %></p></div><% } %>
+          <% if (vehicle.registro) { %><div><p class="text-[#8E94A8] text-[10px]">Registro</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.registro %></p></div><% } %>
+          <% if (vehicle.centroTrabajo) { %><div><p class="text-[#8E94A8] text-[10px]">Centro Trabajo</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.centroTrabajo %></p></div><% } %>
         </div>
       </div>
+      <% } %>
 
       <% if (vehicle.observaciones) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
