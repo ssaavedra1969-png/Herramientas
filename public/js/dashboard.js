@@ -411,25 +411,31 @@ function switchTab(name) {
   }
 }
 
-function initLatestServices() {
+let svcLoadTimer = null;
+
+function scheduleLatestServices() {
+  if (svcLoadTimer) clearTimeout(svcLoadTimer);
+  svcLoadTimer = setTimeout(() => { loadLatestServices(); }, 800);
+}
+
+async function loadLatestServices() {
   const container = document.getElementById('latest-services-list');
   if (!container) return;
-
-  async function load() {
-    try {
-      const headers = await getAuthHeaders();
-      const res = await fetch('/api/admin/latest-services', { headers });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      renderLatestServices(data);
-    } catch (e) {
-      container.innerHTML = '<p class="text-[#5C6378] text-sm text-center py-6">No se pudieron cargar los services</p>';
-      console.warn('Error cargando últimos services:', e);
-    }
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/admin/latest-services', { headers });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    renderLatestServices(data);
+  } catch (e) {
+    container.innerHTML = '<p class="text-[#5C6378] text-sm text-center py-6">No se pudieron cargar los services</p>';
+    console.warn('Error cargando últimos services:', e);
   }
+}
 
-  load();
-  setInterval(load, 30000);
+function initLatestServices() {
+  if (!document.getElementById('latest-services-list')) return;
+  loadLatestServices();
 }
 
 function renderLatestServices(items) {
@@ -624,6 +630,7 @@ function initRealtimeListeners() {
 
     renderEmpresas(all);
     renderFleetHealth(all);
+    scheduleLatestServices();
   }, (error) => {
     console.error('Error en snapshot de vehículos:', error);
   });

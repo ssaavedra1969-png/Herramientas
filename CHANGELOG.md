@@ -2,6 +2,21 @@
 
 Cambios registrados por sesión. Última actualización: 2026-08-05.
 
+## 2026-08-05 — Fix rendimiento: se eliminó el polling de "Últimos Services"
+
+- **Problema**: la sección "Últimos Services" recargaba con `setInterval` cada 30 s, disparando ~300 lecturas de Firestore por fetch (~36.000 lecturas/hora con el dashboard abierto).
+- **Solución** (`public/js/dashboard.js`, `routes/admin.js`):
+  - Se eliminó el `setInterval` de 30 s. Ahora la sección se refresca **solo cuando cambian los datos**: el snapshot real-time de vehículos dispara la recarga con un debounce de 800 ms (cubre edición/alta de services en cualquier pestaña).
+  - **Caché en servidor** con TTL de 30 s (`LATEST_SERVICES_TTL`) en `GET /api/admin/latest-services`: si ya se respondió hace <30 s, no vuelve a golpear Firestore.
+  - Sin cambios en los datos = 0 lecturas por parte de esta sección.
+- **TEMP (para medición en vivo, se quita luego)**: contador de hits en el endpoint, visible en DevTools → Network → Response Headers como `X-LS-Hits` (golpes a Firestore) y `X-LS-Cached` (respuestas servidas desde caché), además de `console.log` en el servidor.
+
+### Commits
+- (pendiente: push del fix)
+
+### Resguardo
+- Mismo backup del cierre de día: `backups/backup-2026-08-05T17-29-12-051Z`.
+
 ## 2026-08-05 — Sección "Últimos Services" en Dashboard
 
 - **Nueva sección** en `views/dashboard.ejs` + `public/js/dashboard.js` + `routes/admin.js` + `public/css/styles.css`:
