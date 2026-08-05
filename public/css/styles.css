@@ -396,6 +396,10 @@ main { position: relative; }
 #vehicle-hero { position: absolute; z-index: 0; }
 #vehicle-hero-img { transition: opacity 0.6s ease; }
 
+/* QR & barcode: never overflow the card on small screens */
+#qrcode canvas, #qrcode img { max-width: 100%; height: auto; }
+#barcode-svg { max-width: 100%; height: auto; }
+
 /* Print */
 @media print {
   body { background: white !important; color: black !important; }

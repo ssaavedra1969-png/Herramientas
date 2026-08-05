@@ -106,12 +106,20 @@ app.get('/vehicle/:id/qr', async (req, res) => {
     const doc = await db.collection('vehicles').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).send('Vehículo no encontrado');
     const v = doc.data();
+    const [servicesSnap, repuestosSnap] = await Promise.all([
+      db.collection('vehicles').doc(req.params.id).collection('services').orderBy('fecha', 'desc').limit(5).get(),
+      db.collection('vehicles').doc(req.params.id).collection('repuestos').orderBy('fecha', 'desc').limit(5).get()
+    ]);
+    const recentServices = servicesSnap.docs.map(d => d.data());
+    const recentRepuestos = repuestosSnap.docs.map(d => d.data());
     let currentUserData = null;
     if (res.locals.currentUserData) {
       currentUserData = { role: res.locals.currentUserData.role, displayName: res.locals.currentUserData.displayName };
     }
     res.render('vehicle-qr-public', {
       vehicle: { id: doc.id, ...v },
+      recentServices,
+      recentRepuestos,
       clientConfig: res.locals.clientConfig,
       currentUserData
     });
