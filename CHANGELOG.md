@@ -12,7 +12,13 @@ Cambios registrados por sesión. Última actualización: 2026-08-05.
 
 ### Commits
 - `b81f89b` Fix rendimiento: eliminar polling en ultimos services, usar snapshot + cache TTL 30s en servidor
-- (siguiente commit: remoción del contador temporal de medición)
+- `06fd16b` Remover contador temporal de medicion en latest-services
+
+### Deploys (Vercel, producción)
+- `b81f89b` → deploy `3k8eg2xq2` (Ready)
+
+### Resguardo
+- Backup local en `backups/backup-2026-08-05T21-17-24.json` (vehicles: 47, maintenance: 0, users: 5). Nota: `backups/` está en `.gitignore`, no se sube a git.
 
 ### Resguardo
 - Mismo backup del cierre de día: `backups/backup-2026-08-05T17-29-12-051Z`.
