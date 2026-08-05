@@ -2,6 +2,22 @@
 
 Cambios registrados por sesión. Última actualización: 2026-08-05.
 
+## 2026-08-05 — Sección "Últimos Services" en Dashboard
+
+- **Nueva sección** en `views/dashboard.ejs` + `public/js/dashboard.js` + `routes/admin.js` + `public/css/styles.css`:
+  - Muestra los vehículos con actividad de service más reciente (**un vehículo por fila**, ordenados por fecha del último service).
+  - Diseño tipo timeline con línea gradiente, puntos brillantes, animación escalonada de entrada y hover glow.
+  - Al hacer clic se despliega un **acordeón** (uno a la vez) con la **lista de services realizados** de ese vehículo (tipo, fecha, km, proveedor, letra chica).
+  - Botón **"Ver vehículo completo →"** dentro del panel (opcional, no navega directo).
+  - Badge contador de vehículos y tiempo relativo ("hace 2 d", "ayer").
+- **Endpoint nuevo** `GET /api/admin/latest-services` (`routes/admin.js`): agrega los últimos 5 services de cada vehículo activo (no Baja) y devuelve los 10 vehículos con actividad más reciente.
+
+### Commits
+- `950866f` Feat sección Últimos Services en dashboard con acordeón por vehículo
+
+### Resguardo
+- Backup local en `backups/backup-2026-08-05T17-29-12-051Z` (vehicles: 47, maintenance: 0, users: 5). Nota: `backups/` está en `.gitignore`, no se sube a git.
+
 ## 2026-08-05 — Versión móvil + vista pública QR
 
 - **Vista pública QR** (`views/vehicle-qr-public.ejs`, `server.js`):
