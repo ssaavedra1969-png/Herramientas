@@ -427,7 +427,16 @@
             <svg class="w-4 h-4 md:w-5 md:h-5 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             Historial Completo
           </h3>
-          <p class="text-xs text-[#8E94A8] mb-3">Agrupado por sección y tipo de servicio/repuesto. Hacé click en una fila para ver el detalle.</p>
+          <p class="text-xs text-[#8E94A8] mb-3">Hacé click en una fila para ver el detalle.</p>
+          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <span class="text-sm text-[#8E94A8]">Vista:</span>
+            <select id="historial-view" onchange="renderHistorial()" class="px-3 py-1.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] input-neon">
+              <option value="tiempo" selected>Línea de tiempo</option>
+              <option value="seccion">Por sección y tipo</option>
+              <option value="mes">Por mes</option>
+              <option value="proveedor">Por proveedor</option>
+            </select>
+          </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
@@ -905,5 +914,5 @@
   <option value="Proveedor externo"></option>
 </datalist>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="/js/vehicle-detail.js?v=fixedit"></script>
+<script src="/js/vehicle-detail.js?v=vistas"></script>
 <%- include('partials/footer') %>

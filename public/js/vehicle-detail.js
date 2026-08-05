@@ -1331,6 +1331,7 @@ function downloadBarcodePDF() {
 function renderHistorial() {
   const tbody = document.getElementById('historial-table-body');
   if (!tbody) return;
+  const view = document.getElementById('historial-view')?.value || 'tiempo';
 
   const toItem = (r, kind) => ({
     id: r.id,
@@ -1346,6 +1347,8 @@ function renderHistorial() {
     tbody.innerHTML = '<tr><td class="text-center py-8 text-[#5C6378]">Sin movimientos registrados</td></tr>';
     return;
   }
+
+  const badge = (item) => `<span class="px-2 py-0.5 rounded-full text-xs font-medium mr-2" style="background:${item.kind === 'service' ? '#F59E0B20' : '#10B98120'};color:${item.kind === 'service' ? '#F59E0B' : '#10B981'}">${item.kind === 'service' ? 'Service' : 'Repuesto'}</span>`;
 
   const line = (item) => {
     const r = item.rec;
@@ -1368,39 +1371,76 @@ function renderHistorial() {
     return parts.filter(Boolean).join(' · ');
   };
 
-  const rowHtml = (item) => `
+  const rowHtml = (item, showBadge) => `
     <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10 cursor-pointer" onclick="${item.kind === 'service' ? 'viewService' : 'viewRepuesto'}('${item.id}')" title="Ver detalle">
-      <td class="py-2 px-3 text-xs text-[#F1F3F8] break-words">${line(item)}</td>
+      <td class="py-2 px-3 text-xs text-[#F1F3F8] break-words">${showBadge ? badge(item) : ''}${line(item)}</td>
     </tr>`;
 
-  const sections = [
-    { title: 'Services', color: '#F59E0B', kind: 'service', items: services },
-    { title: 'Repuestos', color: '#10B981', kind: 'repuesto', items: repuestos }
-  ];
+  const sectionHeader = (title, color, count) => `
+    <tr class="bg-[#6C3CE1]/15">
+      <td class="py-2 px-3 text-xs font-bold text-[#F1F3F8]">
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium mr-2" style="background:${color}20;color:${color}">${title}</span>
+        ${count} registro(s)
+      </td>
+    </tr>`;
+
+  const groupHeader = (label, count) => `
+    <tr class="bg-[#0A0A1A]/40">
+      <td class="py-1.5 px-3 text-xs font-semibold text-[#8E94A8]">${label} <span class="text-[#5C6378]">(${count})</span></td>
+    </tr>`;
+
+  const sortDesc = (arr) => arr.slice().sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
 
   let body = '';
-  sections.forEach(sec => {
-    if (!sec.items.length) return;
+
+  if (view === 'tiempo') {
+    body = sortDesc([...services, ...repuestos]).map(item => rowHtml(item, true)).join('');
+  } else if (view === 'mes') {
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const groups = {};
-    sec.items.forEach(item => {
-      const k = (item.rec.tipo || '').trim() || 'Sin tipo';
+    [...services, ...repuestos].forEach(item => {
+      const d = item.fecha;
+      const k = d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` : 'sinfecha';
       (groups[k] = groups[k] || []).push(item);
     });
-    body += `
-      <tr class="bg-[#6C3CE1]/15">
-        <td class="py-2 px-3 text-xs font-bold text-[#F1F3F8]">
-          <span class="px-2 py-0.5 rounded-full text-xs font-medium mr-2" style="background:${sec.color}20;color:${sec.color}">${sec.title}</span>
-          ${sec.items.length} registro(s)
-        </td>
-      </tr>`;
-    Object.keys(groups).sort((a, b) => a.localeCompare(b, 'es')).forEach(tipo => {
-      const items = groups[tipo].slice().sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
-      body += `
-      <tr class="bg-[#0A0A1A]/40">
-        <td class="py-1.5 px-3 text-xs font-semibold text-[#8E94A8]">${tipo}</td>
-      </tr>` + items.map(rowHtml).join('');
+    Object.keys(groups).sort((a, b) => b.localeCompare(a)).forEach(k => {
+      const items = sortDesc(groups[k]);
+      let label = 'Sin fecha';
+      if (k !== 'sinfecha') {
+        const [y, m] = k.split('-');
+        label = `${months[parseInt(m) - 1]} ${y}`;
+      }
+      body += groupHeader(label, items.length) + items.map(i => rowHtml(i, true)).join('');
     });
-  });
+  } else if (view === 'proveedor') {
+    const groups = {};
+    [...services, ...repuestos].forEach(item => {
+      const k = (item.rec.proveedor || '').trim() || 'Sin proveedor';
+      (groups[k] = groups[k] || []).push(item);
+    });
+    Object.keys(groups).sort((a, b) => a.localeCompare(b, 'es')).forEach(k => {
+      const items = sortDesc(groups[k]);
+      body += groupHeader(k, items.length) + items.map(i => rowHtml(i, true)).join('');
+    });
+  } else {
+    const sections = [
+      { title: 'Services', color: '#F59E0B', kind: 'service', items: services },
+      { title: 'Repuestos', color: '#10B981', kind: 'repuesto', items: repuestos }
+    ];
+    sections.forEach(sec => {
+      if (!sec.items.length) return;
+      const groups = {};
+      sec.items.forEach(item => {
+        const k = (item.rec.tipo || '').trim() || 'Sin tipo';
+        (groups[k] = groups[k] || []).push(item);
+      });
+      body += sectionHeader(sec.title, sec.color, sec.items.length);
+      Object.keys(groups).sort((a, b) => a.localeCompare(b, 'es')).forEach(tipo => {
+        const items = sortDesc(groups[tipo]);
+        body += groupHeader(tipo, items.length) + items.map(rowHtml).join('');
+      });
+    });
+  }
 
   tbody.innerHTML = body;
 }
