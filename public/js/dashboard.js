@@ -327,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initRealtimeListeners();
   initDashSearch();
   initDashClock();
+  initLatestServices();
 });
 
 function initDashClock() {
@@ -408,6 +409,162 @@ function switchTab(name) {
     activeBtn.classList.add('tab-btn-active', 'text-[#6C3CE1]', 'border-b-2', 'border-[#6C3CE1]');
     activeBtn.classList.remove('text-[#8E94A8]');
   }
+}
+
+function initLatestServices() {
+  const container = document.getElementById('latest-services-list');
+  if (!container) return;
+
+  async function load() {
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch('/api/admin/latest-services', { headers });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      renderLatestServices(data);
+    } catch (e) {
+      container.innerHTML = '<p class="text-[#5C6378] text-sm text-center py-6">No se pudieron cargar los services</p>';
+      console.warn('Error cargando últimos services:', e);
+    }
+  }
+
+  load();
+  setInterval(load, 30000);
+}
+
+function renderLatestServices(items) {
+  const container = document.getElementById('latest-services-list');
+  if (!container) return;
+
+  const countEl = document.getElementById('latest-services-count');
+  if (countEl) {
+    if (items && items.length) {
+      countEl.textContent = items.length + ' vehículo' + (items.length > 1 ? 's' : '');
+      countEl.classList.remove('hidden');
+    } else {
+      countEl.classList.add('hidden');
+    }
+  }
+
+  if (!items || items.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-10">
+        <div class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-3" style="background:rgba(108,60,222,0.1);border:1px solid rgba(108,60,222,0.2);">
+          <svg class="w-6 h-6 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <p class="text-[#5C6378] text-sm font-medium">Sin services registrados todavía</p>
+        <p class="text-[#5C6378] text-xs mt-1">Los services se muestran acá a medida que se cargan</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = items.map((veh, i) => {
+    const servicios = veh.servicios || [];
+    const total = servicios.length;
+    const lastSvc = servicios[0];
+    const ago = timeAgo(lastSvc?.fechaISO);
+    const fechaStr = lastSvc?.fechaISO ? new Date(lastSvc.fechaISO).toLocaleDateString('es-AR') : '—';
+    const last = i === items.length - 1;
+    return `
+    <div class="svc-item relative pl-6" style="animation-delay:${i * 70}ms;">
+      <div class="absolute left-[7px] top-3 bottom-0 w-px" style="background:linear-gradient(180deg,rgba(108,60,222,0.45),rgba(0,212,255,0.15)${last ? ',transparent' : ''});"></div>
+      <div class="absolute left-0 top-3.5 w-[15px] h-[15px] rounded-full" style="background:linear-gradient(135deg,#6C3CE1,#00D4FF);box-shadow:0 0 12px rgba(108,60,222,0.8),0 0 0 3px rgba(108,60,222,0.12);border:2px solid #0A0A1A;"></div>
+      <div class="rounded-2xl transition-all duration-200 hover:bg-white/[0.04] hover:translate-x-1" style="border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);">
+        <div class="flex items-center gap-3 p-3.5 cursor-pointer select-none" onclick="toggleSvc(this)">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0" style="background:linear-gradient(135deg,rgba(108,60,222,0.3),rgba(0,212,255,0.18));color:#C4B5FD;border:1px solid rgba(108,60,222,0.35);">${(veh.interno || '?').substring(0,4)}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="text-[#F1F3F8] font-bold text-[13px] tracking-wide">${veh.patente || '—'}</p>
+              <span class="px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider" style="background:rgba(139,92,246,0.18);color:#C4B5FD;">${total} service${total !== 1 ? 's' : ''}</span>
+            </div>
+            <p class="text-[#5C6378] text-[10px] mt-0.5 truncate">${veh.empresa || 'Sin empresa'}</p>
+          </div>
+          <div class="text-right shrink-0">
+            <p class="text-[10px] font-bold" style="color:#00D4FF;">${ago}</p>
+            <p class="text-[9px] text-[#5C6378] mt-0.5">${fechaStr}</p>
+          </div>
+          <div class="svc-chevron w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200" style="background:rgba(108,60,222,0.12);color:#A78BFA;">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </div>
+        <div class="svc-body hidden">
+          ${vehicleServicesHtml(veh)}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function vehicleServicesHtml(veh) {
+  const fmtKm = v => v != null ? Number(v).toLocaleString('es-AR') + ' km' : '—';
+  const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('es-AR') : '—';
+  const servicios = veh.servicios || [];
+
+  const rows = servicios.map(s => `
+    <div class="flex items-center justify-between gap-3 py-2">
+      <div class="flex-1 min-w-0">
+        <p class="text-[#F1F3F8] text-[11px] font-semibold truncate" title="${s.tipo || ''}">${s.tipo || '—'}</p>
+        ${s.proveedor ? `<p class="text-[#5C6378] text-[9px]">${s.proveedor}</p>` : ''}
+      </div>
+      <div class="text-right shrink-0">
+        <p class="text-[#F1F3F8] text-[11px]">${fmtDate(s.fechaISO)}</p>
+        <p class="text-[#5C6378] text-[9px]">${s.km != null ? fmtKm(s.km) : ''}</p>
+      </div>
+    </div>`).join('');
+
+  return `
+    <div class="mx-3.5 mb-3 p-3 rounded-xl" style="border:1px dashed rgba(108,60,222,0.25);background:rgba(108,60,222,0.05);">
+      <p class="text-[#8E94A8] text-[9px] uppercase tracking-wider mb-1">Services realizados (${servicios.length})</p>
+      <div class="divide-y divide-white/5">${rows}</div>
+      <div class="flex justify-end mt-2 pt-2" style="border-top:1px solid rgba(255,255,255,0.06);">
+        <button onclick="event.stopPropagation();window.location.href='/vehicle/${veh.vehiculoId}'" class="px-3.5 py-1 rounded-lg text-[11px] font-bold text-white transition hover:opacity-90 hover:scale-[1.02] active:scale-95" style="background:linear-gradient(135deg,#6C3CE1,#00D4FF);box-shadow:0 4px 14px -4px rgba(108,60,222,0.6);">
+          Ver vehículo completo →
+        </button>
+      </div>
+    </div>`;
+}
+
+function toggleSvc(header) {
+  const item = header.closest('.svc-item');
+  const body = item.querySelector('.svc-body');
+  const chevron = item.querySelector('.svc-chevron');
+  const wasOpen = item.classList.contains('open');
+
+  document.querySelectorAll('#latest-services-list .svc-item.open').forEach(el => {
+    if (el === item) return;
+    el.classList.remove('open');
+    el.querySelector('.svc-body')?.classList.add('hidden');
+    const c = el.querySelector('.svc-chevron');
+    if (c) c.style.transform = '';
+  });
+
+  if (wasOpen) {
+    item.classList.remove('open');
+    body.classList.add('hidden');
+    if (chevron) chevron.style.transform = '';
+  } else {
+    item.classList.add('open');
+    body.classList.remove('hidden');
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
+  }
+}
+
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 0) return '';
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'ahora';
+  if (mins < 60) return 'hace ' + mins + ' min';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return 'hace ' + hrs + ' h';
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'ayer';
+  if (days < 30) return 'hace ' + days + ' d';
+  const months = Math.floor(days / 30);
+  if (months < 12) return 'hace ' + months + ' mes' + (months > 1 ? 'es' : '');
+  const years = Math.floor(months / 12);
+  return 'hace ' + years + ' año' + (years > 1 ? 's' : '');
 }
 
 function initMobileMenu() {

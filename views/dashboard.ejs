@@ -186,6 +186,30 @@
           </div>
         </div>
 
+        <!-- Últimos Services -->
+        <div class="glass-card rounded-2xl p-5 sm:p-6 mt-4 relative overflow-hidden" style="border:1px solid rgba(108,60,222,0.22);">
+          <div class="pointer-events-none absolute -top-16 -right-16 w-52 h-52 rounded-full opacity-20" style="background:radial-gradient(circle,#6C3CE1,transparent 70%);filter:blur(30px);"></div>
+          <div class="absolute inset-x-0 top-0 h-px" style="background:linear-gradient(90deg,transparent,rgba(108,60,222,0.8),rgba(0,212,255,0.6),transparent);"></div>
+
+          <div class="flex items-center justify-between gap-3 mb-5">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#6C3CE1,#00D4FF);box-shadow:0 8px 22px -6px rgba(108,60,222,0.55);">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-[#F1F3F8]">Últimos Services</h3>
+                <p class="text-[#8E94A8] text-xs">Actividad de mantenimiento reciente de la flota</p>
+              </div>
+            </div>
+            <span id="latest-services-count" class="hidden px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0" style="background:rgba(108,60,222,0.15);color:#A78BFA;"></span>
+          </div>
+
+          <div id="latest-services-list" class="relative">
+            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
+            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
+          </div>
+        </div>
+
         <!-- Dashboard Detail Modal (genérico) -->
         <div id="dash-modal" class="fixed inset-0 z-50 hidden">
           <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeDashModal()"></div>

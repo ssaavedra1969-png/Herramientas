@@ -135,6 +135,55 @@ router.get('/dashboard/financial', verifyToken, async (req, res) => {
   }
 });
 
+router.get('/latest-services', verifyToken, async (req, res) => {
+  try {
+    const vehiclesSnap = await db.collection('vehicles').get();
+    const vehicles = [];
+
+    await Promise.all(vehiclesSnap.docs.map(async (vDoc) => {
+      const v = vDoc.data();
+      if (v.estadoGeneral === 'Baja') return;
+
+      const svcSnap = await vDoc.ref.collection('services')
+        .orderBy('fecha', 'desc').limit(5).get();
+      if (svcSnap.empty) return;
+
+      const servicios = svcSnap.docs.map(svcDoc => {
+        const s = svcDoc.data();
+        const fecha = s.fecha?.toDate ? s.fecha.toDate() : (s.fecha ? new Date(s.fecha) : null);
+        return {
+          id: svcDoc.id,
+          tipo: s.tipo || 'Otro',
+          fechaISO: fecha ? fecha.toISOString() : null,
+          km: s.km != null ? Number(s.km) : null,
+          costo: s.costo != null ? Number(s.costo) : null,
+          proveedor: s.proveedor || ''
+        };
+      });
+
+      vehicles.push({
+        vehiculoId: vDoc.id,
+        patente: v.patente || '—',
+        interno: v.interno || '',
+        empresa: v.empresa || '',
+        ultimoISO: servicios[0]?.fechaISO || null,
+        servicios
+      });
+    }));
+
+    vehicles.sort((a, b) => {
+      const da = a.ultimoISO || '';
+      const db2 = b.ultimoISO || '';
+      if (db2 < da) return -1;
+      if (db2 > da) return 1;
+      return 0;
+    });
+    res.json(vehicles.slice(0, 10));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/backup', verifyToken, requireAdmin, async (req, res) => {
   try {
     const COLLECTIONS = ['vehicles', 'users'];

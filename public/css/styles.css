@@ -136,6 +136,22 @@ input, select, textarea {
 .skeleton-text { height: 1rem; width: 60%; margin: 0.25rem 0; }
 .skeleton-stat { height: 3.5rem; width: 40%; }
 
+/* Últimos Services — timeline items */
+@keyframes svcFadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.svc-item {
+  animation: svcFadeInUp 0.45s ease both;
+}
+@keyframes svcExpand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.svc-body {
+  animation: svcExpand 0.22s ease;
+}
+
 /* Sort arrow */
 .sort-arrow { font-size: 0.6rem; margin-left: 2px; transition: color 0.2s; }
 
