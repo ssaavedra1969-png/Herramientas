@@ -9,10 +9,10 @@ Cambios registrados por sesión. Última actualización: 2026-08-05.
   - Se eliminó el `setInterval` de 30 s. Ahora la sección se refresca **solo cuando cambian los datos**: el snapshot real-time de vehículos dispara la recarga con un debounce de 800 ms (cubre edición/alta de services en cualquier pestaña).
   - **Caché en servidor** con TTL de 30 s (`LATEST_SERVICES_TTL`) en `GET /api/admin/latest-services`: si ya se respondió hace <30 s, no vuelve a golpear Firestore.
   - Sin cambios en los datos = 0 lecturas por parte de esta sección.
-- **TEMP (para medición en vivo, se quita luego)**: contador de hits en el endpoint, visible en DevTools → Network → Response Headers como `X-LS-Hits` (golpes a Firestore) y `X-LS-Cached` (respuestas servidas desde caché), además de `console.log` en el servidor.
 
 ### Commits
-- (pendiente: push del fix)
+- `b81f89b` Fix rendimiento: eliminar polling en ultimos services, usar snapshot + cache TTL 30s en servidor
+- (siguiente commit: remoción del contador temporal de medición)
 
 ### Resguardo
 - Mismo backup del cierre de día: `backups/backup-2026-08-05T17-29-12-051Z`.

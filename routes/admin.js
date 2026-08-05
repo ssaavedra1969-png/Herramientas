@@ -139,23 +139,12 @@ let latestServicesCache = null;
 let latestServicesCacheTime = 0;
 const LATEST_SERVICES_TTL = 30000;
 
-// TEMPORAL: contador para medir en vivo cuántas veces se golpea Firestore
-let latestServicesStats = { hits: 0, cached: 0 };
-
 router.get('/latest-services', verifyToken, async (req, res) => {
   try {
     const now = Date.now();
     if (latestServicesCache && (now - latestServicesCacheTime) < LATEST_SERVICES_TTL) {
-      latestServicesStats.cached += 1;
-      res.set('X-LS-Hits', String(latestServicesStats.hits));
-      res.set('X-LS-Cached', String(latestServicesStats.cached));
       return res.json(latestServicesCache);
     }
-
-    latestServicesStats.hits += 1;
-    console.log(`[latest-services] Firestore hit #${latestServicesStats.hits} (${new Date().toISOString()})`);
-    res.set('X-LS-Hits', String(latestServicesStats.hits));
-    res.set('X-LS-Cached', String(latestServicesStats.cached));
 
     const vehiclesSnap = await db.collection('vehicles').get();
     const vehicles = [];
