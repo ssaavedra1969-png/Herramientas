@@ -40,7 +40,7 @@ router.get('/dashboard', verifyToken, async (req, res) => {
   try {
     const vehiclesSnap = await db.collection('vehicles').get();
     const now = new Date();
-    const vehiculosActivos = vehiclesSnap.docs.filter(d => d.data().estado === 'Activo').length;
+    const vehiculosActivos = vehiclesSnap.docs.filter(d => d.data().estadoGeneral !== 'Baja').length;
     res.json({ vehiculosActivos, vencidosHoy: 0, proximos7: 0, monthlyData: {} });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -1,5 +1,8 @@
 # TAREA P0-1: Fix campo `numeroInterno` → `interno` en mantenimiento
 
+> ## ⚠️ OBSOLETA — NO EJECUTAR
+> El archivo `public/js/maintenance.js` fue **eliminado** en el commit `4e71bb8` ("chore: remove dead maintenance files and supabase migration files"). El módulo de mantenimiento no existe en la app actual (no hay ruta en `server.js` ni link en el sidebar). Marcada como obsoleta el **2026-08-06** (verificación con `git log --all -- public/js/maintenance.js`).
+
 **Prioridad:** CRITICO
 **Archivo:** `public/js/maintenance.js`
 **Problema:** El select de vehículos muestra "Int: undefined" porque usa el campo incorrecto `numeroInterno` en vez de `interno`.

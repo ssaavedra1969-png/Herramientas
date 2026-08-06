@@ -1,5 +1,8 @@
 # TAREA P0-2: Fix filtro `.where('estado')` en loadSelectData
 
+> ## ⚠️ OBSOLETA — NO EJECUTAR
+> El archivo `public/js/maintenance.js` fue **eliminado** en el commit `4e71bb8` ("chore: remove dead maintenance files and supabase migration files"). El módulo de mantenimiento no existe en la app actual (no hay ruta en `server.js` ni link en el sidebar). Marcada como obsoleta el **2026-08-06** (verificación con `git log --all -- public/js/maintenance.js`).
+
 **Prioridad:** CRITICO
 **Archivo:** `public/js/maintenance.js`
 **Problema:** El listener de vehículos en mantenimiento usa `.where('estado', '!=', 'Dado de baja')` pero el campo real en Firestore es `estadoGeneral`. Esto causa un error de Firestore porque no existe índice para ese campo, y el filtro no funciona.

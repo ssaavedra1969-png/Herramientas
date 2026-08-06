@@ -30,8 +30,8 @@ Ejecutar las tareas en orden de prioridad: P0 → P1 → P2 → P3.
 
 | # | Archivo | Tarea |
 |---|---------|-------|
-| 1 | `P0-Critico-Bugs/01-maintenance-campo-incorrecto.md` | Fix campo `numeroInterno` → `interno` en mantenimiento |
-| 2 | `P0-Critico-Bugs/02-maintenance-filtro-incorrecto.md` | Fix filtro `.where('estado')` → `estadoGeneral` |
+| ~~1~~ | ~~`P0-Critico-Bugs/01-maintenance-campo-incorrecto.md`~~ | ~~Fix campo `numeroInterno` → `interno` en mantenimiento~~ — **OBSOLETA** (archivos eliminados en `4e71bb8`) |
+| ~~2~~ | ~~`P0-Critico-Bugs/02-maintenance-filtro-incorrecto.md`~~ | ~~Fix filtro `.where('estado')` → `estadoGeneral`~~ — **OBSOLETA** (archivos eliminados en `4e71bb8`) |
 | 3 | `P0-Critico-Bugs/03-dashboard-vehiculos-activos.md` | Fix filtro `estado === 'Activo'` → `estadoGeneral !== 'Baja'` |
 
 ## P1 — SEGURIDAD
