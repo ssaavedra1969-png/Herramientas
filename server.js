@@ -161,6 +161,18 @@ app.get('/vehicles/qr-stickers-bulk', requireAuth, requireAdminPage, async (req,
   }
 });
 
+app.get('/vehicles/fichas-taller-bulk', requireAuth, requireAdminPage, async (req, res) => {
+  try {
+    const { db } = require('./config/firebase');
+    const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
+    const vehicles = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(v => v.estadoGeneral !== 'Baja');
+    res.render('fichas-taller-bulk', { vehicles });
+  } catch (e) {
+    console.error('fichas-taller-bulk:', e.message);
+    res.status(500).send('Error del servidor');
+  }
+});
+
 app.get('/reports', requireAuth, (req, res) => {
   res.render('reports', {
     title: 'Reportes',

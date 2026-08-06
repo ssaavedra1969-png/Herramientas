@@ -1,0 +1,288 @@
+<% const SERVICES = [
+  'Cambio de aceite',
+  'Cambio filtro de aceite',
+  'Cambio filtro de combustible',
+  'Cambio filtro de aire',
+  'Cambio filtro de habitáculo',
+  'Cambio líquido de frenos',
+  'Control de refrigerante',
+  'Alineación',
+  'Balanceo',
+  'Control de neumáticos',
+  'Cambio pastillas de freno',
+  'Cambio correa de distribución',
+  'Control de batería',
+  'Control de caja',
+  'Control de diferencial',
+  'Caja y diferencial'
+]; %>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fichas de Service — Taller · Grupo Falpat</title>
+  <style>
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+    body { background: #12122a; font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, Arial, sans-serif; margin: 0; padding: 20px; }
+
+    /* Toolbar (no se imprime) */
+    .toolbar { max-width: 800px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .toolbar h1 { color: #F1F3F8; font-size: 22px; font-weight: 700; margin: 0; }
+    .toolbar p { color: #8E94A8; font-size: 13px; margin: 2px 0 0; }
+    .btn-print { background: linear-gradient(135deg, #6C3CE1, #00D4FF); color: #fff; padding: 10px 24px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: opacity 0.15s; box-shadow: 0 4px 14px rgba(108,60,225,0.35); }
+    .btn-print:hover { opacity: 0.92; }
+    .btn-back { background: rgba(255,255,255,0.1); color: #F1F3F8; padding: 10px 20px; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+    .btn-back:hover { background: rgba(255,255,255,0.15); }
+    .info-bar { background: rgba(255,255,255,0.06); border: 1px solid rgba(108,60,225,0.15); border-radius: 10px; padding: 10px 16px; color: #8E94A8; font-size: 12px; max-width: 800px; margin: 0 auto 16px; display: flex; gap: 20px; flex-wrap: wrap; }
+    .info-bar span { display: flex; align-items: center; gap: 4px; }
+    .info-bar strong { color: #F1F3F8; }
+
+    /* Hoja A4 */
+    .ficha-page {
+      width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      margin: 0 auto 16px;
+      page-break-after: always;
+      break-after: page;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .ficha-page:last-child { page-break-after: auto; break-after: auto; }
+    .ficha-inner { padding: 6mm 9mm 4mm; display: flex; flex-direction: column; flex: 1; }
+
+    /* Header */
+    .ficha-header {
+      background: linear-gradient(135deg, #6C3CE1 0%, #8B5CF6 45%, #00D4FF 100%);
+      border-radius: 3.5mm;
+      padding: 3.5mm 5.5mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .ficha-header::after {
+      content: '';
+      position: absolute;
+      right: -10mm; top: -10mm;
+      width: 40mm; height: 40mm;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 70%);
+    }
+    .ficha-logo { width: 13mm; height: 13mm; border-radius: 2.5mm; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 2mm 6mm rgba(0,0,0,0.25); flex-shrink: 0; }
+    .ficha-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ficha-brand { font-size: 12pt; font-weight: 800; letter-spacing: 0.3px; line-height: 1.15; }
+    .ficha-brand-sub { font-size: 6.5pt; opacity: 0.85; }
+    .ficha-title-wrap { text-align: right; }
+    .ficha-title { font-size: 13.5pt; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; line-height: 1.1; }
+    .ficha-fecha { margin-top: 1.5mm; display: flex; align-items: center; justify-content: flex-end; gap: 1.5mm; font-size: 6.5pt; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; opacity: 0.92; }
+    .fecha-box { border: 0.35mm solid rgba(255,255,255,0.75); background: rgba(255,255,255,0.15); border-radius: 1.5mm; width: 30mm; height: 4.5mm; display: inline-block; }
+
+    /* Campos de formulario */
+    .field-label { display: flex; align-items: center; gap: 1.8mm; font-size: 6.8pt; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: #6C3CE1; margin-bottom: 1mm; }
+    .field-label::before { content: ''; width: 2.2mm; height: 2.2mm; border-radius: 0.6mm; background: linear-gradient(135deg, #6C3CE1, #00D4FF); flex-shrink: 0; }
+    .field {
+      border: 0.45mm solid #c9c6e2;
+      border-radius: 2mm;
+      background: #fff;
+      width: 100%;
+      height: 8mm;
+    }
+    .field-patente { height: 11mm; }
+    .field-km { height: 8mm; }
+    .field-grd { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 3.5mm; }
+
+    /* Services */
+    .section-title {
+      display: flex; align-items: center; gap: 2.5mm;
+      font-size: 10pt; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+      margin: 4.5mm 0 2mm; color: #1a1a2e;
+    }
+    .section-title::before { content: ''; width: 3.5mm; height: 3.5mm; border-radius: 1mm; background: linear-gradient(135deg, #6C3CE1, #00D4FF); flex-shrink: 0; }
+    .section-title .sub { font-weight: 600; font-size: 7pt; color: #8E94A8; letter-spacing: 0.5px; text-transform: none; margin-left: 2mm; }
+
+    .services-wrap { border: 0.45mm solid #c9c6e2; border-radius: 3mm; overflow: hidden; }
+    .services-list { width: 100%; border-collapse: collapse; }
+    .services-list thead th {
+      background: #6C3CE1; color: #fff; font-size: 7pt; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+      padding: 2.2mm 1.5mm; text-align: left;
+    }
+    .services-list thead th:first-child { width: 6mm; }
+    .services-list tbody td { padding: 0.8mm 1.5mm; font-size: 9pt; border-top: 0.3mm solid #e4e2f2; vertical-align: middle; }
+    .services-list tbody tr:first-child td { border-top: none; }
+    .sv-check {
+      width: 3.6mm; height: 3.6mm; border: 0.5mm solid #2a2a44; border-radius: 1mm;
+      display: inline-block; vertical-align: middle; background: #fff;
+    }
+    .sv-name { font-weight: 600; color: #1a1a2e; }
+    .sv-celda { border: 0.4mm solid #b9b5d9; border-radius: 1.5mm; height: 4.2mm; background: #fff; }
+
+    /* VTV */
+    .vtv-block { display: flex; gap: 5mm; margin-top: 1mm; }
+    .vtv-field { flex: 1; }
+
+    /* Observaciones */
+    .obs-box { border: 0.45mm solid #c9c6e2; border-radius: 2mm; height: 14mm; width: 100%; }
+
+    /* Firma */
+    .firma-row { margin-top: 5mm; display: flex; gap: 8mm; }
+    .firma-col { flex: 1; }
+    .firma-box { border: 0.45mm solid #c9c6e2; border-radius: 2mm; height: 13mm; position: relative; }
+    .firma-line { position: absolute; bottom: 0; left: 0; right: 0; border-top: 0.35mm solid #333; text-align: center; font-size: 7pt; color: #5c5378; font-weight: 700; padding-top: 1mm; background: #fff; border-radius: 0 0 1.8mm 1.8mm; }
+
+    /* Footer */
+    .ficha-footer {
+      margin-top: auto; padding: 3.5mm 9mm 3mm;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 6.5pt; color: #a0a0b8;
+      border-top: 0.7mm solid transparent;
+      border-image: linear-gradient(90deg, #6C3CE1, #00D4FF) 1;
+    }
+    .footer-ficha { font-weight: 700; letter-spacing: 0.5px; }
+    .footer-brand-dot { width: 2mm; height: 2mm; border-radius: 50%; background: linear-gradient(135deg, #6C3CE1, #00D4FF); display: inline-block; vertical-align: middle; }
+
+    @media print {
+      @page { size: A4 portrait; margin: 0; }
+      body { background: #fff !important; padding: 0; margin: 0; }
+      .no-print { display: none !important; }
+      .ficha-page { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <div class="toolbar">
+      <div>
+        <h1>Fichas de Service para el Taller</h1>
+        <p>Se imprime una hoja por vehículo. El taller las completa a mano y se cargan al sistema.</p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="window.print()" class="btn-print">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Imprimir todas las fichas (<%= vehicles.length %>)
+        </button>
+        <a href="/vehicles" class="btn-back">Volver</a>
+      </div>
+    </div>
+    <div class="info-bar">
+      <span><strong><%= vehicles.length %></strong> vehículos</span>
+      <span><strong>1 ficha por hoja</strong> — A4 vertical</span>
+      <span><strong><%= vehicles.length %></strong> páginas aprox.</span>
+      <span>Completar a mano en el taller y luego cargar al sistema</span>
+    </div>
+  </div>
+
+  <% vehicles.forEach((v, idx) => { %>
+  <div class="ficha-page">
+    <div class="ficha-inner">
+      <div class="ficha-header">
+        <div style="display:flex;align-items:center;gap:3mm;">
+          <div class="ficha-logo"><img src="/images/fp.png" alt="Logo"></div>
+          <div>
+            <div class="ficha-brand">GRUPO FALPAT SRL</div>
+            <div class="ficha-brand-sub">Sistema de Control de Mantenimiento</div>
+          </div>
+        </div>
+        <div class="ficha-title-wrap">
+          <div class="ficha-title">Ficha de Service</div>
+          <div class="ficha-fecha">
+            <span>Fecha</span>
+            <span class="fecha-box"></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:5mm;">
+        <div class="field-label">Patente</div>
+        <div class="field field-patente"></div>
+      </div>
+
+      <div class="field-grd">
+        <div>
+          <div class="field-label">Marca / Modelo</div>
+          <div class="field"></div>
+        </div>
+        <div>
+          <div class="field-label">Empresa</div>
+          <div class="field"></div>
+        </div>
+      </div>
+
+      <div class="field-grd">
+        <div>
+          <div class="field-label">Centro de trabajo</div>
+          <div class="field"></div>
+        </div>
+        <div>
+          <div class="field-label">Km actual del vehículo</div>
+          <div class="field field-km"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Services realizados <span class="sub">marcar y completar los realizados</span></div>
+      <div class="services-wrap">
+        <table class="services-list">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Servicio</th>
+              <th style="width:15%;">Próx. km</th>
+              <th style="width:16%;">Próx. fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% SERVICES.forEach(s => { %>
+            <tr>
+              <td><span class="sv-check"></span></td>
+              <td><span class="sv-name"><%= s %></span></td>
+              <td><div class="sv-celda"></div></td>
+              <td><div class="sv-celda"></div></td>
+            </tr>
+            <% }); %>
+            <tr>
+              <td><span class="sv-check"></span></td>
+              <td><span class="sv-name">Otro / Reparación</span></td>
+              <td><div class="sv-celda"></div></td>
+              <td><div class="sv-celda"></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-title">VTV</div>
+      <div class="vtv-block">
+        <div class="vtv-field">
+          <div class="field-label">Fecha VTV realizada</div>
+          <div class="field field-km"></div>
+        </div>
+        <div class="vtv-field">
+          <div class="field-label">Próxima VTV</div>
+          <div class="field field-km"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Observaciones</div>
+      <div class="obs-box"></div>
+
+      <div class="firma-row">
+        <div class="firma-col">
+          <div class="firma-box"><div class="firma-line">Responsable del taller</div></div>
+        </div>
+        <div class="firma-col">
+          <div class="firma-box"><div class="firma-line">Revisado por administración</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ficha-footer">
+      <span class="footer-ficha">GRUPO FALPAT SRL · Ficha N° <%= idx + 1 %></span>
+      <span><span class="footer-brand-dot"></span>&nbsp; Control de Mantenimiento</span>
+    </div>
+  </div>
+  <% }); %>
+</body>
+</html>
