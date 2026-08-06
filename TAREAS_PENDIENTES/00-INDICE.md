@@ -4,6 +4,16 @@
 **Proyecto:** Sistema de Control de Mantenimiento
 **Rama:** `main` (commit `5a47629`)
 
+## PUNTO DE RESTAURA (2026-08-06, ANTES de ejecutar P0)
+
+- **Código (git):** tag **`pre-p0`** = commit `90c33e2` → `git checkout pre-p0` (o `git reset --hard pre-p0`)
+- **Datos (Firestore):** backup `backups/backup-2026-08-06T19-14-58-661Z` (47 vehicles, 0 maintenance, 5 users)
+- **Restaurar datos:**
+  ```bash
+  node scripts/restore-firebase.js backups/backup-2026-08-06T19-14-58-661Z
+  ```
+- Cada instructivo P0 incluye esta misma sección al final.
+
 ## Cómo usar esta carpeta
 
 Cada archivo `.md` es una tarea independiente con:
