@@ -1,6 +1,31 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-08-05.
+Cambios registrados por sesión. Última actualización: 2026-08-06.
+
+## 2026-08-06 — Ficha de Service para el Taller + P3 Cosmético (branding y logo)
+
+### Ficha de Service imprimible (commit `88a32b1`)
+- Nueva vista `views/fichas-taller-bulk.ejs` + ruta `GET /vehicles/fichas-taller-bulk` (`server.js`) + acceso **"Fichas Taller"** en el sidebar (solo Admin).
+- Ficha A4 para imprimir/llenar a mano: header degradado con logo, patente manual, checklist de 16 services + "Otro/Reparación", VTV con 2 fechas, observaciones y firmas.
+- Logo `public/images/fp.png`.
+
+### P3 Cosmético (commit `002db52`)
+- **P3-1**: copyright 2024 → 2026 (`views/login.ejs`).
+- **P3-3**: branding unificado **"Grupo Falpat SRL"** en sidebar y menú móvil.
+- **P3-4**: `logo.svg` con colores del tema (`#6C3CE1` → `#00D4FF`).
+- **Logo 3D transparente**: `public/images/fp3d.png` generado desde `fp1.png` (fondo blanco recortado, relieve emboss, acabado perla metálico + sombra suave), aplicado en login, sidebar y menú móvil. Favicon `favicon.png` (64 px) desde el mismo logo.
+
+### Commits
+- `88a32b1` Feat: ficha de service imprimible para el taller (Fichas Taller)
+- `002db52` Feat(P3): branding unificado Grupo Falpat SRL, copyright 2026, logo 3D transparente y favicon
+
+### Deploys (Vercel, producción)
+- `88a32b1` → deploy `HvTJWudSEXe2ZTic4f7wyhzdcV4y` (Ready)
+- `002db52` → deploy `cinR94g1cPtwfxm9K8cUqBcmrf5e` (Ready)
+- Alias de producción: https://falpat-control-de-vehiculos.vercel.app
+
+### Resguardo
+- Sin cambios de datos en Firestore (solo vistas y assets). No se requirió backup.
 
 ## 2026-08-05 — Fix rendimiento: se eliminó el polling de "Últimos Services"
 
