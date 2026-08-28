@@ -391,9 +391,9 @@ async function saveDocumentacion() {
     DOC_OBLIGATORIOS.forEach(({ key }) => {
       const fechaInput = document.getElementById(`doc-${key}-fecha`);
       const fecha = fechaInput ? (fechaInput.value || null) : null;
-      if (key === 'vtv') vtv.fechaVencimiento = fecha;
-      else if (key === 'seguro') seguro.fechaVencimiento = fecha;
-      else if (key === 'registro') current.vencimientoRegistro = fecha;
+      if (key === 'vtv') vtv.fechaVencimiento = fecha ? new Date(fecha + 'T12:00:00') : null;
+      else if (key === 'seguro') seguro.fechaVencimiento = fecha ? new Date(fecha + 'T12:00:00') : null;
+      else if (key === 'registro') current.vencimientoRegistro = fecha ? new Date(fecha + 'T12:00:00') : null;
     });
     const update = { vtv, seguro };
     if (current.registro !== undefined || current.vencimientoRegistro !== undefined) {

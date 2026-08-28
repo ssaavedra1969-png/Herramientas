@@ -108,7 +108,12 @@ async function getAuthHeaders() {
 
 function formatDate(timestamp) {
   if (!timestamp) return '-';
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  let date;
+  if (timestamp.toDate) date = timestamp.toDate();
+  else if (typeof timestamp === 'string' && /^\d{4}-\d{2}-\d{2}/.test(timestamp)) {
+    const [y, m, d] = timestamp.substring(0, 10).split('-').map(Number);
+    date = new Date(y, m - 1, d);
+  } else date = new Date(timestamp);
   return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
