@@ -64,14 +64,14 @@
         </div>
       </div>
       <div id="tab-content-resumen" class="tab-content space-y-3 md:space-y-4">
-        <!-- Fila 1: Identificación + Foto -->
+        <!-- Fila 1: Identificación (ancho completo) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
-          <div class="lg:col-span-2 glass-card rounded-xl p-4 md:p-5">
+          <div class="lg:col-span-3 glass-card rounded-xl p-4 md:p-5">
             <h3 class="text-sm md:text-md font-semibold text-[#ffffff] mb-3 md:mb-4 flex items-center gap-2">
               <svg class="w-4 h-4 md:w-5 md:h-5 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Identificación
             </h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-xs md:text-sm">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-2 text-xs md:text-sm">
               <div><span class="text-[#8b9bb4]">Patente</span><br><span class="text-[#ffffff] font-semibold text-sm md:text-base" id="vg-patente">-</span></div>
               <div><span class="text-[#8b9bb4]">Interno</span><br><span class="text-[#ffffff]" id="vg-interno">-</span></div>
               <div><span class="text-[#8b9bb4]">Nro BET</span><br><span class="text-[#ffffff]" id="vg-nroBet">-</span></div>
@@ -84,7 +84,7 @@
               <div><span class="text-[#8b9bb4]">Empresa</span><br><span class="text-[#ffffff]" id="vg-empresa">-</span></div>
             </div>
           </div>
-          <div class="glass-card rounded-xl p-4 md:p-5 flex flex-col items-center justify-center" id="vg-foto-container">
+          <div class="lg:col-span-3 glass-card rounded-xl p-4 md:p-5 flex flex-col items-center justify-center" id="vg-foto-container">
             <div class="text-[#4a5568] text-xs text-center" id="vg-foto-placeholder">
               <svg class="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
               Sin foto
@@ -166,33 +166,27 @@
           </div>
         </div>
 
-        <!-- Trompo (condicional) -->
-        <div id="vg-trompo-card" class="hidden">
-          <div class="glass-card rounded-xl p-4 md:p-5 border border-[#d4af37]/20">
-            <h3 class="text-sm md:text-md font-semibold text-[#ffffff] mb-3 md:mb-4 flex items-center gap-2">
-              <svg class="w-4 h-4 md:w-5 md:h-5 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              Equipamiento — Trompo
-            </h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs md:text-sm" id="vg-trompo-fields">
-              <div><span class="text-[#8b9bb4]">Marca</span><br><span class="text-[#ffffff]" id="vg-trompo-marca">-</span></div>
-              <div><span class="text-[#8b9bb4]">N° Serie</span><br><span class="text-[#ffffff]" id="vg-trompo-numeroSerie">-</span></div>
-              <div><span class="text-[#8b9bb4]">Modelo</span><br><span class="text-[#ffffff]" id="vg-trompo-modelo">-</span></div>
-              <div><span class="text-[#8b9bb4]">Carga M3</span><br><span class="text-[#ffffff]" id="vg-trompo-cargaM3">-</span></div>
-            </div>
-            <div class="mt-3 pt-3 border-t border-[#d4af37]/10">
-              <span class="text-[#8b9bb4] text-xs">Empresa</span><br>
-              <span class="text-[#ffffff] font-medium text-sm" id="vg-trompo-empresa">-</span>
-            </div>
+        <!-- Fila 4: Matafuego + Chofer + Ubicación -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-3 md:mt-4">
+        <div class="glass-card rounded-xl p-4 md:p-5">
+          <h3 class="text-sm font-semibold text-[#ffffff] mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-7.214 4.803a2 2 0 01-1.02-2.628c.2-.505.505-.81.72-.746.313.094.556.374.616.713.34.62.838.869 1.428.9.469-.047 1.016-.154 1.564-.55-.006.56.029 1.083.06 1.51a2 2 0 01-2.368 2.006zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Matafuego
+          </h3>
+          <div class="space-y-1.5 text-xs md:text-sm" id="matafuego-info">
+            <div class="flex justify-between"><span class="text-[#8b9bb4]">Estado</span><span class="text-[#ffffff]" id="vg-matafuegoEstado">-</span></div>
+            <div class="flex justify-between"><span class="text-[#8b9bb4]">Fecha de control</span><span class="text-[#ffffff]" id="vg-matafuegoFechaControl">-</span></div>
+            <div class="flex justify-between"><span class="text-[#8b9bb4]">Fecha de Vto.</span><span class="text-[#ffffff] font-medium" id="vg-matafuegoFechaVto">-</span></div>
           </div>
         </div>
 
-        <!-- Fila 4: Chofer -->
+        <!-- Fila: Chofer -->
         <div class="glass-card rounded-xl p-4 md:p-5">
           <h3 class="text-sm md:text-md font-semibold text-[#ffffff] mb-3 md:mb-4 flex items-center gap-2">
             <svg class="w-4 h-4 md:w-5 md:h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             Chofer
           </h3>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs md:text-sm">
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-x-4 gap-y-2 text-xs md:text-sm">
             <div><span class="text-[#8b9bb4]">Nombre</span><br><span class="text-[#ffffff]" id="vg-chofer">-</span></div>
             <div><span class="text-[#8b9bb4]">DNI</span><br><span class="text-[#ffffff]" id="vg-dni">-</span></div>
             <div><span class="text-[#8b9bb4]">Vto. DNI</span><br><span class="text-[#ffffff]" id="vg-vencimientoDNI">-</span></div>
@@ -207,8 +201,25 @@
             <svg class="w-4 h-4 md:w-5 md:h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             Ubicación
           </h3>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs md:text-sm">
+          <div class="grid grid-cols-1 gap-x-4 gap-y-2 text-xs md:text-sm">
             <div><span class="text-[#8b9bb4]">Centro de Trabajo</span><br><span class="text-[#ffffff]" id="vg-centro">-</span></div>
+          </div>
+        </div>
+        </div>
+
+        <!-- Trompo (condicional) -->
+        <div id="vg-trompo-card" class="hidden">
+          <div class="glass-card rounded-xl p-4 md:p-5 border border-[#d4af37]/20">
+            <h3 class="text-sm md:text-md font-semibold text-[#ffffff] mb-3 md:mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4 md:w-5 md:h-5 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Equipamiento — Trompo
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs md:text-sm" id="vg-trompo-fields">
+              <div><span class="text-[#8b9bb4]">Marca</span><br><span class="text-[#ffffff]" id="vg-trompo-marca">-</span></div>
+              <div><span class="text-[#8b9bb4]">N° Serie</span><br><span class="text-[#ffffff]" id="vg-trompo-numeroSerie">-</span></div>
+              <div><span class="text-[#8b9bb4]">Modelo</span><br><span class="text-[#ffffff]" id="vg-trompo-modelo">-</span></div>
+              <div><span class="text-[#8b9bb4]">Carga M3</span><br><span class="text-[#ffffff]" id="vg-trompo-cargaM3">-</span></div>
+            </div>
           </div>
         </div>
 
@@ -813,6 +824,32 @@
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Próximo service (fecha)</label>
             <input type="date" id="v-proximoServiceFecha" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-[#d4af37]/10">
+
+      <div>
+        <h4 class="text-md font-semibold text-[#ffffff] mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-7.214 4.803a2 2 0 01-1.02-2.628c.2-.505.505-.81.72-.746.313.094.556.374.616.713.34.62.838.869 1.428.9.469-.047 1.016-.154 1.564-.55-.006.56.029 1.083.06 1.51a2 2 0 01-2.368 2.006zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Matafuego
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Estado</label>
+            <select id="v-matafuegoEstado" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+              <option value="Sin Matafuego" class="bg-[#0a0e17]">Sin Matafuego</option>
+              <option value="Con Matafuego" class="bg-[#0a0e17]">Con Matafuego</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Fecha de control</label>
+            <input type="date" id="v-matafuegoFechaControl" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Fecha de Vto.</label>
+            <input type="date" id="v-matafuegoFechaVto" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
           </div>
         </div>
       </div>

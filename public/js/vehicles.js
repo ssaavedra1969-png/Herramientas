@@ -160,7 +160,7 @@ function setupModalClose(modalId) {
 function initRealtimeListener() {
   const tbody = document.getElementById('vehiculos-table-body');
   const grid = document.getElementById('vehiculos-card-grid');
-  if (tbody) tbody.innerHTML = Array(5).fill('<tr><td colspan="9"><div class="skeleton skeleton-row"></div></td></tr>').join('');
+  if (tbody) tbody.innerHTML = Array(5).fill('<tr><td colspan="10"><div class="skeleton skeleton-row"></div></td></tr>').join('');
   if (grid) grid.innerHTML = Array(6).fill('<div><div class="skeleton skeleton-card"></div></div>').join('');
 
   db.collection('vehicles').orderBy('interno').onSnapshot((snapshot) => {
@@ -207,6 +207,7 @@ function fmap(v) {
       resultado: 'Pendiente'
     },
     seguro: v.seguro || { compania: '', poliza: '', tipo: '', fechaVencimiento: null, costo: null },
+    matafuego: v.matafuego || { estado: 'Sin Matafuego', fechaControl: null, fechaVto: null },
     proximoServiceKm: v.proximoServiceKm || null,
     proximoServiceFecha: v.proximoServiceFecha || null,
     centroTrabajo: v.centroTrabajo || '',
@@ -233,7 +234,7 @@ function renderVehicleTable(vehicles) {
   if (!tbody) return;
 
   const admin = isAdmin();
-  const colCount = admin ? 9 : 8;
+  const colCount = admin ? 10 : 9;
 
   if (vehicles.length === 0) {
     tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-8 text-gray-400">No hay vehículos registrados</td></tr>`;
@@ -249,6 +250,22 @@ function renderVehicleTable(vehicles) {
     const trompoBadge = mv.trompo
       ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#d4af37]/20 text-[#d4af37]">Si<span class="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></span></span>`
       : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#2E3247] text-[#4a5568]">No<span class="w-1.5 h-1.5 rounded-full bg-[#4a5568]"></span></span>`;
+    const mf = mv.matafuego || {};
+    const mfEstado = mf.estado === 'Con Matafuego';
+    let mfDias = null;
+    if (mf.fechaVto) {
+      const mfVtoDate = mf.fechaVto.toDate ? mf.fechaVto.toDate() : new Date(mf.fechaVto);
+      mfDias = Math.ceil((mfVtoDate - new Date()) / (1000 * 60 * 60 * 24));
+    }
+    const mfVtoHtml = mfDias !== null
+      ? `<span class="text-[10px] font-medium ${mfDias < 0 ? 'text-red-400' : mfDias <= 30 ? 'text-yellow-400' : 'text-[#8b9bb4]'}">(${mfDias < 0 ? 'Vencido' : mfDias + 'd'})</span>`
+      : '';
+    const matafuegoCell = `
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <span class="w-2 h-2 rounded-full ${mfEstado ? 'bg-green-400' : 'bg-red-500'}"></span>
+        <span class="text-xs ${mfEstado ? 'text-green-300' : 'text-red-300'}">${mfEstado ? 'Con' : 'Sin'}</span>
+        ${mfVtoHtml}
+      </div>`;
     return `
       <tr class="border-b border-white/5 hover:bg-[#d4af37]/10 cursor-pointer fade-row" onclick="rowClick('${v.id}', event)">
         ${checkboxCell}
@@ -258,6 +275,7 @@ function renderVehicleTable(vehicles) {
         <td class="py-3 pr-3">${mv.tipo || '—'}</td>
         <td class="py-3 pr-3">${mv.subtipo || '—'}</td>
         <td class="py-3 pr-3">${trompoBadge}</td>
+        <td class="py-3 pr-3">${matafuegoCell}</td>
         <td class="py-3 pr-3 text-xs">${mv.centroTrabajo || '—'}</td>
         <td class="py-3 no-print" onclick="event.stopPropagation()">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
       </tr>`;
@@ -570,6 +588,9 @@ function openVehicleModal(vehicleId = null) {
     document.getElementById('v-seguroTipo').value = v.seguro?.tipo || '';
     setDateField('v-seguroVencimiento', v.seguro?.fechaVencimiento || null);
     document.getElementById('v-seguroCosto').value = v.seguro?.costo || '';
+    document.getElementById('v-matafuegoEstado').value = v.matafuego?.estado || 'Sin Matafuego';
+    setDateField('v-matafuegoFechaControl', v.matafuego?.fechaControl || null);
+    setDateField('v-matafuegoFechaVto', v.matafuego?.fechaVto || null);
     document.getElementById('v-proximoServiceKm').value = v.proximoServiceKm || '';
     setDateField('v-proximoServiceFecha', v.proximoServiceFecha);
     document.getElementById('v-centroTrabajo').value = v.centroTrabajo;
@@ -667,6 +688,11 @@ async function saveVehicle(e) {
       tipo: document.getElementById('v-seguroTipo').value || '',
       fechaVencimiento: getDateValue('v-seguroVencimiento'),
       costo: parseFloat(document.getElementById('v-seguroCosto').value) || null
+    },
+    matafuego: {
+      estado: document.getElementById('v-matafuegoEstado').value || 'Sin Matafuego',
+      fechaControl: getDateValue('v-matafuegoFechaControl'),
+      fechaVto: getDateValue('v-matafuegoFechaVto')
     },
     proximoServiceKm: parseInt(document.getElementById('v-proximoServiceKm').value) || null,
     proximoServiceFecha: getDateValue('v-proximoServiceFecha'),

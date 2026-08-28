@@ -148,6 +148,52 @@ function showSeguroModal() {
   openDashModal('Seguro por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#d4af37,#7C3AED)', iconSvg, body);
 }
 
+function showMatafuegoModal() {
+  const alerts = allVehicles.filter(v => {
+    if (v.estadoGeneral === 'Baja') return false;
+    const d = daysUntil(v.matafuego?.fechaVto);
+    return d !== null && d <= 30;
+  }).sort((a, b) => (daysUntil(a.matafuego?.fechaVto) || 999) - (daysUntil(b.matafuego?.fechaVto) || 999));
+  const iconSvg = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-7.214 4.803a2 2 0 01-1.02-2.628c.2-.505.505-.81.72-.746.313.094.556.374.616.713.34.62.838.869 1.428.9.469-.047 1.016-.154 1.564-.55-.006.56.029 1.083.06 1.51a2 2 0 01-2.368 2.006zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+  if (alerts.length === 0) {
+    openDashModal('Matafuego por vencer', 'Todo al día', 'linear-gradient(135deg,#10B981,#059669)', iconSvg, '<div class="text-center py-6"><p class="text-green-400 font-medium">Todos los matafuegos están al día</p></div>');
+    return;
+  }
+  const body = alerts.map(v => {
+    const d = daysUntil(v.matafuego?.fechaVto);
+    const isCritical = d <= 0;
+    const isWarning = d > 0 && d <= 7;
+    const borderColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#d4af37';
+    const bgColor = isCritical ? 'rgba(239,68,68,0.08)' : isWarning ? 'rgba(249,115,22,0.08)' : 'rgba(212,175,55,0.08)';
+    const textColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#d4af37';
+    const statusLabel = isCritical ? 'VENCIDO' : isWarning ? 'URGENTE' : 'PRÓXIMO';
+    const dateStr = v.matafuego?.fechaVto?.toDate ? v.matafuego.fechaVto.toDate().toLocaleDateString('es-AR') : '—';
+    const ctrlStr = v.matafuego?.fechaControl?.toDate ? v.matafuego.fechaControl.toDate().toLocaleDateString('es-AR') : '';
+    const estado = v.matafuego?.estado || 'Sin Matafuego';
+    return `
+    <div class="rounded-xl p-3.5 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid ${borderColor};background:${bgColor};" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(212,175,55,0.15);color:#d4af37;">${(v.interno || '?').substring(0,4)}</div>
+          <div>
+            <p class="text-[#ffffff] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+            <p class="text-[#4a5568] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] font-bold" style="color:${textColor};">${statusLabel}</span>
+          <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencido' : d + ' días'}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
+        <span>${estado}</span>
+        ${ctrlStr ? `<span class="text-[#4a5568]">·</span><span>Ctrl: ${ctrlStr}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  openDashModal('Matafuego por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#EF4444,#d4af37)', iconSvg, body);
+}
+
 function showRegistroModal() {
   const alerts = allVehicles.filter(v => {
     if (v.estadoGeneral === 'Baja') return false;
@@ -592,7 +638,7 @@ function initRealtimeListeners() {
     const prevVehiculos = parseInt(elVehiculos.textContent) || 0;
     animateValue(elVehiculos, prevVehiculos, active, 800);
 
-    let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0, serviceCount = 0;
+    let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0, serviceCount = 0, matafuegoCount = 0;
     all.forEach(v => {
       if (v.estadoGeneral === 'Baja') return;
       const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
@@ -604,6 +650,8 @@ function initRealtimeListeners() {
       const dniDays = daysUntil(v.vencimientoDNI);
       if (dniDays !== null && dniDays <= 30) dniCount++;
       if (serviceDue(v)) serviceCount++;
+      const matDays = daysUntil(v.matafuego?.fechaVto);
+      if (matDays !== null && matDays <= 30) matafuegoCount++;
     });
 
     const elVtv = document.getElementById('card-vtv-proximas');
@@ -626,6 +674,12 @@ function initRealtimeListeners() {
     if (elService) {
       const prevService = parseInt(elService.textContent) || 0;
       animateValue(elService, prevService, serviceCount, 800);
+    }
+
+    const elMatafuego = document.getElementById('card-matafuego-proximos');
+    if (elMatafuego) {
+      const prevMat = parseInt(elMatafuego.textContent) || 0;
+      animateValue(elMatafuego, prevMat, matafuegoCount, 800);
     }
 
     renderEmpresas(all);

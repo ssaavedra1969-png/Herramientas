@@ -46,6 +46,7 @@ async function loadVehicle() {
 
   renderGeneralInfo();
   renderSeguro();
+  renderMatafuego();
   renderVTV();
   renderService();
   renderMultas();
@@ -135,6 +136,13 @@ function renderSeguro() {
   setText('vg-seguroTipo', s.tipo || '-');
   setText('vg-seguroVencimiento', formatDate(s.fechaVencimiento));
   setText('vg-seguroCosto', s.costo ? formatCurrency(s.costo) : '-');
+}
+
+function renderMatafuego() {
+  const m = vehicleData.matafuego || {};
+  setText('vg-matafuegoEstado', m.estado || '-');
+  setText('vg-matafuegoFechaControl', formatDate(m.fechaControl));
+  setText('vg-matafuegoFechaVto', formatDate(m.fechaVto));
 }
 
 function renderVTV() {
@@ -485,6 +493,9 @@ function openEditVehicle() {
   document.getElementById('v-seguroTipo').value = vehicleData.seguro?.tipo || '';
   setDateField('v-seguroVencimiento', vehicleData.seguro?.fechaVencimiento || null);
   document.getElementById('v-seguroCosto').value = vehicleData.seguro?.costo || '';
+  document.getElementById('v-matafuegoEstado').value = vehicleData.matafuego?.estado || 'Sin Matafuego';
+  setDateField('v-matafuegoFechaControl', vehicleData.matafuego?.fechaControl || null);
+  setDateField('v-matafuegoFechaVto', vehicleData.matafuego?.fechaVto || null);
   document.getElementById('v-proximoServiceKm').value = vehicleData.proximoServiceKm || '';
   setDateField('v-proximoServiceFecha', vehicleData.proximoServiceFecha);
   document.getElementById('v-centroTrabajo').value = vehicleData.centroTrabajo || '';
@@ -568,6 +579,11 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
       tipo: document.getElementById('v-seguroTipo').value || '',
       fechaVencimiento: getDateValue('v-seguroVencimiento'),
       costo: parseFloat(document.getElementById('v-seguroCosto').value) || null
+    },
+    matafuego: {
+      estado: document.getElementById('v-matafuegoEstado').value || 'Sin Matafuego',
+      fechaControl: getDateValue('v-matafuegoFechaControl'),
+      fechaVto: getDateValue('v-matafuegoFechaVto')
     },
     proximoServiceKm: parseInt(document.getElementById('v-proximoServiceKm').value) || null,
     proximoServiceFecha: getDateValue('v-proximoServiceFecha'),

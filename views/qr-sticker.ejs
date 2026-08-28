@@ -9,15 +9,15 @@
   <style>
     body { background: #1a1a2e; }
     .sticker { width: 100mm; height: 70mm; background: #fff; border-radius: 4mm; overflow: hidden; position: relative; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
-    .sticker-header { background: linear-gradient(135deg, #d4af37, #d4af37); padding: 3mm 4mm; display: flex; align-items: center; justify-content: space-between; }
-    .sticker-body { padding: 3mm 4mm; display: flex; gap: 4mm; align-items: center; }
+    .sticker-header { background: linear-gradient(135deg, #1d4ed8, #0ea5e9); padding: 3mm 4mm; display: flex; align-items: center; justify-content: space-between; }
+    .sticker-body { padding: 3.5mm 4mm; display: flex; gap: 4mm; align-items: center; }
     .sticker-qr { flex-shrink: 0; }
     .sticker-info { flex: 1; color: #1a1a2e; font-family: 'Segoe UI', Arial, sans-serif; }
-    .sticker-patente { font-size: 20pt; font-weight: 900; color: #1a1a2e; letter-spacing: 1px; line-height: 1; }
-    .sticker-interno { font-size: 13pt; font-weight: 700; color: #d4af37; }
-    .sticker-detail { font-size: 7pt; color: #555; line-height: 1.4; }
-    .sticker-footer { background: #dddfe5; padding: 1.5mm 4mm; display: flex; align-items: center; justify-content: space-between; border-top: 0.5px solid #ccc; border-radius: 0 0 4mm 4mm; }
-    .sticker-footer span { font-size: 6pt; color: #888; font-family: 'Segoe UI', Arial, sans-serif; }
+    .sticker-patente { font-size: 24pt; font-weight: 900; color: #0b0f1a; letter-spacing: 1.5px; line-height: 1; }
+    .sticker-interno { font-size: 13pt; font-weight: 700; color: #1d4ed8; }
+    .sticker-detail { font-size: 8pt; color: #333; line-height: 1.4; }
+    .sticker-footer { background: #e9ecf3; padding: 2mm 4mm; display: flex; align-items: center; justify-content: space-between; border-top: 0.5px solid #cbd5e1; border-radius: 0 0 4mm 4mm; }
+    .sticker-footer span { font-size: 7pt; color: #3f4756; font-family: 'Segoe UI', Arial, sans-serif; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
     @media print {
       body { background: #fff !important; padding: 0; margin: 0; }
@@ -62,16 +62,16 @@
       <div class="sticker-header">
         <div style="display:flex;align-items:center;gap:2mm;">
           <div style="background:#fff;border-radius:2mm;width:8mm;height:8mm;display:flex;align-items:center;justify-content:center;">
-            <span style="color:#d4af37;font-size:9pt;font-weight:900;">GF</span>
+            <span style="color:#2563eb;font-size:9pt;font-weight:900;">GF</span>
           </div>
           <div style="display:flex;flex-direction:column;">
-            <span style="color:#fff;font-size:8pt;font-weight:700;letter-spacing:0.5px;">GRUPO FALPAT SRL</span>
-            <span style="color:rgba(255,255,255,0.8);font-size:6pt;">Control de Mantenimiento</span>
+            <span style="color:#fff;font-size:10pt;font-weight:800;letter-spacing:0.5px;">GRUPO FALPAT SRL</span>
+            <span style="color:#eaf3ff;font-size:7pt;font-weight:600;">Control de Mantenimiento</span>
           </div>
         </div>
         <div style="text-align:right;">
-          <span style="color:rgba(255,255,255,0.6);font-size:5.5pt;display:block;">Interno</span>
-          <span style="color:#fff;font-size:13pt;font-weight:900;letter-spacing:1px;line-height:1;"><%= vehicle.interno || '—' %></span>
+          <span style="color:#eaf3ff;font-size:7pt;font-weight:700;display:block;letter-spacing:0.5px;">Interno</span>
+          <span style="color:#fff;font-size:15pt;font-weight:900;letter-spacing:1px;line-height:1;"><%= vehicle.interno || '—' %></span>
         </div>
       </div>
 
@@ -81,11 +81,11 @@
         </div>
         <div class="sticker-info">
           <div class="sticker-patente"><%= vehicle.patente || '—' %></div>
-          <div style="font-size:8pt;font-weight:700;color:#1a1a2e;margin-top:1.5mm;"><%= vehicle.marca || '' %> <%= vehicle.modelo || '' %></div>
+          <div style="font-size:9pt;font-weight:700;color:#0b0f1a;margin-top:2mm;"><%= vehicle.marca || '' %> <%= vehicle.modelo || '' %></div>
           <% if (vehicle.nroBet) { %>
           <div style="margin-top:2mm;">
-            <div style="width:12mm;height:12mm;border-radius:50%;border:0.6mm solid #d4af37;display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:12pt;font-weight:900;color:#d4af37;line-height:1;"><%= vehicle.nroBet %></span>
+            <div style="width:13mm;height:13mm;border-radius:50%;border:0.7mm solid #1d4ed8;display:flex;align-items:center;justify-content:center;background:#eef4ff;">
+              <span style="font-size:13pt;font-weight:900;color:#1d4ed8;line-height:1;"><%= vehicle.nroBet %></span>
             </div>
           </div>
           <% } %>
@@ -93,8 +93,8 @@
       </div>
 
       <div class="sticker-footer">
-        <span style="font-size:6.5pt;color:#333;font-weight:600;"><%= vehicle.marca || '' %> <%= vehicle.modelo || '' %></span>
-        <span style="font-size:6pt;color:#888;"><%= vehicle.empresa || '' %></span>
+        <span style="font-size:7pt;color:#222;font-weight:700;"><%= vehicle.marca || '' %> <%= vehicle.modelo || '' %></span>
+        <span style="font-size:7pt;color:#3f4756;"><%= vehicle.empresa || '' %></span>
       </div>
     </div>
   </div>
