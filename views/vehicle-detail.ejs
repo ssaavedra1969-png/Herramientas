@@ -27,12 +27,10 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
           <span class="hidden sm:inline">QR</span>
         </button>
-        <% if (currentUserData?.role === 'Admin') { %>
-        <button id="btn-titulo" onclick="openTitulo()" class="hidden sm:inline-flex btn-secondary text-xs sm:text-sm px-2.5 sm:px-4 py-1.5 sm:py-2 flex items-center gap-1 sm:gap-2 shrink-0 border-[#10B981]/30 hover:border-[#10B981]/50 hover:bg-[#10B981]/10">
-          <svg class="w-4 h-4 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          <span class="hidden sm:inline">Título</span>
+        <button id="btn-documentacion" onclick="openDocumentacionModal()" class="btn-secondary text-xs sm:text-sm px-2.5 sm:px-4 py-1.5 sm:py-2 flex items-center gap-1 sm:gap-2 shrink-0 border-teal-400/30 text-teal-300 hover:border-teal-400/50 hover:bg-teal-400/10">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span class="hidden sm:inline">Documentación</span>
         </button>
-        <% } %>
         <% if (currentUserData?.role === 'Admin') { %>
         <button onclick="openEditVehicle()" class="btn-primary text-xs sm:text-sm px-2.5 sm:px-4 py-1.5 sm:py-2 flex items-center gap-1 sm:gap-2 shrink-0">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -936,6 +934,161 @@
       </button>
     </div>
     <div id="modal-detalle-body" class="p-4 sm:p-6 space-y-3"></div>
+  </div>
+</div>
+
+<!-- Modal Documentación Obligatoria -->
+<div id="modal-documentacion" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-3 sm:p-4">
+  <div class="glass-card rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content">
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#d4af37]/10 sticky top-0 z-10" style="background: #141e2d;">
+      <h3 class="text-base sm:text-lg font-bold text-[#ffffff] flex items-center gap-2">
+        <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Documentación del Vehículo
+      </h3>
+      <button onclick="closeDocumentacionModal()" class="text-[#8b9bb4] hover:text-[#ffffff] transition-colors p-1">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="p-4 sm:p-6 space-y-4">
+      <div class="flex items-center gap-2 text-xs text-[#8b9bb4]">
+        <svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Los 4 documentos indispensables: <strong class="text-[#ffffff]">Título</strong>, <strong class="text-[#ffffff]">Cédula</strong>, <strong class="text-[#ffffff]">Seguro</strong> y <strong class="text-[#ffffff]">Registro del chofer</strong>.
+      </div>
+
+      <!-- Slot 1: Título -->
+      <div class="documentacion-slot glass-card rounded-xl p-4" data-slot="titulo">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-sm font-semibold text-[#ffffff] flex items-center gap-2">
+            <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Título del camión
+          </h4>
+          <span class="text-xs font-medium" id="doc-titulo-estado">Sin cargar</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <div id="doc-titulo-preview" class="text-xs text-[#4a5568]"></div>
+            <% if (currentUserData?.role === 'Admin') { %>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#d4af37] text-white cursor-pointer hover:bg-[#b8960c] transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              Subir archivo
+              <input type="file" class="hidden doc-file" accept="image/*,.pdf" data-slot="titulo">
+            </label>
+            <% } %>
+          </div>
+          <a id="doc-titulo-link" href="#" target="_blank" rel="noopener" class="hidden shrink-0 text-teal-300 hover:text-teal-200 text-xs font-semibold flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Ver
+          </a>
+        </div>
+        <div class="mt-3">
+          <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento</label>
+          <input type="date" id="doc-titulo-fecha" class="w-full sm:w-48 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon" <%= currentUserData?.role !== 'Admin' ? 'readonly' : '' %>>
+        </div>
+      </div>
+
+      <!-- Slot 2: Cédula -->
+      <div class="documentacion-slot glass-card rounded-xl p-4" data-slot="cedula">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-sm font-semibold text-[#ffffff] flex items-center gap-2">
+            <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+            Cédula del camión
+          </h4>
+          <span class="text-xs font-medium" id="doc-cedula-estado">Sin cargar</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <div id="doc-cedula-preview" class="text-xs text-[#4a5568]"></div>
+            <% if (currentUserData?.role === 'Admin') { %>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#d4af37] text-white cursor-pointer hover:bg-[#b8960c] transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              Subir archivo
+              <input type="file" class="hidden doc-file" accept="image/*,.pdf" data-slot="cedula">
+            </label>
+            <% } %>
+          </div>
+          <a id="doc-cedula-link" href="#" target="_blank" rel="noopener" class="hidden shrink-0 text-teal-300 hover:text-teal-200 text-xs font-semibold flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Ver
+          </a>
+        </div>
+        <div class="mt-3">
+          <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento</label>
+          <input type="date" id="doc-cedula-fecha" class="w-full sm:w-48 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon" <%= currentUserData?.role !== 'Admin' ? 'readonly' : '' %>>
+        </div>
+      </div>
+
+      <!-- Slot 2: Seguro -->
+      <div class="documentacion-slot glass-card rounded-xl p-4" data-slot="seguro">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-sm font-semibold text-[#ffffff] flex items-center gap-2">
+            <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            Seguro del camión
+          </h4>
+          <span class="text-xs font-medium" id="doc-seguro-estado">Sin cargar</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <div id="doc-seguro-preview" class="text-xs text-[#4a5568]"></div>
+            <% if (currentUserData?.role === 'Admin') { %>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#d4af37] text-white cursor-pointer hover:bg-[#b8960c] transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              Subir archivo
+              <input type="file" class="hidden doc-file" accept="image/*,.pdf" data-slot="seguro">
+            </label>
+            <% } %>
+          </div>
+          <a id="doc-seguro-link" href="#" target="_blank" rel="noopener" class="hidden shrink-0 text-teal-300 hover:text-teal-200 text-xs font-semibold flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Ver
+          </a>
+        </div>
+        <div class="mt-3">
+          <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento</label>
+          <input type="date" id="doc-seguro-fecha" class="w-full sm:w-48 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon" <%= currentUserData?.role !== 'Admin' ? 'readonly' : '' %>>
+        </div>
+      </div>
+
+      <!-- Slot 3: Registro del chofer -->
+      <div class="documentacion-slot glass-card rounded-xl p-4" data-slot="registro">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-sm font-semibold text-[#ffffff] flex items-center gap-2">
+            <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            Registro del chofer
+          </h4>
+          <span class="text-xs font-medium" id="doc-registro-estado">Sin cargar</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <div id="doc-registro-preview" class="text-xs text-[#4a5568]"></div>
+            <% if (currentUserData?.role === 'Admin') { %>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#d4af37] text-white cursor-pointer hover:bg-[#b8960c] transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              Subir archivo
+              <input type="file" class="hidden doc-file" accept="image/*,.pdf" data-slot="registro">
+            </label>
+            <% } %>
+          </div>
+          <a id="doc-registro-link" href="#" target="_blank" rel="noopener" class="hidden shrink-0 text-teal-300 hover:text-teal-200 text-xs font-semibold flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Ver
+          </a>
+        </div>
+        <div class="mt-3">
+          <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento</label>
+          <input type="date" id="doc-registro-fecha" class="w-full sm:w-48 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon" <%= currentUserData?.role !== 'Admin' ? 'readonly' : '' %>>
+        </div>
+      </div>
+
+      <% if (currentUserData?.role === 'Admin') { %>
+      <div class="flex justify-end gap-3 pt-2">
+        <button onclick="closeDocumentacionModal()" class="btn-secondary px-4 py-2 text-sm">Cancelar</button>
+        <button onclick="saveDocumentacion()" class="btn-primary px-4 py-2 text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          Guardar
+        </button>
+      </div>
+      <% } %>
+    </div>
   </div>
 </div>
 
