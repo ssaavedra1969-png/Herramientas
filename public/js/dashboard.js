@@ -17,13 +17,13 @@ function closeDashModal() {
 
 function vehicleRow(v, extraRight) {
   return `
-  <div class="rounded-xl p-3 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid #6C3CE1;background:rgba(108,60,222,0.05);" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
+  <div class="rounded-xl p-3 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid #d4af37;background:rgba(212,175,55,0.05);" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(108,60,222,0.15);color:#A78BFA;">${(v.interno || '?').substring(0,4)}</div>
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(212,175,55,0.15);color:#d4af37;">${(v.interno || '?').substring(0,4)}</div>
         <div>
-          <p class="text-[#F1F3F8] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
-          <p class="text-[#5C6378] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+          <p class="text-[#ffffff] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+          <p class="text-[#4a5568] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
         </div>
       </div>
       <div class="text-right">${extraRight || ''}</div>
@@ -36,7 +36,7 @@ function showVehiculosModal() {
   const bajas = allVehicles.filter(v => v.estadoGeneral === 'Baja').length;
   const subtitle = `${active.length} activos${bajas > 0 ? ' · ' + bajas + ' dados de baja' : ''}`;
   const body = active.length === 0
-    ? '<p class="text-[#5C6378] text-center py-6">No hay vehículos activos</p>'
+    ? '<p class="text-[#4a5568] text-center py-6">No hay vehículos activos</p>'
     : active.map(v => {
         const d = daysUntil(v.vtv?.fechaVencimiento);
         let extra = '';
@@ -47,7 +47,7 @@ function showVehiculosModal() {
         return vehicleRow(v, extra);
       }).join('');
   const iconSvg = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>';
-  openDashModal('Vehículos Activos', subtitle, 'linear-gradient(135deg,#6C3CE1,#4F46E5)', iconSvg, body);
+  openDashModal('Vehículos Activos', subtitle, 'linear-gradient(135deg,#d4af37,#4F46E5)', iconSvg, body);
 }
 
 function showVtvAlertModal() {
@@ -77,10 +77,10 @@ function showVtvAlertModal() {
     <div class="rounded-xl p-3.5 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid ${borderColor};background:${bgColor};" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
       <div class="flex items-center justify-between mb-1.5">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(108,60,222,0.15);color:#A78BFA;">${(v.interno || '?').substring(0,4)}</div>
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(212,175,55,0.15);color:#d4af37;">${(v.interno || '?').substring(0,4)}</div>
           <div>
-            <p class="text-[#F1F3F8] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
-            <p class="text-[#5C6378] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+            <p class="text-[#ffffff] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+            <p class="text-[#4a5568] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
           </div>
         </div>
         <div class="text-right">
@@ -88,10 +88,10 @@ function showVtvAlertModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencida' : d + ' días'}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8E94A8] ml-[42px]">
+      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
         <span>Vence: ${dateStr}</span>
-        ${vtvResult ? `<span class="text-[#5C6378]">·</span><span>${vtvResult}</span>` : ''}
-        ${vtvCentro ? `<span class="text-[#5C6378]">·</span><span>${vtvCentro}</span>` : ''}
+        ${vtvResult ? `<span class="text-[#4a5568]">·</span><span>${vtvResult}</span>` : ''}
+        ${vtvCentro ? `<span class="text-[#4a5568]">·</span><span>${vtvCentro}</span>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -113,9 +113,9 @@ function showSeguroModal() {
     const d = daysUntil(v.seguro?.fechaVencimiento);
     const isCritical = d <= 0;
     const isWarning = d > 0 && d <= 7;
-    const borderColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#8B5CF6';
+    const borderColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#d4af37';
     const bgColor = isCritical ? 'rgba(239,68,68,0.08)' : isWarning ? 'rgba(249,115,22,0.08)' : 'rgba(139,92,246,0.08)';
-    const textColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#8B5CF6';
+    const textColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#d4af37';
     const statusLabel = isCritical ? 'VENCIDO' : isWarning ? 'URGENTE' : 'PRÓXIMO';
     const statusBg = isCritical ? 'rgba(239,68,68,0.15)' : isWarning ? 'rgba(249,115,22,0.15)' : 'rgba(139,92,246,0.15)';
     const dateStr = v.seguro?.fechaVencimiento?.toDate ? v.seguro.fechaVencimiento.toDate().toLocaleDateString('es-AR') : '—';
@@ -126,10 +126,10 @@ function showSeguroModal() {
     <div class="rounded-xl p-3.5 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid ${borderColor};background:${bgColor};" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
       <div class="flex items-center justify-between mb-1.5">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(139,92,246,0.15);color:#A78BFA;">${(v.interno || '?').substring(0,4)}</div>
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(139,92,246,0.15);color:#d4af37;">${(v.interno || '?').substring(0,4)}</div>
           <div>
-            <p class="text-[#F1F3F8] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
-            <p class="text-[#5C6378] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+            <p class="text-[#ffffff] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+            <p class="text-[#4a5568] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
           </div>
         </div>
         <div class="text-right">
@@ -137,15 +137,15 @@ function showSeguroModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencido' : d + ' días'}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8E94A8] ml-[42px]">
+      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
         <span>Vence: ${dateStr}</span>
-        ${compania ? `<span class="text-[#5C6378]">·</span><span>${compania}</span>` : ''}
-        ${poliza ? `<span class="text-[#5C6378]">·</span><span>Póliza: ${poliza}</span>` : ''}
-        ${costo ? `<span class="text-[#5C6378]">·</span><span>${costo}</span>` : ''}
+        ${compania ? `<span class="text-[#4a5568]">·</span><span>${compania}</span>` : ''}
+        ${poliza ? `<span class="text-[#4a5568]">·</span><span>Póliza: ${poliza}</span>` : ''}
+        ${costo ? `<span class="text-[#4a5568]">·</span><span>${costo}</span>` : ''}
       </div>
     </div>`;
   }).join('');
-  openDashModal('Seguro por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#8B5CF6,#7C3AED)', iconSvg, body);
+  openDashModal('Seguro por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#d4af37,#7C3AED)', iconSvg, body);
 }
 
 function showRegistroModal() {
@@ -177,8 +177,8 @@ function showRegistroModal() {
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(236,72,153,0.15);color:#EC4899;">${(v.interno || '?').substring(0,4)}</div>
           <div>
-            <p class="text-[#F1F3F8] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
-            <p class="text-[#5C6378] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+            <p class="text-[#ffffff] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+            <p class="text-[#4a5568] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
           </div>
         </div>
         <div class="text-right">
@@ -186,10 +186,10 @@ function showRegistroModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencido' : d + ' días'}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8E94A8] ml-[42px]">
+      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
         <span>Vence: ${dateStr}</span>
-        ${registro ? `<span class="text-[#5C6378]">·</span><span>Reg: ${registro}</span>` : ''}
-        ${chofer ? `<span class="text-[#5C6378]">·</span><span>${chofer}</span>` : ''}
+        ${registro ? `<span class="text-[#4a5568]">·</span><span>Reg: ${registro}</span>` : ''}
+        ${chofer ? `<span class="text-[#4a5568]">·</span><span>${chofer}</span>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -225,8 +225,8 @@ function showDniModal() {
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(249,115,22,0.15);color:#F97316;">${(v.interno || '?').substring(0,4)}</div>
           <div>
-            <p class="text-[#F1F3F8] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
-            <p class="text-[#5C6378] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+            <p class="text-[#ffffff] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+            <p class="text-[#4a5568] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
           </div>
         </div>
         <div class="text-right">
@@ -234,10 +234,10 @@ function showDniModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencido' : d + ' días'}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8E94A8] ml-[42px]">
+      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
         <span>Vence: ${dateStr}</span>
-        ${dni ? `<span class="text-[#5C6378]">·</span><span>DNI: ${dni}</span>` : ''}
-        ${chofer ? `<span class="text-[#5C6378]">·</span><span>${chofer}</span>` : ''}
+        ${dni ? `<span class="text-[#4a5568]">·</span><span>DNI: ${dni}</span>` : ''}
+        ${chofer ? `<span class="text-[#4a5568]">·</span><span>${chofer}</span>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -287,10 +287,10 @@ function showServiceModal() {
     <div class="rounded-xl p-3.5 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid ${borderColor};background:${bgColor};" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
       <div class="flex items-center justify-between mb-1.5">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(108,60,222,0.15);color:#A78BFA;">${(v.interno || '?').substring(0,4)}</div>
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(212,175,55,0.15);color:#d4af37;">${(v.interno || '?').substring(0,4)}</div>
           <div>
-            <p class="text-[#F1F3F8] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
-            <p class="text-[#5C6378] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+            <p class="text-[#ffffff] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+            <p class="text-[#4a5568] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
           </div>
         </div>
         <div class="text-right">
@@ -298,9 +298,9 @@ function showServiceModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${detail}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8E94A8] ml-[42px]">
+      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
         <span>Próx.: ${proxStr}</span>
-        ${tipo ? `<span class="text-[#5C6378]">·</span><span>${tipo}</span>` : ''}
+        ${tipo ? `<span class="text-[#4a5568]">·</span><span>${tipo}</span>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -367,15 +367,15 @@ function initDashSearch() {
       (v.centroTrabajo || '').toLowerCase().includes(q)
     ).slice(0, 8);
     if (matches.length === 0) {
-      results.innerHTML = '<div class="px-4 py-3 text-[#5C6378] text-sm">Sin resultados</div>';
+      results.innerHTML = '<div class="px-4 py-3 text-[#4a5568] text-sm">Sin resultados</div>';
     } else {
       results.innerHTML = matches.map(v => {
-        const extra = v.empresa ? `<span class="text-[10px] text-[#5C6378]">${v.empresa}</span>` : '';
+        const extra = v.empresa ? `<span class="text-[10px] text-[#4a5568]">${v.empresa}</span>` : '';
         return `<div class="px-4 py-2.5 cursor-pointer hover:bg-white/[0.04] transition flex items-center gap-3" onclick="window.location.href='/vehicle/${v.id}'">
-          <div class="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0" style="background:rgba(108,60,222,0.15);color:#A78BFA;">${(v.interno || '?').substring(0,4)}</div>
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0" style="background:rgba(212,175,55,0.15);color:#d4af37;">${(v.interno || '?').substring(0,4)}</div>
           <div class="flex-1 min-w-0">
-            <p class="text-[#F1F3F8] text-sm font-semibold truncate">${v.patente || '—'}</p>
-            <p class="text-[#5C6378] text-[10px] truncate">${v.marca || ''} ${v.modelo || ''}</p>
+            <p class="text-[#ffffff] text-sm font-semibold truncate">${v.patente || '—'}</p>
+            <p class="text-[#4a5568] text-[10px] truncate">${v.marca || ''} ${v.modelo || ''}</p>
           </div>
           ${extra}
         </div>`;
@@ -401,13 +401,13 @@ function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
   document.getElementById('tab-' + name)?.classList.remove('hidden');
   document.querySelectorAll('[id^="tab-btn-"]').forEach(btn => {
-    btn.classList.remove('tab-btn-active', 'text-[#6C3CE1]', 'border-b-2', 'border-[#6C3CE1]');
-    btn.classList.add('text-[#8E94A8]');
+    btn.classList.remove('tab-btn-active', 'text-[#d4af37]', 'border-b-2', 'border-[#d4af37]');
+    btn.classList.add('text-[#8b9bb4]');
   });
   const activeBtn = document.getElementById('tab-btn-' + name);
   if (activeBtn) {
-    activeBtn.classList.add('tab-btn-active', 'text-[#6C3CE1]', 'border-b-2', 'border-[#6C3CE1]');
-    activeBtn.classList.remove('text-[#8E94A8]');
+    activeBtn.classList.add('tab-btn-active', 'text-[#d4af37]', 'border-b-2', 'border-[#d4af37]');
+    activeBtn.classList.remove('text-[#8b9bb4]');
   }
 }
 
@@ -428,7 +428,7 @@ async function loadLatestServices() {
     const data = await res.json();
     renderLatestServices(data);
   } catch (e) {
-    container.innerHTML = '<p class="text-[#5C6378] text-sm text-center py-6">No se pudieron cargar los services</p>';
+    container.innerHTML = '<p class="text-[#4a5568] text-sm text-center py-6">No se pudieron cargar los services</p>';
     console.warn('Error cargando últimos services:', e);
   }
 }
@@ -455,11 +455,11 @@ function renderLatestServices(items) {
   if (!items || items.length === 0) {
     container.innerHTML = `
       <div class="text-center py-10">
-        <div class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-3" style="background:rgba(108,60,222,0.1);border:1px solid rgba(108,60,222,0.2);">
-          <svg class="w-6 h-6 text-[#6C3CE1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <div class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-3" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.2);">
+          <svg class="w-6 h-6 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </div>
-        <p class="text-[#5C6378] text-sm font-medium">Sin services registrados todavía</p>
-        <p class="text-[#5C6378] text-xs mt-1">Los services se muestran acá a medida que se cargan</p>
+        <p class="text-[#4a5568] text-sm font-medium">Sin services registrados todavía</p>
+        <p class="text-[#4a5568] text-xs mt-1">Los services se muestran acá a medida que se cargan</p>
       </div>`;
     return;
   }
@@ -473,23 +473,23 @@ function renderLatestServices(items) {
     const last = i === items.length - 1;
     return `
     <div class="svc-item relative pl-6" style="animation-delay:${i * 70}ms;">
-      <div class="absolute left-[7px] top-3 bottom-0 w-px" style="background:linear-gradient(180deg,rgba(108,60,222,0.45),rgba(0,212,255,0.15)${last ? ',transparent' : ''});"></div>
-      <div class="absolute left-0 top-3.5 w-[15px] h-[15px] rounded-full" style="background:linear-gradient(135deg,#6C3CE1,#00D4FF);box-shadow:0 0 12px rgba(108,60,222,0.8),0 0 0 3px rgba(108,60,222,0.12);border:2px solid #0A0A1A;"></div>
+      <div class="absolute left-[7px] top-3 bottom-0 w-px" style="background:linear-gradient(180deg,rgba(212,175,55,0.45),rgba(212,175,55,0.15)${last ? ',transparent' : ''});"></div>
+      <div class="absolute left-0 top-3.5 w-[15px] h-[15px] rounded-full" style="background:linear-gradient(135deg,#d4af37,#d4af37);box-shadow:0 0 12px rgba(212,175,55,0.8),0 0 0 3px rgba(212,175,55,0.12);border:2px solid #0a0e17;"></div>
       <div class="rounded-2xl transition-all duration-200 hover:bg-white/[0.04] hover:translate-x-1" style="border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);">
         <div class="flex items-center gap-3 p-3.5 cursor-pointer select-none" onclick="toggleSvc(this)">
-          <div class="w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0" style="background:linear-gradient(135deg,rgba(108,60,222,0.3),rgba(0,212,255,0.18));color:#C4B5FD;border:1px solid rgba(108,60,222,0.35);">${(veh.interno || '?').substring(0,4)}</div>
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0" style="background:linear-gradient(135deg,rgba(212,175,55,0.3),rgba(212,175,55,0.18));color:#C4B5FD;border:1px solid rgba(212,175,55,0.35);">${(veh.interno || '?').substring(0,4)}</div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <p class="text-[#F1F3F8] font-bold text-[13px] tracking-wide">${veh.patente || '—'}</p>
+              <p class="text-[#ffffff] font-bold text-[13px] tracking-wide">${veh.patente || '—'}</p>
               <span class="px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider" style="background:rgba(139,92,246,0.18);color:#C4B5FD;">${total} service${total !== 1 ? 's' : ''}</span>
             </div>
-            <p class="text-[#5C6378] text-[10px] mt-0.5 truncate">${veh.empresa || 'Sin empresa'}</p>
+            <p class="text-[#4a5568] text-[10px] mt-0.5 truncate">${veh.empresa || 'Sin empresa'}</p>
           </div>
           <div class="text-right shrink-0">
-            <p class="text-[10px] font-bold" style="color:#00D4FF;">${ago}</p>
-            <p class="text-[9px] text-[#5C6378] mt-0.5">${fechaStr}</p>
+            <p class="text-[10px] font-bold" style="color:#d4af37;">${ago}</p>
+            <p class="text-[9px] text-[#4a5568] mt-0.5">${fechaStr}</p>
           </div>
-          <div class="svc-chevron w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200" style="background:rgba(108,60,222,0.12);color:#A78BFA;">
+          <div class="svc-chevron w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200" style="background:rgba(212,175,55,0.12);color:#d4af37;">
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
           </div>
         </div>
@@ -509,21 +509,21 @@ function vehicleServicesHtml(veh) {
   const rows = servicios.map(s => `
     <div class="flex items-center justify-between gap-3 py-2">
       <div class="flex-1 min-w-0">
-        <p class="text-[#F1F3F8] text-[11px] font-semibold truncate" title="${s.tipo || ''}">${s.tipo || '—'}</p>
-        ${s.proveedor ? `<p class="text-[#5C6378] text-[9px]">${s.proveedor}</p>` : ''}
+        <p class="text-[#ffffff] text-[11px] font-semibold truncate" title="${s.tipo || ''}">${s.tipo || '—'}</p>
+        ${s.proveedor ? `<p class="text-[#4a5568] text-[9px]">${s.proveedor}</p>` : ''}
       </div>
       <div class="text-right shrink-0">
-        <p class="text-[#F1F3F8] text-[11px]">${fmtDate(s.fechaISO)}</p>
-        <p class="text-[#5C6378] text-[9px]">${s.km != null ? fmtKm(s.km) : ''}</p>
+        <p class="text-[#ffffff] text-[11px]">${fmtDate(s.fechaISO)}</p>
+        <p class="text-[#4a5568] text-[9px]">${s.km != null ? fmtKm(s.km) : ''}</p>
       </div>
     </div>`).join('');
 
   return `
-    <div class="mx-3.5 mb-3 p-3 rounded-xl" style="border:1px dashed rgba(108,60,222,0.25);background:rgba(108,60,222,0.05);">
-      <p class="text-[#8E94A8] text-[9px] uppercase tracking-wider mb-1">Services realizados (${servicios.length})</p>
+    <div class="mx-3.5 mb-3 p-3 rounded-xl" style="border:1px dashed rgba(212,175,55,0.25);background:rgba(212,175,55,0.05);">
+      <p class="text-[#8b9bb4] text-[9px] uppercase tracking-wider mb-1">Services realizados (${servicios.length})</p>
       <div class="divide-y divide-white/5">${rows}</div>
       <div class="flex justify-end mt-2 pt-2" style="border-top:1px solid rgba(255,255,255,0.06);">
-        <button onclick="event.stopPropagation();window.location.href='/vehicle/${veh.vehiculoId}'" class="px-3.5 py-1 rounded-lg text-[11px] font-bold text-white transition hover:opacity-90 hover:scale-[1.02] active:scale-95" style="background:linear-gradient(135deg,#6C3CE1,#00D4FF);box-shadow:0 4px 14px -4px rgba(108,60,222,0.6);">
+        <button onclick="event.stopPropagation();window.location.href='/vehicle/${veh.vehiculoId}'" class="px-3.5 py-1 rounded-lg text-[11px] font-bold text-white transition hover:opacity-90 hover:scale-[1.02] active:scale-95" style="background:linear-gradient(135deg,#d4af37,#d4af37);box-shadow:0 4px 14px -4px rgba(212,175,55,0.6);">
           Ver vehículo completo →
         </button>
       </div>
@@ -643,7 +643,7 @@ function renderEmpresas(vehicles) {
   const empresas = [...new Set(vehicles.map(v => v.empresa).filter(Boolean))].sort();
 
   if (empresas.length === 0) {
-    container.innerHTML = '<p class="col-span-full text-[#5C6378] text-sm text-center py-4">Sin empresas registradas</p>';
+    container.innerHTML = '<p class="col-span-full text-[#4a5568] text-sm text-center py-4">Sin empresas registradas</p>';
     return;
   }
 
@@ -655,11 +655,11 @@ function renderEmpresas(vehicles) {
           <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#10B981,#059669);">
             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/></svg>
           </div>
-          <span class="text-xs sm:text-sm text-[#F1F3F8] font-semibold truncate">${e}</span>
+          <span class="text-xs sm:text-sm text-[#ffffff] font-semibold truncate">${e}</span>
         </div>
         <div class="flex items-center justify-between">
           <span class="text-xs text-[#10B981] font-bold">${count} vehículo${count !== 1 ? 's' : ''}</span>
-          <svg class="w-3.5 h-3.5 text-[#5C6378]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <svg class="w-3.5 h-3.5 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </div>
       </div>`;
   }).join('');
@@ -671,7 +671,7 @@ function showEmpresaModal(empresa) {
   const iconSvg = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/></svg>';
 
   if (vehicles.length === 0) {
-    openDashModal(empresa, 'Sin vehículos activos', 'linear-gradient(135deg,#10B981,#059669)', iconSvg, '<p class="text-[#5C6378] text-center py-6">No hay vehículos activos para esta empresa</p>');
+    openDashModal(empresa, 'Sin vehículos activos', 'linear-gradient(135deg,#10B981,#059669)', iconSvg, '<p class="text-[#4a5568] text-center py-6">No hay vehículos activos para esta empresa</p>');
     return;
   }
 

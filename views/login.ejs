@@ -6,26 +6,26 @@
         <img src="/images/fp3d.png" class="w-20 h-20 object-contain" alt="Logo Grupo Falpat">
       </div>
       <h1 class="text-3xl font-bold text-gradient-primary neon-text-gold">Grupo Falpat SRL</h1>
-      <p class="text-[#8E94A8] mt-1">Control de Mantenimiento</p>
+      <p class="text-[#8b9bb4] mt-1">Control de Mantenimiento</p>
     </div>
 
     <div class="glass-card rounded-2xl p-8">
       <% if (typeof error !== 'undefined' && error) { %>
         <div class="mb-4 px-4 py-3 rounded-lg border border-red-500/30 bg-red-900/50 text-red-400 text-sm text-center"><%= error %></div>
       <% } %>
-      <div class="flex mb-6 bg-[#0A0A1A]/50 rounded-lg p-1 border border-[#6C3CE1]/10">
-        <button id="tab-login" class="flex-1 py-2 text-center rounded-md text-sm font-medium transition text-[#6C3CE1] bg-[#6C3CE1]/10 shadow-sm">Iniciar Sesión</button>
-        <button id="tab-register" class="flex-1 py-2 text-center rounded-md text-sm font-medium transition text-[#8E94A8] hover:text-[#F1F3F8]">Registrarse</button>
+      <div class="flex mb-6 bg-[#0a0e17]/50 rounded-lg p-1 border border-[#d4af37]/10">
+        <button id="tab-login" class="flex-1 py-2 text-center rounded-md text-sm font-medium transition text-[#d4af37] bg-[#d4af37]/10 shadow-sm">Iniciar Sesión</button>
+        <button id="tab-register" class="flex-1 py-2 text-center rounded-md text-sm font-medium transition text-[#8b9bb4] hover:text-[#ffffff]">Registrarse</button>
       </div>
 
       <form id="login-form" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Email</label>
-          <input type="email" id="login-email" required class="input-neon w-full px-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#6C3CE1] focus:ring-2 focus:ring-[#6C3CE1]/20" placeholder="correo@ejemplo.com">
+          <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Email</label>
+          <input type="email" id="login-email" required class="input-neon w-full px-4 py-2.5 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-[#ffffff] placeholder-[#4a5568] focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20" placeholder="correo@ejemplo.com">
         </div>
         <div>
-          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Contraseña</label>
-          <input type="password" id="login-password" required class="input-neon w-full px-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#6C3CE1] focus:ring-2 focus:ring-[#6C3CE1]/20" placeholder="••••••••">
+          <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Contraseña</label>
+          <input type="password" id="login-password" required class="input-neon w-full px-4 py-2.5 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-[#ffffff] placeholder-[#4a5568] focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20" placeholder="••••••••">
         </div>
         <button type="button" id="btn-login-submit" class="btn-primary w-full text-center py-2.5">Ingresar</button>
         <p id="login-error" class="text-red-400 text-sm text-center hidden"></p>
@@ -33,24 +33,24 @@
 
       <form id="register-form" class="space-y-4 hidden">
         <div>
-          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Nombre completo</label>
-          <input type="text" id="reg-name" required class="input-neon w-full px-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#6C3CE1] focus:ring-2 focus:ring-[#6C3CE1]/20" placeholder="Juan Pérez">
+          <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Nombre completo</label>
+          <input type="text" id="reg-name" required class="input-neon w-full px-4 py-2.5 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-[#ffffff] placeholder-[#4a5568] focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20" placeholder="Juan Pérez">
         </div>
         <div>
-          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Email</label>
-          <input type="email" id="reg-email" required class="input-neon w-full px-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#6C3CE1] focus:ring-2 focus:ring-[#6C3CE1]/20" placeholder="correo@ejemplo.com">
+          <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Email</label>
+          <input type="email" id="reg-email" required class="input-neon w-full px-4 py-2.5 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-[#ffffff] placeholder-[#4a5568] focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20" placeholder="correo@ejemplo.com">
         </div>
         <div>
-          <label class="block text-sm font-medium text-[#8E94A8] mb-1">Contraseña</label>
-          <input type="password" id="reg-password" required minlength="6" class="input-neon w-full px-4 py-2.5 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-[#F1F3F8] placeholder-[#5C6378] focus:border-[#6C3CE1] focus:ring-2 focus:ring-[#6C3CE1]/20" placeholder="Mínimo 6 caracteres">
+          <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Contraseña</label>
+          <input type="password" id="reg-password" required minlength="6" class="input-neon w-full px-4 py-2.5 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-[#ffffff] placeholder-[#4a5568] focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20" placeholder="Mínimo 6 caracteres">
         </div>
-        <button type="button" id="btn-register-submit" class="w-full bg-gradient-to-r from-[#6C3CE1] to-[#00D4FF] text-[#0A0A1A] font-bold py-2.5 rounded-lg hover:shadow-lg hover:shadow-[#6C3CE1]/20 transition-all duration-300 transform hover:scale-[1.02]">Crear cuenta</button>
+        <button type="button" id="btn-register-submit" class="w-full bg-gradient-to-r from-[#d4af37] to-[#d4af37] text-[#0a0e17] font-bold py-2.5 rounded-lg hover:shadow-lg hover:shadow-[#d4af37]/20 transition-all duration-300 transform hover:scale-[1.02]">Crear cuenta</button>
         <p id="register-error" class="text-red-400 text-sm text-center hidden"></p>
       </form>
 
 
     </div>
-    <p class="text-center text-[#5C6378] text-xs mt-6">&copy; 2026 Grupo Falpat SRL</p>
+    <p class="text-center text-[#4a5568] text-xs mt-6">&copy; 2026 Grupo Falpat SRL</p>
   </div>
 </div>
 
@@ -77,9 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   tabLogin.addEventListener('click', () => {
-    tabLogin.classList.add('text-[#6C3CE1]', 'bg-[#6C3CE1]/10');
-    tabRegister.classList.remove('text-[#6C3CE1]', 'bg-[#6C3CE1]/10');
-    tabRegister.classList.add('text-[#8E94A8]');
+    tabLogin.classList.add('text-[#d4af37]', 'bg-[#d4af37]/10');
+    tabRegister.classList.remove('text-[#d4af37]', 'bg-[#d4af37]/10');
+    tabRegister.classList.add('text-[#8b9bb4]');
     loginForm.classList.remove('hidden');
     registerForm.classList.add('hidden');
     loginError.classList.add('hidden');
@@ -87,9 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   tabRegister.addEventListener('click', () => {
-    tabRegister.classList.add('text-[#6C3CE1]', 'bg-[#6C3CE1]/10');
-    tabLogin.classList.remove('text-[#6C3CE1]', 'bg-[#6C3CE1]/10');
-    tabLogin.classList.add('text-[#8E94A8]');
+    tabRegister.classList.add('text-[#d4af37]', 'bg-[#d4af37]/10');
+    tabLogin.classList.remove('text-[#d4af37]', 'bg-[#d4af37]/10');
+    tabLogin.classList.add('text-[#8b9bb4]');
     registerForm.classList.remove('hidden');
     loginForm.classList.add('hidden');
     loginError.classList.add('hidden');

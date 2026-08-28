@@ -9,12 +9,12 @@
   <style>
     body { background: #1a1a2e; }
     .sticker { width: 100mm; height: 70mm; background: #fff; border-radius: 4mm; overflow: hidden; position: relative; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
-    .sticker-header { background: linear-gradient(135deg, #6C3CE1, #00D4FF); padding: 3mm 4mm; display: flex; align-items: center; justify-content: space-between; }
+    .sticker-header { background: linear-gradient(135deg, #d4af37, #d4af37); padding: 3mm 4mm; display: flex; align-items: center; justify-content: space-between; }
     .sticker-body { padding: 3mm 4mm; display: flex; gap: 4mm; align-items: center; }
     .sticker-qr { flex-shrink: 0; }
     .sticker-info { flex: 1; color: #1a1a2e; font-family: 'Segoe UI', Arial, sans-serif; }
     .sticker-patente { font-size: 20pt; font-weight: 900; color: #1a1a2e; letter-spacing: 1px; line-height: 1; }
-    .sticker-interno { font-size: 13pt; font-weight: 700; color: #6C3CE1; }
+    .sticker-interno { font-size: 13pt; font-weight: 700; color: #d4af37; }
     .sticker-detail { font-size: 7pt; color: #555; line-height: 1.4; }
     .sticker-footer { background: #dddfe5; padding: 1.5mm 4mm; display: flex; align-items: center; justify-content: space-between; border-top: 0.5px solid #ccc; border-radius: 0 0 4mm 4mm; }
     .sticker-footer span { font-size: 6pt; color: #888; font-family: 'Segoe UI', Arial, sans-serif; }
@@ -31,10 +31,10 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-2xl font-bold text-white">Vista Previa — Sticker QR</h1>
-        <p class="text-[#8E94A8] text-sm">Así se verá el adhesivo impreso en el vehículo</p>
+        <p class="text-[#8b9bb4] text-sm">Así se verá el adhesivo impreso en el vehículo</p>
       </div>
       <div class="flex gap-3">
-        <button onclick="window.print()" class="px-5 py-2.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-sm font-bold transition flex items-center gap-2">
+        <button onclick="window.print()" class="px-5 py-2.5 bg-[#d4af37] hover:bg-[#b8960c] text-white rounded-lg text-sm font-bold transition flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
           Imprimir Sticker
         </button>
@@ -44,10 +44,10 @@
       </div>
     </div>
 
-    <div class="glass-card rounded-xl p-6 mb-6" style="background:rgba(255,255,255,0.04); border:1px solid rgba(108,60,225,0.15); backdrop-filter:blur(12px);">
+    <div class="glass-card rounded-xl p-6 mb-6" style="background:rgba(255,255,255,0.04); border:1px solid rgba(212,175,55,0.15); backdrop-filter:blur(12px);">
       <h3 class="text-white font-semibold mb-3">URL del QR</h3>
-      <div class="bg-black/30 rounded-lg p-3 text-sm text-[#8E94A8] font-mono break-all"><%= qrUrl %></div>
-      <p class="text-[#5C6378] text-xs mt-2">Al escanear este código se muestra la página pública con todos los datos del vehículo (sin login)</p>
+      <div class="bg-black/30 rounded-lg p-3 text-sm text-[#8b9bb4] font-mono break-all"><%= qrUrl %></div>
+      <p class="text-[#4a5568] text-xs mt-2">Al escanear este código se muestra la página pública con todos los datos del vehículo (sin login)</p>
     </div>
   </div>
 
@@ -62,7 +62,7 @@
       <div class="sticker-header">
         <div style="display:flex;align-items:center;gap:2mm;">
           <div style="background:#fff;border-radius:2mm;width:8mm;height:8mm;display:flex;align-items:center;justify-content:center;">
-            <span style="color:#6C3CE1;font-size:9pt;font-weight:900;">GF</span>
+            <span style="color:#d4af37;font-size:9pt;font-weight:900;">GF</span>
           </div>
           <div style="display:flex;flex-direction:column;">
             <span style="color:#fff;font-size:8pt;font-weight:700;letter-spacing:0.5px;">GRUPO FALPAT SRL</span>
@@ -84,8 +84,8 @@
           <div style="font-size:8pt;font-weight:700;color:#1a1a2e;margin-top:1.5mm;"><%= vehicle.marca || '' %> <%= vehicle.modelo || '' %></div>
           <% if (vehicle.nroBet) { %>
           <div style="margin-top:2mm;">
-            <div style="width:12mm;height:12mm;border-radius:50%;border:0.6mm solid #6C3CE1;display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:12pt;font-weight:900;color:#6C3CE1;line-height:1;"><%= vehicle.nroBet %></span>
+            <div style="width:12mm;height:12mm;border-radius:50%;border:0.6mm solid #d4af37;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:12pt;font-weight:900;color:#d4af37;line-height:1;"><%= vehicle.nroBet %></span>
             </div>
           </div>
           <% } %>
@@ -101,30 +101,30 @@
 
   <div class="no-print max-w-4xl mx-auto mt-8">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="glass-card rounded-xl p-5" style="background:rgba(255,255,255,0.04); border:1px solid rgba(108,60,225,0.15); backdrop-filter:blur(12px);">
+      <div class="glass-card rounded-xl p-5" style="background:rgba(255,255,255,0.04); border:1px solid rgba(212,175,55,0.15); backdrop-filter:blur(12px);">
         <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
           <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           Especificaciones técnicas
         </h3>
-        <ul class="text-[#8E94A8] text-sm space-y-2">
-          <li>• <strong class="text-[#F1F3F8]">Corrección de errores nivel H</strong> — 30% recuperable si el sticker se daña</li>
-          <li>• <strong class="text-[#F1F3F8]">Alto contraste</strong> — Negro puro sobre fondo blanco</li>
-          <li>• <strong class="text-[#F1F3F8]">Zona silenciosa</strong> — Borde blanco de 2mm alrededor del QR</li>
-          <li>• <strong class="text-[#F1F3F8]">Formato</strong> — 100mm × 70mm (tamaño estándar para stickers vehiculares)</li>
-          <li>• <strong class="text-[#F1F3F8]">Resolución recomendada</strong> — 300 DPI para impresión</li>
+        <ul class="text-[#8b9bb4] text-sm space-y-2">
+          <li>• <strong class="text-[#ffffff]">Corrección de errores nivel H</strong> — 30% recuperable si el sticker se daña</li>
+          <li>• <strong class="text-[#ffffff]">Alto contraste</strong> — Negro puro sobre fondo blanco</li>
+          <li>• <strong class="text-[#ffffff]">Zona silenciosa</strong> — Borde blanco de 2mm alrededor del QR</li>
+          <li>• <strong class="text-[#ffffff]">Formato</strong> — 100mm × 70mm (tamaño estándar para stickers vehiculares)</li>
+          <li>• <strong class="text-[#ffffff]">Resolución recomendada</strong> — 300 DPI para impresión</li>
         </ul>
       </div>
-      <div class="glass-card rounded-xl p-5" style="background:rgba(255,255,255,0.04); border:1px solid rgba(108,60,225,0.15); backdrop-filter:blur(12px);">
+      <div class="glass-card rounded-xl p-5" style="background:rgba(255,255,255,0.04); border:1px solid rgba(212,175,55,0.15); backdrop-filter:blur(12px);">
         <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
           <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           Recomendaciones de impresión
         </h3>
-        <ul class="text-[#8E94A8] text-sm space-y-2">
-          <li>• Usar <strong class="text-[#F1F3F8]">papel vinyl o polipropileno</strong> (resistente a lluvia y sol)</li>
-          <li>• Impresión en <strong class="text-[#F1F3F8]">color</strong> para el header de marca</li>
-          <li>• Aplicar en superficie <strong class="text-[#F1F3F8]">lisa y limpia</strong></li>
+        <ul class="text-[#8b9bb4] text-sm space-y-2">
+          <li>• Usar <strong class="text-[#ffffff]">papel vinyl o polipropileno</strong> (resistente a lluvia y sol)</li>
+          <li>• Impresión en <strong class="text-[#ffffff]">color</strong> para el header de marca</li>
+          <li>• Aplicar en superficie <strong class="text-[#ffffff]">lisa y limpia</strong></li>
           <li>• Evitar bordes o esquinas del vehículo (impactos)</li>
-          <li>• Posición ideal: <strong class="text-[#F1F3F8]">puerta lateral o parabrisas</strong></li>
+          <li>• Posición ideal: <strong class="text-[#ffffff]">puerta lateral o parabrisas</strong></li>
         </ul>
       </div>
     </div>

@@ -36,7 +36,7 @@ router.put('/users/:id', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
-router.get('/dashboard', verifyToken, async (req, res) => {
+router.get('/dashboard', verifyToken, requireAdmin, async (req, res) => {
   try {
     const vehiclesSnap = await db.collection('vehicles').get();
     const now = new Date();
@@ -47,7 +47,7 @@ router.get('/dashboard', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/dashboard/financial', verifyToken, async (req, res) => {
+router.get('/dashboard/financial', verifyToken, requireAdmin, async (req, res) => {
   try {
     const vehiclesSnap = await db.collection('vehicles').get();
     const combustibleData = {};
@@ -249,7 +249,7 @@ router.post('/backup', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
-router.get('/report', verifyToken, async (req, res) => {
+router.get('/report', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { desde, hasta, categoria, vehiculo } = req.query;
     const filterDesde = desde ? new Date(desde) : new Date(0);
@@ -337,7 +337,7 @@ router.get('/report', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/alerts', verifyToken, async (req, res) => {
+router.get('/alerts', verifyToken, requireAdmin, async (req, res) => {
   try {
     const vehiclesSnap = await db.collection('vehicles').get();
     const now = new Date();
@@ -363,7 +363,7 @@ router.get('/alerts', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/vehicles-basic', verifyToken, async (req, res) => {
+router.get('/vehicles-basic', verifyToken, requireAdmin, async (req, res) => {
   try {
     const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
     const vehicles = snap.docs.map(d => {
@@ -391,7 +391,7 @@ router.get('/vehicles-basic', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/report/export', verifyToken, async (req, res) => {
+router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
   try {
     const ExcelJS = require('exceljs');
     const path = require('path');

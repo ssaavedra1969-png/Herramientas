@@ -1,94 +1,157 @@
 <%- include('partials/head') %>
 <style>
-  .report-tab { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #8E94A8; background: transparent; border: 1px solid transparent; white-space: nowrap; transition: all 0.15s; cursor: pointer; }
-  .report-tab:hover { background: rgba(255,255,255,0.05); color: #F1F3F8; }
-  .report-tab.active { background: rgba(108,60,225,0.15); color: #F1F3F8; border-color: rgba(108,60,225,0.3); }
+  /* ===== GLAMOURS-INSPIRED REPORT STYLES ===== */
+  .report-tab { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #9ca3af; background: transparent; border: 1px solid rgba(255,255,255,0.08); white-space: nowrap; transition: all 0.2s; cursor: pointer; }
+  .report-tab:hover { background: rgba(255,255,255,0.05); color: #f3f4f6; border-color: rgba(255,255,255,0.15); }
+  .report-tab.active { background: rgba(212,175,55,0.12); color: #d4af37; border-color: rgba(212,175,55,0.35); font-weight: 700; }
+  .rpt-card { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 1.5rem; box-shadow: 0 16px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07); position: relative; overflow: hidden; transition: border-color 0.3s; }
+  .rpt-card:hover { border-color: rgba(255,255,255,0.15); }
+  .rpt-glow::after { content: ''; position: absolute; top: -50px; right: -50px; width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%); pointer-events: none; }
+  .rpt-hdr { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
+  .rpt-ico { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .rpt-ico-gold { background: linear-gradient(135deg, #d4af37, #b8960c); box-shadow: 0 8px 20px rgba(212,175,55,0.25); }
+  .rpt-ico-green { background: linear-gradient(135deg, #065f46, #047857); }
+  .rpt-ico-purple { background: linear-gradient(135deg, #7e22ce, #9333ea); }
+  .rpt-filters { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1rem 1.25rem; }
+  .rpt-hero { background: linear-gradient(135deg, #854d0e 0%, #a16207 40%, #ca8a04 100%); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 1.75rem 2rem; position: relative; overflow: hidden; box-shadow: 0 16px 40px rgba(202,138,4,0.18); }
+  .rpt-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #9ca3af; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: inherit; }
+  .rpt-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: #f3f4f6; }
+  .rpt-stat { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 1.25rem; position: relative; overflow: hidden; transition: all 0.3s; }
+  .rpt-stat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #d4af37, #b8960c); opacity: 0.6; }
+  .rpt-stat:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .rpt-qr { padding: 4px 10px; font-size: 11px; color: #9ca3af; background: transparent; border: 1px solid transparent; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-weight: 500; font-family: inherit; }
+  .rpt-qr:hover { color: #d4af37; background: rgba(212,175,55,0.08); border-color: rgba(212,175,55,0.2); }
+  .rpt-div { border-top: 2px solid rgba(212,175,55,0.15); margin: 1rem 0; }
+  .rpt-input { width: 100%; padding: 8px 12px; background: rgba(12,16,26,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 0.85rem; color: #f3f4f6; outline: none; transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit; }
+  .rpt-input:focus { border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
+  .rpt-input option { background: #0a0e17; color: #f3f4f6; }
+  .rpt-filter-btn { padding: 8px 20px; background: linear-gradient(135deg, #d4af37, #b8960c); color: #0a0e17; font-weight: 700; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+  .rpt-filter-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,175,55,0.3); }
+  .rpt-table { width: 100%; border-collapse: collapse; }
+  .rpt-table th { background: rgba(255,255,255,0.02); color: #6b7280; font-weight: 600; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; font-family: 'JetBrains Mono', monospace; padding: 10px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 1; }
+  .rpt-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); color: #d1d5db; font-size: 0.82rem; }
+  .rpt-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .rpt-tfoot td { border-top: 2px solid rgba(212,175,55,0.2) !important; font-weight: 700; }
+  .rpt-badge { font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 10px; }
 </style>
 <div class="flex h-screen overflow-hidden">
   <%- include('partials/sidebar', { page: 'reports' }) %>
 
   <div class="flex-1 flex flex-col overflow-hidden">
-    <div class="lg:hidden header-glass text-[#F1F3F8] p-3 flex items-center justify-between">
-      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#6C3CE1]/10">
+    <div class="lg:hidden header-glass text-[#f3f4f6] p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#d4af37]/10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
-      <span class="w-8 h-8 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#d4af37] to-[#b8960c] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
     </div>
 
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+      <div class="rpt-hdr">
+        <div class="rpt-ico rpt-ico-gold">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
         <div>
-          <h1 class="text-2xl font-bold text-gradient-primary">Reportes</h1>
-          <p class="text-[#8E94A8] text-sm">Análisis financiero por sección</p>
+          <h1 class="text-xl font-extrabold text-[#f3f4f6]" style="letter-spacing:-0.01em">Reportes</h1>
+          <p class="text-[#6b7280] text-sm">Análisis financiero por sección</p>
         </div>
       </div>
 
-      <div class="flex flex-col sm:flex-row sm:items-end gap-3 mb-3">
-        <div class="flex-1">
-          <label class="block text-xs font-medium text-[#8E94A8] mb-1">Desde</label>
-          <input type="date" id="filtro-desde" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8]">
+      <div class="rpt-filters mb-4">
+        <div class="flex items-center gap-3 flex-1 flex-wrap">
+          <svg class="w-4 h-4 text-[#d4af37] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+          <div class="flex flex-col">
+            <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Desde</label>
+            <input type="date" id="filtro-desde" class="rpt-input" style="min-width:140px">
+          </div>
+          <div class="flex flex-col">
+            <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Hasta</label>
+            <input type="date" id="filtro-hasta" class="rpt-input" style="min-width:140px">
+          </div>
+          <div class="flex flex-col">
+            <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Vehículo</label>
+            <select id="filtro-vehiculo" class="rpt-input" style="min-width:180px">
+              <option value="todos">Todos</option>
+            </select>
+          </div>
+          <div class="flex flex-col justify-end">
+            <button onclick="applyFilters()" class="rpt-filter-btn flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              Filtrar
+            </button>
+          </div>
         </div>
-        <div class="flex-1">
-          <label class="block text-xs font-medium text-[#8E94A8] mb-1">Hasta</label>
-          <input type="date" id="filtro-hasta" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8]">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mr-1">Rápido:</span>
+          <button onclick="setDateRange('month')" class="rpt-qr">Este mes</button>
+          <button onclick="setDateRange('quarter')" class="rpt-qr">Trimestre</button>
+          <button onclick="setDateRange('year')" class="rpt-qr">Este año</button>
+          <button onclick="setDateRange('last3')" class="rpt-qr">Últimos 3 meses</button>
+          <button onclick="setDateRange('last6')" class="rpt-qr">Últimos 6 meses</button>
+          <button onclick="setDateRange('all')" class="rpt-qr">Todo</button>
         </div>
-        <div class="flex-1">
-          <label class="block text-xs font-medium text-[#8E94A8] mb-1">Vehículo</label>
-          <select id="filtro-vehiculo" class="w-full px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8]">
-            <option value="todos" class="bg-[#0A0A1A]">Todos</option>
-          </select>
-        </div>
-        <div class="flex items-end gap-2">
-          <button onclick="applyFilters()" class="px-4 py-2 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-sm font-medium transition">Filtrar</button>
-        </div>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 mb-4">
-        <span class="text-[10px] font-medium text-[#8E94A8] uppercase tracking-wider">Rápido:</span>
-        <button onclick="setDateRange('month')" class="px-3 py-1 text-xs text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 rounded-lg border border-transparent hover:border-[#6C3CE1]/20 transition">Este mes</button>
-        <button onclick="setDateRange('quarter')" class="px-3 py-1 text-xs text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 rounded-lg border border-transparent hover:border-[#6C3CE1]/20 transition">Trimestre</button>
-        <button onclick="setDateRange('year')" class="px-3 py-1 text-xs text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 rounded-lg border border-transparent hover:border-[#6C3CE1]/20 transition">Este año</button>
-        <button onclick="setDateRange('last3')" class="px-3 py-1 text-xs text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 rounded-lg border border-transparent hover:border-[#6C3CE1]/20 transition">Últimos 3 meses</button>
-        <button onclick="setDateRange('last6')" class="px-3 py-1 text-xs text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 rounded-lg border border-transparent hover:border-[#6C3CE1]/20 transition">Últimos 6 meses</button>
-        <button onclick="setDateRange('all')" class="px-3 py-1 text-xs text-[#8E94A8] hover:text-[#F1F3F8] hover:bg-[#6C3CE1]/10 rounded-lg border border-transparent hover:border-[#6C3CE1]/20 transition">Todo</button>
       </div>
 
-      <div class="flex gap-1 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
-        <button onclick="switchTab('resumen')" data-tab="resumen" class="report-tab active">Resumen</button>
-        <button onclick="switchTab('combustible')" data-tab="combustible" class="report-tab">Combustible</button>
-        <button onclick="switchTab('repuestos')" data-tab="repuestos" class="report-tab">Repuestos</button>
-        <button onclick="switchTab('vtv')" data-tab="vtv" class="report-tab">VTV</button>
-        <button onclick="switchTab('seguro')" data-tab="seguro" class="report-tab">Seguro</button>
-        <button onclick="switchTab('vehiculos')" data-tab="vehiculos" class="report-tab">Vehículos</button>
-        <button onclick="switchTab('empresas')" data-tab="empresas" class="report-tab">Empresas</button>
-        <button onclick="switchTab('costovehiculo')" data-tab="costovehiculo" class="report-tab">Costo/Vehículo</button>
+      <div class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
+        <button onclick="switchTab('resumen')" data-tab="resumen" class="report-tab active">
+          <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Resumen
+        </button>
+        <button onclick="switchTab('combustible')" data-tab="combustible" class="report-tab">
+          <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+          Combustible
+        </button>
+        <button onclick="switchTab('repuestos')" data-tab="repuestos" class="report-tab">
+          <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Repuestos
+        </button>
+        <button onclick="switchTab('vtv')" data-tab="vtv" class="report-tab">
+          <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          VTV
+        </button>
+        <button onclick="switchTab('seguro')" data-tab="seguro" class="report-tab">
+          <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Seguro
+        </button>
+        <button onclick="switchTab('vehiculos')" data-tab="vehiculos" class="report-tab">
+          <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a2 2 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+          Vehículos
+        </button>
+        <button onclick="switchTab('empresas')" data-tab="empresas" class="report-tab">
+          <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          Empresas
+        </button>
+        <button onclick="switchTab('costovehiculo')" data-tab="costovehiculo" class="report-tab">
+          <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Costo/Vehículo
+        </button>
       </div>
 
       <div id="tab-resumen" class="report-section">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <div class="glass-card rounded-xl p-4 card-3d"><p class="text-[#8E94A8] text-[11px] font-medium">Combustible</p><p class="text-xl font-bold text-[#F1F3F8] mt-1" id="res-total-comb">-</p></div>
-          <div class="glass-card rounded-xl p-4 card-3d"><p class="text-[#8E94A8] text-[11px] font-medium">Repuestos</p><p class="text-xl font-bold text-[#F1F3F8] mt-1" id="res-total-rep">-</p></div>
-          <div class="glass-card rounded-xl p-4 card-3d"><p class="text-[#8E94A8] text-[11px] font-medium">VTV</p><p class="text-xl font-bold text-[#F1F3F8] mt-1" id="res-total-vtv">-</p></div>
-          <div class="glass-card rounded-xl p-4 card-3d"><p class="text-[#8E94A8] text-[11px] font-medium">Seguro</p><p class="text-xl font-bold text-[#F1F3F8] mt-1" id="res-total-seg">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider font-medium">Combustible</p><p class="text-xl font-bold text-[#f3f4f6] mt-1" id="res-total-comb">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider font-medium">Repuestos</p><p class="text-xl font-bold text-[#f3f4f6] mt-1" id="res-total-rep">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider font-medium">VTV</p><p class="text-xl font-bold text-[#f3f4f6] mt-1" id="res-total-vtv">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider font-medium">Seguro</p><p class="text-xl font-bold text-[#f3f4f6] mt-1" id="res-total-seg">-</p></div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Gastos por Categoría</h3>
+          <div class="rpt-card rpt-glow">
+            <h3 class="text-sm font-semibold text-[#f3f4f6] mb-3 flex items-center gap-2 relative"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/></svg>Gastos por Categoría</h3>
             <div class="flex items-center justify-center h-[220px]"><canvas id="chart-donut" height="220"></canvas></div>
           </div>
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Top 10 Vehículos (Gasto Total)</h3>
+          <div class="rpt-card rpt-glow">
+            <h3 class="text-sm font-semibold text-[#f3f4f6] mb-3 flex items-center gap-2 relative"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Top 10 Vehículos (Gasto Total)</h3>
             <div class="flex items-center justify-center h-[220px]"><canvas id="chart-top-vehicles" height="220"></canvas></div>
           </div>
         </div>
-        <div class="glass-card rounded-xl p-5 mt-4">
+        <div class="rpt-card rpt-glow mt-4">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-[#F1F3F8]">Detalle de Gastos</h3>
-            <span class="text-[#5C6378] text-xs" id="res-count">0 registros</span>
+            <h3 class="text-sm font-semibold text-[#f3f4f6] flex items-center gap-2"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Detalle de Gastos</h3>
+            <span class="text-[#6b7280] text-xs" id="res-count">0 registros</span>
           </div>
           <div class="overflow-x-auto max-h-[350px] overflow-y-auto">
             <table class="w-full text-sm">
-              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+              <thead class="sticky top-0"><tr class="text-left text-[#6b7280] border-b border-white/[0.06]">
                 <th class="pb-2 pr-3 font-medium text-xs">Fecha</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Cat.</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
@@ -96,15 +159,15 @@
                 <th class="pb-2 text-right font-medium text-xs">Monto</th>
               </tr></thead>
               <tbody id="res-table"></tbody>
-              <tfoot id="res-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="4" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="res-grand-total">$ 0</td></tr></tfoot>
+              <tfoot id="res-foot" class="hidden"><tr class="border-t border-white/[0.08]"><td colspan="4" class="pt-2 pr-3 text-right text-[#6b7280] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#f3f4f6] font-bold text-sm" id="res-grand-total">$ 0</td></tr></tfoot>
             </table>
           </div>
           <div class="flex gap-2 mt-3 justify-end">
-            <button onclick="exportSectionExcel('resumen')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionExcel('resumen')" class="rpt-btn">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Excel
             </button>
-            <button onclick="exportSectionPDF('resumen')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionPDF('resumen')" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
               PDF
             </button>
@@ -114,28 +177,28 @@
 
       <div id="tab-combustible" class="report-section hidden">
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Litros</p><p class="text-xl font-bold text-[#F1F3F8]" id="comb-litros">-</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Importe</p><p class="text-xl font-bold text-[#F1F3F8]" id="comb-importe">-</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Precio Promedio/L</p><p class="text-xl font-bold text-[#F1F3F8]" id="comb-promedio">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Total Litros</p><p class="text-xl font-bold text-[#f3f4f6]" id="comb-litros">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Total Importe</p><p class="text-xl font-bold text-[#f3f4f6]" id="comb-importe">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Precio Promedio/L</p><p class="text-xl font-bold text-[#f3f4f6]" id="comb-promedio">-</p></div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          <div class="lg:col-span-2 glass-card rounded-xl p-5">
-            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Evolución Mensual</h3>
+          <div class="lg:col-span-2 rpt-card rpt-glow">
+            <h3 class="text-sm font-semibold text-[#f3f4f6] mb-3 flex items-center gap-2 relative"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Evolución Mensual</h3>
             <div class="h-[220px]"><canvas id="chart-comb-mensual" height="220"></canvas></div>
           </div>
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Por Tipo de Combustible</h3>
+          <div class="rpt-card rpt-glow">
+            <h3 class="text-sm font-semibold text-[#f3f4f6] mb-3 flex items-center gap-2 relative"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/></svg>Por Tipo de Combustible</h3>
             <div class="flex items-center justify-center h-[220px]"><canvas id="chart-comb-tipo" height="220"></canvas></div>
           </div>
         </div>
-        <div class="glass-card rounded-xl p-5">
+        <div class="rpt-card rpt-glow">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-[#F1F3F8]">Cargas Registradas</h3>
-            <span class="text-[#5C6378] text-xs" id="comb-count">0 registros</span>
+            <h3 class="text-sm font-semibold text-[#f3f4f6] flex items-center gap-2"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Cargas Registradas</h3>
+            <span class="text-[#6b7280] text-xs" id="comb-count">0 registros</span>
           </div>
           <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
             <table class="w-full text-sm">
-              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+              <thead class="sticky top-0"><tr class="text-left text-[#6b7280] border-b border-white/[0.06]">
                 <th class="pb-2 pr-3 font-medium text-xs">Fecha</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Tipo</th>
@@ -144,15 +207,15 @@
                 <th class="pb-2 text-right font-medium text-xs">$ / L</th>
               </tr></thead>
               <tbody id="comb-table"></tbody>
-              <tfoot id="comb-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="3" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 pr-3 text-right text-[#F1F3F8] font-bold text-sm" id="comb-total-litros">0</td><td class="pt-2 pr-3 text-right text-[#F1F3F8] font-bold text-sm" id="comb-total-importe">$ 0</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="comb-total-promedio">-</td></tr></tfoot>
+              <tfoot id="comb-foot" class="hidden"><tr class="border-t border-white/[0.08]"><td colspan="3" class="pt-2 pr-3 text-right text-[#6b7280] text-xs font-medium">Total:</td><td class="pt-2 pr-3 text-right text-[#f3f4f6] font-bold text-sm" id="comb-total-litros">0</td><td class="pt-2 pr-3 text-right text-[#f3f4f6] font-bold text-sm" id="comb-total-importe">$ 0</td><td class="pt-2 text-right text-[#f3f4f6] font-bold text-sm" id="comb-total-promedio">-</td></tr></tfoot>
             </table>
           </div>
           <div class="flex gap-2 mt-3 justify-end">
-            <button onclick="exportSectionExcel('combustible')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionExcel('combustible')" class="rpt-btn">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Excel
             </button>
-            <button onclick="exportSectionPDF('combustible')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionPDF('combustible')" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
               PDF
             </button>
@@ -162,22 +225,22 @@
 
       <div id="tab-repuestos" class="report-section hidden">
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Repuestos</p><p class="text-xl font-bold text-[#F1F3F8]" id="rep-total">-</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Repuestos Únicos</p><p class="text-xl font-bold text-[#F1F3F8]" id="rep-unique">-</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Promedio / Repuesto</p><p class="text-xl font-bold text-[#F1F3F8]" id="rep-avg">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Total Repuestos</p><p class="text-xl font-bold text-[#f3f4f6]" id="rep-total">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Repuestos Únicos</p><p class="text-xl font-bold text-[#f3f4f6]" id="rep-unique">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Promedio / Repuesto</p><p class="text-xl font-bold text-[#f3f4f6]" id="rep-avg">-</p></div>
         </div>
-        <div class="glass-card rounded-xl p-5 mb-4">
-          <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Top Repuestos (por gasto)</h3>
+        <div class="rpt-card rpt-glow mb-4">
+          <h3 class="text-sm font-semibold text-[#f3f4f6] mb-3 flex items-center gap-2 relative"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Top Repuestos (por gasto)</h3>
           <div class="h-[220px]"><canvas id="chart-rep-top" height="220"></canvas></div>
         </div>
-        <div class="glass-card rounded-xl p-5">
+        <div class="rpt-card rpt-glow">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-[#F1F3F8]">Repuestos Registrados</h3>
-            <span class="text-[#5C6378] text-xs" id="rep-count">0 registros</span>
+            <h3 class="text-sm font-semibold text-[#f3f4f6] flex items-center gap-2"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Repuestos Registrados</h3>
+            <span class="text-[#6b7280] text-xs" id="rep-count">0 registros</span>
           </div>
           <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
             <table class="w-full text-sm">
-              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+              <thead class="sticky top-0"><tr class="text-left text-[#6b7280] border-b border-white/[0.06]">
                 <th class="pb-2 pr-3 font-medium text-xs">Fecha</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Repuesto</th>
@@ -185,15 +248,15 @@
                 <th class="pb-2 text-right font-medium text-xs">Costo</th>
               </tr></thead>
               <tbody id="rep-table"></tbody>
-              <tfoot id="rep-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="4" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="rep-grand-total">$ 0</td></tr></tfoot>
+              <tfoot id="rep-foot" class="hidden"><tr class="border-t border-white/[0.08]"><td colspan="4" class="pt-2 pr-3 text-right text-[#6b7280] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#f3f4f6] font-bold text-sm" id="rep-grand-total">$ 0</td></tr></tfoot>
             </table>
           </div>
           <div class="flex gap-2 mt-3 justify-end">
-            <button onclick="exportSectionExcel('repuestos')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionExcel('repuestos')" class="rpt-btn">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Excel
             </button>
-            <button onclick="exportSectionPDF('repuestos')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionPDF('repuestos')" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
               PDF
             </button>
@@ -203,18 +266,18 @@
 
       <div id="tab-vtv" class="report-section hidden">
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total VTV</p><p class="text-xl font-bold text-[#F1F3F8]" id="vtv-total">-</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Vencidas</p><p class="text-xl font-bold text-red-400" id="vtv-vencidas">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Próx. 30 días</p><p class="text-xl font-bold text-yellow-400" id="vtv-proximas">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Total VTV</p><p class="text-xl font-bold text-[#f3f4f6]" id="vtv-total">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Vencidas</p><p class="text-xl font-bold text-red-400" id="vtv-vencidas">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Próx. 30 días</p><p class="text-xl font-bold text-yellow-400" id="vtv-proximas">0</p></div>
         </div>
-        <div class="glass-card rounded-xl p-5">
+        <div class="rpt-card rpt-glow">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-[#F1F3F8]">VTV por Vehículo</h3>
-            <span class="text-[#5C6378] text-xs" id="vtv-count">0 registros</span>
+            <h3 class="text-sm font-semibold text-[#f3f4f6] flex items-center gap-2"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>VTV por Vehículo</h3>
+            <span class="text-[#6b7280] text-xs" id="vtv-count">0 registros</span>
           </div>
           <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
             <table class="w-full text-sm">
-              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+              <thead class="sticky top-0"><tr class="text-left text-[#6b7280] border-b border-white/[0.06]">
                 <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Centro</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Resultado</th>
@@ -222,15 +285,15 @@
                 <th class="pb-2 text-right font-medium text-xs">Costo</th>
               </tr></thead>
               <tbody id="vtv-table"></tbody>
-              <tfoot id="vtv-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="4" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="vtv-grand-total">$ 0</td></tr></tfoot>
+              <tfoot id="vtv-foot" class="hidden"><tr class="border-t border-white/[0.08]"><td colspan="4" class="pt-2 pr-3 text-right text-[#6b7280] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#f3f4f6] font-bold text-sm" id="vtv-grand-total">$ 0</td></tr></tfoot>
             </table>
           </div>
           <div class="flex gap-2 mt-3 justify-end">
-            <button onclick="exportSectionExcel('vtv')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionExcel('vtv')" class="rpt-btn">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Excel
             </button>
-            <button onclick="exportSectionPDF('vtv')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionPDF('vtv')" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
               PDF
             </button>
@@ -240,18 +303,18 @@
 
       <div id="tab-seguro" class="report-section hidden">
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Seguro</p><p class="text-xl font-bold text-[#F1F3F8]" id="seg-total">-</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Vencidos</p><p class="text-xl font-bold text-red-400" id="seg-vencidos">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Próx. 30 días</p><p class="text-xl font-bold text-yellow-400" id="seg-proximos">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Total Seguro</p><p class="text-xl font-bold text-[#f3f4f6]" id="seg-total">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Vencidos</p><p class="text-xl font-bold text-red-400" id="seg-vencidos">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Próx. 30 días</p><p class="text-xl font-bold text-yellow-400" id="seg-proximos">0</p></div>
         </div>
-        <div class="glass-card rounded-xl p-5">
+        <div class="rpt-card rpt-glow">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-[#F1F3F8]">Seguro por Vehículo</h3>
-            <span class="text-[#5C6378] text-xs" id="seg-count">0 registros</span>
+            <h3 class="text-sm font-semibold text-[#f3f4f6] flex items-center gap-2"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Seguro por Vehículo</h3>
+            <span class="text-[#6b7280] text-xs" id="seg-count">0 registros</span>
           </div>
           <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
             <table class="w-full text-sm">
-              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+              <thead class="sticky top-0"><tr class="text-left text-[#6b7280] border-b border-white/[0.06]">
                 <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Compañía</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Póliza</th>
@@ -259,15 +322,15 @@
                 <th class="pb-2 text-right font-medium text-xs">Costo</th>
               </tr></thead>
               <tbody id="seg-table"></tbody>
-              <tfoot id="seg-foot" class="hidden"><tr class="border-t border-[#6C3CE1]/10"><td colspan="4" class="pt-2 pr-3 text-right text-[#8E94A8] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#F1F3F8] font-bold text-sm" id="seg-grand-total">$ 0</td></tr></tfoot>
+              <tfoot id="seg-foot" class="hidden"><tr class="border-t border-white/[0.08]"><td colspan="4" class="pt-2 pr-3 text-right text-[#6b7280] text-xs font-medium">Total:</td><td class="pt-2 text-right text-[#f3f4f6] font-bold text-sm" id="seg-grand-total">$ 0</td></tr></tfoot>
             </table>
           </div>
           <div class="flex gap-2 mt-3 justify-end">
-            <button onclick="exportSectionExcel('seguro')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionExcel('seguro')" class="rpt-btn">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Excel
             </button>
-            <button onclick="exportSectionPDF('seguro')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionPDF('seguro')" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
               PDF
             </button>
@@ -277,29 +340,29 @@
 
       <div id="tab-vehiculos" class="report-section hidden">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Total Vehículos</p><p class="text-xl font-bold text-[#F1F3F8]" id="vb-total">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Con Trompo</p><p class="text-xl font-bold text-[#F1F3F8]" id="vb-trompo">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Tipos</p><p class="text-xl font-bold text-[#F1F3F8]" id="vb-tipos">0</p></div>
-          <div class="glass-card rounded-xl p-4"><p class="text-[#8E94A8] text-[11px]">Empresas</p><p class="text-xl font-bold text-[#F1F3F8]" id="vb-empresas">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Total Vehículos</p><p class="text-xl font-bold text-[#f3f4f6]" id="vb-total">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Con Trompo</p><p class="text-xl font-bold text-[#f3f4f6]" id="vb-trompo">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Tipos</p><p class="text-xl font-bold text-[#f3f4f6]" id="vb-tipos">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Empresas</p><p class="text-xl font-bold text-[#f3f4f6]" id="vb-empresas">0</p></div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Por Tipo de Vehículo</h3>
+          <div class="rpt-card rpt-glow">
+            <h3 class="text-sm font-semibold text-[#f3f4f6] mb-3 flex items-center gap-2 relative"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a2 2 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>Por Tipo de Vehículo</h3>
             <div class="flex items-center justify-center h-[220px]"><canvas id="chart-vb-tipo" height="220"></canvas></div>
           </div>
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Por Empresa</h3>
+          <div class="rpt-card rpt-glow">
+            <h3 class="text-sm font-semibold text-[#f3f4f6] mb-3 flex items-center gap-2 relative"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>Por Empresa</h3>
             <div class="flex items-center justify-center h-[220px]"><canvas id="chart-vb-empresa" height="220"></canvas></div>
           </div>
         </div>
-        <div class="glass-card rounded-xl p-5">
+        <div class="rpt-card rpt-glow">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-[#F1F3F8]">Ficha de Vehículos</h3>
-            <span class="text-[#5C6378] text-xs" id="vb-count">0 vehículos</span>
+            <h3 class="text-sm font-semibold text-[#f3f4f6] flex items-center gap-2"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Ficha de Vehículos</h3>
+            <span class="text-[#6b7280] text-xs" id="vb-count">0 vehículos</span>
           </div>
           <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
             <table class="w-full text-xs">
-              <thead class="sticky top-0"><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+              <thead class="sticky top-0"><tr class="text-left text-[#6b7280] border-b border-white/[0.06]">
                 <th class="pb-2 pr-2 font-medium">Interno</th>
                 <th class="pb-2 pr-2 font-medium">Patente</th>
                 <th class="pb-2 pr-2 font-medium">Marca</th>
@@ -319,11 +382,11 @@
             </table>
           </div>
           <div class="flex gap-2 mt-3 justify-end">
-            <button onclick="exportSectionExcel('vehiculos')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionExcel('vehiculos')" class="rpt-btn">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Excel
             </button>
-            <button onclick="exportSectionPDF('vehiculos')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionPDF('vehiculos')" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
               PDF
             </button>
@@ -334,22 +397,22 @@
       <!-- ═══ TAB: EMPRESAS ═══ -->
       <div id="tab-empresas" class="report-section hidden">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Gasto por Empresa</h3>
+          <div class="rpt-card rpt-glow">
+            <h3 class="text-sm font-semibold text-[#f3f4f6] mb-3 flex items-center gap-2 relative"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>Gasto por Empresa</h3>
             <div class="flex items-center justify-center h-[260px]"><canvas id="chart-empresas-gasto" height="260"></canvas></div>
           </div>
-          <div class="glass-card rounded-xl p-5">
-            <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Distribución por Empresa</h3>
+          <div class="rpt-card rpt-glow">
+            <h3 class="text-sm font-semibold text-[#f3f4f6] mb-3 flex items-center gap-2 relative"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/></svg>Distribución por Empresa</h3>
             <div class="flex items-center justify-center h-[260px]"><canvas id="chart-empresas-donut" height="260"></canvas></div>
           </div>
         </div>
-        <div class="glass-card rounded-xl p-5">
+        <div class="rpt-card rpt-glow">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-[#F1F3F8]">Detalle por Empresa</h3>
+            <h3 class="text-sm font-semibold text-[#f3f4f6] flex items-center gap-2"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Detalle por Empresa</h3>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
-              <thead><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+              <thead><tr class="text-left text-[#6b7280] border-b border-white/[0.06]">
                 <th class="pb-2 pr-3 font-medium text-xs">Empresa</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Vehículos</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Combustible</th>
@@ -362,11 +425,11 @@
             </table>
           </div>
           <div class="flex gap-2 mt-3 justify-end">
-            <button onclick="exportSectionExcel('empresas')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionExcel('empresas')" class="rpt-btn">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Excel
             </button>
-            <button onclick="exportSectionPDF('empresas')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionPDF('empresas')" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
               PDF
             </button>
@@ -376,17 +439,17 @@
 
       <!-- ═══ TAB: COSTO POR VEHÍCULO ═══ -->
       <div id="tab-costovehiculo" class="report-section hidden">
-        <div class="glass-card rounded-xl p-5 mb-4">
-          <h3 class="text-sm font-semibold text-[#F1F3F8] mb-3">Costo Total por Vehículo</h3>
+        <div class="rpt-card rpt-glow mb-4">
+          <h3 class="text-sm font-semibold text-[#f3f4f6] mb-3 flex items-center gap-2 relative"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Costo Total por Vehículo</h3>
           <div style="position:relative;height:300px;"><canvas id="chart-costo-vehiculo" height="300"></canvas></div>
         </div>
-        <div class="glass-card rounded-xl p-5">
+        <div class="rpt-card rpt-glow">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-[#F1F3F8]">Detalle de Costos por Vehículo</h3>
+            <h3 class="text-sm font-semibold text-[#f3f4f6] flex items-center gap-2"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Detalle de Costos por Vehículo</h3>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
-              <thead><tr class="text-left text-[#8E94A8] border-b border-[#6C3CE1]/10">
+              <thead><tr class="text-left text-[#6b7280] border-b border-white/[0.06]">
                 <th class="pb-2 pr-3 font-medium text-xs">Vehículo</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Combustible</th>
                 <th class="pb-2 pr-3 font-medium text-xs">Repuestos</th>
@@ -395,22 +458,22 @@
                 <th class="pb-2 text-right font-medium text-xs">Total</th>
               </tr></thead>
               <tbody id="costovehiculo-table"></tbody>
-              <tfoot id="costovehiculo-foot" class="hidden"><tr class="border-t-2 border-[#6C3CE1]/30 font-bold">
-                <td class="pt-2 pr-3 text-xs text-[#8E94A8]">TOTAL</td>
-                <td class="pt-2 pr-3 text-xs text-[#6C3CE1]" id="cv-foot-comb">$0</td>
+              <tfoot id="costovehiculo-foot" class="hidden"><tr class="border-t-2 border-[#d4af37]/30 font-bold">
+                <td class="pt-2 pr-3 text-xs text-[#6b7280]">TOTAL</td>
+                <td class="pt-2 pr-3 text-xs text-[#d4af37]" id="cv-foot-comb">$0</td>
                 <td class="pt-2 pr-3 text-xs text-[#10B981]" id="cv-foot-rep">$0</td>
                 <td class="pt-2 pr-3 text-xs text-[#F59E0B]" id="cv-foot-vtv">$0</td>
-                <td class="pt-2 pr-3 text-xs text-[#8B5CF6]" id="cv-foot-seg">$0</td>
-                <td class="pt-2 text-right text-xs text-[#F1F3F8]" id="cv-foot-total">$0</td>
+                <td class="pt-2 pr-3 text-xs text-[#d4af37]" id="cv-foot-seg">$0</td>
+                <td class="pt-2 text-right text-xs text-[#f3f4f6]" id="cv-foot-total">$0</td>
               </tr></tfoot>
             </table>
           </div>
           <div class="flex gap-2 mt-3 justify-end">
-            <button onclick="exportSectionExcel('costovehiculo')" class="px-3 py-1.5 bg-[#6C3CE1] hover:bg-[#5a2dc0] text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionExcel('costovehiculo')" class="rpt-btn">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Excel
             </button>
-            <button onclick="exportSectionPDF('costovehiculo')" class="px-3 py-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <button onclick="exportSectionPDF('costovehiculo')" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
               PDF
             </button>

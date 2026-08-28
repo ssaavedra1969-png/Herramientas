@@ -162,13 +162,13 @@ function renderService() {
     })
     .slice(0, 6);
   if (!entries.length) {
-    listEl.innerHTML = '<div class="text-[#5C6378] italic">Sin services registrados</div>';
+    listEl.innerHTML = '<div class="text-[#4a5568] italic">Sin services registrados</div>';
     return;
   }
   listEl.innerHTML = entries.map(e => `
     <div class="flex items-center justify-between gap-2">
-      <span class="text-[#F1F3F8]">${e.tipo}</span>
-      <span class="text-[#8E94A8] whitespace-nowrap">${e.proximoKm != null ? e.proximoKm.toLocaleString() + ' km' : formatDate(e.proximoFecha)}</span>
+      <span class="text-[#ffffff]">${e.tipo}</span>
+      <span class="text-[#8b9bb4] whitespace-nowrap">${e.proximoKm != null ? e.proximoKm.toLocaleString() + ' km' : formatDate(e.proximoFecha)}</span>
     </div>
   `).join('');
 }
@@ -177,14 +177,14 @@ function renderMultas() {
   const container = document.getElementById('vg-multas');
   const multas = vehicleData.multas || [];
   if (!multas.length) {
-    container.innerHTML = '<span class="italic text-[#5C6378]">Sin multas registradas</span>';
+    container.innerHTML = '<span class="italic text-[#4a5568]">Sin multas registradas</span>';
     return;
   }
   container.innerHTML = multas.map(m => `
     <div class="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
       <div>
-        <span class="text-[#F1F3F8]">${m.concepto || 'Multa'}</span>
-        <span class="text-xs text-[#5C6378] ml-2">${m.fecha || ''}</span>
+        <span class="text-[#ffffff]">${m.concepto || 'Multa'}</span>
+        <span class="text-xs text-[#4a5568] ml-2">${m.fecha || ''}</span>
       </div>
       <div class="flex items-center gap-2">
         <span class="text-red-400 font-medium">${formatCurrency(m.importe)}</span>
@@ -198,16 +198,16 @@ function renderDocumentos() {
   const container = document.getElementById('vg-documentos');
   const docs = vehicleData.documentos || [];
   if (!docs.length) {
-    container.innerHTML = '<span class="italic text-[#5C6378]">Sin documentos adjuntos</span>';
+    container.innerHTML = '<span class="italic text-[#4a5568]">Sin documentos adjuntos</span>';
     return;
   }
   container.innerHTML = docs.map(d => `
     <div class="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
       <div>
-        <span class="text-[#F1F3F8]">${d.tipo || 'Documento'}</span>
-        ${d.fechaVencimiento ? `<span class="text-xs text-[#5C6378] ml-2">Vence: ${d.fechaVencimiento}</span>` : ''}
+        <span class="text-[#ffffff]">${d.tipo || 'Documento'}</span>
+        ${d.fechaVencimiento ? `<span class="text-xs text-[#4a5568] ml-2">Vence: ${d.fechaVencimiento}</span>` : ''}
       </div>
-      ${d.archivoURL ? `<a href="${d.archivoURL}" target="_blank" class="text-[#00D4FF] text-xs hover:underline">Ver</a>` : ''}
+      ${d.archivoURL ? `<a href="${d.archivoURL}" target="_blank" class="text-[#d4af37] text-xs hover:underline">Ver</a>` : ''}
     </div>
   `).join('');
 }
@@ -238,11 +238,11 @@ function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.tab-btn').forEach(el => {
-    el.classList.remove('bg-[#6C3CE1]/10', 'text-[#6C3CE1]');
-    el.classList.add('text-[#8E94A8]');
+    el.classList.remove('bg-[#d4af37]/10', 'text-[#d4af37]');
+    el.classList.add('text-[#8b9bb4]');
   });
   document.getElementById(`tab-content-${tab}`)?.classList.remove('hidden');
-  document.getElementById(`tab-${tab}`)?.classList.add('bg-[#6C3CE1]/10', 'text-[#6C3CE1]');
+  document.getElementById(`tab-${tab}`)?.classList.add('bg-[#d4af37]/10', 'text-[#d4af37]');
 
   if (tab === 'qr') {
     setTimeout(generateQR, 100);
@@ -297,7 +297,7 @@ function generateQR() {
       correctLevel: QRCode.CorrectLevel.H
     });
   } else {
-    container.innerHTML = '<p class="text-[#5C6378] text-sm">Cargando librería QR...</p>';
+    container.innerHTML = '<p class="text-[#4a5568] text-sm">Cargando librería QR...</p>';
     setTimeout(generateQR, 500);
   }
 }
@@ -848,17 +848,17 @@ function renderServices(items) {
   const tbody = document.getElementById('services-table-body');
   if (!tbody) return;
   if (!items.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-[#5C6378]">Sin services registrados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-[#4a5568]">Sin services registrados</td></tr>';
     return;
   }
   tbody.innerHTML = items.map(s => `
-    <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
+    <tr class="border-b border-white/5 hover:bg-[#d4af37]/10">
       <td class="py-2 pr-2">${formatDate(s.fecha)}</td>
       <td class="py-2 pr-2 font-medium">${s.tipo || '-'}${s.fluido ? ` <span class="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#F59E0B]/15 text-[#F59E0B]">+ ${s.fluido}</span>` : ''}</td>
       <td class="py-2 pr-2">${s.km?.toLocaleString() || '-'}</td>
       <td class="py-2 pr-2">${s.proximoKm?.toLocaleString() || '-'}</td>
       <td class="py-2 pr-2">${s.proveedor || '-'}</td>
-      <td class="py-2 no-print"><button onclick="viewService('${s.id}')" class="text-[#8E94A8] hover:text-[#F1F3F8] mr-2" title="Ver detalle"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>${isAdmin() ? `<button onclick="editService('${s.id}')" class="text-[#8E94A8] hover:text-[#F1F3F8] mr-2" title="Editar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>` : ''}${isAdmin() ? `<button onclick="deleteService('${s.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
+      <td class="py-2 no-print"><button onclick="viewService('${s.id}')" class="text-[#8b9bb4] hover:text-[#ffffff] mr-2" title="Ver detalle"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>${isAdmin() ? `<button onclick="editService('${s.id}')" class="text-[#8b9bb4] hover:text-[#ffffff] mr-2" title="Editar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>` : ''}${isAdmin() ? `<button onclick="deleteService('${s.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
     </tr>
   `).join('');
 }
@@ -867,17 +867,17 @@ function renderRepuestos(items) {
   const tbody = document.getElementById('repuestos-table-body');
   if (!tbody) return;
   if (!items.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-[#5C6378]">Sin repuestos registrados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-[#4a5568]">Sin repuestos registrados</td></tr>';
     return;
   }
   tbody.innerHTML = items.map(r => `
-    <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
+    <tr class="border-b border-white/5 hover:bg-[#d4af37]/10">
       <td class="py-2 pr-2">${formatDate(r.fecha)}</td>
       <td class="py-2 pr-2">${r.tipo || '-'}</td>
       <td class="py-2 pr-2 font-medium">${r.pieza || '-'}</td>
       <td class="py-2 pr-2">${r.proveedor || '-'}</td>
       <td class="py-2 pr-2">${r.km?.toLocaleString() || '-'}</td>
-      <td class="py-2 no-print"><button onclick="viewRepuesto('${r.id}')" class="text-[#8E94A8] hover:text-[#F1F3F8] mr-2" title="Ver detalle"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>${isAdmin() ? `<button onclick="deleteRepuesto('${r.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
+      <td class="py-2 no-print"><button onclick="viewRepuesto('${r.id}')" class="text-[#8b9bb4] hover:text-[#ffffff] mr-2" title="Ver detalle"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>${isAdmin() ? `<button onclick="deleteRepuesto('${r.id}')" class="text-red-400 hover:text-red-300" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}</td>
     </tr>
   `).join('');
 }
@@ -1020,10 +1020,10 @@ function openDetailModal(title, rows) {
   if (body) {
     body.innerHTML = rows.filter(([, v]) => v != null && v !== '' && v !== '-').map(([k, v]) => `
       <div class="flex justify-between gap-4 py-2 border-b border-white/5">
-        <span class="text-[#8E94A8] text-sm shrink-0">${k}</span>
-        <span class="text-[#F1F3F8] text-sm text-right break-words">${v}</span>
+        <span class="text-[#8b9bb4] text-sm shrink-0">${k}</span>
+        <span class="text-[#ffffff] text-sm text-right break-words">${v}</span>
       </div>
-    `).join('') || '<p class="text-[#5C6378] text-sm">Sin datos</p>';
+    `).join('') || '<p class="text-[#4a5568] text-sm">Sin datos</p>';
   }
   showModal('modal-detalle');
 }
@@ -1344,7 +1344,7 @@ function renderHistorial() {
   const repuestos = (window.allRepuestosData || []).map(r => toItem(r, 'repuesto'));
 
   if (!services.length && !repuestos.length) {
-    tbody.innerHTML = '<tr><td class="text-center py-8 text-[#5C6378]">Sin movimientos registrados</td></tr>';
+    tbody.innerHTML = '<tr><td class="text-center py-8 text-[#4a5568]">Sin movimientos registrados</td></tr>';
     return;
   }
 
@@ -1372,21 +1372,21 @@ function renderHistorial() {
   };
 
   const rowHtml = (item, showBadge) => `
-    <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10 cursor-pointer" onclick="${item.kind === 'service' ? 'viewService' : 'viewRepuesto'}('${item.id}')" title="Ver detalle">
-      <td class="py-2 px-3 text-xs text-[#F1F3F8] break-words">${showBadge ? badge(item) : ''}${line(item)}</td>
+    <tr class="border-b border-white/5 hover:bg-[#d4af37]/10 cursor-pointer" onclick="${item.kind === 'service' ? 'viewService' : 'viewRepuesto'}('${item.id}')" title="Ver detalle">
+      <td class="py-2 px-3 text-xs text-[#ffffff] break-words">${showBadge ? badge(item) : ''}${line(item)}</td>
     </tr>`;
 
   const sectionHeader = (title, color, count) => `
-    <tr class="bg-[#6C3CE1]/15">
-      <td class="py-2 px-3 text-xs font-bold text-[#F1F3F8]">
+    <tr class="bg-[#d4af37]/15">
+      <td class="py-2 px-3 text-xs font-bold text-[#ffffff]">
         <span class="px-2 py-0.5 rounded-full text-xs font-medium mr-2" style="background:${color}20;color:${color}">${title}</span>
         ${count} registro(s)
       </td>
     </tr>`;
 
   const groupHeader = (label, count) => `
-    <tr class="bg-[#0A0A1A]/40">
-      <td class="py-1.5 px-3 text-xs font-semibold text-[#8E94A8]">${label} <span class="text-[#5C6378]">(${count})</span></td>
+    <tr class="bg-[#0a0e17]/40">
+      <td class="py-1.5 px-3 text-xs font-semibold text-[#8b9bb4]">${label} <span class="text-[#4a5568]">(${count})</span></td>
     </tr>`;
 
   const sortDesc = (arr) => arr.slice().sort((a, b) => (b.fecha || 0) - (a.fecha || 0));

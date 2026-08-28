@@ -9,36 +9,36 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <style>
     * { -webkit-tap-highlight-color: transparent; }
-    body { background: linear-gradient(135deg, #0A0A1A 0%, #1a1a3e 50%, #0A0A1A 100%); min-height: 100vh; min-height: 100dvh; }
-    .glass-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(108,60,225,0.15); backdrop-filter: blur(12px); }
-    .text-gradient-primary { background: linear-gradient(135deg, #6C3CE1, #00D4FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .admin-bar { position: sticky; top: 0; z-index: 50; background: rgba(10,10,26,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(108,60,225,0.2); }
+    body { background: linear-gradient(135deg, #0a0e17 0%, #1a1a3e 50%, #0a0e17 100%); min-height: 100vh; min-height: 100dvh; }
+    .glass-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.15); backdrop-filter: blur(12px); }
+    .text-gradient-primary { background: linear-gradient(135deg, #d4af37, #d4af37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .admin-bar { position: sticky; top: 0; z-index: 50; background: rgba(10,10,26,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212,175,55,0.2); }
     .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .btn-primary { background: linear-gradient(135deg, #6C3CE1, #00D4FF); color: #fff; padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+    .btn-primary { background: linear-gradient(135deg, #d4af37, #d4af37); color: #fff; padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
     .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
-    .btn-secondary { background: rgba(255,255,255,0.08); color: #F1F3F8; padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: #ffffff; padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
     .btn-secondary:active { background: rgba(255,255,255,0.15); }
     .login-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(10,10,26,0.97); display: flex; align-items: center; justify-content: center; padding: 16px; }
     .login-overlay.hidden { display: none; }
-    .input-field { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(108,60,225,0.25); border-radius: 10px; color: #F1F3F8; font-size: 16px; outline: none; }
-    .input-field:focus { border-color: #6C3CE1; box-shadow: 0 0 0 2px rgba(108,60,225,0.2); }
-    .input-field::placeholder { color: #5C6378; }
+    .input-field { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(212,175,55,0.25); border-radius: 10px; color: #ffffff; font-size: 16px; outline: none; }
+    .input-field:focus { border-color: #d4af37; box-shadow: 0 0 0 2px rgba(212,175,55,0.2); }
+    .input-field::placeholder { color: #4a5568; }
   </style>
 </head>
-<body class="text-[#F1F3F8]">
+<body class="text-[#ffffff]">
 
   <div class="p-4 pb-8">
     <div class="max-w-lg mx-auto">
 
       <div class="flex items-center gap-3 mb-5">
-        <div class="w-11 h-11 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-xl flex items-center justify-center shadow-lg shadow-[#6C3CE1]/30 flex-shrink-0">
+        <div class="w-11 h-11 bg-gradient-to-br from-[#d4af37] to-[#d4af37] rounded-xl flex items-center justify-center shadow-lg shadow-[#d4af37]/30 flex-shrink-0">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
         </div>
         <div class="flex-1">
           <h1 class="text-lg font-bold text-gradient-primary">Grupo Falpat SRL</h1>
-          <p class="text-[#8E94A8] text-[11px]">Control de Mantenimiento</p>
+          <p class="text-[#8b9bb4] text-[11px]">Control de Mantenimiento</p>
         </div>
-        <a href="/login" class="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#8E94A8] text-[11px] font-medium transition border border-white/10 flex items-center gap-1.5">
+        <a href="/login" class="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[#8b9bb4] text-[11px] font-medium transition border border-white/10 flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
           Admin
         </a>
@@ -47,11 +47,11 @@
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
         <div class="flex items-center justify-between mb-2">
           <div>
-            <p class="text-[#8E94A8] text-[10px] uppercase tracking-wider">Patente</p>
-            <p class="text-2xl sm:text-3xl font-black text-[#F1F3F8] tracking-wider leading-tight"><%= vehicle.patente || '—' %></p>
+            <p class="text-[#8b9bb4] text-[10px] uppercase tracking-wider">Patente</p>
+            <p class="text-2xl sm:text-3xl font-black text-[#ffffff] tracking-wider leading-tight"><%= vehicle.patente || '—' %></p>
           </div>
           <div class="text-right">
-            <p class="text-[#8E94A8] text-[10px] uppercase tracking-wider">Interno</p>
+            <p class="text-[#8b9bb4] text-[10px] uppercase tracking-wider">Interno</p>
             <p class="text-xl sm:text-2xl font-bold text-gradient-primary"><%= vehicle.interno || '—' %></p>
           </div>
         </div>
@@ -61,18 +61,18 @@
           <span class="status-badge <%= ec %>"><%= vehicle.estadoGeneral || 'Sin estado' %></span>
         </div>
 
-        <div class="h-px bg-[#6C3CE1]/15 my-3"></div>
+        <div class="h-px bg-[#d4af37]/15 my-3"></div>
         <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-          <div><p class="text-[#8E94A8] text-[10px]">Marca</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.marca || '—' %></p></div>
-          <div><p class="text-[#8E94A8] text-[10px]">Modelo</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.modelo || '—' %></p></div>
-          <div><p class="text-[#8E94A8] text-[10px]">Tipo</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.tipo || '—' %></p></div>
-          <div><p class="text-[#8E94A8] text-[10px]">Año</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.año || '—' %></p></div>
-          <% if (vehicle.subtipo) { %><div><p class="text-[#8E94A8] text-[10px]">Subtipo</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.subtipo %></p></div><% } %>
-          <% if (vehicle.marca !== vehicle.marcaChasis && vehicle.marcaChasis) { %><div><p class="text-[#8E94A8] text-[10px]">Marca Chasis</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.marcaChasis %></p></div><% } %>
-          <% if (vehicle.chasis) { %><div><p class="text-[#8E94A8] text-[10px]">Chasis</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.chasis %></p></div><% } %>
-          <% if (vehicle.numeroMotor) { %><div><p class="text-[#8E94A8] text-[10px]">Motor</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.numeroMotor %></p></div><% } %>
-          <% if (vehicle.capacidadCarga) { %><div><p class="text-[#8E94A8] text-[10px]">Cap. Carga</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.capacidadCarga %></p></div><% } %>
-          <% if (vehicle.empresa) { %><div><p class="text-[#8E94A8] text-[10px]">Empresa</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.empresa %></p></div><% } %>
+          <div><p class="text-[#8b9bb4] text-[10px]">Marca</p><p class="font-semibold text-[#ffffff]"><%= vehicle.marca || '—' %></p></div>
+          <div><p class="text-[#8b9bb4] text-[10px]">Modelo</p><p class="font-semibold text-[#ffffff]"><%= vehicle.modelo || '—' %></p></div>
+          <div><p class="text-[#8b9bb4] text-[10px]">Tipo</p><p class="font-semibold text-[#ffffff]"><%= vehicle.tipo || '—' %></p></div>
+          <div><p class="text-[#8b9bb4] text-[10px]">Año</p><p class="font-semibold text-[#ffffff]"><%= vehicle.año || '—' %></p></div>
+          <% if (vehicle.subtipo) { %><div><p class="text-[#8b9bb4] text-[10px]">Subtipo</p><p class="font-semibold text-[#ffffff]"><%= vehicle.subtipo %></p></div><% } %>
+          <% if (vehicle.marca !== vehicle.marcaChasis && vehicle.marcaChasis) { %><div><p class="text-[#8b9bb4] text-[10px]">Marca Chasis</p><p class="font-semibold text-[#ffffff]"><%= vehicle.marcaChasis %></p></div><% } %>
+          <% if (vehicle.chasis) { %><div><p class="text-[#8b9bb4] text-[10px]">Chasis</p><p class="font-semibold text-[#ffffff]"><%= vehicle.chasis %></p></div><% } %>
+          <% if (vehicle.numeroMotor) { %><div><p class="text-[#8b9bb4] text-[10px]">Motor</p><p class="font-semibold text-[#ffffff]"><%= vehicle.numeroMotor %></p></div><% } %>
+          <% if (vehicle.capacidadCarga) { %><div><p class="text-[#8b9bb4] text-[10px]">Cap. Carga</p><p class="font-semibold text-[#ffffff]"><%= vehicle.capacidadCarga %></p></div><% } %>
+          <% if (vehicle.empresa) { %><div><p class="text-[#8b9bb4] text-[10px]">Empresa</p><p class="font-semibold text-[#ffffff]"><%= vehicle.empresa %></p></div><% } %>
         </div>
       </div>
 
@@ -80,10 +80,10 @@
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
         <h2 class="text-sm font-bold text-gradient-primary mb-3">Chofer</h2>
         <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-          <% if (vehicle.chofer) { %><div><p class="text-[#8E94A8] text-[10px]">Chofer</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.chofer %></p></div><% } %>
-          <% if (vehicle.dni) { %><div><p class="text-[#8E94A8] text-[10px]">DNI</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.dni %></p></div><% } %>
-          <% if (vehicle.registro) { %><div><p class="text-[#8E94A8] text-[10px]">Registro</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.registro %></p></div><% } %>
-          <% if (vehicle.centroTrabajo) { %><div><p class="text-[#8E94A8] text-[10px]">Centro Trabajo</p><p class="font-semibold text-[#F1F3F8]"><%= vehicle.centroTrabajo %></p></div><% } %>
+          <% if (vehicle.chofer) { %><div><p class="text-[#8b9bb4] text-[10px]">Chofer</p><p class="font-semibold text-[#ffffff]"><%= vehicle.chofer %></p></div><% } %>
+          <% if (vehicle.dni) { %><div><p class="text-[#8b9bb4] text-[10px]">DNI</p><p class="font-semibold text-[#ffffff]"><%= vehicle.dni %></p></div><% } %>
+          <% if (vehicle.registro) { %><div><p class="text-[#8b9bb4] text-[10px]">Registro</p><p class="font-semibold text-[#ffffff]"><%= vehicle.registro %></p></div><% } %>
+          <% if (vehicle.centroTrabajo) { %><div><p class="text-[#8b9bb4] text-[10px]">Centro Trabajo</p><p class="font-semibold text-[#ffffff]"><%= vehicle.centroTrabajo %></p></div><% } %>
         </div>
       </div>
       <% } %>
@@ -91,7 +91,7 @@
       <% if (vehicle.observaciones) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
         <h2 class="text-sm font-bold text-gradient-primary mb-1">Observaciones</h2>
-        <p class="text-[#8E94A8] text-xs"><%= vehicle.observaciones %></p>
+        <p class="text-[#8b9bb4] text-xs"><%= vehicle.observaciones %></p>
       </div>
       <% } %>
 
@@ -106,11 +106,11 @@
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
         <h2 class="text-sm font-bold text-gradient-primary mb-2">Próximos Services</h2>
         <div class="grid grid-cols-2 gap-3 text-xs">
-          <% if (vehicle.proximoServiceKm) { %><div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5"><p class="text-[#8E94A8] text-[10px]">Kilometraje</p><p class="font-bold text-[#F1F3F8]"><%= Number(vehicle.proximoServiceKm).toLocaleString('es-AR') %> km</p></div><% } %>
+          <% if (vehicle.proximoServiceKm) { %><div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5"><p class="text-[#8b9bb4] text-[10px]">Kilometraje</p><p class="font-bold text-[#ffffff]"><%= Number(vehicle.proximoServiceKm).toLocaleString('es-AR') %> km</p></div><% } %>
           <% if (fSvc) {
             const dSvc = Math.ceil((fSvc - new Date()) / 86400000);
             const cSvc = dSvc <= 0 ? 'text-red-400' : dSvc <= 7 ? 'text-yellow-400' : 'text-green-400';
-          %><div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5"><p class="text-[#8E94A8] text-[10px]">Fecha</p><p class="font-bold <%= cSvc %>"><%= fSvc.toLocaleDateString('es-AR') %></p></div>
+          %><div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5"><p class="text-[#8b9bb4] text-[10px]">Fecha</p><p class="font-bold <%= cSvc %>"><%= fSvc.toLocaleDateString('es-AR') %></p></div>
           <% } %>
         </div>
         <% if (svcEntries.length) { %>
@@ -121,8 +121,8 @@
             const dueDate = f && Math.ceil((f - new Date()) / 86400000) <= 0;
           %>
           <div class="flex items-center justify-between gap-2 bg-white/[0.03] rounded-lg px-3 py-2 border border-white/5">
-            <span class="font-semibold text-[#F1F3F8] text-xs truncate"><%= s.tipo || 'Sin tipo' %></span>
-            <span class="text-[#8E94A8] text-xs whitespace-nowrap">
+            <span class="font-semibold text-[#ffffff] text-xs truncate"><%= s.tipo || 'Sin tipo' %></span>
+            <span class="text-[#8b9bb4] text-xs whitespace-nowrap">
               <%= dueKm ? Number(s.proximoKm).toLocaleString('es-AR') + ' km' : '' %><%= dueKm && f ? ' · ' : '' %><%= f ? fmtDate(f) : '' %><%= !dueKm && !f ? '—' : '' %>
             </span>
           </div>
@@ -140,20 +140,20 @@
           <div class="flex items-start justify-between gap-2 bg-white/[0.03] rounded-lg px-3 py-2 border border-white/5">
             <div class="min-w-0">
               <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold mr-2" style="background:#10B98120;color:#10B981">Repuesto</span>
-              <span class="font-semibold text-[#F1F3F8] text-xs"><%= r.pieza || '—' %></span>
-              <% if (r.tipo) { %><span class="text-[#8E94A8] text-[11px]">· <%= r.tipo %></span><% } %>
+              <span class="font-semibold text-[#ffffff] text-xs"><%= r.pieza || '—' %></span>
+              <% if (r.tipo) { %><span class="text-[#8b9bb4] text-[11px]">· <%= r.tipo %></span><% } %>
             </div>
-            <div class="text-right flex-shrink-0 text-[11px] text-[#8E94A8]"><%= fmtDate(r.fecha) %><% if (r.km != null) { %><br><span class="text-[#5C6378]"><%= Number(r.km).toLocaleString('es-AR') %> km</span><% } %></div>
+            <div class="text-right flex-shrink-0 text-[11px] text-[#8b9bb4]"><%= fmtDate(r.fecha) %><% if (r.km != null) { %><br><span class="text-[#4a5568]"><%= Number(r.km).toLocaleString('es-AR') %> km</span><% } %></div>
           </div>
           <% }); %>
           <% (recentServices || []).forEach(s => { %>
           <div class="flex items-start justify-between gap-2 bg-white/[0.03] rounded-lg px-3 py-2 border border-white/5">
             <div class="min-w-0">
               <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold mr-2" style="background:#F59E0B20;color:#F59E0B">Service</span>
-              <span class="font-semibold text-[#F1F3F8] text-xs"><%= s.tipo || '—' %></span>
+              <span class="font-semibold text-[#ffffff] text-xs"><%= s.tipo || '—' %></span>
               <% if (s.fluido) { %><span class="text-[#F59E0B] text-[11px]">+ <%= s.fluido %></span><% } %>
             </div>
-            <div class="text-right flex-shrink-0 text-[11px] text-[#8E94A8]"><%= fmtDate(s.fecha) %><% if (s.km != null) { %><br><span class="text-[#5C6378]"><%= Number(s.km).toLocaleString('es-AR') %> km</span><% } %></div>
+            <div class="text-right flex-shrink-0 text-[11px] text-[#8b9bb4]"><%= fmtDate(s.fecha) %><% if (s.km != null) { %><br><span class="text-[#4a5568]"><%= Number(s.km).toLocaleString('es-AR') %> km</span><% } %></div>
           </div>
           <% }); %>
         </div>
@@ -164,20 +164,20 @@
 
 
       <div class="text-center mt-4 pb-4">
-        <p class="text-[#5C6378] text-[10px]">Grupo Falpat SRL — Control de Mantenimiento</p>
+        <p class="text-[#4a5568] text-[10px]">Grupo Falpat SRL — Control de Mantenimiento</p>
       </div>
     </div>
   </div>
 
   <div id="login-modal" class="login-overlay hidden">
     <div class="w-full max-w-sm">
-      <div class="glass-card rounded-2xl p-6" style="background:rgba(15,15,35,0.95); border:1px solid rgba(108,60,225,0.3);">
+      <div class="glass-card rounded-2xl p-6" style="background:rgba(15,15,35,0.95); border:1px solid rgba(212,175,55,0.3);">
         <div class="text-center mb-6">
-          <div class="w-14 h-14 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-[#6C3CE1]/30">
+          <div class="w-14 h-14 bg-gradient-to-br from-[#d4af37] to-[#d4af37] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-[#d4af37]/30">
             <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           </div>
-          <h2 class="text-lg font-bold text-[#F1F3F8]">Acceso Admin</h2>
-          <p class="text-[#8E94A8] text-xs mt-1">Ingresá tus credenciales para editar</p>
+          <h2 class="text-lg font-bold text-[#ffffff]">Acceso Admin</h2>
+          <p class="text-[#8b9bb4] text-xs mt-1">Ingresá tus credenciales para editar</p>
         </div>
         <div id="login-error" class="hidden mb-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center"></div>
         <div class="space-y-3">

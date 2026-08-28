@@ -38,7 +38,7 @@ function startScanner() {
       <div class="text-center p-4">
         <svg class="w-10 h-10 text-red-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
         <p class="text-red-400">Error al acceder a la cámara</p>
-        <p class="text-[#5C6378] text-xs mt-1">${err.message || 'Permiso denegado o cámara no disponible'}</p>
+        <p class="text-[#4a5568] text-xs mt-1">${err.message || 'Permiso denegado o cámara no disponible'}</p>
         <button onclick="startScanner()" class="mt-3 btn-primary text-sm px-4 py-2">Reintentar</button>
       </div>`;
     btnStart.classList.remove('hidden');
@@ -73,14 +73,14 @@ function onScanSuccess(decodedText, decodedResult) {
   resultDiv.innerHTML = `
     <div class="flex items-center justify-between">
       <div>
-        <p class="text-sm text-[#8E94A8]">Código: <span class="text-[#F1F3F8] font-mono">${decodedText}</span></p>
-        <p class="text-sm text-[#8E94A8] mt-1">ID detectado: <span class="text-[#00D4FF] font-medium">${vehicleId}</span></p>
+        <p class="text-sm text-[#8b9bb4]">Código: <span class="text-[#ffffff] font-mono">${decodedText}</span></p>
+        <p class="text-sm text-[#8b9bb4] mt-1">ID detectado: <span class="text-[#d4af37] font-medium">${vehicleId}</span></p>
       </div>
       <button onclick="goToVehicle('${vehicleId}')" class="btn-primary text-sm px-4 py-2">
         Ver Vehículo
       </button>
     </div>
-    <div id="scanned-info" class="mt-3 text-sm text-[#8E94A8]">Cargando datos del vehículo...</div>
+    <div id="scanned-info" class="mt-3 text-sm text-[#8b9bb4]">Cargando datos del vehículo...</div>
   `;
 
   lookupVehicle(vehicleId);
@@ -133,16 +133,16 @@ async function lookupVehicle(id) {
     infoDiv.innerHTML = `
       <div class="glass-card rounded-lg p-3 mt-2">
         <div class="grid grid-cols-2 gap-2 text-sm">
-          <span class="text-[#8E94A8]">Patente:</span>
-          <span class="text-[#F1F3F8] font-medium">${v.patente || '-'}</span>
-          <span class="text-[#8E94A8]">Interno:</span>
-          <span class="text-[#F1F3F8]">${v.interno || '-'}</span>
-          <span class="text-[#8E94A8]">Marca:</span>
-          <span class="text-[#F1F3F8]">${v.marca || '-'}</span>
-          <span class="text-[#8E94A8]">Modelo:</span>
-          <span class="text-[#F1F3F8]">${v.modelo || '-'}</span>
-          <span class="text-[#8E94A8]">Tipo:</span>
-          <span class="text-[#F1F3F8]">${v.tipo || '-'}</span>
+          <span class="text-[#8b9bb4]">Patente:</span>
+          <span class="text-[#ffffff] font-medium">${v.patente || '-'}</span>
+          <span class="text-[#8b9bb4]">Interno:</span>
+          <span class="text-[#ffffff]">${v.interno || '-'}</span>
+          <span class="text-[#8b9bb4]">Marca:</span>
+          <span class="text-[#ffffff]">${v.marca || '-'}</span>
+          <span class="text-[#8b9bb4]">Modelo:</span>
+          <span class="text-[#ffffff]">${v.modelo || '-'}</span>
+          <span class="text-[#8b9bb4]">Tipo:</span>
+          <span class="text-[#ffffff]">${v.tipo || '-'}</span>
         </div>
         <div class="mt-2 flex gap-2">
           <a href="/vehicle/${doc.id}" class="btn-primary text-xs px-3 py-1.5">Ver detalle completo →</a>
@@ -165,7 +165,7 @@ function lookupManual() {
     return;
   }
   const result = document.getElementById('manual-result');
-  result.innerHTML = '<p class="text-[#8E94A8]">Buscando...</p>';
+  result.innerHTML = '<p class="text-[#8b9bb4]">Buscando...</p>';
   lookupVehicle(id);
 }
 
@@ -250,11 +250,11 @@ async function ocrProcessImage(imageData) {
         <div class="text-center">
           <svg class="w-10 h-10 text-yellow-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
           <p class="text-yellow-400 font-medium">No se detectó patente</p>
-          <p class="text-[#5C6378] text-xs mt-1">Texto leído: "${rawText}"</p>
+          <p class="text-[#4a5568] text-xs mt-1">Texto leído: "${rawText}"</p>
           <div class="mt-3">
-            <label class="text-xs text-[#8E94A8]">Ingresá la patente manualmente:</label>
+            <label class="text-xs text-[#8b9bb4]">Ingresá la patente manualmente:</label>
             <div class="flex gap-2 mt-1">
-              <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon uppercase" maxlength="7">
+              <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon uppercase" maxlength="7">
               <button onclick="ocrManualSearch()" class="btn-primary text-sm px-4 py-2">Buscar</button>
             </div>
           </div>
@@ -319,22 +319,22 @@ function ocrShowCandidates(candidates, rawText) {
 
   const items = candidates.slice(0, 8).map(c => {
     const label = c.score >= 2 ? 'Alta' : c.score === 1 ? 'Media' : 'Baja';
-    const color = c.score >= 2 ? '#10B981' : c.score === 1 ? '#F59E0B' : '#8E94A8';
+    const color = c.score >= 2 ? '#10B981' : c.score === 1 ? '#F59E0B' : '#8b9bb4';
     return `
-      <button onclick="ocrLookupVehicle('${c.plate}')" class="flex items-center justify-between w-full px-3 py-2.5 bg-[#0A0A1A]/30 hover:bg-[#6C3CE1]/10 rounded-lg transition text-left">
-        <span class="text-[#F1F3F8] font-mono font-bold text-lg tracking-wider">${c.plate}</span>
+      <button onclick="ocrLookupVehicle('${c.plate}')" class="flex items-center justify-between w-full px-3 py-2.5 bg-[#0a0e17]/30 hover:bg-[#d4af37]/10 rounded-lg transition text-left">
+        <span class="text-[#ffffff] font-mono font-bold text-lg tracking-wider">${c.plate}</span>
         <span style="color:${color}" class="text-xs font-medium">${label}</span>
       </button>
     `;
   }).join('');
 
   result.innerHTML = `
-    <p class="text-[#8E94A8] text-xs mb-3">Posibles patentes detectadas (tocá la correcta):</p>
+    <p class="text-[#8b9bb4] text-xs mb-3">Posibles patentes detectadas (tocá la correcta):</p>
     <div class="space-y-1.5">${items}</div>
     <div class="mt-3 pt-3 border-t border-white/5">
-      <label class="text-xs text-[#8E94A8]">¿No aparece? Ingresala manual:</label>
+      <label class="text-xs text-[#8b9bb4]">¿No aparece? Ingresala manual:</label>
       <div class="flex gap-2 mt-1">
-        <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon uppercase" maxlength="7">
+        <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon uppercase" maxlength="7">
         <button onclick="ocrManualSearch()" class="btn-primary text-sm px-4 py-2">Buscar</button>
       </div>
     </div>
@@ -351,7 +351,7 @@ function ocrManualSearch() {
 async function ocrLookupVehicle(plate) {
   const result = document.getElementById('ocr-result');
   result.classList.remove('hidden');
-  result.innerHTML = `<p class="text-[#8E94A8] text-sm">Buscando "${plate}" en la base...</p>`;
+  result.innerHTML = `<p class="text-[#8b9bb4] text-sm">Buscando "${plate}" en la base...</p>`;
 
   try {
     const snapshot = await db.collection('vehicles')
@@ -365,8 +365,8 @@ async function ocrLookupVehicle(plate) {
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-[#10B981] font-semibold">Patente: ${plate}</p>
-            <p class="text-sm text-[#8E94A8] mt-1">${v.interno || ''} — ${v.marca || ''} ${v.modelo || ''}</p>
-            ${v.chofer ? `<p class="text-xs text-[#5C6378] mt-1">Chofer: ${v.chofer}</p>` : ''}
+            <p class="text-sm text-[#8b9bb4] mt-1">${v.interno || ''} — ${v.marca || ''} ${v.modelo || ''}</p>
+            ${v.chofer ? `<p class="text-xs text-[#4a5568] mt-1">Chofer: ${v.chofer}</p>` : ''}
           </div>
           <button onclick="window.location.href='/vehicle/${doc.id}'" class="btn-primary text-sm px-4 py-2">
             Ver Vehículo
@@ -385,7 +385,7 @@ async function ocrLookupVehicle(plate) {
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-[#10B981] font-semibold">Interno: ${plate}</p>
-              <p class="text-sm text-[#8E94A8] mt-1">${v.patente || ''} — ${v.marca || ''} ${v.modelo || ''}</p>
+              <p class="text-sm text-[#8b9bb4] mt-1">${v.patente || ''} — ${v.marca || ''} ${v.modelo || ''}</p>
             </div>
             <button onclick="window.location.href='/vehicle/${doc.id}'" class="btn-primary text-sm px-4 py-2">
               Ver Vehículo
@@ -398,9 +398,9 @@ async function ocrLookupVehicle(plate) {
             <svg class="w-10 h-10 text-yellow-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
             <p class="text-yellow-400 font-medium">Patente "${plate}" no encontrada en la base</p>
             <div class="mt-3">
-              <label class="text-xs text-[#8E94A8]">Probá con otra patente:</label>
+              <label class="text-xs text-[#8b9bb4]">Probá con otra patente:</label>
               <div class="flex gap-2 mt-1">
-                <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 rounded-lg text-sm text-[#F1F3F8] placeholder-[#5C6378] input-neon uppercase" maxlength="7">
+                <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon uppercase" maxlength="7">
                 <button onclick="ocrManualSearch()" class="btn-primary text-sm px-4 py-2">Buscar</button>
               </div>
             </div>

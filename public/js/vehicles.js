@@ -37,13 +37,13 @@ function getBrandLogo(marca) {
   return brandLogos[marca.toLowerCase().trim()] || '';
 }
 
-const truckFallbackSvg = '<svg class="w-10 h-10 text-[#6C3CE1]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>';
+const truckFallbackSvg = '<svg class="w-10 h-10 text-[#d4af37]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>';
 
 function handlePhotoError(el, brandLogo) {
   const fallback = brandLogo
-    ? '<div class="w-full h-40 bg-gradient-to-br from-[#6C3CE1]/15 via-[#3a2080]/5 to-[#00D4FF]/10 flex items-center justify-center">' +
+    ? '<div class="w-full h-40 bg-gradient-to-br from-[#d4af37]/15 via-[#b8960c]/5 to-[#d4af37]/10 flex items-center justify-center">' +
       '<div class="card-logo-wrap"><img src="' + brandLogo + '" class="card-logo-img"></div></div>'
-    : '<div class="w-full h-40 bg-gradient-to-br from-[#6C3CE1]/15 via-[#3a2080]/5 to-[#00D4FF]/10 flex items-center justify-center">' +
+    : '<div class="w-full h-40 bg-gradient-to-br from-[#d4af37]/15 via-[#b8960c]/5 to-[#d4af37]/10 flex items-center justify-center">' +
       truckFallbackSvg + '</div>';
   el.outerHTML = fallback;
 }
@@ -70,11 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       trompoFilter = btn.dataset.trompoFilter;
       document.querySelectorAll('[data-trompo-filter]').forEach(b => {
-        b.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
-        b.classList.add('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');
+        b.classList.remove('bg-[#d4af37]/30', 'text-[#ffffff]');
+        b.classList.add('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#d4af37]/10');
       });
-      btn.classList.add('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
-      btn.classList.remove('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');
+      btn.classList.add('bg-[#d4af37]/30', 'text-[#ffffff]');
+      btn.classList.remove('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#d4af37]/10');
       applyFilters();
     });
   });
@@ -102,17 +102,17 @@ function setViewMode(mode, save = true) {
   if (mode === 'card') {
     tableView?.classList.add('hidden');
     cardView?.classList.remove('hidden');
-    tableBtn?.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
-    tableBtn?.classList.add('text-[#8E94A8]');
-    cardBtn?.classList.add('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
-    cardBtn?.classList.remove('text-[#8E94A8]');
+    tableBtn?.classList.remove('bg-[#d4af37]/30', 'text-[#ffffff]');
+    tableBtn?.classList.add('text-[#8b9bb4]');
+    cardBtn?.classList.add('bg-[#d4af37]/30', 'text-[#ffffff]');
+    cardBtn?.classList.remove('text-[#8b9bb4]');
   } else {
     tableView?.classList.remove('hidden');
     cardView?.classList.add('hidden');
-    tableBtn?.classList.add('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
-    tableBtn?.classList.remove('text-[#8E94A8]');
-    cardBtn?.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
-    cardBtn?.classList.add('text-[#8E94A8]');
+    tableBtn?.classList.add('bg-[#d4af37]/30', 'text-[#ffffff]');
+    tableBtn?.classList.remove('text-[#8b9bb4]');
+    cardBtn?.classList.remove('bg-[#d4af37]/30', 'text-[#ffffff]');
+    cardBtn?.classList.add('text-[#8b9bb4]');
   }
   applyFilters();
 }
@@ -244,13 +244,13 @@ function renderVehicleTable(vehicles) {
     const mv = fmap(v);
     const checked = selectedIds.has(v.id) ? 'checked' : '';
     const checkboxCell = admin ? `<td class="py-3 pr-3" onclick="event.stopPropagation()">
-      <input type="checkbox" class="row-checkbox accent-[#6C3CE1]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
+      <input type="checkbox" class="row-checkbox accent-[#d4af37]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
     </td>` : '';
     const trompoBadge = mv.trompo
-      ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#6C3CE1]/20 text-[#A78BFA]">Si<span class="w-1.5 h-1.5 rounded-full bg-[#A78BFA]"></span></span>`
-      : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#2E3247] text-[#5C6378]">No<span class="w-1.5 h-1.5 rounded-full bg-[#5C6378]"></span></span>`;
+      ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#d4af37]/20 text-[#d4af37]">Si<span class="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></span></span>`
+      : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#2E3247] text-[#4a5568]">No<span class="w-1.5 h-1.5 rounded-full bg-[#4a5568]"></span></span>`;
     return `
-      <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10 cursor-pointer fade-row" onclick="rowClick('${v.id}', event)">
+      <tr class="border-b border-white/5 hover:bg-[#d4af37]/10 cursor-pointer fade-row" onclick="rowClick('${v.id}', event)">
         ${checkboxCell}
         <td class="py-3 pr-3">${mv.interno || '—'}</td>
         <td class="py-3 pr-3 font-medium">${mv.patente || '—'}</td>
@@ -271,7 +271,7 @@ function renderVehicleCards(vehicles) {
   const admin = isAdmin();
 
   if (vehicles.length === 0) {
-    grid.innerHTML = '<div class="col-span-full text-center py-12 text-[#5C6378]">No hay vehículos registrados</div>';
+    grid.innerHTML = '<div class="col-span-full text-center py-12 text-[#4a5568]">No hay vehículos registrados</div>';
     return;
   }
 
@@ -293,14 +293,14 @@ function renderVehicleCards(vehicles) {
       ? '<span class="card-badge trompo-yes">Trompo</span>'
       : '';
 
-    const checkHtml = admin ? `<label class="card-check"><input type="checkbox" class="row-checkbox accent-[#6C3CE1]" value="${v.id}" ${checked ? 'checked' : ''} onchange="toggleRow('${v.id}', this.checked)"></label>` : '';
+    const checkHtml = admin ? `<label class="card-check"><input type="checkbox" class="row-checkbox accent-[#d4af37]" value="${v.id}" ${checked ? 'checked' : ''} onchange="toggleRow('${v.id}', this.checked)"></label>` : '';
 
     const hasPhoto = !!mv.fotoURL;
     const brandLogo = getBrandLogo(mv.marca);
     const logoHtml = brandLogo
       ? `<div class="card-logo-wrap"><img src="${brandLogo}" alt="${mv.marca}" class="card-logo-img" onerror="this.parentElement.remove()"></div>`
       : '';
-    const fallbackBg = `<div class="w-full h-40 bg-gradient-to-br from-[#6C3CE1]/8 to-[#00D4FF]/5 flex items-center justify-center">${logoHtml || truckFallbackSvg}</div>`;
+    const fallbackBg = `<div class="w-full h-40 bg-gradient-to-br from-[#d4af37]/8 to-[#d4af37]/5 flex items-center justify-center">${logoHtml || truckFallbackSvg}</div>`;
 
     const fotoHtml = hasPhoto
       ? `<div class="relative w-full h-40">
@@ -327,13 +327,13 @@ function renderVehicleCards(vehicles) {
           </div>
           <div class="flex flex-col gap-1">
             ${mv.centroTrabajo ? `<div class="card-detail"><svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>${mv.centroTrabajo}</div>` : ''}
-            ${mv.empresa ? `<div class="card-detail"><svg class="w-3 h-3 text-[#00D4FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>${mv.empresa}</div>` : ''}
+            ${mv.empresa ? `<div class="card-detail"><svg class="w-3 h-3 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>${mv.empresa}</div>` : ''}
             ${mv.kilometraje ? `<div class="card-detail"><svg class="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>${Number(mv.kilometraje).toLocaleString('es-AR')} km</div>` : ''}
             ${mv.nroBet ? `<div class="card-detail"><svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>BET: ${mv.nroBet}</div>` : ''}
           </div>
         </div>
         <div class="vehicle-card-footer">
-          <span class="text-xs text-[#5C6378]">${mv.año || ''}</span>
+          <span class="text-xs text-[#4a5568]">${mv.año || ''}</span>
           <div class="card-actions" onclick="event.stopPropagation()">
             ${admin ? `<button onclick="checkTituloFromCard('${(mv.patente || '').replace(/'/g, "\\'")}')" title="Título de propiedad" class="card-titulo-btn hidden">
               <svg class="w-4 h-4 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -477,12 +477,12 @@ function sortBy(field) {
   }
   document.querySelectorAll('.sort-arrow').forEach(el => {
     el.textContent = '';
-    el.classList.remove('text-[#6C3CE1]');
+    el.classList.remove('text-[#d4af37]');
   });
   const activeArrow = document.querySelector(`.sort-arrow[data-field="${field}"]`);
   if (activeArrow) {
     activeArrow.textContent = sortDir === 'asc' ? '▲' : '▼';
-    activeArrow.classList.add('text-[#6C3CE1]');
+    activeArrow.classList.add('text-[#d4af37]');
   }
   applyFilters();
 }
@@ -497,11 +497,11 @@ function resetFilters() {
   if (document.getElementById('filter-estado')) document.getElementById('filter-estado').value = '';
   trompoFilter = 'all';
   document.querySelectorAll('[data-trompo-filter]').forEach((btn, i) => {
-    btn.classList.remove('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
-    btn.classList.add('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');
+    btn.classList.remove('bg-[#d4af37]/30', 'text-[#ffffff]');
+    btn.classList.add('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#d4af37]/10');
     if (i === 0) {
-      btn.classList.add('bg-[#6C3CE1]/30', 'text-[#F1F3F8]');
-      btn.classList.remove('text-[#8E94A8]', 'hover:text-[#F1F3F8]', 'hover:bg-[#6C3CE1]/10');
+      btn.classList.add('bg-[#d4af37]/30', 'text-[#ffffff]');
+      btn.classList.remove('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#d4af37]/10');
     }
   });
   applyFilters();
@@ -521,8 +521,8 @@ function populateSelect(id, defaultLabel, values) {
   const sel = document.getElementById(id);
   if (!sel) return;
   const prev = sel.value;
-  sel.innerHTML = `<option value="" class="bg-[#0A0A1A]">${defaultLabel}</option>` +
-    values.map(v => `<option value="${v}" class="bg-[#0A0A1A]">${v}</option>`).join('');
+  sel.innerHTML = `<option value="" class="bg-[#0a0e17]">${defaultLabel}</option>` +
+    values.map(v => `<option value="${v}" class="bg-[#0a0e17]">${v}</option>`).join('');
   if (prev && values.includes(prev)) sel.value = prev;
 }
 
@@ -725,20 +725,20 @@ function addMultaRow(multa) {
   row.className = 'multa-row flex flex-wrap items-end gap-2 p-2 bg-red-900/20 rounded-lg';
   row.innerHTML = `
     <div class="flex-1 min-w-[120px]">
-      <label class="block text-xs text-[#8E94A8] mb-1">Fecha</label>
-      <input type="date" class="multa-fecha w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 text-[#F1F3F8]" value="${multa?.fecha || ''}">
+      <label class="block text-xs text-[#8b9bb4] mb-1">Fecha</label>
+      <input type="date" class="multa-fecha w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0a0e17]/50 border border-[#d4af37]/20 text-[#ffffff]" value="${multa?.fecha || ''}">
     </div>
     <div class="w-28">
-      <label class="block text-xs text-[#8E94A8] mb-1">Importe ($)</label>
-      <input type="number" class="multa-importe w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 text-[#F1F3F8]" value="${multa?.importe || ''}" step="0.01">
+      <label class="block text-xs text-[#8b9bb4] mb-1">Importe ($)</label>
+      <input type="number" class="multa-importe w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0a0e17]/50 border border-[#d4af37]/20 text-[#ffffff]" value="${multa?.importe || ''}" step="0.01">
     </div>
     <div class="flex-[2] min-w-[150px]">
-      <label class="block text-xs text-[#8E94A8] mb-1">Concepto</label>
-      <input type="text" class="multa-concepto w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0A0A1A]/50 border border-[#6C3CE1]/20 text-[#F1F3F8]" value="${multa?.concepto || ''}" placeholder="Exceso de velocidad">
+      <label class="block text-xs text-[#8b9bb4] mb-1">Concepto</label>
+      <input type="text" class="multa-concepto w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0a0e17]/50 border border-[#d4af37]/20 text-[#ffffff]" value="${multa?.concepto || ''}" placeholder="Exceso de velocidad">
     </div>
     <div class="flex items-center gap-1 pb-1.5">
       <input type="checkbox" class="multa-pagado" ${multa?.pagado ? 'checked' : ''}>
-      <label class="text-xs text-[#8E94A8]">Pagado</label>
+      <label class="text-xs text-[#8b9bb4]">Pagado</label>
     </div>
     <button type="button" onclick="this.closest('.multa-row').remove()" class="pb-1.5 text-red-400 hover:text-red-300">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -756,8 +756,8 @@ function addDocumentoRow(doc) {
   row.className = 'documento-row flex flex-wrap items-end gap-2 p-2 bg-teal-900/20 rounded-lg';
   row.innerHTML = `
     <div class="flex-1 min-w-[120px]">
-      <label class="block text-xs text-[#8E94A8] mb-1">Tipo</label>
-      <select class="doc-tipo w-full px-2 py-1.5 border border-[#6C3CE1]/20 rounded text-sm bg-[#0A0A1A]/50 text-[#F1F3F8]">
+      <label class="block text-xs text-[#8b9bb4] mb-1">Tipo</label>
+      <select class="doc-tipo w-full px-2 py-1.5 border border-[#d4af37]/20 rounded text-sm bg-[#0a0e17]/50 text-[#ffffff]">
         <option value="">Seleccionar...</option>
         <option value="VTV" ${doc?.tipo === 'VTV' ? 'selected' : ''}>VTV</option>
         <option value="Cédula" ${doc?.tipo === 'Cédula' ? 'selected' : ''}>Cédula</option>
@@ -767,12 +767,12 @@ function addDocumentoRow(doc) {
       </select>
     </div>
     <div class="w-36">
-      <label class="block text-xs text-[#8E94A8] mb-1">Vencimiento</label>
-      <input type="date" class="doc-fecha w-full px-2 py-1.5 border border-[#6C3CE1]/20 rounded text-sm bg-[#0A0A1A]/50 text-[#F1F3F8]" value="${doc?.fechaVencimiento || ''}">
+      <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento</label>
+      <input type="date" class="doc-fecha w-full px-2 py-1.5 border border-[#d4af37]/20 rounded text-sm bg-[#0a0e17]/50 text-[#ffffff]" value="${doc?.fechaVencimiento || ''}">
     </div>
     <div class="flex-[2] min-w-[180px]">
-      <label class="block text-xs text-[#8E94A8] mb-1">Archivo URL</label>
-      <input type="url" class="doc-url w-full px-2 py-1.5 border border-[#6C3CE1]/20 rounded text-sm bg-[#0A0A1A]/50 text-[#F1F3F8]" value="${doc?.archivoURL || ''}" placeholder="https://storage.googleapis.com/...">
+      <label class="block text-xs text-[#8b9bb4] mb-1">Archivo URL</label>
+      <input type="url" class="doc-url w-full px-2 py-1.5 border border-[#d4af37]/20 rounded text-sm bg-[#0a0e17]/50 text-[#ffffff]" value="${doc?.archivoURL || ''}" placeholder="https://storage.googleapis.com/...">
     </div>
     <button type="button" onclick="this.closest('.documento-row').remove()" class="pb-1.5 text-red-400 hover:text-red-300">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -923,14 +923,14 @@ function showVehicleImportResult(result) {
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-xs">
-        <thead><tr class="text-left text-[#8E94A8] border-b border-white/10">${['Patente','Interno','Marca','Modelo','Tipo'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
+        <thead><tr class="text-left text-[#8b9bb4] border-b border-white/10">${['Patente','Interno','Marca','Modelo','Tipo'].map(h => `<th class="pb-2 pr-2">${h}</th>`).join('')}</tr></thead>
         <tbody>${valid.slice(0,20).map(v => `<tr class="border-b border-white/5">
           <td class="py-1.5 pr-2">${v.patente}</td>
           <td class="py-1.5 pr-2">${v.interno}</td>
           <td class="py-1.5 pr-2">${v.marca}</td>
           <td class="py-1.5 pr-2">${v.modelo || ''}</td>
           <td class="py-1.5 pr-2">${v.tipo}</td>
-        </tr>`).join('')}${valid.length > 20 ? `<tr><td colspan="5" class="py-2 text-[#5C6378]">... y ${valid.length - 20} más</td></tr>` : ''}</tbody>
+        </tr>`).join('')}${valid.length > 20 ? `<tr><td colspan="5" class="py-2 text-[#4a5568]">... y ${valid.length - 20} más</td></tr>` : ''}</tbody>
       </table>
     </div>`;
     document.getElementById('btn-execute-csv').classList.remove('hidden');
@@ -962,7 +962,7 @@ function validateCsvImport() {
       return;
     }
 
-    document.getElementById('csv-import-preview').innerHTML = '<div class="text-sm text-[#8E94A8]">Analizando archivo...</div>';
+    document.getElementById('csv-import-preview').innerHTML = '<div class="text-sm text-[#8b9bb4]">Analizando archivo...</div>';
     document.getElementById('btn-execute-csv').classList.add('hidden');
     csvValidatedData = [];
 
@@ -1301,9 +1301,9 @@ function updateFormatButtons() {
     const btn = document.getElementById('fmt-' + f);
     if (!btn) return;
     if (f === exportFormat) {
-      btn.className = 'export-fmt-btn flex-1 py-3 rounded-xl border-2 border-[#6C3CE1]/40 bg-[#6C3CE1]/15 text-[#A78BFA] font-semibold text-sm transition-all flex items-center justify-center gap-2';
+      btn.className = 'export-fmt-btn flex-1 py-3 rounded-xl border-2 border-[#d4af37]/40 bg-[#d4af37]/15 text-[#d4af37] font-semibold text-sm transition-all flex items-center justify-center gap-2';
     } else {
-      btn.className = 'export-fmt-btn flex-1 py-3 rounded-xl border border-[#6C3CE1]/15 bg-[#0A0A1A]/30 text-[#8E94A8] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#6C3CE1]/30';
+      btn.className = 'export-fmt-btn flex-1 py-3 rounded-xl border border-[#d4af37]/15 bg-[#0a0e17]/30 text-[#8b9bb4] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#d4af37]/30';
     }
   });
 }
@@ -1337,7 +1337,7 @@ function updateExportPreview() {
 
   const preview = document.getElementById('exp-preview');
   if (ncols === 0) {
-    preview.innerHTML = '<div class="p-6 text-center text-[#5C6378] text-sm">Seleccioná al menos un campo</div>';
+    preview.innerHTML = '<div class="p-6 text-center text-[#4a5568] text-sm">Seleccioná al menos un campo</div>';
     return;
   }
 
@@ -1350,42 +1350,42 @@ function updateExportPreview() {
 
   const previewRows = allVehicles.slice(0, 5);
 
-  let html = `<div style="font-family: Inter, sans-serif; font-size: 10px; color: #F1F3F8; background: #0A0A1A; border-radius: 8px; overflow: hidden;">`;
+  let html = `<div style="font-family: Inter, sans-serif; font-size: 10px; color: #ffffff; background: #0a0e17; border-radius: 8px; overflow: hidden;">`;
 
   // Header with gradient
-  html += `<div style="background: linear-gradient(135deg, #6C3CE1, #00D4FF); padding: 16px 12px 12px; text-align: center;">`;
+  html += `<div style="background: linear-gradient(135deg, #d4af37, #d4af37); padding: 16px 12px 12px; text-align: center;">`;
   if (empresa) html += `<div style="font-size: 15px; font-weight: 800; color: #fff; letter-spacing: 1.5px; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">${empresa.toUpperCase()}</div>`;
   if (direccion) html += `<div style="font-size: 9px; color: rgba(255,255,255,0.8); margin-top: 2px;">${direccion}</div>`;
   if (telefono) html += `<div style="font-size: 9px; color: rgba(255,255,255,0.7);">Tel: ${telefono}</div>`;
   html += `</div>`;
 
   // Title bar
-  html += `<div style="background: #141e2d; padding: 10px 12px; text-align: center; border-bottom: 2px solid #6C3CE1;">`;
-  html += `<div style="font-size: 12px; font-weight: 700; color: #F1F3F8;">${titulo}</div>`;
-  if (subtitulo) html += `<div style="font-size: 9px; color: #8E94A8; margin-top: 2px;">${subtitulo}</div>`;
+  html += `<div style="background: #141e2d; padding: 10px 12px; text-align: center; border-bottom: 2px solid #d4af37;">`;
+  html += `<div style="font-size: 12px; font-weight: 700; color: #ffffff;">${titulo}</div>`;
+  if (subtitulo) html += `<div style="font-size: 9px; color: #8b9bb4; margin-top: 2px;">${subtitulo}</div>`;
   html += `</div>`;
 
   // Table
   html += `<div style="overflow-x: auto;"><table style="width:100%; border-collapse:collapse;"><thead><tr>`;
   fields.forEach(f => {
-    html += `<th style="background: #6C3CE1; color: white; padding: 5px 8px; text-align: left; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space:nowrap;">${f.label}</th>`;
+    html += `<th style="background: #d4af37; color: white; padding: 5px 8px; text-align: left; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space:nowrap;">${f.label}</th>`;
   });
   html += `</tr></thead><tbody>`;
   previewRows.forEach((v, i) => {
     const bg = i % 2 === 0 ? '#141e2d' : '#0f1520';
     html += `<tr style="background:${bg};">`;
     fields.forEach(f => {
-      html += `<td style="padding: 4px 8px; border-bottom: 1px solid rgba(108,60,225,0.15); font-size: 9px; color: #F1F3F8; white-space:nowrap; max-width:120px; overflow:hidden; text-overflow:ellipsis;">${f.fn(v)}</td>`;
+      html += `<td style="padding: 4px 8px; border-bottom: 1px solid rgba(212,175,55,0.15); font-size: 9px; color: #ffffff; white-space:nowrap; max-width:120px; overflow:hidden; text-overflow:ellipsis;">${f.fn(v)}</td>`;
     });
     html += `</tr>`;
   });
   if (count > 5) {
-    html += `<tr><td colspan="${ncols}" style="text-align:center; padding:8px; color:#8E94A8; font-style:italic; font-size:9px; background:#0A0A1A;">... y ${count - 5} registros más</td></tr>`;
+    html += `<tr><td colspan="${ncols}" style="text-align:center; padding:8px; color:#8b9bb4; font-style:italic; font-size:9px; background:#0a0e17;">... y ${count - 5} registros más</td></tr>`;
   }
   html += `</tbody></table></div>`;
 
   // Footer
-  html += `<div style="background: #141e2d; border-top: 1px solid rgba(108,60,225,0.2); padding: 8px 12px; display:flex; justify-content:space-between; font-size: 8px; color: #8E94A8;">`;
+  html += `<div style="background: #141e2d; border-top: 1px solid rgba(212,175,55,0.2); padding: 8px 12px; display:flex; justify-content:space-between; font-size: 8px; color: #8b9bb4;">`;
   html += `<span>Generado: ${ahora} — ${count} registros</span>`;
   html += `<span>© ${empresa || 'Grupo Falpat SRL'}</span>`;
   html += `</div>`;

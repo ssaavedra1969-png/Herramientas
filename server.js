@@ -19,7 +19,21 @@ const PORT = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors());
+const allowedOrigins = [
+  'https://falpat-control-de-vehiculos.vercel.app',
+  process.env.NODE_ENV !== 'production' ? 'http://localhost:3000' : null
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
@@ -39,6 +53,15 @@ if (process.env.DEV_READ_ONLY === 'true') {
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.set('view cache', false);
+
+// Disable static file cache in development
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
+}
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/titulos', express.static(path.join(__dirname, 'titulo')));
@@ -173,7 +196,7 @@ app.get('/vehicles/fichas-taller-bulk', requireAuth, requireAdminPage, async (re
   }
 });
 
-app.get('/reports', requireAuth, (req, res) => {
+app.get('/reports', requireAuth, requireAdminPage, (req, res) => {
   res.render('reports', {
     title: 'Reportes',
     clientConfig: res.locals.clientConfig,

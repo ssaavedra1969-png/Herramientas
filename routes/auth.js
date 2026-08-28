@@ -51,13 +51,4 @@ router.post('/logout', (req, res) => {
   res.json({ success: true });
 });
 
-router.get('/debug', (req, res) => {
-  res.json({
-    hasServiceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT,
-    hasServiceAccountPath: !!process.env.FIREBASE_SERVICE_ACCOUNT_PATH,
-    nodeEnv: process.env.NODE_ENV,
-    hasFirebaseAdmin: !!require('../config/firebase').auth
-  });
-});
-
 module.exports = router;

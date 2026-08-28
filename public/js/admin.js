@@ -52,13 +52,13 @@ function renderUsers(users) {
       ? 'background-color:rgba(52,211,153,0.15);color:#34D399'
       : 'background-color:rgba(96,165,250,0.15);color:#60A5FA';
     return `
-      <tr class="border-b border-white/5 hover:bg-[#6C3CE1]/10">
+      <tr class="border-b border-white/5 hover:bg-[#d4af37]/10">
         <td class="py-3 pr-3 font-medium">${u.displayName || '—'} ${isCurrentUser ? '<span class="text-xs text-blue-500 ml-1">(tú)</span>' : ''}</td>
         <td class="py-3 pr-3">${u.email || '—'}</td>
         <td class="py-3 pr-3"><span class="status-badge" style="${roleStyle}">${u.role || 'Usuario'}</span></td>
         <td class="py-3 pr-3 text-xs">${formatDate(u.createdAt)}</td>
         <td class="py-3 no-print flex gap-2">
-          <button onclick="viewUser('${u.id}')" class="text-[#8E94A8] hover:text-[#F1F3F8]" title="Ver detalle">
+          <button onclick="viewUser('${u.id}')" class="text-[#8b9bb4] hover:text-[#ffffff]" title="Ver detalle">
             <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -127,9 +127,9 @@ function viewUser(userId) {
 
   let html = '';
   info.forEach(i => {
-    html += `<div class="flex justify-between py-2 border-b border-[#6C3CE1]/10">
-      <span class="text-[#8E94A8] text-sm">${i.label}</span>
-      <span class="text-[#F1F3F8] text-sm font-medium text-right max-w-[200px] truncate">${i.value}</span>
+    html += `<div class="flex justify-between py-2 border-b border-[#d4af37]/10">
+      <span class="text-[#8b9bb4] text-sm">${i.label}</span>
+      <span class="text-[#ffffff] text-sm font-medium text-right max-w-[200px] truncate">${i.value}</span>
     </div>`;
   });
 
@@ -138,8 +138,8 @@ function viewUser(userId) {
     html: `<div class="text-left">${html}</div>`,
     icon: 'info',
     background: '#0F1220',
-    color: '#F1F3F8',
-    confirmButtonColor: '#6C3CE1',
+    color: '#ffffff',
+    confirmButtonColor: '#d4af37',
     confirmButtonText: 'Cerrar'
   });
 }
