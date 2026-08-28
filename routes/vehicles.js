@@ -5,8 +5,9 @@ const path = require('path');
 const { db } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 
-const DOCS_DIR = path.join(__dirname, '..', 'documentos');
+const DOCS_DIR = path.join(__dirname, '..', 'PATENTE');
 const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro'];
+const DOC_EXT_PRIORIDAD = ['pdf', 'jpg', 'jpeg', 'png'];
 
 function parseFecha(val) {
   if (!val) return null;
@@ -76,8 +77,12 @@ router.get('/:id/documentos', verifyToken, async (req, res) => {
     if (fs.existsSync(carpeta)) {
       const archivos = fs.readdirSync(carpeta);
       archivos.forEach(nombre => {
-        const base = path.parse(nombre).name.toLowerCase();
-        if (DOC_TIPOS.includes(base)) {
+        const parsed = path.parse(nombre);
+        const base = parsed.name.toLowerCase();
+        const ext = parsed.ext.replace('.', '').toLowerCase();
+        if (!DOC_TIPOS.includes(base) || !DOC_EXT_PRIORIDAD.includes(ext)) return;
+        const actual = presentes[base];
+        if (!actual || DOC_EXT_PRIORIDAD.indexOf(ext) < DOC_EXT_PRIORIDAD.indexOf(path.parse(actual.nombre).ext.replace('.', '').toLowerCase())) {
           presentes[base] = { url: `/documentos/${encodeURIComponent(patente)}/${nombre}`, nombre };
         }
       });
