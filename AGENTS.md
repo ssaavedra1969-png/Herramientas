@@ -129,8 +129,9 @@ Documento único con campo `current` para auto-increment de números internos de
 La documentación (Título, Cédula, Seguro, Registro del chofer) se maneja con la **carpeta `PATENTE/{patente}/`** versionada en git, que llega a Vercel por integración Git. **NO usa Firebase Storage** (plan Spark = sin Storage, 404 bucket).
 
 ### Cómo funciona
-- **Archivos:** se ponen en `PATENTE/{patente}/` con el nombre del tipo: `titulo`, `cedula`, `seguro`, `registro` (solo patente, sin sufijo). Un archivo por tipo, prioridad de extensión `pdf > jpg > jpeg > png`. (Ej. `PATENTE/AG719TT/seguro.pdf`).
-- **Solo los 4 tipos** se leen; VTV y otros se ignoran (VTV se maneja por otro campo del vehículo).
+- **Archivos:** se ponen en `PATENTE/{patente}/` con el nombre del tipo: `titulo`, `cedula`, `seguro`, `registro`, `vtv` (solo patente, sin sufijo). Un archivo por tipo, prioridad de extensión `pdf > jpg > jpeg > png`. (Ej. `PATENTE/AG719TT/seguro.pdf`).
+- **Los 5 tipos** se leen. El vencimiento de la fila VTV sale del campo `vtv` del vehículo; los demás del mapa `documentacion` (carga manual en la web).
+- **Eliminación:** botón "Eliminar" en la ficha (solo Admin) → `DELETE /api/vehicles/:id/documentos/:tipo` (routes/vehicles.js), descarga copia de respaldo antes de borrar. En Vercel el FS es de solo lectura: borrar localmente + `npm run subir:docs`.
 - **Las carpetas vacías NO se versionan en git** (git ignora carpetas vacías); se suben solas cuando tienen archivos.
 - **Vencimiento:** se carga **MANUALMENTE** en la web (ficha del vehículo → Documentación). La app NO lee la fecha del PDF (se decidió abandonar la detección automática).
 - **Lectura backend:** `GET /api/vehicles/:id/documentos` (routes/vehicles.js) lista los archivos de `PATENTE/{patente}/`; static `/documentos` en server.js sirve los archivos.

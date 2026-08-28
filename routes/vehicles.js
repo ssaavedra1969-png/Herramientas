@@ -6,7 +6,7 @@ const { db } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 
 const DOCS_DIR = path.join(process.cwd(), 'PATENTE');
-const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro'];
+const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
 const DOC_EXT_PRIORIDAD = ['pdf', 'jpg', 'jpeg', 'png'];
 
 function parseFecha(val) {
@@ -88,6 +88,32 @@ router.get('/:id/documentos', verifyToken, async (req, res) => {
       });
     }
     res.json({ id: doc.id, patente, documentos: presentes });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/:id/documentos/:tipo', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const doc = await db.collection('vehicles').doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
+    const patente = (doc.data().patente || '').toUpperCase();
+    const tipo = (req.params.tipo || '').toLowerCase();
+    if (!DOC_TIPOS.includes(tipo)) return res.status(400).json({ error: 'Tipo de documento inválido' });
+    const carpeta = path.join(DOCS_DIR, patente);
+    const eliminados = [];
+    if (fs.existsSync(carpeta)) {
+      fs.readdirSync(carpeta).forEach(nombre => {
+        if (path.parse(nombre).name.toLowerCase() === tipo) {
+          try {
+            fs.unlinkSync(path.join(carpeta, nombre));
+            eliminados.push(nombre);
+          } catch (e) { /* archivo bloqueado o FS de solo lectura */ }
+        }
+      });
+    }
+    if (!eliminados.length) return res.status(404).json({ error: 'No hay archivo para ese tipo (en producción los documentos se eliminan desde la PC local + npm run subir:docs)' });
+    res.json({ ok: true, eliminados });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

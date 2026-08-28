@@ -190,12 +190,13 @@ const DOC_OBLIGATORIOS = [
   { key: 'titulo',   label: 'Título del camión' },
   { key: 'cedula',   label: 'Cédula del camión' },
   { key: 'seguro',   label: 'Seguro del camión' },
-  { key: 'registro', label: 'Registro del chofer' }
+  { key: 'registro', label: 'Registro del chofer' },
+  { key: 'vtv',      label: 'VTV' }
 ];
 
 async function loadDocumentosLocales() {
   try {
-    const res = await fetch(`/api/vehicles/${vehicleId}/documentos`, { headers: getAuthHeaders() });
+    const res = await fetch(`/api/vehicles/${vehicleId}/documentos`, { headers: await getAuthHeaders() });
     if (!res.ok) throw new Error('sin respuesta');
     const data = await res.json();
     vehicleDocumentosLocales = data.documentos || {};
@@ -203,6 +204,44 @@ async function loadDocumentosLocales() {
   } catch (e) {
     console.error('No se pudieron leer los documentos locales', e);
     vehicleDocumentosLocales = {};
+  }
+}
+
+async function deleteDocumentoLocal(key) {
+  if (!isAdmin()) return;
+  const def = DOC_OBLIGATORIOS.find(d => d.key === key);
+  const label = def ? def.label : key;
+  const res = await Swal.fire({
+    icon: 'warning',
+    title: `¿Eliminar ${label}?`,
+    text: 'Se descargará una copia de respaldo del archivo antes de eliminarlo.',
+    showCancelButton: true,
+    confirmButtonText: 'Eliminar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#dc2626'
+  });
+  if (!res.isConfirmed) return;
+  try {
+    const local = vehicleDocumentosLocales[key];
+    if (local?.url) {
+      const blob = await (await fetch(local.url)).blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = local.nombre || `${key}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      await new Promise(r => setTimeout(r, 800));
+    }
+    const del = await fetch(`/api/vehicles/${vehicleId}/documentos/${key}`, { method: 'DELETE', headers: await getAuthHeaders() });
+    const data = await del.json().catch(() => ({}));
+    if (!del.ok) throw new Error(data.error || 'No se pudo eliminar');
+    showToast(`${label} eliminado (copia de respaldo descargada)`);
+    await loadDocumentosLocales();
+    if (!document.getElementById('modal-documentacion')?.classList.contains('hidden')) openDocumentacionModal();
+  } catch (e) {
+    showToast('Error al eliminar: ' + e.message, 'error');
   }
 }
 
@@ -215,7 +254,14 @@ function renderDocumentos() {
   DOC_OBLIGATORIOS.forEach(({ key, label }) => {
     const local = vehicleDocumentosLocales[key] || null;
     const d = (vehicleDocumentacion || {})[key] || {};
-    const vencimientoStr = d.fechaVencimiento || '';
+    let vencimientoStr = d.fechaVencimiento || '';
+    if (key === 'vtv' && !vencimientoStr) {
+      const fv = vehicleData.vtv?.fechaVencimiento;
+      if (fv) {
+        const dt = fv.toDate ? fv.toDate() : new Date(fv);
+        if (!isNaN(dt)) vencimientoStr = dt.toISOString().split('T')[0];
+      }
+    }
     let dias = null;
     if (vencimientoStr) {
       const vto = new Date(vencimientoStr + 'T00:00:00');
@@ -239,9 +285,10 @@ function renderDocumentos() {
             ${existe ? `<span class="block text-[10px] text-teal-300">${local.nombre}</span>` : ''}
           </div>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="text-xs font-semibold ${badgeCls}">${badgeTxt}</span>
-          ${existe ? `<a href="${local.url}" target="_blank" rel="noopener" class="text-teal-300 hover:text-teal-200 text-xs font-semibold">Ver</a>` : ''}
+        <div class="flex items-center gap-1 shrink-0">
+          <span class="text-xs font-semibold ${badgeCls} mr-1">${badgeTxt}</span>
+          ${existe ? `<a href="${local.url}" target="_blank" rel="noopener" title="Ver documento" class="p-1.5 rounded hover:bg-white/5 text-teal-300 hover:text-teal-200 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a>` : ''}
+          ${existe && isAdmin() ? `<button onclick="deleteDocumentoLocal('${key}')" title="Eliminar documento" class="p-1.5 rounded hover:bg-white/5 text-red-400 hover:text-red-300 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></button>` : ''}
         </div>
       </div>`;
   });
@@ -275,8 +322,12 @@ function openDocumentacionModal() {
     const fechaInput = document.getElementById(`doc-${key}-fecha`);
     if (fechaInput) fechaInput.value = d.fechaVencimiento || '';
     const link = document.getElementById(`doc-${key}-link`);
-    if (local) { link.href = local.url; link.classList.remove('hidden'); }
-    else { link.classList.add('hidden'); }
+    if (link) {
+      if (local) { link.href = local.url; link.classList.remove('hidden'); }
+      else { link.classList.add('hidden'); }
+    }
+    const elimBtn = document.getElementById(`doc-${key}-eliminar`);
+    if (elimBtn) elimBtn.classList.toggle('hidden', !local);
     renderDocEstado(key, local, d);
   });
   showModal('modal-documentacion');
@@ -307,8 +358,9 @@ async function saveDocumentacion() {
   if (!isAdmin()) return;
   const payload = {};
   DOC_OBLIGATORIOS.forEach(({ key }) => {
+    const fechaInput = document.getElementById(`doc-${key}-fecha`);
     payload[key] = {
-      fechaVencimiento: document.getElementById(`doc-${key}-fecha`).value || null
+      fechaVencimiento: fechaInput ? (fechaInput.value || null) : null
     };
   });
   try {

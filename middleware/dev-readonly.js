@@ -9,6 +9,10 @@ function devReadOnly(req, res, next) {
     return next();
   }
 
+  if (req.method === 'DELETE' && /^\/api\/vehicles\/[^/]+\/documentos\/[^/]+$/.test(req.originalUrl.split('?')[0])) {
+    return next();
+  }
+
   console.log(`[DEV] Blocked: ${req.method} ${req.originalUrl}`);
   return res.status(403).json({
     error: 'Modo desarrollo read-only — no se permiten cambios',
