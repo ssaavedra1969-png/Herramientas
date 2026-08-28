@@ -382,29 +382,27 @@ function renderDocEstado(key, local, d) {
 
 async function saveDocumentacion() {
   if (!isAdmin()) return;
-  const update = {};
-  DOC_OBLIGATORIOS.forEach(({ key }) => {
-    const fechaInput = document.getElementById(`doc-${key}-fecha`);
-    const fecha = fechaInput ? (fechaInput.value || null) : null;
-    if (key === 'vtv') {
-      update['vtv.fechaVencimiento'] = fecha;
-    } else if (key === 'seguro') {
-      update['seguro.fechaVencimiento'] = fecha;
-    } else if (key === 'registro') {
-      update['vencimientoRegistro'] = fecha;
-    }
-  });
   try {
-    await db.collection('vehicles').doc(vehicleId).update(update);
-    Object.keys(update).forEach(k => {
-      const parts = k.split('.');
-      if (parts.length === 2) {
-        if (!vehicleData[parts[0]]) vehicleData[parts[0]] = {};
-        vehicleData[parts[0]][parts[1]] = update[k];
-      } else {
-        vehicleData[k] = update[k];
-      }
+    const docRef = db.collection('vehicles').doc(vehicleId);
+    const doc = await docRef.get();
+    const current = doc.data() || {};
+    const vtv = { ...(current.vtv || {}) };
+    const seguro = { ...(current.seguro || {}) };
+    DOC_OBLIGATORIOS.forEach(({ key }) => {
+      const fechaInput = document.getElementById(`doc-${key}-fecha`);
+      const fecha = fechaInput ? (fechaInput.value || null) : null;
+      if (key === 'vtv') vtv.fechaVencimiento = fecha;
+      else if (key === 'seguro') seguro.fechaVencimiento = fecha;
+      else if (key === 'registro') current.vencimientoRegistro = fecha;
     });
+    const update = { vtv, seguro };
+    if (current.registro !== undefined || current.vencimientoRegistro !== undefined) {
+      update.registro = current.registro;
+    }
+    await docRef.update(update);
+    vehicleData.vtv = vtv;
+    vehicleData.seguro = seguro;
+    vehicleData.vencimientoRegistro = current.vencimientoRegistro;
     renderVTV();
     renderSeguro();
     renderDocumentos();
@@ -412,8 +410,8 @@ async function saveDocumentacion() {
     closeDocumentacionModal();
     showToast('Documentación guardada');
   } catch (e) {
-    console.error(e);
-    showToast('Error al guardar la documentación', 'error');
+    console.error('saveDocumentacion error:', e);
+    showToast('Error al guardar: ' + e.message, 'error');
   }
 }
 
