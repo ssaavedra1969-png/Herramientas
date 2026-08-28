@@ -1,6 +1,7 @@
 let vehicleId = null;
 let vehicleData = null;
 let vehicleDocumentacion = {};
+let vehicleDocumentosLocales = {};
 let servicesUnsub = null;
 let repuestosUnsub = null;
 let currentTab = 'resumen';
@@ -18,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   loadVehicle();
-  setupDocumentacionUploads();
   initServiceForm();
   initRepuestoForm();
   document.getElementById('v-trompo')?.addEventListener('change', (e) => {
@@ -53,6 +53,7 @@ async function loadVehicle() {
   renderService();
   renderMultas();
   vehicleDocumentacion = vehicleData.documentacion || {};
+  loadDocumentosLocales();
   renderDocumentos();
   renderFoto();
   document.getElementById('vg-observaciones').textContent = vehicleData.observaciones || 'Sin observaciones';
@@ -192,6 +193,19 @@ const DOC_OBLIGATORIOS = [
   { key: 'registro', label: 'Registro del chofer' }
 ];
 
+async function loadDocumentosLocales() {
+  try {
+    const res = await fetch(`/api/vehicles/${vehicleId}/documentos`, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error('sin respuesta');
+    const data = await res.json();
+    vehicleDocumentosLocales = data.documentos || {};
+    renderDocumentos();
+  } catch (e) {
+    console.error('No se pudieron leer los documentos locales', e);
+    vehicleDocumentosLocales = {};
+  }
+}
+
 function renderDocumentos() {
   const container = document.getElementById('vg-documentos');
   if (!container) return;
@@ -199,17 +213,21 @@ function renderDocumentos() {
   let html = '';
 
   DOC_OBLIGATORIOS.forEach(({ key, label }) => {
+    const local = vehicleDocumentosLocales[key] || null;
     const d = (vehicleDocumentacion || {})[key] || {};
-    let badge = '<span class="text-xs text-[#4a5568] italic">Sin cargar</span>';
-    if (d.archivoURL) {
-      let dias = null;
-      if (d.fechaVencimiento) {
-        const vto = new Date(d.fechaVencimiento + 'T00:00:00');
-        dias = Math.ceil((vto - new Date()) / 86400000);
-      }
-      const badgeCls = dias === null ? 'text-teal-300' : dias < 0 ? 'text-red-400' : dias <= 30 ? 'text-yellow-400' : 'text-green-400';
-      const badgeTxt = dias === null ? 'Cargado' : dias < 0 ? 'Vencido' : `Vence en ${dias}d`;
-      badge = `<span class="text-xs font-semibold ${badgeCls}">${badgeTxt}</span>`;
+    const vencimientoStr = d.fechaVencimiento || '';
+    let dias = null;
+    if (vencimientoStr) {
+      const vto = new Date(vencimientoStr + 'T00:00:00');
+      dias = Math.ceil((vto - new Date()) / 86400000);
+    }
+    const existe = !!local;
+    let badgeCls = 'text-[#4a5568]', badgeTxt = 'Sin cargar';
+    if (existe) {
+      if (dias === null) { badgeCls = 'text-teal-300'; badgeTxt = 'Cargado'; }
+      else if (dias < 0) { badgeCls = 'text-red-400'; badgeTxt = 'Vencido'; }
+      else if (dias <= 30) { badgeCls = 'text-yellow-400'; badgeTxt = `Vence en ${dias}d`; }
+      else { badgeCls = 'text-green-400'; badgeTxt = 'Al día'; }
     }
     html += `
       <div class="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
@@ -217,12 +235,13 @@ function renderDocumentos() {
           <svg class="w-4 h-4 text-teal-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           <div class="min-w-0">
             <span class="text-[#ffffff] font-medium text-sm">${label}</span>
-            ${d.fechaVencimiento ? `<span class="block text-[10px] text-[#4a5568]">Vence: ${d.fechaVencimiento}</span>` : ''}
+            ${vencimientoStr ? `<span class="block text-[10px] text-[#4a5568]">Vence: ${vencimientoStr}</span>` : ''}
+            ${existe ? `<span class="block text-[10px] text-teal-300">${local.nombre}</span>` : ''}
           </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          ${badge}
-          ${d.archivoURL ? `<a href="${d.archivoURL}" target="_blank" rel="noopener" class="text-teal-300 hover:text-teal-200 text-xs font-semibold">Ver</a>` : ''}
+          <span class="text-xs font-semibold ${badgeCls}">${badgeTxt}</span>
+          ${existe ? `<a href="${local.url}" target="_blank" rel="noopener" class="text-teal-300 hover:text-teal-200 text-xs font-semibold">Ver</a>` : ''}
         </div>
       </div>`;
   });
@@ -244,16 +263,21 @@ function renderDocumentos() {
 
 function openDocumentacionModal() {
   if (!vehicleData) return;
+  const patente = (vehicleData.patente || '').toUpperCase();
+  document.querySelectorAll('.doc-dir, .patente-mayus').forEach(el => el.textContent = patente);
   DOC_OBLIGATORIOS.forEach(({ key }) => {
+    const local = vehicleDocumentosLocales[key] || null;
     const d = (vehicleDocumentacion || {})[key] || {};
     const preview = document.getElementById(`doc-${key}-preview`);
-    if (preview) preview.textContent = d.archivoURL ? 'Archivo cargado' : 'Sin archivo';
+    if (preview) preview.innerHTML = local
+      ? `<span class="text-teal-300">✔ ${local.nombre}</span>`
+      : `<span class="text-[#4a5568]">Sin archivo en la carpeta</span>`;
     const fechaInput = document.getElementById(`doc-${key}-fecha`);
     if (fechaInput) fechaInput.value = d.fechaVencimiento || '';
     const link = document.getElementById(`doc-${key}-link`);
-    if (d.archivoURL) { link.href = d.archivoURL; link.classList.remove('hidden'); }
+    if (local) { link.href = local.url; link.classList.remove('hidden'); }
     else { link.classList.add('hidden'); }
-    renderDocEstado(key, d);
+    renderDocEstado(key, local, d);
   });
   showModal('modal-documentacion');
 }
@@ -262,12 +286,12 @@ function closeDocumentacionModal() {
   hideModal('modal-documentacion');
 }
 
-function renderDocEstado(key, d) {
+function renderDocEstado(key, local, d) {
   const el = document.getElementById(`doc-${key}-estado`);
   if (!el) return;
   let txt, cls;
-  if (!d || !d.archivoURL) { txt = 'Sin cargar'; cls = 'text-[#4a5568]'; }
-  else if (!d.fechaVencimiento) { txt = 'Cargado'; cls = 'text-teal-300'; }
+  if (!local) { txt = 'Sin cargar'; cls = 'text-[#4a5568]'; }
+  else if (!d || !d.fechaVencimiento) { txt = 'Cargado'; cls = 'text-teal-300'; }
   else {
     const vto = new Date(d.fechaVencimiento + 'T00:00:00');
     const dias = Math.ceil((vto - new Date()) / 86400000);
@@ -279,62 +303,12 @@ function renderDocEstado(key, d) {
   el.className = 'text-xs font-semibold ' + cls;
 }
 
-function setupDocumentacionUploads() {
-  document.querySelectorAll('.doc-file').forEach(input => {
-    input.addEventListener('change', async () => {
-      const slot = input.dataset.slot;
-      const file = input.files && input.files[0];
-      if (!file) return;
-      if (!isAdmin()) { showToast('Solo el administrador puede cargar archivos', 'error'); return; }
-      const preview = document.getElementById(`doc-${slot}-preview`);
-      const est = document.getElementById(`doc-${slot}-estado`);
-      if (preview) preview.textContent = 'Subiendo...';
-      if (est) { est.textContent = 'Subiendo...'; est.className = 'text-xs font-semibold text-[#8b9bb4]'; }
-      try {
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        const path = `vehiculos/${vehicleId}/documentacion/${slot}-${Date.now()}-${safeName}`;
-        const ref = storage.ref(path);
-        const task = ref.put(file);
-        const timeoutE = new Promise((_, reject) => setTimeout(() => reject(new Error('Tiempo de subida agotado (posible problema de CORS o config de Storage)')), 30000));
-        const snap = await Promise.race([task, timeoutE]);
-        const url = await ref.getDownloadURL();
-        vehicleDocumentacion[slot] = { ...(vehicleDocumentacion[slot] || {}), archivoURL: url, nombre: file.name };
-        const link = document.getElementById(`doc-${slot}-link`);
-        link.href = url;
-        link.classList.remove('hidden');
-        if (preview) preview.textContent = '✔ ' + file.name;
-        renderDocEstado(slot, vehicleDocumentacion[slot]);
-        showToast('Archivo subido. Guardá para confirmar.', 'success');
-      } catch (e) {
-        console.error('Upload error', e);
-        if (preview) preview.textContent = 'Error al subir';
-        if (est) { est.textContent = 'Error'; est.className = 'text-xs font-semibold text-red-400'; }
-        let msg = 'No se pudo subir el archivo';
-        if (e && e.code) {
-          msg = e.code === 'storage/unauthorized' ? 'Sin permiso para subir (revisá las reglas de Storage)'
-            : e.code === 'storage/quota-exceeded' ? 'Cuota de Storage superada'
-            : e.code === 'storage/unauthenticated' ? 'Debés iniciar sesión para subir'
-            : e.code === 'storage/retry-limit-exceeded' ? 'Fallo de red al subir'
-            : msg + ` (${e.code})`;
-        } else if (e && /CORS|cors/i.test(String(e.message))) {
-          msg = 'Error de CORS en Storage: el bucket debe permitir tu origen';
-        } else if (e && /tiempo de subida agotado|Tiempo de subida/i.test(String(e.message))) {
-          msg = e.message;
-        }
-        showToast(msg, 'error');
-      }
-    });
-  });
-}
-
 async function saveDocumentacion() {
   if (!isAdmin()) return;
   const payload = {};
   DOC_OBLIGATORIOS.forEach(({ key }) => {
     payload[key] = {
-      archivoURL: vehicleDocumentacion[key]?.archivoURL || null,
-      fechaVencimiento: document.getElementById(`doc-${key}-fecha`).value || null,
-      nombre: vehicleDocumentacion[key]?.nombre || null
+      fechaVencimiento: document.getElementById(`doc-${key}-fecha`).value || null
     };
   });
   try {

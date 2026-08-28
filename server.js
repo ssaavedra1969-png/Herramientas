@@ -65,6 +65,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/titulos', express.static(path.join(__dirname, 'titulo')));
+app.use('/documentos', express.static(path.join(__dirname, 'documentos')));
 
 app.use(loadUser);
 

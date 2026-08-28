@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const { db } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
+
+const DOCS_DIR = path.join(__dirname, '..', 'documentos');
+const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro'];
 
 function parseFecha(val) {
   if (!val) return null;
@@ -56,6 +61,28 @@ router.get('/:id', verifyToken, async (req, res) => {
     const doc = await db.collection('vehicles').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
     res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/:id/documentos', verifyToken, async (req, res) => {
+  try {
+    const doc = await db.collection('vehicles').doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
+    const patente = (doc.data().patente || '').toUpperCase();
+    const carpeta = path.join(DOCS_DIR, patente);
+    let presentes = {};
+    if (fs.existsSync(carpeta)) {
+      const archivos = fs.readdirSync(carpeta);
+      archivos.forEach(nombre => {
+        const base = path.parse(nombre).name.toLowerCase();
+        if (DOC_TIPOS.includes(base)) {
+          presentes[base] = { url: `/documentos/${encodeURIComponent(patente)}/${nombre}`, nombre };
+        }
+      });
+    }
+    res.json({ id: doc.id, patente, documentos: presentes });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
