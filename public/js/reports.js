@@ -4,6 +4,8 @@ let vehicleMeta = {};
 let charts = {};
 let docReportData = [];
 let docReportTipos = [];
+let docSortKey = 'faltantes';
+let docSortDir = 'desc';
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -92,15 +94,16 @@ function renderAll() {
   const rep = allData.filter(d => d.categoria === 'Repuestos');
   const vtv = allData.filter(d => d.categoria === 'VTV');
   const seg = allData.filter(d => d.categoria === 'Seguro');
-  renderResumen(comb, rep, vtv, seg);
-  renderCombustible(comb);
-  renderRepuestos(rep);
-  renderVTV(vtv);
-  renderSeguro(seg);
-  renderVehiculos();
-  renderEmpresas(comb, rep, vtv, seg);
-  renderCostoVehiculo(comb, rep, vtv, seg);
-  renderDocumentacion();
+  const safe = (fn, ...args) => { try { fn(...args); } catch (e) { console.error('Render error in', fn.name, e); } };
+  safe(renderResumen, comb, rep, vtv, seg);
+  safe(renderCombustible, comb);
+  safe(renderRepuestos, rep);
+  safe(renderVTV, vtv);
+  safe(renderSeguro, seg);
+  safe(renderVehiculos);
+  safe(renderEmpresas, comb, rep, vtv, seg);
+  safe(renderCostoVehiculo, comb, rep, vtv, seg);
+  safe(renderDocumentacion);
 }
 
 function fc(n) { return '$ ' + Number(n || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -339,7 +342,7 @@ function exportSectionExcel(section) {
   } else if (section === 'documentacion') {
     const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
     const rows = docReportData.map(r => {
-      const out = { Patente: r.patente, 'Marca/Modelo': r.marcaModelo, Interno: r.interno, Empresa: r.empresa };
+      const out = { Patente: r.patente, 'Marca/Modelo': r.marcaModelo, Centro: r.centroTrabajo || '', Interno: r.interno, Empresa: r.empresa };
       tipos.forEach(t => { out[(DOC_LABELS[t] || t)] = r.docs[t] ? 'Si' : 'Falta'; });
       out['Faltan'] = r.faltantes;
       return out;
@@ -393,9 +396,9 @@ function exportSectionPDF(section) {
     });
   } else if (section === 'documentacion') {
     const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
-    const head = [['Patente', 'Marca/Modelo', ...tipos.map(t => DOC_LABELS[t] || t), 'Faltan']];
+    const head = [['Patente', 'Marca/Modelo', 'Centro', ...tipos.map(t => DOC_LABELS[t] || t), 'Faltan']];
     const body = docReportData.map(r => [
-      r.patente, r.marcaModelo,
+      r.patente, r.marcaModelo, r.centroTrabajo || '',
       ...tipos.map(t => r.docs[t] ? 'Si' : 'Falta'),
       String(r.faltantes)
     ]);
@@ -405,7 +408,7 @@ function exportSectionPDF(section) {
       theme: 'grid',
       headStyles: { fillColor: [212, 175, 55], fontSize: 8 },
       bodyStyles: { fontSize: 7 },
-      columnStyles: { 0: { cellWidth: 22 }, 1: { cellWidth: 50 } }
+      columnStyles: { 0: { cellWidth: 22 }, 1: { cellWidth: 45 }, 2: { cellWidth: 30 } }
     });
   } else {
     const data = getSectionData(section);
@@ -498,6 +501,8 @@ function renderCostoVehiculo(comb, rep, vtv, seg) {
   const entries = Object.entries(porVehiculo).sort((a, b) => b[1].total - a[1].total);
   const tbody = document.getElementById('costovehiculo-table');
   const foot = document.getElementById('costovehiculo-foot');
+
+  if (!tbody) return;
 
   if (tbody) {
     if (!entries.length) {
@@ -592,4 +597,57 @@ function renderDocumentacion() {
       <td class="py-2 pr-2 text-center">${faltanBadge}</td>
     </tr>`;
   }).join('');
+
+  ['patente', 'marcaModelo', 'centroTrabajo', 'faltantes'].forEach(k => {
+    const el = document.getElementById('doc-sort-' + k);
+    if (!el) return;
+    if (k === docSortKey) el.textContent = docSortDir === 'asc' ? '▲' : '▼';
+    else el.textContent = '';
+  });
+}
+
+function sortDocTable(key) {
+  if (docSortKey === key) {
+    docSortDir = docSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    docSortKey = key;
+    docSortDir = key === 'faltantes' ? 'desc' : 'asc';
+  }
+  const rows = [...docReportData];
+  rows.sort((a, b) => {
+    let va = a[docSortKey], vb = b[docSortKey];
+    if (typeof va === 'string') {
+      va = (va || '').toLowerCase();
+      vb = (vb || '').toLowerCase();
+      if (va < vb) return docSortDir === 'asc' ? -1 : 1;
+      if (va > vb) return docSortDir === 'asc' ? 1 : -1;
+      return 0;
+    }
+    return docSortDir === 'asc' ? (va || 0) - (vb || 0) : (vb || 0) - (va || 0);
+  });
+  const tbody = document.getElementById('doc-table');
+  const total = docReportData.length;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-[#4a5568]">Sin datos</td></tr>';
+    return;
+  }
+  const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
+  tbody.innerHTML = rows.map(r => {
+    const cells = tipos.map(t => `<td class="py-2 pr-2 text-center">${docCell(t, !!r.docs[t])}</td>`).join('');
+    const faltanBadge = r.faltantes === 0
+      ? '<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-400/20 text-green-400">OK</span>'
+      : `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold ${r.faltantes >= 3 ? 'bg-red-400/20 text-red-400' : r.faltantes >= 2 ? 'bg-yellow-400/20 text-yellow-400' : 'bg-orange-400/20 text-orange-400'}">${r.faltantes}</span>`;
+    return `<tr class="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
+      <td class="py-2 pr-2 text-[#ffffff] font-medium">${r.patente}</td>
+      <td class="py-2 pr-2 text-[#8b9bb4]">${r.marcaModelo}</td>
+      <td class="py-2 pr-2 text-[#8b9bb4]">${r.centroTrabajo || '—'}</td>
+      ${cells}
+      <td class="py-2 pr-2 text-center">${faltanBadge}</td>
+    </tr>`;
+  }).join('');
+  ['patente', 'marcaModelo', 'centroTrabajo', 'faltantes'].forEach(k => {
+    const el = document.getElementById('doc-sort-' + k);
+    if (!el) return;
+    el.textContent = k === docSortKey ? (docSortDir === 'asc' ? '▲' : '▼') : '';
+  });
 }

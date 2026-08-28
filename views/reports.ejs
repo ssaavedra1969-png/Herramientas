@@ -501,15 +501,15 @@
           <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
             <table class="w-full text-xs">
               <thead class="sticky top-0"><tr class="text-left text-[#6b7280] border-b border-white/[0.06]">
-                <th class="pb-2 pr-2 font-medium">Patente</th>
-                <th class="pb-2 pr-2 font-medium">Marca / Modelo</th>
-                <th class="pb-2 pr-2 font-medium">Centro</th>
+                <th class="pb-2 pr-2 font-medium"><button onclick="sortDocTable('patente')" class="rpt-qr">Patente <span id="doc-sort-patente"></span></button></th>
+                <th class="pb-2 pr-2 font-medium"><button onclick="sortDocTable('marcaModelo')" class="rpt-qr">Marca / Modelo <span id="doc-sort-marcaModelo"></span></button></th>
+                <th class="pb-2 pr-2 font-medium"><button onclick="sortDocTable('centroTrabajo')" class="rpt-qr">Centro <span id="doc-sort-centroTrabajo"></span></button></th>
                 <th class="pb-2 pr-2 font-medium text-center">Título</th>
                 <th class="pb-2 pr-2 font-medium text-center">Cédula</th>
                 <th class="pb-2 pr-2 font-medium text-center">Seguro</th>
                 <th class="pb-2 pr-2 font-medium text-center">Registro</th>
                 <th class="pb-2 pr-2 font-medium text-center">VTV</th>
-                <th class="pb-2 pr-2 font-medium text-center">Faltan</th>
+                <th class="pb-2 pr-2 font-medium text-center"><button onclick="sortDocTable('faltantes')" class="rpt-qr">Faltan <span id="doc-sort-faltantes"></span></button></th>
               </tr></thead>
               <tbody id="doc-table"></tbody>
             </table>
