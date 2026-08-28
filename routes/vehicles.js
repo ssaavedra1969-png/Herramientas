@@ -5,7 +5,7 @@ const path = require('path');
 const { db } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 
-const DOCS_DIR = path.join(__dirname, '..', 'PATENTE');
+const DOCS_DIR = path.join(process.cwd(), 'PATENTE');
 const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro'];
 const DOC_EXT_PRIORIDAD = ['pdf', 'jpg', 'jpeg', 'png'];
 
