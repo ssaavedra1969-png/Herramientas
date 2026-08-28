@@ -125,6 +125,10 @@
           <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           Costo/Vehículo
         </button>
+        <button onclick="switchTab('documentacion')" data-tab="documentacion" class="report-tab">
+          <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Documentación
+        </button>
       </div>
 
       <div id="tab-resumen" class="report-section">
@@ -474,6 +478,48 @@
               Excel
             </button>
             <button onclick="exportSectionPDF('costovehiculo')" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: DOCUMENTACIÓN ═══ -->
+      <div id="tab-documentacion" class="report-section hidden">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Total Vehículos</p><p class="text-xl font-bold text-[#f3f4f6]" id="doc-total">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Completos</p><p class="text-xl font-bold text-green-400" id="doc-completos">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Con Faltantes</p><p class="text-xl font-bold text-yellow-400" id="doc-faltantes-count">0</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider">Docs Faltantes</p><p class="text-xl font-bold text-red-400" id="doc-total-faltantes">0</p></div>
+        </div>
+        <div class="rpt-card rpt-glow">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-[#f3f4f6] flex items-center gap-2"><svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Estado de Documentación Obligatoria</h3>
+            <span class="text-[#6b7280] text-xs" id="doc-count">0 vehículos</span>
+          </div>
+          <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+            <table class="w-full text-xs">
+              <thead class="sticky top-0"><tr class="text-left text-[#6b7280] border-b border-white/[0.06]">
+                <th class="pb-2 pr-2 font-medium">Patente</th>
+                <th class="pb-2 pr-2 font-medium">Marca / Modelo</th>
+                <th class="pb-2 pr-2 font-medium">Centro</th>
+                <th class="pb-2 pr-2 font-medium text-center">Título</th>
+                <th class="pb-2 pr-2 font-medium text-center">Cédula</th>
+                <th class="pb-2 pr-2 font-medium text-center">Seguro</th>
+                <th class="pb-2 pr-2 font-medium text-center">Registro</th>
+                <th class="pb-2 pr-2 font-medium text-center">VTV</th>
+                <th class="pb-2 pr-2 font-medium text-center">Faltan</th>
+              </tr></thead>
+              <tbody id="doc-table"></tbody>
+            </table>
+          </div>
+          <div class="flex gap-2 mt-3 justify-end">
+            <button onclick="exportSectionExcel('documentacion')" class="rpt-btn">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Excel
+            </button>
+            <button onclick="exportSectionPDF('documentacion')" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
               PDF
             </button>

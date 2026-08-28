@@ -2,6 +2,8 @@ let allData = [];
 let allVehiclesBasic = [];
 let vehicleMeta = {};
 let charts = {};
+let docReportData = [];
+let docReportTipos = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -48,9 +50,10 @@ async function loadData() {
     if (desde) params.set('desde', desde);
     if (hasta) params.set('hasta', hasta);
     if (vehiculo && vehiculo !== 'todos') params.set('vehiculo', vehiculo);
-    const [reportRes, vbRes] = await Promise.all([
+    const [reportRes, vbRes, docRes] = await Promise.all([
       fetch(`/api/admin/report?${params.toString()}`, { headers }),
-      fetch('/api/admin/vehicles-basic', { headers })
+      fetch('/api/admin/vehicles-basic', { headers }),
+      fetch('/api/vehicles/documentos/reporte', { headers })
     ]);
     if (!reportRes.ok) throw new Error(await reportRes.text());
     const data = await reportRes.json();
@@ -58,6 +61,14 @@ async function loadData() {
     if (vbRes.ok) {
       const vbData = await vbRes.json();
       allVehiclesBasic = vbData.vehicles || [];
+    }
+    if (docRes.ok) {
+      const docData = await docRes.json();
+      docReportData = docData.rows || [];
+      docReportTipos = docData.tipos || [];
+    } else {
+      docReportData = [];
+      docReportTipos = [];
     }
     renderAll();
   } catch (e) {
@@ -89,6 +100,7 @@ function renderAll() {
   renderVehiculos();
   renderEmpresas(comb, rep, vtv, seg);
   renderCostoVehiculo(comb, rep, vtv, seg);
+  renderDocumentacion();
 }
 
 function fc(n) { return '$ ' + Number(n || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -304,7 +316,7 @@ function getSectionData(section) {
 }
 
 function getSectionTitle(section) {
-  const titles = { resumen: 'Resumen General', combustible: 'Combustible', repuestos: 'Repuestos', vtv: 'VTV', seguro: 'Seguro', vehiculos: 'Ficha de Vehículos' };
+  const titles = { resumen: 'Resumen General', combustible: 'Combustible', repuestos: 'Repuestos', vtv: 'VTV', seguro: 'Seguro', vehiculos: 'Ficha de Vehículos', documentacion: 'Documentación' };
   return titles[section] || 'Reporte';
 }
 
@@ -324,6 +336,18 @@ function exportSectionExcel(section) {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Ficha Vehículos');
     XLSX.writeFile(wb, `ficha-vehiculos-${new Date().toISOString().split('T')[0]}.xlsx`);
+  } else if (section === 'documentacion') {
+    const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
+    const rows = docReportData.map(r => {
+      const out = { Patente: r.patente, 'Marca/Modelo': r.marcaModelo, Interno: r.interno, Empresa: r.empresa };
+      tipos.forEach(t => { out[(DOC_LABELS[t] || t)] = r.docs[t] ? 'Si' : 'Falta'; });
+      out['Faltan'] = r.faltantes;
+      return out;
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Documentación');
+    XLSX.writeFile(wb, `documentacion-${new Date().toISOString().split('T')[0]}.xlsx`);
   } else {
     const data = getSectionData(section);
     const rows = data.map(d => ({ Fecha: d.fecha.toLocaleDateString('es-AR'), Categoria: d.categoria, Vehiculo: d.vehiculo||'', Detalle: d.detalle||'', Monto: d.monto, Proveedor: d.proveedor||'' }));
@@ -366,6 +390,22 @@ function exportSectionPDF(section) {
       headStyles: { fillColor: [212, 175, 55], fontSize: 6 },
       bodyStyles: { fontSize: 5.5 },
       columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 16 }, 2: { cellWidth: 18 }, 3: { cellWidth: 18 }, 4: { cellWidth: 10 }, 5: { cellWidth: 18 }, 6: { cellWidth: 18 }, 7: { cellWidth: 10 }, 8: { cellWidth: 16 }, 9: { cellWidth: 16 }, 10: { cellWidth: 16 }, 11: { cellWidth: 12 }, 12: { cellWidth: 22 }, 13: { cellWidth: 22 } }
+    });
+  } else if (section === 'documentacion') {
+    const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
+    const head = [['Patente', 'Marca/Modelo', ...tipos.map(t => DOC_LABELS[t] || t), 'Faltan']];
+    const body = docReportData.map(r => [
+      r.patente, r.marcaModelo,
+      ...tipos.map(t => r.docs[t] ? 'Si' : 'Falta'),
+      String(r.faltantes)
+    ]);
+    doc.autoTable({
+      startY: 34,
+      head, body,
+      theme: 'grid',
+      headStyles: { fillColor: [212, 175, 55], fontSize: 8 },
+      bodyStyles: { fontSize: 7 },
+      columnStyles: { 0: { cellWidth: 22 }, 1: { cellWidth: 50 } }
     });
   } else {
     const data = getSectionData(section);
@@ -490,7 +530,7 @@ function renderCostoVehiculo(comb, rep, vtv, seg) {
     const top = entries.slice(0, 15);
     const labels = top.map(e => e[0]);
     const ctxBar = document.getElementById('chart-costo-vehiculo');
-    if (ctxBar) charts['costo-vehiculo'] = new Chart(ctxBar, {
+    if (ctxBar)     charts['costo-vehiculo'] = new Chart(ctxBar, {
       type: 'bar',
       data: {
         labels,
@@ -504,4 +544,52 @@ function renderCostoVehiculo(comb, rep, vtv, seg) {
       options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { labels: { color: '#8b9bb4' } } }, scales: { x: { stacked: true, beginAtZero: true, ticks: { color: '#8b9bb4', callback: v => '$' + v } }, y: { stacked: true, grid: { display: false }, ticks: { color: '#8b9bb4' } } } }
     });
   }
+}
+
+const DOC_LABELS = { titulo: 'Título', cedula: 'Cédula', seguro: 'Seguro', registro: 'Registro', vtv: 'VTV' };
+
+function docCell(tipo, presente) {
+  if (presente) {
+    return `<span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-green-400/15 text-green-400" title="${DOC_LABELS[tipo] || tipo} presente">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+    </span>`;
+  }
+  return `<span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-red-400/15 text-red-400 font-bold text-[10px]" title="${DOC_LABELS[tipo] || tipo} falta">Falta</span>`;
+}
+
+function renderDocumentacion() {
+  const rows = docReportData || [];
+  const total = rows.length;
+  const completos = rows.filter(r => r.faltantes === 0).length;
+  const conFaltantes = total - completos;
+  const totalFaltantes = rows.reduce((s, r) => s + r.faltantes, 0);
+
+  document.getElementById('doc-total').textContent = total;
+  document.getElementById('doc-completos').textContent = completos;
+  document.getElementById('doc-faltantes-count').textContent = conFaltantes;
+  document.getElementById('doc-total-faltantes').textContent = totalFaltantes;
+  document.getElementById('doc-count').textContent = total + ' vehículos';
+
+  const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
+  const tbody = document.getElementById('doc-table');
+  if (!tbody) return;
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="' + (2 + tipos.length + 1) + '" class="text-center py-8 text-[#4a5568]">Sin datos</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const cells = tipos.map(t => `<td class="py-2 pr-2 text-center">${docCell(t, !!r.docs[t])}</td>`).join('');
+    const faltanBadge = r.faltantes === 0
+      ? '<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-400/20 text-green-400">OK</span>'
+      : `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold ${r.faltantes >= 3 ? 'bg-red-400/20 text-red-400' : r.faltantes >= 2 ? 'bg-yellow-400/20 text-yellow-400' : 'bg-orange-400/20 text-orange-400'}">${r.faltantes}</span>`;
+    return `<tr class="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
+      <td class="py-2 pr-2 text-[#ffffff] font-medium">${r.patente}</td>
+      <td class="py-2 pr-2 text-[#8b9bb4]">${r.marcaModelo}</td>
+      <td class="py-2 pr-2 text-[#8b9bb4]">${r.centroTrabajo || '—'}</td>
+      ${cells}
+      <td class="py-2 pr-2 text-center">${faltanBadge}</td>
+    </tr>`;
+  }).join('');
 }

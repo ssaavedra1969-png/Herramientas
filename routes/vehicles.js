@@ -57,6 +57,55 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
+function scanDocumentosCarpeta(patente) {
+  const carpeta = path.join(DOCS_DIR, patente);
+  let presentes = {};
+  if (fs.existsSync(carpeta)) {
+    const archivos = fs.readdirSync(carpeta);
+    archivos.forEach(nombre => {
+      const parsed = path.parse(nombre);
+      const base = parsed.name.toLowerCase();
+      const ext = parsed.ext.replace('.', '').toLowerCase();
+      if (!DOC_TIPOS.includes(base) || !DOC_EXT_PRIORIDAD.includes(ext)) return;
+      const actual = presentes[base];
+      if (!actual || DOC_EXT_PRIORIDAD.indexOf(ext) < DOC_EXT_PRIORIDAD.indexOf(path.parse(actual.nombre).ext.replace('.', '').toLowerCase())) {
+        presentes[base] = { url: `/documentos/${encodeURIComponent(patente)}/${nombre}`, nombre };
+      }
+    });
+  }
+  return presentes;
+}
+
+router.get('/documentos/reporte', verifyToken, async (req, res) => {
+  try {
+    const snap = await db.collection('vehicles').get();
+    const rows = snap.docs.map(d => {
+      const v = d.data();
+      const patente = (v.patente || '').toUpperCase();
+      const presentes = scanDocumentosCarpeta(patente);
+      const docs = {};
+      DOC_TIPOS.forEach(t => { docs[t] = !!presentes[t]; });
+      const faltantes = DOC_TIPOS.filter(t => !docs[t]).length;
+      return {
+        id: d.id,
+        patente: v.patente || '—',
+        marca: v.marca || '—',
+        modelo: v.modelo || '—',
+        marcaModelo: [v.marca, v.modelo].filter(Boolean).join(' ') || '—',
+        interno: v.interno || '',
+        empresa: v.empresa || '',
+        centroTrabajo: v.centroTrabajo || '',
+        docs,
+        faltantes
+      };
+    });
+    rows.sort((a, b) => b.faltantes - a.faltantes || a.patente.localeCompare(b.patente));
+    res.json({ rows, tipos: DOC_TIPOS });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/:id', verifyToken, async (req, res) => {
   try {
     const doc = await db.collection('vehicles').doc(req.params.id).get();
@@ -72,21 +121,7 @@ router.get('/:id/documentos', verifyToken, async (req, res) => {
     const doc = await db.collection('vehicles').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
     const patente = (doc.data().patente || '').toUpperCase();
-    const carpeta = path.join(DOCS_DIR, patente);
-    let presentes = {};
-    if (fs.existsSync(carpeta)) {
-      const archivos = fs.readdirSync(carpeta);
-      archivos.forEach(nombre => {
-        const parsed = path.parse(nombre);
-        const base = parsed.name.toLowerCase();
-        const ext = parsed.ext.replace('.', '').toLowerCase();
-        if (!DOC_TIPOS.includes(base) || !DOC_EXT_PRIORIDAD.includes(ext)) return;
-        const actual = presentes[base];
-        if (!actual || DOC_EXT_PRIORIDAD.indexOf(ext) < DOC_EXT_PRIORIDAD.indexOf(path.parse(actual.nombre).ext.replace('.', '').toLowerCase())) {
-          presentes[base] = { url: `/documentos/${encodeURIComponent(patente)}/${nombre}`, nombre };
-        }
-      });
-    }
+    const presentes = scanDocumentosCarpeta(patente);
     res.json({ id: doc.id, patente, documentos: presentes });
   } catch (error) {
     res.status(500).json({ error: error.message });
