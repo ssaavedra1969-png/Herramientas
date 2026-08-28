@@ -88,6 +88,10 @@ public/js/
   maintenance.js             # CRUD mantenimientos
   reports.js                 # Reportes financieros
   admin.js                   # Roles de usuario
+scripts/
+  subir-documentos.js        # Sube la carpeta PATENTE/ a producción (pull+add+commit+push) → npm run subir:docs
+PATENTE/
+  {patente}/{tipo}.ext        # Documentos obligatorios versionados (fuente leída por la app en Vercel)
 ```
 
 ## Firestore Collections
@@ -119,3 +123,30 @@ Documento único con campo `current` para auto-increment de números internos de
 - **Filtros dinámicos:** `populateFilterDropdowns()` llena selects desde los datos reales de Firestore.
 - **CSV/Excel import:** Usa PapaParse (CSV) y XLSX (Excel) con preview y validación de duplicados.
 - **Backup defensivo:** Antes de eliminar registros, se descarga backup completo de la base.
+
+## Documentación obligatoria por vehículo
+
+La documentación (Título, Cédula, Seguro, Registro del chofer) se maneja con la **carpeta `PATENTE/{patente}/`** versionada en git, que llega a Vercel por integración Git. **NO usa Firebase Storage** (plan Spark = sin Storage, 404 bucket).
+
+### Cómo funciona
+- **Archivos:** se ponen en `PATENTE/{patente}/` con el nombre del tipo: `titulo`, `cedula`, `seguro`, `registro` (solo patente, sin sufijo). Un archivo por tipo, prioridad de extensión `pdf > jpg > jpeg > png`. (Ej. `PATENTE/AG719TT/seguro.pdf`).
+- **Solo los 4 tipos** se leen; VTV y otros se ignoran (VTV se maneja por otro campo del vehículo).
+- **Las carpetas vacías NO se versionan en git** (git ignora carpetas vacías); se suben solas cuando tienen archivos.
+- **Vencimiento:** se carga **MANUALMENTE** en la web (ficha del vehículo → Documentación). La app NO lee la fecha del PDF (se decidió abandonar la detección automática).
+- **Lectura backend:** `GET /api/vehicles/:id/documentos` (routes/vehicles.js) lista los archivos de `PATENTE/{patente}/`; static `/documentos` en server.js sirve los archivos.
+
+### Cómo subir documentos a producción (carga masiva)
+1. Poné cada PDF en `PATENTE/{patente}/` en la PC local.
+2. Cargá la fecha de vencimiento en la web (por vehículo).
+3. En terminal, corré **un solo comando**:
+   ```
+   npm run subir:docs
+   ```
+   El script (`scripts/subir-documentos.js`) hace `git pull origin main` → detecta qué vehículos se tocaron → `git add PATENTE/` → `git commit` → `git push origin main`. Solo toca la carpeta `PATENTE/` (no commitea código).
+4. Vercel despliega automáticamente (~1-2 min).
+
+### Nota crítica
+- **Storage no disponible** (no intentar migrar a Firebase Storage; el bucket no existe en el plan gratuito).
+- `config/firebase.js`: el Admin SDK local necesita `projectId: sa.project_id` explícito.
+- `titulo/` (41 PDFs) es el patrón previo de versionado que replicó `PATENTE/`.
+
