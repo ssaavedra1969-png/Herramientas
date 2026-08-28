@@ -956,7 +956,7 @@
       </div>
       <div class="flex items-start gap-2 text-xs text-[#8b9bb4] bg-[#d4af37]/5 border border-[#d4af37]/20 rounded-lg p-3">
         <svg class="w-4 h-4 text-[#d4af37] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-        <span>Los archivos van en la carpeta <span class="font-mono text-[#d4af37]">documentos/<span class="patente-mayus"></span>/</span> del servidor, con el nombre según el tipo (<span class="font-mono">titulo.pdf</span>, <span class="font-mono">cedula.pdf</span>, <span class="font-mono">seguro.pdf</span>, <span class="font-mono">registro.pdf</span>). Acá solo se carga la <strong>fecha de vencimiento</strong>.</span>
+        <span>Los archivos van en la carpeta <span class="font-mono text-[#d4af37]">PATENTE/<span class="patente-mayus"></span>/</span> del servidor, con el nombre según el tipo (<span class="font-mono">titulo.pdf</span>, <span class="font-mono">cedula.pdf</span>, <span class="font-mono">seguro.pdf</span>, <span class="font-mono">registro.pdf</span>). Acá solo se carga la <strong>fecha de vencimiento</strong>.</span>
       </div>
 
       <!-- Slot 1: Título -->
@@ -972,7 +972,7 @@
           <div class="flex-1">
             <div id="doc-titulo-preview" class="text-xs text-[#4a5568]"></div>
             <% if (currentUserData?.role === 'Admin') { %>
-            <span class="text-[11px] text-[#8b9bb4]">Carpeta: <span class="font-mono text-[#d4af37]">documentos/<span class="doc-dir"></span>/</span></span>
+            <span class="text-[11px] text-[#8b9bb4]">Carpeta: <span class="font-mono text-[#d4af37]">PATENTE/<span class="doc-dir"></span>/</span></span>
             <% } %>
           </div>
           <a id="doc-titulo-link" href="#" target="_blank" rel="noopener" class="hidden shrink-0 text-teal-300 hover:text-teal-200 text-xs font-semibold flex items-center gap-1">
@@ -999,7 +999,7 @@
           <div class="flex-1">
             <div id="doc-cedula-preview" class="text-xs text-[#4a5568]"></div>
             <% if (currentUserData?.role === 'Admin') { %>
-            <span class="text-[11px] text-[#8b9bb4]">Carpeta: <span class="font-mono text-[#d4af37]">documentos/<span class="doc-dir"></span>/</span></span>
+            <span class="text-[11px] text-[#8b9bb4]">Carpeta: <span class="font-mono text-[#d4af37]">PATENTE/<span class="doc-dir"></span>/</span></span>
             <% } %>
           </div>
           <a id="doc-cedula-link" href="#" target="_blank" rel="noopener" class="hidden shrink-0 text-teal-300 hover:text-teal-200 text-xs font-semibold flex items-center gap-1">
@@ -1026,7 +1026,7 @@
           <div class="flex-1">
             <div id="doc-seguro-preview" class="text-xs text-[#4a5568]"></div>
             <% if (currentUserData?.role === 'Admin') { %>
-            <span class="text-[11px] text-[#8b9bb4]">Carpeta: <span class="font-mono text-[#d4af37]">documentos/<span class="doc-dir"></span>/</span></span>
+            <span class="text-[11px] text-[#8b9bb4]">Carpeta: <span class="font-mono text-[#d4af37]">PATENTE/<span class="doc-dir"></span>/</span></span>
             <% } %>
           </div>
           <a id="doc-seguro-link" href="#" target="_blank" rel="noopener" class="hidden shrink-0 text-teal-300 hover:text-teal-200 text-xs font-semibold flex items-center gap-1">
@@ -1053,7 +1053,7 @@
           <div class="flex-1">
             <div id="doc-registro-preview" class="text-xs text-[#4a5568]"></div>
             <% if (currentUserData?.role === 'Admin') { %>
-            <span class="text-[11px] text-[#8b9bb4]">Carpeta: <span class="font-mono text-[#d4af37]">documentos/<span class="doc-dir"></span>/</span></span>
+            <span class="text-[11px] text-[#8b9bb4]">Carpeta: <span class="font-mono text-[#d4af37]">PATENTE/<span class="doc-dir"></span>/</span></span>
             <% } %>
           </div>
           <a id="doc-registro-link" href="#" target="_blank" rel="noopener" class="hidden shrink-0 text-teal-300 hover:text-teal-200 text-xs font-semibold flex items-center gap-1">
