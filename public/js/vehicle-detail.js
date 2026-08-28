@@ -335,13 +335,18 @@ function openDocumentacionModal() {
   document.querySelectorAll('.doc-dir, .patente-mayus').forEach(el => el.textContent = patente);
   DOC_OBLIGATORIOS.forEach(({ key }) => {
     const local = vehicleDocumentosLocales[key] || null;
+    let fecha = null;
+    if (key === 'vtv') fecha = vehicleData.vtv?.fechaVencimiento || null;
+    else if (key === 'seguro') fecha = vehicleData.seguro?.fechaVencimiento || null;
+    else if (key === 'registro') fecha = vehicleData.vencimientoRegistro || null;
+    else fecha = (vehicleDocumentacion || {})[key]?.fechaVencimiento || null;
     const d = (vehicleDocumentacion || {})[key] || {};
     const preview = document.getElementById(`doc-${key}-preview`);
     if (preview) preview.innerHTML = local
       ? `<span class="text-teal-300">✔ ${local.nombre}</span>`
       : `<span class="text-[#4a5568]">Sin archivo en la carpeta</span>`;
     const fechaInput = document.getElementById(`doc-${key}-fecha`);
-    if (fechaInput) fechaInput.value = d.fechaVencimiento || '';
+    if (fechaInput) fechaInput.value = fecha || '';
     const link = document.getElementById(`doc-${key}-link`);
     if (link) {
       if (local) { link.href = local.url; link.classList.remove('hidden'); }
@@ -349,7 +354,7 @@ function openDocumentacionModal() {
     }
     const elimBtn = document.getElementById(`doc-${key}-eliminar`);
     if (elimBtn) elimBtn.classList.toggle('hidden', !local);
-    renderDocEstado(key, local, d);
+    renderDocEstado(key, local, { fechaVencimiento: fecha });
   });
   showModal('modal-documentacion');
 }
@@ -377,18 +382,33 @@ function renderDocEstado(key, local, d) {
 
 async function saveDocumentacion() {
   if (!isAdmin()) return;
-  const payload = {};
+  const update = {};
   DOC_OBLIGATORIOS.forEach(({ key }) => {
     const fechaInput = document.getElementById(`doc-${key}-fecha`);
-    payload[key] = {
-      fechaVencimiento: fechaInput ? (fechaInput.value || null) : null
-    };
+    const fecha = fechaInput ? (fechaInput.value || null) : null;
+    if (key === 'vtv') {
+      update['vtv.fechaVencimiento'] = fecha;
+    } else if (key === 'seguro') {
+      update['seguro.fechaVencimiento'] = fecha;
+    } else if (key === 'registro') {
+      update['vencimientoRegistro'] = fecha;
+    }
   });
   try {
-    await db.collection('vehicles').doc(vehicleId).update({ documentacion: payload });
-    vehicleData.documentacion = payload;
-    vehicleDocumentacion = payload;
+    await db.collection('vehicles').doc(vehicleId).update(update);
+    Object.keys(update).forEach(k => {
+      const parts = k.split('.');
+      if (parts.length === 2) {
+        if (!vehicleData[parts[0]]) vehicleData[parts[0]] = {};
+        vehicleData[parts[0]][parts[1]] = update[k];
+      } else {
+        vehicleData[k] = update[k];
+      }
+    });
+    renderVTV();
+    renderSeguro();
     renderDocumentos();
+    renderChofer();
     closeDocumentacionModal();
     showToast('Documentación guardada');
   } catch (e) {
