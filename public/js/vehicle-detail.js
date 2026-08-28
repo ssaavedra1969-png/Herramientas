@@ -406,7 +406,7 @@ async function saveDocumentacion() {
     renderVTV();
     renderSeguro();
     renderDocumentos();
-    renderChofer();
+    renderGeneralInfo();
     closeDocumentacionModal();
     showToast('Documentación guardada');
   } catch (e) {
