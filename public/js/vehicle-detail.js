@@ -239,6 +239,7 @@ async function deleteDocumentoLocal(key) {
     if (!del.ok) throw new Error(data.error || 'No se pudo eliminar');
     showToast(`${label} eliminado (copia de respaldo descargada)`);
     await loadDocumentosLocales();
+    updateDocBadge();
     if (!document.getElementById('modal-documentacion')?.classList.contains('hidden')) openDocumentacionModal();
   } catch (e) {
     showToast('Error al eliminar: ' + e.message, 'error');
@@ -250,6 +251,8 @@ function renderDocumentos() {
   if (!container) return;
   const docs = vehicleData.documentos || [];
   let html = '';
+
+  updateDocBadge();
 
   DOC_OBLIGATORIOS.forEach(({ key, label }) => {
     const local = vehicleDocumentosLocales[key] || null;
@@ -306,6 +309,24 @@ function renderDocumentos() {
   }
 
   container.innerHTML = html || '<span class="italic text-[#4a5568]">Sin documentos adjuntos</span>';
+}
+
+function updateDocBadge() {
+  const badge = document.getElementById('doc-badge');
+  const badgeOk = document.getElementById('doc-badge-ok');
+  if (!badge || !badgeOk) return;
+  const total = DOC_OBLIGATORIOS.length;
+  const presentes = DOC_OBLIGATORIOS.filter(d => vehicleDocumentosLocales[d.key]);
+  const faltantes = total - presentes.length;
+  if (faltantes === 0) {
+    badge.classList.add('hidden');
+    badgeOk.classList.remove('hidden');
+  } else {
+    badgeOk.classList.add('hidden');
+    badge.classList.remove('hidden');
+    badge.textContent = `Faltan ${faltantes}`;
+    badge.className = `px-1.5 py-0.5 rounded-full text-[10px] font-bold ${faltantes >= 3 ? 'bg-red-400/20 text-red-400' : faltantes >= 2 ? 'bg-yellow-400/20 text-yellow-400' : 'bg-orange-400/20 text-orange-400'}`;
+  }
 }
 
 function openDocumentacionModal() {
