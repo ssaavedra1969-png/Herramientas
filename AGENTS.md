@@ -168,3 +168,16 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 - **Server local**: `node server.js` NO recarga en caliente cambios de server.js/rutas (solo vistas y estáticos). Tras tocar rutas: matar el proceso del puerto 3000 (`Get-NetTCPConnection -LocalPort 3000`) y relanzar `node server.js` (o `npm run dev` = `node --watch server.js`). Vistas `.ejs` y `public/` se ven al refrescar.
 - **`DEV_READ_ONLY=true` en `.env`**: en local TODAS las escrituras a Firestore están bloqueadas (usa la misma base que producción). Revisar antes de "probar" funciones de guardado.
 
+## Optimizaciones — herramienta de adjuntos (FUERA del repo)
+
+Proyecto aparte en `C:\AI\Antigravity\FALPAT srl\Optimizaciones` (no es parte del repo Herramientas). Convierte PDFs/fotos de `PATENTE/` en un **PDF A4 estandarizado y liviano** con marca de agua en banda diagonal **"Propiedad de Grupo Falpat SRL"**. 100% local (Python + Flask + PyMuPDF + Pillow), **no** toca Firebase ni se despliega en Vercel. Solo escribe archivos en la carpeta `PATENTE/`.
+
+- **Arranque:** `Optimizaciones\iniciar.bat` → `http://localhost:8642`. Menú del sistema: **Utilidades → Optimizar Adjuntos** (URL en `OPTIMIZADOR_URL`, default `http://localhost:8642`; inyectada en `middleware/auth.js`).
+- **Batch:** `python cli.py` (en `Optimizaciones`) re-procesa toda `PATENTE/`; mueve los originales a `PATENTE/{patente}/_originales/` (excluido de git en `.gitignore`).
+- **Reglas internas:**
+  - PDF fuente → se rasteriza ~150 dpi y re-encodea a JPEG (comprime escaneos: ej. AE192RO vtv 3,1 MB → 1,1 MB, -63%).
+  - Hoja auto-orientada según contenido (apaisada si es ancha) + dos elementos chicos comparten hoja.
+  - Salida siempre `PATENTE/{patente}/{tipo}.pdf` (la app ya prioriza `.pdf`).
+  - Luego de optimizar, publicar con `npm run subir:docs`.
+- **Config:** `Optimizaciones\config.json` (`patente_dir`, `port`, `jpeg_quality`, `watermark_opacity/fontsize/angle`).
+
