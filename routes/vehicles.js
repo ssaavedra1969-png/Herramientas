@@ -2,12 +2,13 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const { db } = require('../config/firebase');
+const { db, admin } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 
 const DOCS_DIR = path.join(process.cwd(), 'PATENTE');
-const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
+const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
 const DOC_EXT_PRIORIDAD = ['pdf', 'jpg', 'jpeg', 'png'];
+const DOC_MAX_UPLOAD = 700 * 1024;
 
 function parseFecha(val) {
   if (!val) return null;
@@ -69,7 +70,7 @@ function scanDocumentosCarpeta(patente) {
       if (!DOC_TIPOS.includes(base) || !DOC_EXT_PRIORIDAD.includes(ext)) return;
       const actual = presentes[base];
       if (!actual || DOC_EXT_PRIORIDAD.indexOf(ext) < DOC_EXT_PRIORIDAD.indexOf(path.parse(actual.nombre).ext.replace('.', '').toLowerCase())) {
-        presentes[base] = { url: `/documentos/${encodeURIComponent(patente)}/${nombre}`, nombre };
+        presentes[base] = { url: `/documentos/${encodeURIComponent(patente)}/${nombre}`, nombre, origen: 'carpeta' };
       }
     });
   }
@@ -83,8 +84,9 @@ router.get('/documentos/reporte', verifyToken, async (req, res) => {
       const v = d.data();
       const patente = (v.patente || '').toUpperCase();
       const presentes = scanDocumentosCarpeta(patente);
+      const subidos = v.docsAdjuntos || {};
       const docs = {};
-      DOC_TIPOS.forEach(t => { docs[t] = !!presentes[t]; });
+      DOC_TIPOS.forEach(t => { docs[t] = !!presentes[t] || !!subidos[t]; });
       const faltantes = DOC_TIPOS.filter(t => !docs[t]).length;
       return {
         id: d.id,
@@ -122,7 +124,56 @@ router.get('/:id/documentos', verifyToken, async (req, res) => {
     if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
     const patente = (doc.data().patente || '').toUpperCase();
     const presentes = scanDocumentosCarpeta(patente);
-    res.json({ id: doc.id, patente, documentos: presentes });
+    const adj = doc.data().docsAdjuntos || {};
+    const documentos = { ...presentes };
+    DOC_TIPOS.forEach(t => {
+      if (adj[t]) {
+        documentos[t] = { url: `/api/vehicles/${req.params.id}/documentos/adjunto/${t}`, nombre: adj[t].nombre || `${t} (subido)`, mime: adj[t].mime, origen: 'carga' };
+      }
+    });
+    res.json({ id: doc.id, patente, documentos, tipos: DOC_TIPOS });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/:id/documentos/adjunto/:tipo', verifyToken, async (req, res) => {
+  try {
+    const tipo = (req.params.tipo || '').toLowerCase();
+    if (!DOC_TIPOS.includes(tipo)) return res.status(400).json({ error: 'Tipo de documento inválido' });
+    const ref = db.collection('vehicles').doc(req.params.id).collection('docsadjuntos').doc(tipo);
+    const u = await ref.get();
+    if (!u.exists) return res.status(404).json({ error: 'Documento no encontrado' });
+    const d = u.data();
+    res.set('Content-Type', d.mime || 'application/octet-stream');
+    res.set('Content-Disposition', `inline; filename="${d.nombre || tipo}"`);
+    res.set('Cache-Control', 'no-store');
+    res.send(d.bytes);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/documentos/:tipo/upload', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const tipo = (req.params.tipo || '').toLowerCase();
+    if (!DOC_TIPOS.includes(tipo)) return res.status(400).json({ error: 'Tipo de documento inválido' });
+    const vehiculoRef = db.collection('vehicles').doc(req.params.id);
+    const vehiculo = await vehiculoRef.get();
+    if (!vehiculo.exists) return res.status(404).json({ error: 'No encontrado' });
+    const { nombre, base64, mime } = req.body || {};
+    if (!base64) return res.status(400).json({ error: 'Falta el archivo' });
+    const buf = Buffer.from(base64, 'base64');
+    if (!buf.length) return res.status(400).json({ error: 'Archivo vacío o inválido' });
+    if (buf.length > DOC_MAX_UPLOAD) return res.status(413).json({ error: 'El archivo supera 700KB (límite del plan). Para archivos grandes usá la carpeta PATENTE/ + npm run subir:docs' });
+    const nombreArchivo = (nombre || `${tipo}.pdf`).replace(/^.*[\\/]/, '') || `${tipo}.pdf`;
+    const ext = path.parse(nombreArchivo).ext.toLowerCase();
+    if (!['.pdf', '.jpg', '.jpeg', '.png'].includes(ext)) return res.status(400).json({ error: 'Solo se permiten PDF, JPG o PNG' });
+    const subRef = vehiculoRef.collection('docsadjuntos').doc(tipo);
+    const ahora = new Date();
+    await subRef.set({ nombre: nombreArchivo, mime: mime || 'application/octet-stream', bytes: buf, subidoEn: ahora });
+    await vehiculoRef.update({ [`docsAdjuntos.${tipo}`]: { nombre: nombreArchivo, mime: mime || 'application/octet-stream', tamano: buf.length, subidoEn: ahora } });
+    res.json({ ok: true, tipo });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -147,8 +198,17 @@ router.delete('/:id/documentos/:tipo', verifyToken, requireAdmin, async (req, re
         }
       });
     }
-    if (!eliminados.length) return res.status(404).json({ error: 'No hay archivo para ese tipo (en producción los documentos se eliminan desde la PC local + npm run subir:docs)' });
-    res.json({ ok: true, eliminados });
+    const subRef = db.collection('vehicles').doc(req.params.id).collection('docsadjuntos').doc(tipo);
+    let borradoSubido = false;
+    if ((await subRef.get()).exists) {
+      await subRef.delete();
+      await db.collection('vehicles').doc(req.params.id).update({ [`docsAdjuntos.${tipo}`]: admin.firestore.FieldValue.delete() });
+      borradoSubido = true;
+    }
+    if (!eliminados.length && !borradoSubido) {
+      return res.status(404).json({ error: 'No hay archivo para ese tipo (en producción los documentos de la carpeta se eliminan desde la PC local + npm run subir:docs)' });
+    }
+    res.json({ ok: true, eliminados, subido: borradoSubido });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -191,6 +191,7 @@ const DOC_OBLIGATORIOS = [
   { key: 'cedula',   label: 'Cédula del camión' },
   { key: 'seguro',   label: 'Seguro del camión' },
   { key: 'registro', label: 'Registro del chofer' },
+  { key: 'dni',      label: 'DNI del chofer' },
   { key: 'vtv',      label: 'VTV' }
 ];
 
@@ -224,7 +225,8 @@ async function deleteDocumentoLocal(key) {
   try {
     const local = vehicleDocumentosLocales[key];
     if (local?.url) {
-      const blob = await (await fetch(local.url)).blob();
+      const headers = local.origen === 'carga' ? await getAuthHeaders() : {};
+      const blob = await (await fetch(local.url, { headers })).blob();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = local.nombre || `${key}.pdf`;
@@ -243,6 +245,69 @@ async function deleteDocumentoLocal(key) {
     if (!document.getElementById('modal-documentacion')?.classList.contains('hidden')) openDocumentacionModal();
   } catch (e) {
     showToast('Error al eliminar: ' + e.message, 'error');
+  }
+}
+
+async function abrirDocumento(key) {
+  const local = vehicleDocumentosLocales[key];
+  if (!local) return;
+  try {
+    const res = await fetch(local.url, { headers: await getAuthHeaders() });
+    if (!res.ok) throw new Error('No se pudo obtener el archivo');
+    const blob = await res.blob();
+    const objUrl = URL.createObjectURL(blob);
+    window.open(objUrl, '_blank');
+    setTimeout(() => URL.revokeObjectURL(objUrl), 60000);
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+async function uploadDocumento(key, input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const def = DOC_OBLIGATORIOS.find(d => d.key === key);
+  const label = def ? def.label : key;
+  if (file.size > 700 * 1024) {
+    showToast('Archivo grande (máx 700KB). Para archivos mayores usá la carpeta PATENTE/ + npm run subir:docs', 'error');
+    input.value = '';
+    return;
+  }
+  const okExt = /\.(pdf|jpg|jpeg|png)$/i.test(file.name || '');
+  if (!okExt) {
+    showToast('Solo se permiten PDF, JPG o PNG', 'error');
+    input.value = '';
+    return;
+  }
+  let base64;
+  try {
+    base64 = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = () => res(String(reader.result).split(',')[1]);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
+    });
+  } catch (e) {
+    showToast('No se pudo leer el archivo', 'error');
+    input.value = '';
+    return;
+  }
+  try {
+    const res = await fetch(`/api/vehicles/${vehicleId}/documentos/${key}/upload`, {
+      method: 'POST',
+      headers: await getAuthHeaders(),
+      body: JSON.stringify({ nombre: file.name, mime: file.type || 'application/octet-stream', base64 })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'No se pudo subir');
+    showToast(`${label} subido (seguimiento en produccion al deployar)`);
+    await loadDocumentosLocales();
+    updateDocBadge();
+    openDocumentacionModal();
+  } catch (e) {
+    showToast('Error al subir: ' + e.message, 'error');
+  } finally {
+    input.value = '';
   }
 }
 
@@ -271,6 +336,7 @@ function getDocVencimiento(key) {
   if (key === 'vtv') return vehicleData.vtv?.fechaVencimiento || doc?.fechaVencimiento || null;
   if (key === 'seguro') return vehicleData.seguro?.fechaVencimiento || doc?.fechaVencimiento || null;
   if (key === 'registro') return vehicleData.vencimientoRegistro || doc?.fechaVencimiento || null;
+  if (key === 'dni') return vehicleData.vencimientoDNI || doc?.fechaVencimiento || null;
   return doc?.fechaVencimiento || null;
 }
 
@@ -305,12 +371,14 @@ function renderDocumentos() {
           <div class="min-w-0">
             <span class="text-[#ffffff] font-medium text-sm">${label}</span>
             ${vencimientoStr ? `<span class="block text-[10px] text-[#4a5568]">Vence: ${vencimientoStr}</span>` : ''}
-            ${existe ? `<span class="block text-[10px] text-teal-300">${local.nombre}</span>` : ''}
+            ${existe ? `<span class="block text-[10px] text-teal-300">${local.nombre}${local.origen === 'carga' ? ' <span class="text-[#d4af37]">(subido)</span>' : ''}</span>` : ''}
           </div>
         </div>
         <div class="flex items-center gap-1 shrink-0">
           <span class="text-xs font-semibold ${badgeCls} mr-1">${badgeTxt}</span>
-          ${existe ? `<a href="${local.url}" target="_blank" rel="noopener" title="Ver documento" class="p-1.5 rounded hover:bg-white/5 text-teal-300 hover:text-teal-200 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a>` : ''}
+          ${existe ? (local.origen === 'carga'
+            ? `<button onclick="abrirDocumento('${key}')" title="Ver documento" class="p-1.5 rounded hover:bg-white/5 text-teal-300 hover:text-teal-200 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>`
+            : `<a href="${local.url}" target="_blank" rel="noopener" title="Ver documento" class="p-1.5 rounded hover:bg-white/5 text-teal-300 hover:text-teal-200 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a>`) : ''}
           ${existe && isAdmin() ? `<button onclick="deleteDocumentoLocal('${key}')" title="Eliminar documento" class="p-1.5 rounded hover:bg-white/5 text-red-400 hover:text-red-300 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></button>` : ''}
         </div>
       </div>`;
@@ -369,6 +437,28 @@ function openDocumentacionModal() {
     }
     const elimBtn = document.getElementById(`doc-${key}-eliminar`);
     if (elimBtn) elimBtn.classList.toggle('hidden', !local);
+    if (isAdmin() && elimBtn) {
+      let input = document.getElementById(`doc-${key}-file`);
+      if (!input) {
+        input = document.createElement('input');
+        input.type = 'file';
+        input.id = `doc-${key}-file`;
+        input.accept = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
+        input.className = 'hidden';
+        input.addEventListener('change', (e) => uploadDocumento(key, e.target));
+        const label = document.createElement('label');
+        label.htmlFor = `doc-${key}-file`;
+        label.title = 'Subir archivo (PDF, JPG o PNG, hasta 700KB)';
+        label.className = 'shrink-0 px-2.5 py-1 rounded-md text-[11px] font-medium cursor-pointer border border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10 transition-colors';
+        label.textContent = 'Subir';
+        const cont = document.createElement('span');
+        cont.className = 'shrink-0 flex items-center';
+        cont.appendChild(label);
+        cont.appendChild(input);
+        elimBtn.parentNode.appendChild(cont);
+      }
+      input.value = '';
+    }
     renderDocEstado(key, local, { fechaVencimiento: fecha });
   });
   showModal('modal-documentacion');
@@ -409,6 +499,7 @@ async function saveDocumentacion() {
     };
     if (spec.registro !== undefined) update.registro = spec.registro;
     if (spec.vencimientoRegistro !== undefined) update.vencimientoRegistro = spec.vencimientoRegistro;
+    if (spec.vencimientoDNI !== undefined) update.vencimientoDNI = spec.vencimientoDNI;
 
     DOC_OBLIGATORIOS.forEach(({ key }) => {
       const fechaInput = document.getElementById(`doc-${key}-fecha`);
@@ -419,12 +510,14 @@ async function saveDocumentacion() {
       if (key === 'vtv') update.vtv.fechaVencimiento = ts;
       else if (key === 'seguro') update.seguro.fechaVencimiento = ts;
       else if (key === 'registro') update.vencimientoRegistro = ts;
+      else if (key === 'dni') update.vencimientoDNI = ts;
     });
 
     await docRef.update(update);
     vehicleData = { ...vehicleData, vtv: update.vtv, seguro: update.seguro, documentacion: update.documentacion };
-    if (spec.registro !== undefined) vehicleData.registro = update.registro;
-    if (spec.vencimientoRegistro !== undefined) vehicleData.vencimientoRegistro = update.vencimientoRegistro;
+    if ('registro' in update) vehicleData.registro = update.registro;
+    if ('vencimientoRegistro' in update) vehicleData.vencimientoRegistro = update.vencimientoRegistro;
+    if ('vencimientoDNI' in update) vehicleData.vencimientoDNI = update.vencimientoDNI;
     vehicleDocumentacion = update.documentacion;
     renderVTV();
     renderSeguro();

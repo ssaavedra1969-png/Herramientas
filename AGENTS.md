@@ -126,15 +126,16 @@ Documento único con campo `current` para auto-increment de números internos de
 
 ## Documentación obligatoria por vehículo
 
-La documentación (Título, Cédula, Seguro, Registro del chofer) se maneja con la **carpeta `PATENTE/{patente}/`** versionada en git, que llega a Vercel por integración Git. **NO usa Firebase Storage** (plan Spark = sin Storage, 404 bucket).
+La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer, VTV) se maneja con la **carpeta `PATENTE/{patente}/`** versionada en git, que llega a Vercel por integración Git. **NO usa Firebase Storage** (plan Spark = sin Storage, 404 bucket).
 
 ### Cómo funciona
-- **Archivos:** se ponen en `PATENTE/{patente}/` con el nombre del tipo: `titulo`, `cedula`, `seguro`, `registro`, `vtv` (solo patente, sin sufijo). Un archivo por tipo, prioridad de extensión `pdf > jpg > jpeg > png`. (Ej. `PATENTE/AG719TT/seguro.pdf`).
-- **Los 5 tipos** se leen. El vencimiento de la fila VTV sale del campo `vtv` del vehículo; los demás del mapa `documentacion` (carga manual en la web).
-- **Eliminación:** botón "Eliminar" en la ficha (solo Admin) → `DELETE /api/vehicles/:id/documentos/:tipo` (routes/vehicles.js), descarga copia de respaldo antes de borrar. En Vercel el FS es de solo lectura: borrar localmente + `npm run subir:docs`.
+- **Archivos:** se ponen en `PATENTE/{patente}/` con el nombre del tipo: `titulo`, `cedula`, `seguro`, `registro`, `vtv`, `dni` (solo patente, sin sufijo). Un archivo por tipo, prioridad de extensión `pdf > jpg > jpeg > png`. (Ej. `PATENTE/AG719TT/seguro.pdf`).
+- **Los 6 tipos** se leen. El vencimiento de la fila VTV sale del campo `vtv` del vehículo; Seguro del campo `seguro`, Registro de `vencimientoRegistro`, DNI de `vencimientoDNI`; los demás del mapa `documentacion` (carga manual en la web).
+- **Subida manual desde la web (Admin):** botón "Subir" en cada slot → `POST /api/vehicles/:id/documentos/:tipo/upload` (routes/vehicles.js). Guarda el archivo en la sub-collección `docsadjuntos/{tipo}` (como bytes) y el metadata en el campo `docsAdjuntos.{tipo}` del vehículo. Límite 700KB (1MB por doc Firestore, plan Spark). PDF/JPG/PNG. El subido PRIORIZA sobre el de la carpeta. Lectura autenticada: `GET /api/vehicles/:id/documentos/adjunto/:tipo` (frontend usa `abrirDocumento(key)`).
+- **Eliminación:** botón "Eliminar" en la ficha (solo Admin) → `DELETE /api/vehicles/:id/documentos/:tipo` (routes/vehicles.js), descarga copia de respaldo antes de borrar; borra el archivo de carpeta Y el subido si existen. En Vercel el FS es de solo lectura: borrar localmente + `npm run subir:docs`.
 - **Las carpetas vacías NO se versionan en git** (git ignora carpetas vacías); se suben solas cuando tienen archivos.
 - **Vencimiento:** se carga **MANUALMENTE** en la web (ficha del vehículo → Documentación). La app NO lee la fecha del PDF (se decidió abandonar la detección automática).
-- **Lectura backend:** `GET /api/vehicles/:id/documentos` (routes/vehicles.js) lista los archivos de `PATENTE/{patente}/`; static `/documentos` en server.js sirve los archivos.
+- **Lectura backend:** `GET /api/vehicles/:id/documentos` (routes/vehicles.js) lista los archivos de `PATENTE/{patente}/` más los subidos en Firestore; static `/documentos` en server.js sirve los archivos de la carpeta.
 
 ### Cómo subir documentos a producción (carga masiva)
 1. Poné cada PDF en `PATENTE/{patente}/` en la PC local.

@@ -340,7 +340,7 @@ function exportSectionExcel(section) {
     XLSX.utils.book_append_sheet(wb, ws, 'Ficha Vehículos');
     XLSX.writeFile(wb, `ficha-vehiculos-${new Date().toISOString().split('T')[0]}.xlsx`);
   } else if (section === 'documentacion') {
-    const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
+    const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
     const rows = docReportData.map(r => {
       const out = { Patente: r.patente, 'Marca/Modelo': r.marcaModelo, Centro: r.centroTrabajo || '', Interno: r.interno, Empresa: r.empresa };
       tipos.forEach(t => { out[(DOC_LABELS[t] || t)] = r.docs[t] ? 'Si' : 'Falta'; });
@@ -395,7 +395,7 @@ function exportSectionPDF(section) {
       columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 16 }, 2: { cellWidth: 18 }, 3: { cellWidth: 18 }, 4: { cellWidth: 10 }, 5: { cellWidth: 18 }, 6: { cellWidth: 18 }, 7: { cellWidth: 10 }, 8: { cellWidth: 16 }, 9: { cellWidth: 16 }, 10: { cellWidth: 16 }, 11: { cellWidth: 12 }, 12: { cellWidth: 22 }, 13: { cellWidth: 22 } }
     });
   } else if (section === 'documentacion') {
-    const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
+    const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
     const head = [['Patente', 'Marca/Modelo', 'Centro', ...tipos.map(t => DOC_LABELS[t] || t), 'Faltan']];
     const body = docReportData.map(r => [
       r.patente, r.marcaModelo, r.centroTrabajo || '',
@@ -551,7 +551,7 @@ function renderCostoVehiculo(comb, rep, vtv, seg) {
   }
 }
 
-const DOC_LABELS = { titulo: 'Título', cedula: 'Cédula', seguro: 'Seguro', registro: 'Registro', vtv: 'VTV' };
+const DOC_LABELS = { titulo: 'Título', cedula: 'Cédula', seguro: 'Seguro', registro: 'Registro', vtv: 'VTV', dni: 'DNI' };
 
 function docCell(tipo, presente) {
   if (presente) {
@@ -575,7 +575,7 @@ function renderDocumentacion() {
   document.getElementById('doc-total-faltantes').textContent = totalFaltantes;
   document.getElementById('doc-count').textContent = total + ' vehículos';
 
-  const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
+  const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
   const tbody = document.getElementById('doc-table');
   if (!tbody) return;
 
@@ -631,7 +631,7 @@ function sortDocTable(key) {
     tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-[#4a5568]">Sin datos</td></tr>';
     return;
   }
-  const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv'];
+  const tipos = docReportTipos && docReportTipos.length ? docReportTipos : ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
   tbody.innerHTML = rows.map(r => {
     const cells = tipos.map(t => `<td class="py-2 pr-2 text-center">${docCell(t, !!r.docs[t])}</td>`).join('');
     const faltanBadge = r.faltantes === 0

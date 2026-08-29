@@ -954,11 +954,11 @@
     <div class="p-4 sm:p-6 space-y-4">
       <div class="flex items-center gap-2 text-xs text-[#8b9bb4]">
         <svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        Los 5 documentos indispensables: <strong class="text-[#ffffff]">Título</strong>, <strong class="text-[#ffffff]">Cédula</strong>, <strong class="text-[#ffffff]">Seguro</strong>, <strong class="text-[#ffffff]">Registro del chofer</strong> y <strong class="text-[#ffffff]">VTV</strong>.
+        Los 6 documentos indispensables: <strong class="text-[#ffffff]">Título</strong>, <strong class="text-[#ffffff]">Cédula</strong>, <strong class="text-[#ffffff]">Seguro</strong>, <strong class="text-[#ffffff]">Registro del chofer</strong>, <strong class="text-[#ffffff]">DNI del chofer</strong> y <strong class="text-[#ffffff]">VTV</strong>.
       </div>
       <div class="flex items-start gap-2 text-xs text-[#8b9bb4] bg-[#d4af37]/5 border border-[#d4af37]/20 rounded-lg p-3">
         <svg class="w-4 h-4 text-[#d4af37] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-        <span>        Los archivos van en la carpeta <span class="font-mono text-[#d4af37]">PATENTE/<span class="patente-mayus"></span>/</span> del servidor, con el nombre según el tipo (<span class="font-mono">titulo.pdf</span>, <span class="font-mono">cedula.pdf</span>, <span class="font-mono">seguro.pdf</span>, <span class="font-mono">registro.pdf</span>, <span class="font-mono">vtv.pdf</span>). Acá solo se carga la <strong>fecha de vencimiento</strong> (la VTV puede tomar la fecha del vehículo si no se carga).</span>
+        <span>        Los archivos van en la carpeta <span class="font-mono text-[#d4af37]">PATENTE/<span class="patente-mayus"></span>/</span> del servidor, con el nombre según el tipo (<span class="font-mono">titulo.pdf</span>, <span class="font-mono">cedula.pdf</span>, <span class="font-mono">seguro.pdf</span>, <span class="font-mono">registro.pdf</span>, <span class="font-mono">dni.pdf</span>, <span class="font-mono">vtv.pdf</span>). También podés usar el botón <strong class="text-[#d4af37]">Subir</strong> para cargarlo desde la web (PDF/JPG/PNG, máx. 700KB). Acá solo se carga la <strong>fecha de vencimiento</strong> (la VTV puede tomar la fecha del vehículo si no se carga).</span>
       </div>
 
       <!-- Slot 1: Título -->
@@ -1082,6 +1082,37 @@
         <div class="mt-3">
           <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento</label>
           <input type="date" id="doc-registro-fecha" class="w-full sm:w-48 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon" <%= currentUserData?.role !== 'Admin' ? 'readonly' : '' %>>
+        </div>
+      </div>
+
+      <!-- Slot: DNI del chofer -->
+      <div class="documentacion-slot glass-card rounded-xl p-4" data-slot="dni">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-sm font-semibold text-[#ffffff] flex items-center gap-2">
+            <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0a2 2 0 002 2h2a2 2 0 002-2m-4 0a2 2 0 012-2h2a2 2 0 012 2m-6 7h.01M12 13h.01M15 13h.01M9 16h6"/></svg>
+            DNI del chofer
+          </h4>
+          <span class="text-xs font-medium" id="doc-dni-estado">Sin cargar</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <div id="doc-dni-preview" class="text-xs text-[#4a5568]"></div>
+            <% if (currentUserData?.role === 'Admin') { %>
+            <span class="text-[11px] text-[#8b9bb4]">Carpeta: <span class="font-mono text-[#d4af37]">PATENTE/<span class="doc-dir"></span>/</span></span>
+            <% } %>
+          </div>
+          <a id="doc-dni-link" href="#" target="_blank" rel="noopener" title="Ver documento" class="hidden shrink-0 p-1.5 rounded hover:bg-white/5 text-teal-300 hover:text-teal-200 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </a>
+          <% if (currentUserData?.role === 'Admin') { %>
+          <button type="button" id="doc-dni-eliminar" onclick="deleteDocumentoLocal('dni')" title="Eliminar documento" class="hidden shrink-0 p-1.5 rounded hover:bg-white/5 text-red-400 hover:text-red-300 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </button>
+          <% } %>
+        </div>
+        <div class="mt-3">
+          <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento</label>
+          <input type="date" id="doc-dni-fecha" class="w-full sm:w-48 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon" <%= currentUserData?.role !== 'Admin' ? 'readonly' : '' %>>
         </div>
       </div>
 
