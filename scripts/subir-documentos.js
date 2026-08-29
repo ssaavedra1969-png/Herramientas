@@ -60,7 +60,7 @@ function main() {
 
   const patentes = [];
   status.split('\n').forEach(line => {
-    const p = line.replace(/^... /, '');
+    const p = line.replace(/^.. /, '').replace(/^"|"$/g, '').replace(/ -> .*$/, '');
     const partes = p.split('/');
     if (partes.length >= 2 && partes[0] === PATENTE_DIR) {
       const pat = partes[1];
