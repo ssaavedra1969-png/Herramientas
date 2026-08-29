@@ -56,6 +56,7 @@ async function loadVehicle() {
   loadDocumentosLocales();
   renderDocumentos();
   renderFoto();
+  renderHeroMobile();
   document.getElementById('vg-observaciones').textContent = vehicleData.observaciones || 'Sin observaciones';
 
   generateQR();
@@ -397,6 +398,104 @@ function renderDocumentos() {
   }
 
   container.innerHTML = html || '<span class="italic text-[#4a5568]">Sin documentos adjuntos</span>';
+  renderMobileDocs();
+}
+
+function diasRestantes(val) {
+  if (!val) return null;
+  const d = toDate(val);
+  return d ? Math.ceil((d.getTime() - Date.now()) / 86400000) : null;
+}
+
+function renderHeroMobile() {
+  const chips = document.getElementById('vh-mobile-chips');
+  if (!chips) return;
+
+  document.getElementById('vh-mobile-patente').textContent = vehicleData.patente || '—';
+  document.getElementById('vh-mobile-sub').textContent =
+    `Int. ${vehicleData.interno || '—'} · ${vehicleData.marca || ''} ${vehicleData.modelo || ''}${vehicleData.tipo ? ' · ' + vehicleData.tipo : ''}`;
+
+  const bg = document.getElementById('vh-mobile-bg');
+  if (bg && vehicleData.fotoURL) {
+    bg.style.backgroundImage = `url(${vehicleData.fotoURL})`;
+    bg.classList.remove('hidden');
+  }
+
+  const chip = (label, dias) => {
+    if (dias === null) return `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-white/10 bg-white/5 text-[#8b9bb4]">${label}</span>`;
+    if (dias < 0) return `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-red-400/30 bg-red-500/15 text-red-300">${label} · vencida</span>`;
+    if (dias <= 30) return `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-yellow-400/30 bg-yellow-400/15 text-yellow-300">${label} · ${dias}d</span>`;
+    return `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-green-400/20 bg-green-400/10 text-green-300">${label} · al día</span>`;
+  };
+
+  let html = '';
+  html += chip('VTV', diasRestantes(vehicleData.vtv?.fechaVencimiento));
+  html += chip('Seguro', diasRestantes(vehicleData.seguro?.fechaVencimiento));
+  if (vehicleData.proximoServiceKm != null || vehicleData.proximoServiceFecha) {
+    html += `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-[#d4af37]/30 bg-[#d4af37]/10 text-[#d4af37]">Service ${vehicleData.proximoServiceKm != null ? vehicleData.proximoServiceKm.toLocaleString() + ' km' : formatDate(vehicleData.proximoServiceFecha)}</span>`;
+  }
+  chips.innerHTML = html;
+}
+
+const MOBILE_DOCS = [
+  { key: 'vtv', label: 'VTV', hint: 'Verificación técnica' },
+  { key: 'seguro', label: 'Seguro', hint: 'Póliza vigente' },
+  { key: 'cedula', label: 'Cédula', hint: 'Cédula de circulación' }
+];
+
+function renderMobileDocs() {
+  const list = document.getElementById('v-mobile-docs-list');
+  const badge = document.getElementById('v-mobile-docs-badge');
+  if (!list) return;
+
+  const presentes = MOBILE_DOCS.filter(d => vehicleDocumentosLocales[d.key]).length;
+
+  let html = '';
+  MOBILE_DOCS.forEach(({ key, label, hint }) => {
+    const local = vehicleDocumentosLocales[key] || null;
+    const fecha = getDocVencimiento(key);
+    const dias = diasRestantes(fecha);
+    let badgeTxt = 'Sin cargar', badgeCls = 'text-[#4a5568] bg-white/5';
+    if (local) {
+      if (dias === null) { badgeTxt = 'Cargado'; badgeCls = 'text-teal-300 bg-teal-400/10'; }
+      else if (dias < 0) { badgeTxt = 'Vencido'; badgeCls = 'text-red-400 bg-red-400/10'; }
+      else if (dias <= 30) { badgeTxt = `Vence en ${dias}d`; badgeCls = 'text-yellow-400 bg-yellow-400/10'; }
+      else { badgeTxt = 'Al día'; badgeCls = 'text-green-400 bg-green-400/10'; }
+    }
+
+    const verBtn = local
+      ? (local.origen === 'carga'
+          ? `<button onclick="abrirDocumento('${key}')" title="Ver documento" class="px-2.5 py-1 rounded-md text-[11px] font-semibold border border-teal-400/30 text-teal-300 hover:bg-teal-400/10 transition-colors">Ver</button>`
+          : `<a href="${local.url}" target="_blank" rel="noopener" title="Ver documento" class="px-2.5 py-1 rounded-md text-[11px] font-semibold border border-teal-400/30 text-teal-300 hover:bg-teal-400/10 transition-colors">Ver</a>`)
+      : `<span class="text-[#4a5568] text-[11px] font-medium">—</span>`;
+
+    html += `
+      <div class="flex items-center justify-between gap-2 rounded-lg bg-[#0a0e17]/40 border border-white/5 px-3 py-2.5">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="w-8 h-8 rounded-lg bg-teal-400/10 border border-teal-400/20 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </span>
+          <div class="min-w-0">
+            <div class="text-[13px] font-bold text-[#ffffff] leading-tight">${label}</div>
+            <div class="text-[10px] text-[#8b9bb4] leading-tight truncate">${hint}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeCls}">${badgeTxt}</span>
+          ${verBtn}
+        </div>
+      </div>`;
+  });
+
+  list.innerHTML = html;
+
+  if (badge) {
+    badge.textContent = `${presentes}/${MOBILE_DOCS.length}`;
+    badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full ' +
+      (presentes === 0 ? 'bg-white/5 text-[#8b9bb4]'
+        : presentes === MOBILE_DOCS.length ? 'bg-green-400/10 text-green-400'
+        : 'bg-yellow-400/10 text-yellow-400');
+  }
 }
 
 function updateDocBadge() {

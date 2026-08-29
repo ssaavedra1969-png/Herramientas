@@ -53,6 +53,21 @@
         </div>
       </div>
 
+      <!-- ═══ MOBILE HERO (Falpat) ═══ -->
+      <div id="vehicle-hero-mobile" class="md:hidden relative overflow-hidden rounded-2xl mb-3 glass-card">
+        <div id="vh-mobile-bg" class="absolute inset-0 hidden bg-cover bg-center" style="filter: blur(5px) brightness(0.45);"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-[#1a2234]/85 via-[#141e2d]/90 to-[#0a0e17]"></div>
+        <div class="absolute inset-0 opacity-[0.05]" style="background: radial-gradient(circle at 20% 20%, #d4af37 0%, transparent 45%), radial-gradient(circle at 80% 80%, #d4af37 0%, transparent 40%);"></div>
+        <div class="relative px-6 pt-6 pb-5 flex flex-col items-center text-center">
+          <div class="w-16 h-16 rounded-2xl bg-white/5 border border-[#d4af37]/25 shadow-lg shadow-black/40 flex items-center justify-center mb-2">
+            <img src="/images/fp3d.png" class="w-12 h-12 object-contain" alt="Grupo Falpat">
+          </div>
+          <div id="vh-mobile-patente" class="text-2xl font-black tracking-widest text-gradient-primary">—</div>
+          <div id="vh-mobile-sub" class="text-xs text-[#8b9bb4] mt-1">—</div>
+          <div id="vh-mobile-chips" class="flex flex-wrap justify-center gap-2 mt-3"></div>
+        </div>
+      </div>
+
       <!-- ═══ TAB: RESUMEN ═══ -->
       <div class="md:hidden accordion-header glass-card rounded-xl mb-2 cursor-pointer select-none" onclick="toggleAccordion('resumen')" id="accordion-header-resumen">
         <div class="flex items-center justify-between px-4 py-3">
@@ -588,6 +603,20 @@
           <div class="mt-4 text-xs text-[#4a5568] text-center">
             <p>Imprimí este código y colocálo en el vehículo para identificarlo rápidamente.</p>
           </div>
+        </div>
+      </div>
+
+      <!-- ═══ MOBILE: DOCUMENTOS (solo lectura) ═══ -->
+      <div id="v-mobile-docs" class="md:hidden mt-3 border-t border-[#d4af37]/10 pt-4">
+        <div class="glass-card rounded-xl p-4 border border-[#d4af37]/20" style="background: linear-gradient(160deg, rgba(212,175,55,0.10), rgba(212,175,55,0.02));">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-[#ffffff] flex items-center gap-2">
+              <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Documentos del vehículo
+            </h3>
+            <span id="v-mobile-docs-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 text-[#8b9bb4]">0/3</span>
+          </div>
+          <div id="v-mobile-docs-list" class="space-y-2"></div>
         </div>
       </div>
       </div>
