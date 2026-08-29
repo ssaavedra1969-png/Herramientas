@@ -391,6 +391,106 @@ router.get('/vehicles-basic', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
+const DOC_TIPOS_R = ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
+const DOC_EXT_PRIORIDAD_R = ['pdf', 'jpg', 'jpeg', 'png'];
+const DOCS_DIR_R = path.join(process.cwd(), 'PATENTE');
+
+function scanDocumentosReporte(patente) {
+  const presentes = {};
+  try {
+    const carpeta = path.join(DOCS_DIR_R, patente);
+    if (fs.existsSync(carpeta)) {
+      fs.readdirSync(carpeta).forEach(nombre => {
+        const parsed = path.parse(nombre);
+        const base = parsed.name.toLowerCase();
+        const ext = parsed.ext.replace('.', '').toLowerCase();
+        if (!DOC_TIPOS_R.includes(base) || !DOC_EXT_PRIORIDAD_R.includes(ext)) return;
+        const actual = presentes[base];
+        if (!actual || DOC_EXT_PRIORIDAD_R.indexOf(ext) < DOC_EXT_PRIORIDAD_R.indexOf(path.parse(actual.nombre).ext.replace('.', '').toLowerCase())) {
+          presentes[base] = { nombre };
+        }
+      });
+    }
+  } catch (e) { /* FS readonly en Vercel: sólo afecta a la carpeta local */ }
+  return presentes;
+}
+
+function fechaYMD(val) {
+  if (!val) return null;
+  let d = val.toDate ? val.toDate() : val;
+  if (!(d instanceof Date)) d = new Date(d);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 10);
+}
+
+function diasHastaYMD(ymd) {
+  if (!ymd) return null;
+  const vto = Date.UTC(+ymd.slice(0, 4), +ymd.slice(5, 7) - 1, +ymd.slice(8, 10));
+  const hoy = new Date();
+  const h = Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), hoy.getUTCDate());
+  return Math.round((vto - h) / 86400000);
+}
+
+router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
+    const vehicles = snap.docs.map(d => {
+      const v = d.data();
+      const patente = (v.patente || '').toUpperCase();
+      const presentes = scanDocumentosReporte(patente);
+      const subidos = v.docsAdjuntos || {};
+      const docs = {};
+      DOC_TIPOS_R.forEach(t => { docs[t] = !!presentes[t] || !!subidos[t]; });
+      const faltantes = DOC_TIPOS_R.filter(t => !docs[t]).length;
+      const vtvFecha = fechaYMD(v.vtv && v.vtv.fechaVencimiento ? v.vtv.fechaVencimiento : null);
+      const seguroFecha = fechaYMD(v.seguro && v.seguro.fechaVencimiento ? v.seguro.fechaVencimiento : null);
+      const registroFecha = fechaYMD(v.vencimientoRegistro);
+      const dniFecha = fechaYMD(v.vencimientoDNI);
+      return {
+        id: d.id,
+        interno: v.interno || '',
+        patente: v.patente || '—',
+        marca: v.marca || '',
+        modelo: v.modelo || '',
+        anio: v.anio || '',
+        tipo: v.tipo || '',
+        subtipo: v.subtipo || '',
+        nroBet: v.nroBet || '',
+        trompo: !!v.trompo,
+        marcaTrompo: v.marcaTrompo || '',
+        serieTrompo: v.serieTrompo || '',
+        modeloTrompo: v.modeloTrompo || '',
+        cargaM3Trompo: v.cargaM3Trompo || '',
+        capacidadCarga: v.capacidadCarga ?? '',
+        chasis: v.chasis || '',
+        numeroMotor: v.numeroMotor || '',
+        kilometraje: v.kilometraje ?? '',
+        horometro: v.horometro ?? '',
+        estadoGeneral: v.estadoGeneral || '',
+        chofer: v.chofer || v.conductorHabitual || '',
+        dni: v.dni || '',
+        registro: v.registro || '',
+        empresa: v.empresa || '',
+        centroTrabajo: v.centroTrabajo || '',
+        observaciones: v.observaciones || '',
+        vtvFecha,
+        vtvDias: diasHastaYMD(vtvFecha),
+        seguroFecha,
+        seguroDias: diasHastaYMD(seguroFecha),
+        registroFecha,
+        registroDias: diasHastaYMD(registroFecha),
+        dniFecha,
+        dniDias: diasHastaYMD(dniFecha),
+        docs,
+        faltantes
+      };
+    });
+    res.json({ vehicles, tipos: DOC_TIPOS_R });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
   try {
     const ExcelJS = require('exceljs');
