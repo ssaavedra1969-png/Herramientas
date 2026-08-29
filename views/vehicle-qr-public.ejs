@@ -31,8 +31,8 @@
     <div class="max-w-lg mx-auto">
 
       <div class="flex items-center gap-3 mb-5">
-        <div class="w-11 h-11 bg-gradient-to-br from-[#d4af37] to-[#d4af37] rounded-xl flex items-center justify-center shadow-lg shadow-[#d4af37]/30 flex-shrink-0">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+        <div class="w-11 h-11 bg-gradient-to-br from-[#b8960c] to-[#d4af37] rounded-xl flex items-center justify-center shadow-lg shadow-[#d4af37]/30 flex-shrink-0 p-1.5">
+          <img src="/images/fp3d.png" class="w-full h-full object-contain" alt="Logo Grupo Falpat">
         </div>
         <div class="flex-1">
           <h1 class="text-lg font-bold text-gradient-primary">Grupo Falpat SRL</h1>
@@ -74,7 +74,48 @@
           <% if (vehicle.capacidadCarga) { %><div><p class="text-[#8b9bb4] text-[10px]">Cap. Carga</p><p class="font-semibold text-[#ffffff]"><%= vehicle.capacidadCarga %></p></div><% } %>
           <% if (vehicle.empresa) { %><div><p class="text-[#8b9bb4] text-[10px]">Empresa</p><p class="font-semibold text-[#ffffff]"><%= vehicle.empresa %></p></div><% } %>
         </div>
+
+        <div class="h-px bg-[#d4af37]/15 my-3"></div>
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <% const vtvBadgeC = vencimientos && vencimientos.find(x => x.label === 'VTV'); %>
+          <% if (vtvBadgeC) { %>
+            <% const vc = vtvBadgeC.dias === null ? 'text-[#8b9bb4] bg-white/10' : vtvBadgeC.dias < 0 ? 'text-red-300 bg-red-500/20' : vtvBadgeC.dias <= 30 ? 'text-yellow-300 bg-yellow-400/20' : 'text-green-300 bg-green-400/15'; %>
+            <span class="status-badge <%= vc %>"><%= vtvBadgeC.dias === null ? 'VTV sin fecha' : vtvBadgeC.dias < 0 ? 'VTV vencida' : vtvBadgeC.dias <= 30 ? 'VTV ' + vtvBadgeC.dias + 'd' : 'VTV al día' %></span>
+          <% } else { %>
+            <span class="status-badge text-[#8b9bb4] bg-white/10">VTV sin cargar</span>
+          <% } %>
+          <% const segBadgeC = vencimientos && vencimientos.find(x => x.label === 'Seguro'); %>
+          <% if (segBadgeC) { %>
+            <% const sc = segBadgeC.dias === null ? 'text-[#8b9bb4] bg-white/10' : segBadgeC.dias < 0 ? 'text-red-300 bg-red-500/20' : segBadgeC.dias <= 30 ? 'text-yellow-300 bg-yellow-400/20' : 'text-green-300 bg-green-400/15'; %>
+            <span class="status-badge <%= sc %>"><%= segBadgeC.dias === null ? 'Seguro sin fecha' : segBadgeC.dias < 0 ? 'Seguro vencido' : segBadgeC.dias <= 30 ? 'Seguro ' + segBadgeC.dias + 'd' : 'Seguro al día' %></span>
+          <% } %>
+        </div>
       </div>
+
+      <% if (vencimientos && vencimientos.length) { %>
+      <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
+        <h2 class="text-sm font-bold text-gradient-primary mb-3">Vencimientos</h2>
+        <div class="space-y-2">
+          <% vencimientos.forEach(vc => {
+            const fechaTxt = vc.date ? vc.date.toLocaleDateString('es-AR') : '';
+            const dias = vc.dias;
+            let txt, cls;
+            if (dias === null) { txt = 'Sin fecha'; cls = 'text-[#4a5568] bg-white/5'; }
+            else if (dias < 0) { txt = 'Vencido'; cls = 'text-red-400 bg-red-500/10'; }
+            else if (dias <= 30) { txt = 'Vence en ' + dias + 'd'; cls = 'text-yellow-400 bg-yellow-400/10'; }
+            else { txt = 'Al día'; cls = 'text-green-400 bg-green-400/10'; }
+          %>
+          <div class="flex items-center justify-between gap-2 bg-white/[0.03] rounded-lg px-3 py-2 border border-white/5">
+            <div class="min-w-0">
+              <p class="text-[#ffffff] font-semibold text-xs"><%= vc.label %></p>
+              <p class="text-[#4a5568] text-[10px] truncate"><%= vc.sub %><%= vc.sub && fechaTxt ? ' · ' : '' %><%= fechaTxt %></p>
+            </div>
+            <span class="status-badge <%= cls %> flex-shrink-0"><%= txt %></span>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
 
       <% if (vehicle.chofer || vehicle.dni || vehicle.registro || vehicle.centroTrabajo) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
@@ -162,6 +203,29 @@
 
 
 
+
+      <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
+        <h2 class="text-sm font-bold text-gradient-primary mb-1">Documentos del vehículo</h2>
+        <p class="text-[#8b9bb4] text-[10px] mb-3">Cédula · Seguro · VTV — solo lectura</p>
+        <div class="space-y-2">
+          <% const docRows = [ { key: 'cedula', label: 'Cédula' }, { key: 'seguro', label: 'Seguro' }, { key: 'vtv', label: 'VTV' } ]; %>
+          <% docRows.forEach(d => { const doc = (docsCarpeta || {})[d.key]; %>
+          <div class="flex items-center justify-between gap-2 bg-white/[0.03] rounded-lg px-3 py-2.5 border border-white/5">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="w-8 h-8 rounded-lg bg-teal-400/10 border border-teal-400/20 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </span>
+              <p class="text-[#ffffff] font-semibold text-xs truncate"><%= d.label %><% if (doc) { %><span class="text-[#4a5568] font-normal"> · <%= doc.nombre %></span><% } %></p>
+            </div>
+            <% if (doc) { %>
+            <a href="<%= doc.url %>" target="_blank" rel="noopener" class="px-2.5 py-1 rounded-md text-[11px] font-semibold border border-teal-400/30 text-teal-300 hover:bg-teal-400/10 transition-colors flex-shrink-0">Ver</a>
+            <% } else { %>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 text-[#8b9bb4] flex-shrink-0">No disponible</span>
+            <% } %>
+          </div>
+          <% }); %>
+        </div>
+      </div>
 
       <div class="text-center mt-4 pb-4">
         <p class="text-[#4a5568] text-[10px]">Grupo Falpat SRL — Control de Mantenimiento</p>

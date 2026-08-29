@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -125,12 +126,45 @@ app.get('/vehicle/:id', requireAuth, (req, res) => {
   });
 });
 
+const DOC_TIPOS_QR = ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
+const DOC_EXT_QR = ['pdf', 'jpg', 'jpeg', 'png'];
+function scanDocsCarpeta(patente) {
+  const carpeta = path.join(process.cwd(), 'PATENTE', patente);
+  const presentes = {};
+  if (!fs.existsSync(carpeta)) return presentes;
+  fs.readdirSync(carpeta).forEach(nombre => {
+    const parsed = path.parse(nombre);
+    const base = parsed.name.toLowerCase();
+    const ext = parsed.ext.replace('.', '').toLowerCase();
+    if (!DOC_TIPOS_QR.includes(base) || !DOC_EXT_QR.includes(ext)) return;
+    const actual = presentes[base];
+    if (!actual || DOC_EXT_QR.indexOf(ext) < DOC_EXT_QR.indexOf(path.parse(actual.nombre).ext.replace('.', '').toLowerCase())) {
+      presentes[base] = { url: `/documentos/${encodeURIComponent(patente)}/${nombre}`, nombre, origen: 'carpeta' };
+    }
+  });
+  return presentes;
+}
+
 app.get('/vehicle/:id/qr', async (req, res) => {
   try {
     const { db } = require('./config/firebase');
     const doc = await db.collection('vehicles').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).send('Vehículo no encontrado');
     const v = doc.data();
+    const patente = (v.patente || '').toUpperCase();
+    const docsCarpeta = scanDocsCarpeta(patente);
+    const fecha = (d) => d ? (d.toDate ? d.toDate() : new Date(d)) : null;
+    const diasRest = (d) => d ? Math.ceil((d - Date.now()) / 86400000) : null;
+    const vtvD = fecha(v.vtv && v.vtv.fechaVencimiento);
+    const segD = fecha(v.seguro && v.seguro.fechaVencimiento);
+    const matD = fecha(v.matafuego && v.matafuego.fechaVto);
+    const svcD = fecha(v.proximoServiceFecha);
+    const vencimientos = [
+      { label: 'VTV', date: vtvD, dias: diasRest(vtvD), sub: '' },
+      { label: 'Seguro', date: segD, dias: diasRest(segD), sub: '' },
+      { label: 'Service', date: svcD, dias: diasRest(svcD), sub: v.proximoServiceKm ? Number(v.proximoServiceKm).toLocaleString('es-AR') + ' km' : '' },
+      { label: 'Matafuego', date: matD, dias: diasRest(matD), sub: '' }
+    ].filter(x => x.date || x.sub);
     const [servicesSnap, repuestosSnap] = await Promise.all([
       db.collection('vehicles').doc(req.params.id).collection('services').orderBy('fecha', 'desc').limit(5).get(),
       db.collection('vehicles').doc(req.params.id).collection('repuestos').orderBy('fecha', 'desc').limit(5).get()
@@ -145,6 +179,8 @@ app.get('/vehicle/:id/qr', async (req, res) => {
       vehicle: { id: doc.id, ...v },
       recentServices,
       recentRepuestos,
+      docsCarpeta,
+      vencimientos,
       clientConfig: res.locals.clientConfig,
       currentUserData
     });
