@@ -154,7 +154,10 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 
 ## Registro de cambios recientes (para puesta al día de IA)
 
-Último commit: `b585bf9` (todo pusheado, working tree limpio).
+Último commit: `af33acd` (todo pusheado, working tree limpio).
+
+- **Herramienta "Optimizaciones" integrada al menú** (commit `9a623eb`): menú **Utilidades → Optimizar Adjuntos** abre el optimizador local (`OPTIMIZADOR_URL`, default `http://localhost:8642`, inyectada en `middleware/auth.js`). `.gitignore` ahora excluye `**/_originales/`. Ver sección "Optimizaciones — herramienta de adjuntos (FUERA del repo)".
+- **Docs**: AE192RO vtv optimizado (3,1 MB → 1,14 MB, -63%) y PCS413 cedula estandarizada (commit `af33acd`).
 
 - **Página pública del QR del vehículo (`vehicle-qr-public.ejs`)** — vista móvil que abre quien escanea el QR pegado al camión (ruta `GET /vehicle/:id/qr` en server.js, **pública, sin auth**). Se rediseñó para el usuario común: header con logo Falpat (`/images/fp3d.png` reemplazó al icono de camioncito), sección **Vencimientos** (VTV, Seguro, Service, Matafuego con días restantes/estado de color, se pasa el array `vencimientos` desde el server), y sección **Documentos del vehículo** al final (solo Cédula, Seguro y VTV, solo lectura, enlaces a `/documentos/{patente}/{archivo}`). El server calcula los vencimientos y escanea la carpeta `PATENTE/` (helper `scanDocsCarpeta(patente)` local en server.js, docs del folder = públicos; los subidos manualmente NO se muestran acá porque requieren auth).
 - **Ficha interna móvil (`vehicle-detail.ejs` + `public/js/vehicle-detail.js`)** — agregado hero mobile con logo Falpat + chips de vencimientos (VTV/Seguro/Service) y sección "Documentos del vehículo" al final solo en mobile (`md:hidden`). Desktop sin cambios.
