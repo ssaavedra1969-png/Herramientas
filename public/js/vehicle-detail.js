@@ -246,6 +246,34 @@ async function deleteDocumentoLocal(key) {
   }
 }
 
+function toDateInputValue(val) {
+  const d = toDate(val);
+  if (!d) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function toDate(val) {
+  if (!val) return null;
+  let d;
+  if (val.toDate) d = val.toDate();
+  else if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) {
+    const [y, m, day] = val.substring(0, 10).split('-').map(Number);
+    d = new Date(y, m - 1, day);
+  } else d = new Date(val);
+  return d && !isNaN(d.getTime()) ? d : null;
+}
+
+function getDocVencimiento(key) {
+  const doc = (vehicleData?.documentacion || {})[key] || null;
+  if (key === 'vtv') return vehicleData.vtv?.fechaVencimiento || doc?.fechaVencimiento || null;
+  if (key === 'seguro') return vehicleData.seguro?.fechaVencimiento || doc?.fechaVencimiento || null;
+  if (key === 'registro') return vehicleData.vencimientoRegistro || doc?.fechaVencimiento || null;
+  return doc?.fechaVencimiento || null;
+}
+
 function renderDocumentos() {
   const container = document.getElementById('vg-documentos');
   if (!container) return;
@@ -256,15 +284,7 @@ function renderDocumentos() {
 
   DOC_OBLIGATORIOS.forEach(({ key, label }) => {
     const local = vehicleDocumentosLocales[key] || null;
-    const d = (vehicleDocumentacion || {})[key] || {};
-    let vencimientoStr = d.fechaVencimiento || '';
-    if (key === 'vtv' && !vencimientoStr) {
-      const fv = vehicleData.vtv?.fechaVencimiento;
-      if (fv) {
-        const dt = fv.toDate ? fv.toDate() : new Date(fv);
-        if (!isNaN(dt)) vencimientoStr = dt.toISOString().split('T')[0];
-      }
-    }
+    const vencimientoStr = toDateInputValue(getDocVencimiento(key));
     let dias = null;
     if (vencimientoStr) {
       const vto = new Date(vencimientoStr + 'T00:00:00');
@@ -335,18 +355,13 @@ function openDocumentacionModal() {
   document.querySelectorAll('.doc-dir, .patente-mayus').forEach(el => el.textContent = patente);
   DOC_OBLIGATORIOS.forEach(({ key }) => {
     const local = vehicleDocumentosLocales[key] || null;
-    let fecha = null;
-    if (key === 'vtv') fecha = vehicleData.vtv?.fechaVencimiento || null;
-    else if (key === 'seguro') fecha = vehicleData.seguro?.fechaVencimiento || null;
-    else if (key === 'registro') fecha = vehicleData.vencimientoRegistro || null;
-    else fecha = (vehicleDocumentacion || {})[key]?.fechaVencimiento || null;
-    const d = (vehicleDocumentacion || {})[key] || {};
+    const fecha = getDocVencimiento(key);
     const preview = document.getElementById(`doc-${key}-preview`);
     if (preview) preview.innerHTML = local
       ? `<span class="text-teal-300">✔ ${local.nombre}</span>`
       : `<span class="text-[#4a5568]">Sin archivo en la carpeta</span>`;
     const fechaInput = document.getElementById(`doc-${key}-fecha`);
-    if (fechaInput) fechaInput.value = fecha || '';
+    if (fechaInput) fechaInput.value = toDateInputValue(fecha);
     const link = document.getElementById(`doc-${key}-link`);
     if (link) {
       if (local) { link.href = local.url; link.classList.remove('hidden'); }
@@ -370,9 +385,10 @@ function renderDocEstado(key, local, d) {
   if (!local) { txt = 'Sin cargar'; cls = 'text-[#4a5568]'; }
   else if (!d || !d.fechaVencimiento) { txt = 'Cargado'; cls = 'text-teal-300'; }
   else {
-    const vto = new Date(d.fechaVencimiento + 'T00:00:00');
-    const dias = Math.ceil((vto - new Date()) / 86400000);
-    if (dias < 0) { txt = 'Vencido'; cls = 'text-red-400'; }
+    const vto = toDate(d.fechaVencimiento);
+    const dias = vto ? Math.ceil((vto.getTime() - Date.now()) / 86400000) : null;
+    if (dias === null) { txt = 'Cargado'; cls = 'text-teal-300'; }
+    else if (dias < 0) { txt = 'Vencido'; cls = 'text-red-400'; }
     else if (dias <= 30) { txt = dias + 'd'; cls = 'text-yellow-400'; }
     else { txt = 'Al día'; cls = 'text-green-400'; }
   }
@@ -385,24 +401,31 @@ async function saveDocumentacion() {
   try {
     const docRef = db.collection('vehicles').doc(vehicleId);
     const doc = await docRef.get();
-    const current = doc.data() || {};
-    const vtv = { ...(current.vtv || {}) };
-    const seguro = { ...(current.seguro || {}) };
+    const spec = doc.data() || {};
+    const update = {
+      vtv: { ...(spec.vtv || {}) },
+      seguro: { ...(spec.seguro || {}) },
+      documentacion: { ...(spec.documentacion || {}) }
+    };
+    if (spec.registro !== undefined) update.registro = spec.registro;
+    if (spec.vencimientoRegistro !== undefined) update.vencimientoRegistro = spec.vencimientoRegistro;
+
     DOC_OBLIGATORIOS.forEach(({ key }) => {
       const fechaInput = document.getElementById(`doc-${key}-fecha`);
-      const fecha = fechaInput ? (fechaInput.value || null) : null;
-      if (key === 'vtv') vtv.fechaVencimiento = fecha ? new Date(fecha + 'T12:00:00') : null;
-      else if (key === 'seguro') seguro.fechaVencimiento = fecha ? new Date(fecha + 'T12:00:00') : null;
-      else if (key === 'registro') current.vencimientoRegistro = fecha ? new Date(fecha + 'T12:00:00') : null;
+      const fecha = fechaInput && fechaInput.value ? fechaInput.value : null;
+      if (!fecha) return;
+      const ts = firebase.firestore.Timestamp.fromDate(new Date(fecha + 'T12:00:00'));
+      update.documentacion[key] = { ...((update.documentacion[key] || {})), fechaVencimiento: ts };
+      if (key === 'vtv') update.vtv.fechaVencimiento = ts;
+      else if (key === 'seguro') update.seguro.fechaVencimiento = ts;
+      else if (key === 'registro') update.vencimientoRegistro = ts;
     });
-    const update = { vtv, seguro };
-    if (current.registro !== undefined || current.vencimientoRegistro !== undefined) {
-      update.registro = current.registro;
-    }
+
     await docRef.update(update);
-    vehicleData.vtv = vtv;
-    vehicleData.seguro = seguro;
-    vehicleData.vencimientoRegistro = current.vencimientoRegistro;
+    vehicleData = { ...vehicleData, vtv: update.vtv, seguro: update.seguro, documentacion: update.documentacion };
+    if (spec.registro !== undefined) vehicleData.registro = update.registro;
+    if (spec.vencimientoRegistro !== undefined) vehicleData.vencimientoRegistro = update.vencimientoRegistro;
+    vehicleDocumentacion = update.documentacion;
     renderVTV();
     renderSeguro();
     renderDocumentos();
