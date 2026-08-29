@@ -109,6 +109,7 @@ app.get('/vehicles', requireAuth, (req, res) => {
 app.get('/vehicle/scan', requireAuth, (req, res) => {
   res.render('scanner', {
     title: 'Escanear Vehículo',
+    page: 'scan',
     clientConfig: res.locals.clientConfig,
     currentUser: res.locals.currentUser,
     currentUserData: res.locals.currentUserData

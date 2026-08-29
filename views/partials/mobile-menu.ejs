@@ -1,6 +1,7 @@
 <%
 const currentPage = typeof page !== 'undefined' ? page : '';
 const isAdmin = currentUserData?.role === 'Admin';
+const qrGroupOpen = ['scan', 'stickers', 'fichas'].includes(currentPage);
 %>
 <aside id="mobile-menu" class="fixed inset-0 z-50 hidden">
   <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="mobile-menu-backdrop"></div>
@@ -15,17 +16,9 @@ const isAdmin = currentUserData?.role === 'Admin';
       <a href="/dashboard" class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>">
         <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>Dashboard
       </a>
-      <a href="/vehicles" class="nav-link <%= currentPage === 'vehicles' ? 'active' : '' %>">
-        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>Vehículos
+<a href="/vehicles" class="nav-link <%= currentPage === 'vehicles' ? 'active' : '' %>">
+        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a2 2 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>Vehículos
       </a>
-      <a href="/vehicle/scan" class="nav-link <%= currentPage === 'scan' ? 'active' : '' %>">
-        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>Escáner QR
-      </a>
-      <% if (isAdmin) { %>
-      <a href="/vehicles/qr-stickers-bulk" target="_blank" class="nav-link <%= currentPage === 'stickers' ? 'active' : '' %>">
-        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>Stickers QR
-      </a>
-      <% } %>
       <a href="/reports" class="nav-link <%= currentPage === 'reports' ? 'active' : '' %>">
         <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Reportes
       </a>
@@ -34,6 +27,31 @@ const isAdmin = currentUserData?.role === 'Admin';
         <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>Usuarios
       </a>
       <% } %>
+      <div class="nav-group-wrap">
+        <button type="button" onclick="toggleNavGroup(this)" class="nav-link w-full justify-between <%= qrGroupOpen ? 'active' : '' %>" style="background:none;border:none;cursor:pointer;font-family:inherit">
+          <span class="flex items-center">
+            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+            Utilidades
+          </span>
+          <svg class="w-4 h-4 transition-transform chevron <%= qrGroupOpen ? 'rotate-180' : '' %>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div class="nav-group mt-1 space-y-1 <%= qrGroupOpen ? '' : 'hidden' %>">
+          <a href="/vehicle/scan" class="nav-link text-sm <%= currentPage === 'scan' ? 'active' : '' %>">
+            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
+            Escáner QR
+          </a>
+          <% if (isAdmin) { %>
+          <a href="/vehicles/qr-stickers-bulk" target="_blank" class="nav-link text-sm <%= currentPage === 'stickers' ? 'active' : '' %>">
+            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a1 1 0 011 1v5a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 101-2zm0 11h.01M7 16v-3m0 0h.01M7 16h.01m8-2v3m-6-6h6a2 2 0 012 2v4a2 2 0 01-2 2h-6a2 2 0 01-2-2v-4a2 2 0 012-2zM17 5h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V7a2 2 0 012-2z"/></svg>
+            Stickers QR
+          </a>
+          <a href="/vehicles/fichas-taller-bulk" target="_blank" class="nav-link text-sm <%= currentPage === 'fichas' ? 'active' : '' %>">
+            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9h6m-6 4h6m-6-8h6"/></svg>
+            Fichas Taller
+          </a>
+          <% } %>
+        </div>
+      </div>
     </nav>
     <div class="p-4 border-t border-white/5">
       <button onclick="handleLogout()" class="flex items-center w-full px-3 py-2 text-sm rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all">
@@ -42,3 +60,12 @@ const isAdmin = currentUserData?.role === 'Admin';
     </div>
   </div>
 </aside>
+<script>
+  window.toggleNavGroup = window.toggleNavGroup || function (btn) {
+    var w = btn.closest('.nav-group-wrap');
+    var g = w && w.querySelector('.nav-group');
+    if (g) g.classList.toggle('hidden');
+    var ch = w && w.querySelector('.chevron');
+    if (ch) ch.classList.toggle('rotate-180');
+  };
+</script>

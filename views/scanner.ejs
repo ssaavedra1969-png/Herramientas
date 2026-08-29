@@ -1,6 +1,6 @@
 <%- include('partials/head') %>
 <div class="flex h-screen overflow-hidden">
-  <%- include('partials/sidebar', { page: 'vehicles' }) %>
+  <%- include('partials/sidebar', { page: 'scan' }) %>
   <div class="flex-1 flex flex-col overflow-hidden">
     <div class="lg:hidden header-glass text-[#ffffff] p-3 flex items-center justify-between">
       <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#d4af37]/10">
@@ -100,7 +100,7 @@
   </div>
 </div>
 
-<%- include('partials/mobile-menu', { page: 'vehicles' }) %>
+<%- include('partials/mobile-menu', { page: 'scan' }) %>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <% if (currentUserData?.role === 'Admin') { %>
