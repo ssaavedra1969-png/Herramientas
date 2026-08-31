@@ -45,7 +45,6 @@ async function requireAdmin(req, res, next) {
 }
 
 async function loadUser(req, res, next) {
-  res.locals.optimizadorUrl = process.env.OPTIMIZADOR_URL || 'http://localhost:8642';
   const token = req.cookies?.__session;
   if (token) {
     try {
