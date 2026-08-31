@@ -520,4 +520,130 @@ router.get('/template/excel', verifyToken, async (req, res) => {
   }
 });
 
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
+const GITHUB_REPO = process.env.GITHUB_REPO || 'ssaavedra1969-png/Herramientas';
+const MAX_PUBLICAR_BYTES = 2 * 1024 * 1024;
+
+router.post('/documentos/publicar-github', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    if (!GITHUB_TOKEN) {
+      return res.status(503).json({ error: 'Token de GitHub no configurado en el servidor (GITHUB_TOKEN).' });
+    }
+    const items = req.body?.archivos;
+    if (!Array.isArray(items) || !items.length) {
+      return res.status(400).json({ error: 'No se enviaron archivos' });
+    }
+    if (items.length > 20) {
+      return res.status(400).json({ error: 'Máximo 20 archivos por publicación' });
+    }
+
+    const resultados = [];
+    const errores = [];
+
+    for (const item of items) {
+      const patente = String(item.patente || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const tipo = String(item.tipo || '').trim().toLowerCase();
+      const base64 = String(item.base64 || '');
+
+      if (patente.length < 4 || patente.length > 10) {
+        errores.push({ patente, tipo, error: 'Patente inválida' });
+        continue;
+      }
+      if (!DOC_TIPOS.includes(tipo)) {
+        errores.push({ patente, tipo, error: 'Tipo de documento inválido' });
+        continue;
+      }
+      if (!base64) {
+        errores.push({ patente, tipo, error: 'Falta el contenido' });
+        continue;
+      }
+
+      let buf;
+      try {
+        buf = Buffer.from(base64, 'base64');
+      } catch (e) {
+        errores.push({ patente, tipo, error: 'Contenido inválido' });
+        continue;
+      }
+      if (!buf.length) {
+        errores.push({ patente, tipo, error: 'Archivo vacío' });
+        continue;
+      }
+      if (buf.length > MAX_PUBLICAR_BYTES) {
+        errores.push({ patente, tipo, error: 'El archivo supera 2MB' });
+        continue;
+      }
+
+      const ruta = `PATENTE/${patente}/${tipo}.pdf`;
+      const eliminados = [];
+      try {
+        const carpeta = `PATENTE/${patente}`;
+        const listResp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${carpeta}`, {
+          headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`,
+            'Accept': 'application/vnd.github+json',
+            'User-Agent': 'falpat-herramientas'
+          }
+        });
+        if (listResp.ok) {
+          const archivos = await listResp.json();
+          for (const archivo of archivos) {
+            const nombre = String(archivo.name || '');
+            const base = path.parse(nombre).name.toLowerCase();
+            const ext = path.parse(nombre).ext.toLowerCase();
+            if (base.startsWith(tipo) && nombre !== `${tipo}.pdf`) {
+              try {
+                const delResp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${carpeta}/${nombre}`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github+json',
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'falpat-herramientas'
+                  },
+                  body: JSON.stringify({
+                    message: `Docs: limpiar ${patente} ${nombre}`,
+                    sha: archivo.sha,
+                    committer: { name: 'Falpat App', email: 'app@falpat.local' }
+                  })
+                });
+                if (delResp.ok) eliminados.push(nombre);
+              } catch (e) { /* no bloquea */ }
+            }
+          }
+        }
+      } catch (e) { /* si no puede listar, sigue con el upload */ }
+
+      try {
+        const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${ruta}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json',
+            'User-Agent': 'falpat-herramientas'
+          },
+          body: JSON.stringify({
+            message: `Docs: ${patente} ${tipo} (desde app)`,
+            content: base64,
+            committer: { name: 'Falpat App', email: 'app@falpat.local' }
+          })
+        });
+        if (!resp.ok) {
+          const errText = await resp.text();
+          errores.push({ patente, tipo, error: `GitHub ${resp.status}: ${errText.slice(0, 200)}` });
+          continue;
+        }
+        resultados.push({ patente, tipo, ok: true, eliminados });
+      } catch (e) {
+        errores.push({ patente, tipo, error: e.message });
+      }
+    }
+
+    res.json({ ok: true, publicados: resultados, errores });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

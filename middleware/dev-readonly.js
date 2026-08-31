@@ -13,6 +13,10 @@ function devReadOnly(req, res, next) {
     return next();
   }
 
+  if (req.originalUrl.includes('/documentos/publicar-github')) {
+    return next();
+  }
+
   console.log(`[DEV] Blocked: ${req.method} ${req.originalUrl}`);
   return res.status(403).json({
     error: 'Modo desarrollo read-only — no se permiten cambios',
