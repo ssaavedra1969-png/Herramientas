@@ -147,6 +147,19 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
    El script (`scripts/subir-documentos.js`) hace `git pull origin main` → detecta qué vehículos se tocaron → `git add PATENTE/` → `git commit` → `git push origin main`. Solo toca la carpeta `PATENTE/` (no commitea código).
 4. Vercel despliega automáticamente (~1-2 min).
 
+### Subir documentos desde la Web (botón "Publicar Documentos", cualquier PC)
+
+Desde la app web (producción o local) el Admin puede subir documentos **sin tocar git** ni la PC local, con el botón **Utilidades → Publicar Documentos** (solo Admin):
+
+- **Qué hace:** sube PDFs directamente a GitHub (a `PATENTE/{patente}/{tipo}.pdf`) vía la **GitHub Contents API**, usando un token. Al subir un tipo, **borra los obsoletos** del mismo tipo (ej. al subir `cedula.pdf` borra `cedula.jpeg`, `cedula1.jpeg`). El commit llega a `main` y Vercel redespliega solo.
+- **Endpoint:** `POST /api/vehicles/documentos/publicar-github` (routes/vehicles.js, `verifyToken` + `requireAdmin`). Recibe JSON `{ archivos: [{ patente, tipo, base64 }] }`. El nombre del archivo en el frontend define el `tipo` (titulo/cedula/seguro/registro/vtv/dni).
+- **Frontend:** botón en `views/partials/sidebar.ejs` (submenú Utilidades, solo `isAdmin`) + `public/js/publicar-documentos.js` (modal con patente + multi-PDF, base64 via `getAuthHeaders()`). Se carga en `views/partials/footer.ejs`.
+- **Token:** `process.env.GITHUB_TOKEN` (var de entorno). Existe en **Vercel `production`** y en `.env` local (NO se commitea, está en `.gitignore`). Repo: `process.env.GITHUB_REPO` (default `ssaavedra1969-png/Herramientas`). Crear token en GitHub → Settings → Developer settings → **Fine-grained tokens** → solo repo `Herramientas` → `Contents: Read and write`.
+- **`devReadOnly`**: el endpoint está **exento** en `middleware/dev-readonly.js` porque NO escribe en Firestore (solo llama a GitHub), así que funciona en local `DEV_READ_ONLY=true`.
+- **CORS:** `server.js` permite `http://localhost:3000` **siempre** (no depende de `NODE_ENV`), porque el `.env` local usa `NODE_ENV=production` y sin esto los fetch locales fallan con 500 por CORS.
+- **Límites/validaciones:** solo Admin, solo los 6 tipos, solo `.pdf` (el frontend acepta PDF), máx 2MB/archivo, máx 20 archivos, patente 4-10 alfanumérica.
+- ⚠️ El botón crea/actualiza el `.pdf` en GitHub, pero **no borra archivos en la PC local** ni hace `git add`/commit local del código. Para alinear la PC local con lo que subió el botón, correr `git pull origin main` (los PDFs que el botón subió llegan así al working tree local).
+
 ### Nota crítica
 - **Storage no disponible** (no intentar migrar a Firebase Storage; el bucket no existe en el plan gratuito).
 - `config/firebase.js`: el Admin SDK local necesita `projectId: sa.project_id` explícito.
@@ -154,7 +167,10 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 
 ## Registro de cambios recientes (para puesta al día de IA)
 
-Último commit: `af33acd` (todo pusheado, working tree limpio).
+Último commit: `bff219a` (todo pusheado, working tree limpio).
+
+- **Botón "Publicar documentos" desplegado a producción** (commit `bff219a`): sube PDFs optimizados a GitHub vía la GitHub Contents API con token `GITHUB_TOKEN` (configurado en Vercel production y `.env` local), sin tocar git ni la PC local. Fix CORS para permitir `http://localhost:3000` siempre. Ver sección "Subir documentos desde la Web (botón Publicar Documentos)".
+- **Docs**: AH125AG cédula optimizada (2 págs verticales, legibilidad), AI484IB título, AG469YL cédula (commit `d3a5d51`).
 
 - **Herramienta "Optimizaciones" integrada al menú** (commit `9a623eb`): menú **Utilidades → Optimizar Adjuntos** abre el optimizador local (`OPTIMIZADOR_URL`, default `http://localhost:8642`, inyectada en `middleware/auth.js`). `.gitignore` ahora excluye `**/_originales/`. Ver sección "Optimizaciones — herramienta de adjuntos (FUERA del repo)".
 - **Docs**: AE192RO vtv optimizado (3,1 MB → 1,14 MB, -63%) y PCS413 cedula estandarizada (commit `af33acd`).
