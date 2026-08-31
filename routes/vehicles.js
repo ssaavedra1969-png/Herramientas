@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { db, admin } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
+const gh = require('../lib/github-docs');
 
 const DOCS_DIR = path.join(process.cwd(), 'PATENTE');
 const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
@@ -123,15 +124,30 @@ router.get('/:id/documentos', verifyToken, async (req, res) => {
     const doc = await db.collection('vehicles').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
     const patente = (doc.data().patente || '').toUpperCase();
-    const presentes = scanDocumentosCarpeta(patente);
-    const adj = doc.data().docsAdjuntos || {};
-    const documentos = { ...presentes };
-    DOC_TIPOS.forEach(t => {
-      if (adj[t]) {
-        documentos[t] = { url: `/api/vehicles/${req.params.id}/documentos/adjunto/${t}`, nombre: adj[t].nombre || `${t} (subido)`, mime: adj[t].mime, origen: 'carga' };
+    const ghDocs = await gh.listarCarpeta(patente).catch(() => []);
+
+    const presentes = {};
+    for (const t of DOC_TIPOS) {
+      const entrada = gh.mejorNombre(ghDocs, t);
+      if (entrada) {
+        presentes[t] = { url: `/api/vehicles/${req.params.id}/documentos/adjunto/${t}`, nombre: entrada.nombre, mime: '', origen: 'carpeta' };
       }
-    });
-    res.json({ id: doc.id, patente, documentos, tipos: DOC_TIPOS });
+    }
+
+    const adj = doc.data().docsAdjuntos || {};
+    const migrados = [];
+    for (const t of DOC_TIPOS) {
+      if (!presentes[t] && adj[t]) {
+        presentes[t] = { url: `/api/vehicles/${req.params.id}/documentos/adjunto/${t}`, nombre: adj[t].nombre || `${t} (subido)`, mime: adj[t].mime || '', origen: 'carga' };
+        if (process.env.GITHUB_TOKEN) migrados.push(t);
+      }
+    }
+
+    if (migrados.length && process.env.GITHUB_TOKEN) {
+      migrarAdjuntoAFirestore(req.params.id, patente, migrados).catch(() => {});
+    }
+
+    res.json({ id: doc.id, patente, documentos: presentes, tipos: DOC_TIPOS, migrados });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -141,11 +157,26 @@ router.get('/:id/documentos/adjunto/:tipo', verifyToken, async (req, res) => {
   try {
     const tipo = (req.params.tipo || '').toLowerCase();
     if (!DOC_TIPOS.includes(tipo)) return res.status(400).json({ error: 'Tipo de documento inválido' });
+    const doc = await db.collection('vehicles').doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
+    const patente = (doc.data().patente || '').toUpperCase();
+
+    if (process.env.GITHUB_TOKEN) {
+      const leido = await gh.leerArchivo(patente, tipo).catch(() => null);
+      if (leido && leido.content) {
+        const buf = Buffer.from(leido.content, leido.encoding === 'base64' ? 'base64' : 'utf8');
+        res.set('Content-Type', 'application/pdf');
+        res.set('Content-Disposition', `inline; filename="${leido.nombre}"`);
+        res.set('Cache-Control', 'no-store');
+        return res.send(buf);
+      }
+    }
+
     const ref = db.collection('vehicles').doc(req.params.id).collection('docsadjuntos').doc(tipo);
     const u = await ref.get();
     if (!u.exists) return res.status(404).json({ error: 'Documento no encontrado' });
     const d = u.data();
-    res.set('Content-Type', d.mime || 'application/octet-stream');
+    res.set('Content-Type', d.mime || 'application/pdf');
     res.set('Content-Disposition', `inline; filename="${d.nombre || tipo}"`);
     res.set('Cache-Control', 'no-store');
     res.send(d.bytes);
@@ -154,50 +185,71 @@ router.get('/:id/documentos/adjunto/:tipo', verifyToken, async (req, res) => {
   }
 });
 
+async function migrarAdjuntoAFirestore(vehicleId, patente, tipos) {
+  for (const t of tipos) {
+    const ref = db.collection('vehicles').doc(vehicleId).collection('docsadjuntos').doc(t);
+    const u = await ref.get();
+    if (!u.exists) continue;
+    const d = u.data();
+    const buf = d.bytes;
+    try {
+      await gh.subirArchivo(patente, t, buf.toString('base64'));
+      await ref.delete();
+      await db.collection('vehicles').doc(vehicleId).update({ [`docsAdjuntos.${t}`]: admin.firestore.FieldValue.delete() });
+    } catch (e) { /* no bloquea */ }
+  }
+}
+
 router.post('/:id/documentos/:tipo/upload', verifyToken, requireAdmin, async (req, res) => {
   try {
     const tipo = (req.params.tipo || '').toLowerCase();
     if (!DOC_TIPOS.includes(tipo)) return res.status(400).json({ error: 'Tipo de documento inválido' });
-    const vehiculoRef = db.collection('vehicles').doc(req.params.id);
-    const vehiculo = await vehiculoRef.get();
+    const vehiculo = await db.collection('vehicles').doc(req.params.id).get();
     if (!vehiculo.exists) return res.status(404).json({ error: 'No encontrado' });
+    const patente = (vehiculo.data().patente || '').toUpperCase();
+    if (!patente) return res.status(400).json({ error: 'El vehículo no tiene patente' });
+
+    if (!process.env.GITHUB_TOKEN) {
+      return res.status(503).json({ error: 'El servidor de producción no tiene configurado GITHUB_TOKEN para poder escribir los documentos en GitHub.' });
+    }
+
     const { nombre, base64, mime } = req.body || {};
     if (!base64) return res.status(400).json({ error: 'Falta el archivo' });
     const buf = Buffer.from(base64, 'base64');
     if (!buf.length) return res.status(400).json({ error: 'Archivo vacío o inválido' });
-    if (buf.length > DOC_MAX_UPLOAD) return res.status(413).json({ error: 'El archivo supera 700KB (límite del plan). Para archivos grandes usá la carpeta PATENTE/ + npm run subir:docs' });
     const nombreArchivo = (nombre || `${tipo}.pdf`).replace(/^.*[\\/]/, '') || `${tipo}.pdf`;
     const ext = path.parse(nombreArchivo).ext.toLowerCase();
-    if (!['.pdf', '.jpg', '.jpeg', '.png'].includes(ext)) return res.status(400).json({ error: 'Solo se permiten PDF, JPG o PNG' });
-    const subRef = vehiculoRef.collection('docsadjuntos').doc(tipo);
-    const ahora = new Date();
-    await subRef.set({ nombre: nombreArchivo, mime: mime || 'application/octet-stream', bytes: buf, subidoEn: ahora });
-    await vehiculoRef.update({ [`docsAdjuntos.${tipo}`]: { nombre: nombreArchivo, mime: mime || 'application/octet-stream', tamano: buf.length, subidoEn: ahora } });
-    res.json({ ok: true, tipo });
+
+    const permitidas = process.env.GITHUB_TOKEN ? ['.pdf'] : ['.pdf', '.jpg', '.jpeg', '.png'];
+    if (!permitidas.includes(ext)) return res.status(400).json({ error: 'Solo se permiten archivos PDF' });
+
+    const resultado = await gh.subirArchivo(patente, tipo, buf.toString('base64'));
+
+    const subRef = db.collection('vehicles').doc(req.params.id).collection('docsadjuntos').doc(tipo);
+    if ((await subRef.get()).exists) {
+      await subRef.delete();
+      await db.collection('vehicles').doc(req.params.id).update({ [`docsAdjuntos.${tipo}`]: admin.firestore.FieldValue.delete() });
+    }
+
+    res.json({ ok: true, tipo, limpiados: resultado.limpiados });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.code === 'NO_TOKEN' ? 503 : 500).json({ error: error.message });
   }
 });
 
 router.delete('/:id/documentos/:tipo', verifyToken, requireAdmin, async (req, res) => {
   try {
+    const tipo = (req.params.tipo || '').toLowerCase();
+    if (!DOC_TIPOS.includes(tipo)) return res.status(400).json({ error: 'Tipo de documento inválido' });
     const doc = await db.collection('vehicles').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
     const patente = (doc.data().patente || '').toUpperCase();
-    const tipo = (req.params.tipo || '').toLowerCase();
-    if (!DOC_TIPOS.includes(tipo)) return res.status(400).json({ error: 'Tipo de documento inválido' });
-    const carpeta = path.join(DOCS_DIR, patente);
-    const eliminados = [];
-    if (fs.existsSync(carpeta)) {
-      fs.readdirSync(carpeta).forEach(nombre => {
-        if (path.parse(nombre).name.toLowerCase() === tipo) {
-          try {
-            fs.unlinkSync(path.join(carpeta, nombre));
-            eliminados.push(nombre);
-          } catch (e) { /* archivo bloqueado o FS de solo lectura */ }
-        }
-      });
+
+    let borrados = [];
+    if (process.env.GITHUB_TOKEN) {
+      borrados = await gh.borrarTipo(patente, tipo);
     }
+
     const subRef = db.collection('vehicles').doc(req.params.id).collection('docsadjuntos').doc(tipo);
     let borradoSubido = false;
     if ((await subRef.get()).exists) {
@@ -205,12 +257,17 @@ router.delete('/:id/documentos/:tipo', verifyToken, requireAdmin, async (req, re
       await db.collection('vehicles').doc(req.params.id).update({ [`docsAdjuntos.${tipo}`]: admin.firestore.FieldValue.delete() });
       borradoSubido = true;
     }
-    if (!eliminados.length && !borradoSubido) {
-      return res.status(404).json({ error: 'No hay archivo para ese tipo (en producción los documentos de la carpeta se eliminan desde la PC local + npm run subir:docs)' });
+
+    if (!borrados.length && !borradoSubido) {
+      if (!process.env.GITHUB_TOKEN) {
+        return res.status(503).json({ error: 'El servidor de producción no tiene configurado GITHUB_TOKEN para poder eliminar los documentos de GitHub.' });
+      }
+      return res.status(404).json({ error: 'No hay documento de ese tipo en GitHub ni en los adjuntos' });
     }
-    res.json({ ok: true, eliminados, subido: borradoSubido });
+
+    res.json({ ok: true, borrados, subido: borradoSubido });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.code === 'NO_TOKEN' ? 503 : 500).json({ error: error.message });
   }
 });
 

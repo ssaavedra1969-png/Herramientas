@@ -269,8 +269,8 @@ async function uploadDocumento(key, input) {
   if (!file) return;
   const def = DOC_OBLIGATORIOS.find(d => d.key === key);
   const label = def ? def.label : key;
-  if (file.size > 700 * 1024) {
-    showToast('Archivo grande (máx 700KB). Para archivos mayores usá la carpeta PATENTE/ + npm run subir:docs', 'error');
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Archivo muy grande (máx 10MB)', 'error');
     input.value = '';
     return;
   }
@@ -301,7 +301,7 @@ async function uploadDocumento(key, input) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'No se pudo subir');
-    showToast(`${label} subido (seguimiento en produccion al deployar)`);
+    showToast(`${label} subido (se guardará en GitHub)");
     await loadDocumentosLocales();
     updateDocBadge();
     openDocumentacionModal();
@@ -379,7 +379,7 @@ function renderDocumentos() {
           <span class="text-xs font-semibold ${badgeCls} mr-1">${badgeTxt}</span>
           ${existe ? (local.origen === 'carga'
             ? `<button onclick="abrirDocumento('${key}')" title="Ver documento" class="p-1.5 rounded hover:bg-white/5 text-teal-300 hover:text-teal-200 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>`
-            : `<a href="${local.url}" target="_blank" rel="noopener" title="Ver documento" class="p-1.5 rounded hover:bg-white/5 text-teal-300 hover:text-teal-200 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a>`) : ''}
+            : `<button onclick="abrirDocumento('${key}')" title="Ver documento" class="p-1.5 rounded hover:bg-white/5 text-teal-300 hover:text-teal-200 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>`) : ''}
           ${existe && isAdmin() ? `<button onclick="deleteDocumentoLocal('${key}')" title="Eliminar documento" class="p-1.5 rounded hover:bg-white/5 text-red-400 hover:text-red-300 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></button>` : ''}
         </div>
       </div>`;
@@ -464,9 +464,7 @@ function renderMobileDocs() {
     }
 
     const verBtn = local
-      ? (local.origen === 'carga'
-          ? `<button onclick="abrirDocumento('${key}')" title="Ver documento" class="px-2.5 py-1 rounded-md text-[11px] font-semibold border border-teal-400/30 text-teal-300 hover:bg-teal-400/10 transition-colors">Ver</button>`
-          : `<a href="${local.url}" target="_blank" rel="noopener" title="Ver documento" class="px-2.5 py-1 rounded-md text-[11px] font-semibold border border-teal-400/30 text-teal-300 hover:bg-teal-400/10 transition-colors">Ver</a>`)
+      ? `<button onclick="abrirDocumento('${key}')" title="Ver documento" class="px-2.5 py-1 rounded-md text-[11px] font-semibold border border-teal-400/30 text-teal-300 hover:bg-teal-400/10 transition-colors">Ver</button>`
       : `<span class="text-[#4a5568] text-[11px] font-medium">—</span>`;
 
     html += `
@@ -531,12 +529,12 @@ function openDocumentacionModal() {
     if (fechaInput) fechaInput.value = toDateInputValue(fecha);
     const link = document.getElementById(`doc-${key}-link`);
     if (link) {
-      if (local) { link.href = local.url; link.classList.remove('hidden'); }
+      if (local) { link.onclick = () => { abrirDocumento(key); return false; }; link.classList.remove('hidden'); }
       else { link.classList.add('hidden'); }
     }
     const elimBtn = document.getElementById(`doc-${key}-eliminar`);
     if (elimBtn) elimBtn.classList.toggle('hidden', !local);
-    if (isAdmin() && elimBtn) {
+        if (isAdmin() && elimBtn) {
       let input = document.getElementById(`doc-${key}-file`);
       if (!input) {
         input = document.createElement('input');
@@ -547,7 +545,7 @@ function openDocumentacionModal() {
         input.addEventListener('change', (e) => uploadDocumento(key, e.target));
         const label = document.createElement('label');
         label.htmlFor = `doc-${key}-file`;
-        label.title = 'Subir archivo (PDF, JPG o PNG, hasta 700KB)';
+        label.title = 'Subir archivo (PDF, JPG o PNG)';
         label.className = 'shrink-0 px-2.5 py-1 rounded-md text-[11px] font-medium cursor-pointer border border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10 transition-colors';
         label.textContent = 'Subir';
         const cont = document.createElement('span');
