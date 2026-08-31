@@ -163,12 +163,28 @@ router.get('/:id/documentos/adjunto/:tipo', verifyToken, async (req, res) => {
 
     if (process.env.GITHUB_TOKEN) {
       const leido = await gh.leerArchivo(patente, tipo).catch(() => null);
-      if (leido && leido.content) {
-        const buf = Buffer.from(leido.content, leido.encoding === 'base64' ? 'base64' : 'utf8');
-        res.set('Content-Type', 'application/pdf');
-        res.set('Content-Disposition', `inline; filename="${leido.nombre}"`);
-        res.set('Cache-Control', 'no-store');
-        return res.send(buf);
+      if (leido) {
+        if (leido.download_url) {
+          const rawResp = await fetch(leido.download_url);
+          if (rawResp.ok) {
+            const buf = Buffer.from(await rawResp.arrayBuffer());
+            res.set('Content-Type', 'application/pdf');
+            res.set('Content-Disposition', `inline; filename="${leido.nombre}"`);
+            res.set('Cache-Control', 'no-store');
+            return res.send(buf);
+          }
+        } else if (leido.content && leido.content.length > 0) {
+          let buf;
+          if (leido.encoding === 'base64') {
+            buf = Buffer.from(leido.content, 'base64');
+          } else {
+            buf = Buffer.from(leido.content, 'utf8');
+          }
+          res.set('Content-Type', 'application/pdf');
+          res.set('Content-Disposition', `inline; filename="${leido.nombre}"`);
+          res.set('Cache-Control', 'no-store');
+          return res.send(buf);
+        }
       }
     }
 

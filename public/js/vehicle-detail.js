@@ -301,7 +301,7 @@ async function uploadDocumento(key, input) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'No se pudo subir');
-    showToast(`${label} subido (se guardará en GitHub)");
+    showToast(`${label} subido (se guardará en GitHub')`);
     await loadDocumentosLocales();
     updateDocBadge();
     openDocumentacionModal();

@@ -22,7 +22,7 @@ app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 const allowedOrigins = [
   'https://falpat-control-de-vehiculos.vercel.app',
-  process.env.NODE_ENV !== 'production' ? 'http://localhost:3000' : null
+  'http://localhost:3000'
 ].filter(Boolean);
 
 app.use(cors({
