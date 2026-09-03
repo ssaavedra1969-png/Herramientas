@@ -420,9 +420,25 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
+async function deleteVehicleWithSubcollections(vehicleRef) {
+  const subcolls = ['combustible', 'repuestos', 'services', 'docsadjuntos'];
+  for (const sub of subcolls) {
+    const snap = await vehicleRef.collection(sub).get();
+    if (snap.size > 0) {
+      const batch = db.batch();
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+    }
+  }
+  await vehicleRef.delete();
+}
+
 router.delete('/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
-    await db.collection('vehicles').doc(req.params.id).delete();
+    const vehicleRef = db.collection('vehicles').doc(req.params.id);
+    const doc = await vehicleRef.get();
+    if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
+    await deleteVehicleWithSubcollections(vehicleRef);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });

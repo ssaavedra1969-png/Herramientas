@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { auth: adminAuth } = require('../config/firebase');
 
+const DEBUG = process.env.NODE_ENV !== 'production';
+
 router.post('/verify', async (req, res) => {
   try {
     const { token } = req.body;
@@ -24,9 +26,11 @@ router.post('/session', async (req, res) => {
     const { idToken } = req.body;
     if (!idToken) return res.status(400).json({ error: 'ID Token requerido' });
 
-    console.log('Session creation requested, NODE_ENV:', process.env.NODE_ENV);
-    console.log('FIREBASE_SERVICE_ACCOUNT set:', !!process.env.FIREBASE_SERVICE_ACCOUNT);
-    console.log('FIREBASE_SERVICE_ACCOUNT_PATH set:', !!process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
+    if (DEBUG) {
+      console.log('Session creation requested, NODE_ENV:', process.env.NODE_ENV);
+      console.log('FIREBASE_SERVICE_ACCOUNT set:', !!process.env.FIREBASE_SERVICE_ACCOUNT);
+      console.log('FIREBASE_SERVICE_ACCOUNT_PATH set:', !!process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
+    }
 
     const expiresIn = 60 * 60 * 24 * 14 * 1000;
     const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
@@ -38,10 +42,10 @@ router.post('/session', async (req, res) => {
       sameSite: 'lax'
     });
 
-    console.log('Session cookie created successfully');
+    if (DEBUG) console.log('Session cookie created successfully');
     res.json({ success: true });
   } catch (error) {
-    console.error('Session creation error:', error.code || error.message, error);
+    console.error('Session creation error:', error.code || error.message);
     res.status(401).json({ error: 'Error al crear sesión: ' + (error.message || 'desconocido') });
   }
 });

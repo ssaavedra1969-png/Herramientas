@@ -50,38 +50,59 @@ router.get('/dashboard', verifyToken, requireAdmin, async (req, res) => {
 
 router.get('/dashboard/financial', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const vehiclesSnap = await db.collection('vehicles').get();
+    const [vehiclesSnap, combGroupSnap, repGroupSnap] = await Promise.all([
+      db.collection('vehicles').get(),
+      db.collectionGroup('combustible').orderBy('fecha', 'desc').get(),
+      db.collectionGroup('repuestos').get()
+    ]);
+
+    const patentePorId = {};
+    vehiclesSnap.docs.forEach(d => {
+      patentePorId[d.id] = d.data().patente || '—';
+    });
+
     const combustibleData = {};
     const gastoPorVehiculo = {};
     const ultimosMovimientos = [];
     let totalRepuestos = 0;
+
+    combGroupSnap.docs.forEach(d => {
+      const parentId = d.ref.parent.parent.id;
+      const patente = patentePorId[parentId] || '—';
+      const c = d.data();
+      const date = toDate(c.fecha);
+      if (!date) return;
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      if (!combustibleData[monthKey]) combustibleData[monthKey] = { litros: 0, importe: 0 };
+      combustibleData[monthKey].litros += Number(c.litros) || 0;
+      combustibleData[monthKey].importe += Number(c.importe) || 0;
+
+      if (!gastoPorVehiculo[patente]) gastoPorVehiculo[patente] = 0;
+      gastoPorVehiculo[patente] += Number(c.importe) || 0;
+
+      ultimosMovimientos.push({
+        tipo: 'Combustible', patente, desc: `${(c.litros || 0).toFixed(1)}L ${c.tipo || ''}`,
+        importe: Number(c.importe) || 0, fecha: c.fecha
+      });
+    });
+
+    repGroupSnap.docs.forEach(d => {
+      const parentId = d.ref.parent.parent.id;
+      const patente = patentePorId[parentId] || '—';
+      const r = d.data();
+      totalRepuestos += Number(r.costo) || 0;
+      ultimosMovimientos.push({
+        tipo: 'Repuesto', patente, desc: r.pieza || '',
+        importe: Number(r.costo) || 0, fecha: r.fecha
+      });
+    });
+
     let totalVTV = 0;
     let totalSeguro = 0;
-
-    for (const vDoc of vehiclesSnap.docs) {
-      const v = vDoc.data();
+    vehiclesSnap.docs.forEach(d => {
+      const v = d.data();
       const patente = v.patente || '—';
-
-      const combSnap = await vDoc.ref.collection('combustible')
-        .orderBy('fecha', 'desc').limit(100).get();
-
-      combSnap.docs.forEach(d => {
-        const c = d.data();
-        const date = toDate(c.fecha);
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-
-        if (!combustibleData[monthKey]) combustibleData[monthKey] = { litros: 0, importe: 0 };
-        combustibleData[monthKey].litros += Number(c.litros) || 0;
-        combustibleData[monthKey].importe += Number(c.importe) || 0;
-
-        if (!gastoPorVehiculo[patente]) gastoPorVehiculo[patente] = 0;
-        gastoPorVehiculo[patente] += Number(c.importe) || 0;
-
-        ultimosMovimientos.push({
-          tipo: 'Combustible', patente, desc: `${(c.litros || 0).toFixed(1)}L ${c.tipo || ''}`,
-          importe: Number(c.importe) || 0, fecha: c.fecha
-        });
-      });
 
       if (v.vtv?.costo) {
         totalVTV += Number(v.vtv.costo) || 0;
@@ -98,17 +119,7 @@ router.get('/dashboard/financial', verifyToken, requireAdmin, async (req, res) =
           importe: Number(v.seguro.costo) || 0, fecha: v.seguro.fechaVencimiento
         });
       }
-
-      const repSnap = await vDoc.ref.collection('repuestos').get();
-      repSnap.docs.forEach(d => {
-        const r = d.data();
-        totalRepuestos += Number(r.costo) || 0;
-        ultimosMovimientos.push({
-          tipo: 'Repuesto', patente, desc: r.pieza || '',
-          importe: Number(r.costo) || 0, fecha: r.fecha
-        });
-      });
-    }
+    });
 
     const totalCombustible = Object.values(combustibleData).reduce((s, v) => s + v.importe, 0);
     const sortedKeys = Object.keys(combustibleData).sort();
@@ -256,12 +267,21 @@ router.get('/report', verifyToken, requireAdmin, async (req, res) => {
     const filterDesde = desde ? new Date(desde) : new Date(0);
     const filterHasta = hasta ? new Date(hasta + 'T23:59:59') : new Date('2100-01-01');
 
-    const vehiclesSnap = await db.collection('vehicles').get();
+    const [vehiclesSnap, combGroupSnap, repGroupSnap] = await Promise.all([
+      db.collection('vehicles').get(),
+      db.collectionGroup('combustible').get(),
+      db.collectionGroup('repuestos').get()
+    ]);
+
+    const patentePorId = {};
+    vehiclesSnap.docs.forEach(d => {
+      patentePorId[d.id] = d.data().patente || '—';
+    });
 
     const items = [];
     let totalComb = 0, totalRep = 0, totalVTV = 0, totalSeguro = 0;
 
-    for (const vDoc of vehiclesSnap.docs) {
+    vehiclesSnap.docs.forEach(vDoc => {
       const v = vDoc.data();
       const patente = v.patente || '—';
 
@@ -298,29 +318,31 @@ router.get('/report', verifyToken, requireAdmin, async (req, res) => {
           }
         }
       }
+    });
 
-      const combSnap = await vDoc.ref.collection('combustible').get();
-      combSnap.docs.forEach(d => {
-        const c = d.data();
-        const fecha = toDate(c.fecha);
-        if (fecha < filterDesde || fecha > filterHasta) return;
-        if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
-        if (categoria && categoria !== 'todas' && categoria !== 'Combustible') return;
-        items.push({ fecha, categoria: 'Combustible', vehiculo: patente, detalle: `${c.litros?.toFixed(1)}L ${c.tipo || ''}`, monto: Number(c.importe) || 0, proveedor: c.proveedor || '' });
-        totalComb += Number(c.importe) || 0;
-      });
+    combGroupSnap.docs.forEach(d => {
+      const parentId = d.ref.parent.parent.id;
+      const patente = patentePorId[parentId] || '—';
+      const c = d.data();
+      const fecha = toDate(c.fecha);
+      if (!fecha || fecha < filterDesde || fecha > filterHasta) return;
+      if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
+      if (categoria && categoria !== 'todas' && categoria !== 'Combustible') return;
+      items.push({ fecha, categoria: 'Combustible', vehiculo: patente, detalle: `${c.litros?.toFixed(1)}L ${c.tipo || ''}`, monto: Number(c.importe) || 0, proveedor: c.proveedor || '' });
+      totalComb += Number(c.importe) || 0;
+    });
 
-      const repSnap = await vDoc.ref.collection('repuestos').get();
-      repSnap.docs.forEach(d => {
-        const r = d.data();
-        const fecha = toDate(r.fecha);
-        if (fecha < filterDesde || fecha > filterHasta) return;
-        if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
-        if (categoria && categoria !== 'todas' && categoria !== 'Repuestos') return;
-        items.push({ fecha, categoria: 'Repuestos', vehiculo: patente, detalle: r.pieza || '', monto: Number(r.costo) || 0, proveedor: r.proveedor || '' });
-        totalRep += Number(r.costo) || 0;
-      });
-    }
+    repGroupSnap.docs.forEach(d => {
+      const parentId = d.ref.parent.parent.id;
+      const patente = patentePorId[parentId] || '—';
+      const r = d.data();
+      const fecha = toDate(r.fecha);
+      if (!fecha || fecha < filterDesde || fecha > filterHasta) return;
+      if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
+      if (categoria && categoria !== 'todas' && categoria !== 'Repuestos') return;
+      items.push({ fecha, categoria: 'Repuestos', vehiculo: patente, detalle: r.pieza || '', monto: Number(r.costo) || 0, proveedor: r.proveedor || '' });
+      totalRep += Number(r.costo) || 0;
+    });
 
     items.sort((a, b) => b.fecha - a.fecha);
 
@@ -375,7 +397,8 @@ router.get('/vehicles-basic', verifyToken, requireAdmin, async (req, res) => {
         modeloTrompo: v.modeloTrompo || '',
         cargaM3Trompo: v.cargaM3Trompo || '',
         chasis: v.chasis || '',
-        numeroMotor: v.numeroMotor || ''
+        numeroMotor: v.numeroMotor || '',
+        chofer: v.chofer || v.conductorHabitual || ''
       };
     });
     res.json({ vehicles, total: vehicles.length });

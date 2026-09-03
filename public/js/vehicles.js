@@ -83,12 +83,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   setViewMode(viewMode, false);
 
-  // Export modal: live preview on checkbox/input change
+  // Export modal: live preview on checkbox/input change (debounced)
+  let previewTimeout;
+  function schedulePreview() {
+    clearTimeout(previewTimeout);
+    previewTimeout = setTimeout(updateExportPreview, 300);
+  }
   document.querySelectorAll('.export-field').forEach(cb => {
-    cb.addEventListener('change', updateExportPreview);
+    cb.addEventListener('change', schedulePreview);
   });
   ['exp-empresa', 'exp-direccion', 'exp-telefono', 'exp-titulo', 'exp-subtitulo'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', updateExportPreview);
+    document.getElementById(id)?.addEventListener('input', schedulePreview);
   });
 });
 
