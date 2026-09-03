@@ -48,9 +48,7 @@
     const menu = document.getElementById('themeMenu');
     const toggle = document.getElementById('themeToggle');
 
-    function applyTheme(name) {
-      document.documentElement.className = 'theme-' + name;
-      localStorage.setItem('falpat-theme', name);
+    function updateToggleCheckmarks(name) {
       document.querySelectorAll('.theme-option').forEach(opt => {
         const isActive = opt.dataset.theme === name;
         opt.classList.toggle('active', isActive);
@@ -59,7 +57,7 @@
       });
     }
 
-    applyTheme(saved);
+    updateToggleCheckmarks(saved);
 
     if (toggle && menu) {
       toggle.addEventListener('click', (e) => {
@@ -75,11 +73,19 @@
 
       document.querySelectorAll('.theme-option').forEach(opt => {
         opt.addEventListener('click', () => {
-          applyTheme(opt.dataset.theme);
+          const name = opt.dataset.theme;
+          updateToggleCheckmarks(name);
+          if (window.ThemeEngine) {
+            window.ThemeEngine.applyTheme(name);
+          }
           menu.classList.remove('open');
         });
       });
     }
+
+    // Re-aplica cuando Firestore carga datos (datos nuevos insertan elementos con inline styles)
+    setTimeout(() => { if (window.ThemeEngine) ThemeEngine.applyTheme(ThemeEngine.getCurrentTheme()); }, 2000);
+    setTimeout(() => { if (window.ThemeEngine) ThemeEngine.applyTheme(ThemeEngine.getCurrentTheme()); }, 4000);
   })();
 </script>
 <% } %>

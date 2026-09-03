@@ -6,6 +6,23 @@
   <link rel="icon" type="image/png" href="/images/favicon.png">
   <title><%= title %> - Grupo Falpat SRL</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind CDN config - inyecta colores y body bg según el tema
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'accent-gold': {
+              DEFAULT: '#D4AF37',
+              dark: '#B8860B',
+              light: '#E8C547',
+            },
+            'bg-surface': '#0a0e17',
+          }
+        }
+      }
+    };
+  </script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -22,6 +39,7 @@
   <link rel="stylesheet" href="/css/theme-modern.css">
   <link rel="stylesheet" href="/css/theme-premium.css">
   <link rel="stylesheet" href="/css/theme-switcher.css">
+  <script src="/js/theme-engine.js?v=<%= Date.now() %>"></script>
   <script>window.__IS_ADMIN = <%= (currentUserData?.role === 'Admin') %>;</script>
   <script>
     // Theme switcher logic
@@ -31,4 +49,4 @@
     })();
   </script>
 </head>
-<body class="bg-[#0a0e17] text-white">
+<body class="text-white">
