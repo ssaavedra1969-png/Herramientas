@@ -8,5 +8,80 @@
 <script src="/js/dev-readonly.js?v=<%= Date.now() %>"></script>
 <% } %>
 <script src="/js/auth-client.js?v=<%= Date.now() %>"></script>
+<% if (typeof clientConfig !== 'undefined' && clientConfig.env !== 'production') { %>
+<!-- Theme Switcher (solo en desarrollo) -->
+<div class="theme-switcher" id="themeSwitcher">
+  <div class="theme-switcher-menu" id="themeMenu">
+    <div class="theme-switcher-label">Elegir tema</div>
+    <button class="theme-option" data-theme="sutil">
+      <span class="theme-color-dot sutil"></span>
+      <div class="theme-option-info">
+        <div class="theme-option-name">Sutil</div>
+        <div class="theme-option-desc">Glassmorphism minimalista, dorado</div>
+      </div>
+      <span class="theme-option-check" style="display:none">✓</span>
+    </button>
+    <button class="theme-option" data-theme="modern">
+      <span class="theme-color-dot modern"></span>
+      <div class="theme-option-info">
+        <div class="theme-option-name">Moderno</div>
+        <div class="theme-option-desc">Glassmorphism balanceado, cyan</div>
+      </div>
+      <span class="theme-option-check" style="display:none">✓</span>
+    </button>
+    <button class="theme-option" data-theme="premium">
+      <span class="theme-color-dot premium"></span>
+      <div class="theme-option-info">
+        <div class="theme-option-name">Premium</div>
+        <div class="theme-option-desc">Sofisticado, violet, animaciones</div>
+      </div>
+      <span class="theme-option-check" style="display:none">✓</span>
+    </button>
+  </div>
+  <button class="theme-switcher-toggle" id="themeToggle">
+    Probar temas
+  </button>
+</div>
+<script>
+  (function() {
+    const saved = localStorage.getItem('falpat-theme') || 'sutil';
+    const menu = document.getElementById('themeMenu');
+    const toggle = document.getElementById('themeToggle');
+
+    function applyTheme(name) {
+      document.documentElement.className = 'theme-' + name;
+      localStorage.setItem('falpat-theme', name);
+      document.querySelectorAll('.theme-option').forEach(opt => {
+        const isActive = opt.dataset.theme === name;
+        opt.classList.toggle('active', isActive);
+        const check = opt.querySelector('.theme-option-check');
+        if (check) check.style.display = isActive ? 'block' : 'none';
+      });
+    }
+
+    applyTheme(saved);
+
+    if (toggle && menu) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.toggle('open');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+          menu.classList.remove('open');
+        }
+      });
+
+      document.querySelectorAll('.theme-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          applyTheme(opt.dataset.theme);
+          menu.classList.remove('open');
+        });
+      });
+    }
+  })();
+</script>
+<% } %>
 </body>
 </html>
