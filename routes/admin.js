@@ -495,8 +495,11 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
     const filterHasta = hasta ? new Date(hasta + 'T23:59:59') : new Date('2100-01-01');
     const now = new Date();
 
-    const [vehiclesSnap] = await Promise.all([
-      db.collection('vehicles').get()
+    // Query paralela: vehículos + todas las subcolecciones combustible + todas las subcolecciones repuestos
+    const [vehiclesSnap, combGroupSnap, repGroupSnap] = await Promise.all([
+      db.collection('vehicles').get(),
+      db.collectionGroup('combustible').get(),
+      db.collectionGroup('repuestos').get()
     ]);
 
     const vehicleMap = {};
@@ -508,6 +511,7 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
     const rows = [];
     const catTotals = { Combustible: 0, Repuestos: 0, VTV: 0, Seguro: 0 };
 
+    // Procesar vehículos (VTV y Seguro) - ya están en memoria
     for (const vDoc of vehiclesSnap.docs) {
       const vInfo = vehicleMap[vDoc.id];
       const patente = vInfo.patente;
@@ -531,9 +535,7 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
       }
 
       if (v.seguro?.fechaVencimiento || v.seguro?.costo) {
-        const fecha = v.seguro.fechaVencimiento?.toDate
-          ? v.seguro.fechaVencimiento.toDate()
-          : new Date();
+        const fecha = toDate(v.seguro.fechaVencimiento) || new Date();
         if (fecha >= filterDesde && fecha <= filterHasta) {
           if (!categoria || categoria === 'todas' || categoria === 'Seguro') {
             if (!vehiculo || vehiculo === 'todos' || patente.toLowerCase().includes(vehiculo.toLowerCase())) {
@@ -548,37 +550,45 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
           }
         }
       }
-
-      const combSnap = await vDoc.ref.collection('combustible').get();
-      combSnap.docs.forEach(d => {
-        const c = d.data();
-        const fecha = toDate(c.fecha);
-        if (fecha < filterDesde || fecha > filterHasta) return;
-        if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
-        if (categoria && categoria !== 'todas' && categoria !== 'Combustible') return;
-        catTotals.Combustible += Number(c.importe) || 0;
-        rows.push({
-          fecha, categoria: 'Combustible', vehiculo: patente, interno: vInfo.interno,
-          detalle: `${(c.litros || 0).toFixed(1)} L — ${c.tipo || ''}`,
-          monto: Number(c.importe) || 0, proveedor: c.proveedor || '', observaciones: c.observaciones || ''
-        });
-      });
-
-      const repSnap = await vDoc.ref.collection('repuestos').get();
-      repSnap.docs.forEach(d => {
-        const r = d.data();
-        const fecha = toDate(r.fecha);
-        if (fecha < filterDesde || fecha > filterHasta) return;
-        if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
-        if (categoria && categoria !== 'todas' && categoria !== 'Repuestos') return;
-        catTotals.Repuestos += Number(r.costo) || 0;
-        rows.push({
-          fecha, categoria: 'Repuestos', vehiculo: patente, interno: vInfo.interno,
-          detalle: r.pieza || '', monto: Number(r.costo) || 0,
-          proveedor: r.proveedor || '', observaciones: r.observaciones || ''
-        });
-      });
     }
+
+    // Procesar TODOS los combustibles en paralelo (ya traídos)
+    combGroupSnap.docs.forEach(d => {
+      const parentId = d.ref.parent.parent.id;
+      if (!vehicleMap[parentId]) return;
+      const vInfo = vehicleMap[parentId];
+      const patente = vInfo.patente;
+      const c = d.data();
+      const fecha = toDate(c.fecha);
+      if (!fecha || fecha < filterDesde || fecha > filterHasta) return;
+      if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
+      if (categoria && categoria !== 'todas' && categoria !== 'Combustible') return;
+      catTotals.Combustible += Number(c.importe) || 0;
+      rows.push({
+        fecha, categoria: 'Combustible', vehiculo: patente, interno: vInfo.interno,
+        detalle: `${(c.litros || 0).toFixed(1)} L — ${c.tipo || ''}`,
+        monto: Number(c.importe) || 0, proveedor: c.proveedor || '', observaciones: c.observaciones || ''
+      });
+    });
+
+    // Procesar TODOS los repuestos en paralelo (ya traídos)
+    repGroupSnap.docs.forEach(d => {
+      const parentId = d.ref.parent.parent.id;
+      if (!vehicleMap[parentId]) return;
+      const vInfo = vehicleMap[parentId];
+      const patente = vInfo.patente;
+      const r = d.data();
+      const fecha = toDate(r.fecha);
+      if (!fecha || fecha < filterDesde || fecha > filterHasta) return;
+      if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
+      if (categoria && categoria !== 'todas' && categoria !== 'Repuestos') return;
+      catTotals.Repuestos += Number(r.costo) || 0;
+      rows.push({
+        fecha, categoria: 'Repuestos', vehiculo: patente, interno: vInfo.interno,
+        detalle: r.pieza || '', monto: Number(r.costo) || 0,
+        proveedor: r.proveedor || '', observaciones: r.observaciones || ''
+      });
+    });
 
     rows.sort((a, b) => b.fecha - a.fecha);
 
