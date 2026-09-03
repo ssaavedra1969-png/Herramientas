@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { db, admin } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
+const { toDate } = require('../lib/utils');
 
 router.get('/users', verifyToken, requireAdmin, async (req, res) => {
   try {
@@ -66,7 +67,7 @@ router.get('/dashboard/financial', verifyToken, requireAdmin, async (req, res) =
 
       combSnap.docs.forEach(d => {
         const c = d.data();
-        const date = c.fecha?.toDate ? c.fecha.toDate() : new Date(c.fecha);
+        const date = toDate(c.fecha);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
         if (!combustibleData[monthKey]) combustibleData[monthKey] = { litros: 0, importe: 0 };
@@ -119,8 +120,8 @@ router.get('/dashboard/financial', verifyToken, requireAdmin, async (req, res) =
       .sort((a, b) => b[1] - a[1]);
 
     ultimosMovimientos.sort((a, b) => {
-      const da = a.fecha?.toDate ? a.fecha.toDate() : new Date(a.fecha);
-      const db2 = b.fecha?.toDate ? b.fecha.toDate() : new Date(b.fecha);
+      const da = toDate(a.fecha);
+      const db2 = toDate(b.fecha);
       return db2 - da;
     });
 
@@ -159,7 +160,7 @@ router.get('/latest-services', verifyToken, async (req, res) => {
 
       const servicios = svcSnap.docs.map(svcDoc => {
         const s = svcDoc.data();
-        const fecha = s.fecha?.toDate ? s.fecha.toDate() : (s.fecha ? new Date(s.fecha) : null);
+        const fecha = toDate(s.fecha);
         return {
           id: svcDoc.id,
           tipo: s.tipo || 'Otro',
@@ -265,11 +266,7 @@ router.get('/report', verifyToken, requireAdmin, async (req, res) => {
       const patente = v.patente || '—';
 
       if (v.vtv?.fechaVencimiento || v.vtv?.fechaRealizacion) {
-        const fecha = v.vtv.fechaVencimiento?.toDate
-          ? v.vtv.fechaVencimiento.toDate()
-          : v.vtv.fechaRealizacion?.toDate
-            ? v.vtv.fechaRealizacion.toDate()
-            : new Date();
+        const fecha = toDate(v.vtv.fechaVencimiento) || toDate(v.vtv.fechaRealizacion) || new Date();
         if (fecha >= filterDesde && fecha <= filterHasta) {
           if (!categoria || categoria === 'todas' || categoria === 'VTV') {
             if (!vehiculo || vehiculo === 'todos' || patente.toLowerCase().includes(vehiculo.toLowerCase())) {
@@ -286,11 +283,7 @@ router.get('/report', verifyToken, requireAdmin, async (req, res) => {
       }
 
       if (v.seguro?.fechaVencimiento || v.seguro?.costo) {
-        const fecha = v.seguro.fechaVencimiento?.toDate
-          ? v.seguro.fechaVencimiento.toDate()
-          : v.seguro.fechaRealizacion?.toDate
-            ? v.seguro.fechaRealizacion.toDate()
-            : new Date();
+        const fecha = toDate(v.seguro.fechaVencimiento) || toDate(v.seguro.fechaRealizacion) || new Date();
         if (fecha >= filterDesde && fecha <= filterHasta) {
           if (!categoria || categoria === 'todas' || categoria === 'Seguro') {
             if (!vehiculo || vehiculo === 'todos' || patente.toLowerCase().includes(vehiculo.toLowerCase())) {
@@ -309,7 +302,7 @@ router.get('/report', verifyToken, requireAdmin, async (req, res) => {
       const combSnap = await vDoc.ref.collection('combustible').get();
       combSnap.docs.forEach(d => {
         const c = d.data();
-        const fecha = c.fecha?.toDate ? c.fecha.toDate() : new Date(c.fecha);
+        const fecha = toDate(c.fecha);
         if (fecha < filterDesde || fecha > filterHasta) return;
         if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
         if (categoria && categoria !== 'todas' && categoria !== 'Combustible') return;
@@ -320,7 +313,7 @@ router.get('/report', verifyToken, requireAdmin, async (req, res) => {
       const repSnap = await vDoc.ref.collection('repuestos').get();
       repSnap.docs.forEach(d => {
         const r = d.data();
-        const fecha = r.fecha?.toDate ? r.fecha.toDate() : new Date(r.fecha);
+        const fecha = toDate(r.fecha);
         if (fecha < filterDesde || fecha > filterHasta) return;
         if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
         if (categoria && categoria !== 'todas' && categoria !== 'Repuestos') return;
@@ -521,11 +514,7 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
       const v = vDoc.data();
 
       if (v.vtv?.fechaVencimiento || v.vtv?.fechaRealizacion) {
-        const fecha = v.vtv.fechaVencimiento?.toDate
-          ? v.vtv.fechaVencimiento.toDate()
-          : v.vtv.fechaRealizacion?.toDate
-            ? v.vtv.fechaRealizacion.toDate()
-            : new Date();
+        const fecha = toDate(v.vtv.fechaVencimiento) || toDate(v.vtv.fechaRealizacion) || new Date();
         if (fecha >= filterDesde && fecha <= filterHasta) {
           if (!categoria || categoria === 'todas' || categoria === 'VTV') {
             if (!vehiculo || vehiculo === 'todos' || patente.toLowerCase().includes(vehiculo.toLowerCase())) {
@@ -563,7 +552,7 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
       const combSnap = await vDoc.ref.collection('combustible').get();
       combSnap.docs.forEach(d => {
         const c = d.data();
-        const fecha = c.fecha?.toDate ? c.fecha.toDate() : new Date(c.fecha);
+        const fecha = toDate(c.fecha);
         if (fecha < filterDesde || fecha > filterHasta) return;
         if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
         if (categoria && categoria !== 'todas' && categoria !== 'Combustible') return;
@@ -578,7 +567,7 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
       const repSnap = await vDoc.ref.collection('repuestos').get();
       repSnap.docs.forEach(d => {
         const r = d.data();
-        const fecha = r.fecha?.toDate ? r.fecha.toDate() : new Date(r.fecha);
+        const fecha = toDate(r.fecha);
         if (fecha < filterDesde || fecha > filterHasta) return;
         if (vehiculo && vehiculo !== 'todos' && !patente.toLowerCase().includes(vehiculo.toLowerCase())) return;
         if (categoria && categoria !== 'todas' && categoria !== 'Repuestos') return;

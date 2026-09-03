@@ -5,17 +5,12 @@ const path = require('path');
 const { db, admin } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const gh = require('../lib/github-docs');
+const { parseFecha, toDate } = require('../lib/utils');
 
 const DOCS_DIR = path.join(process.cwd(), 'PATENTE');
 const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
 const DOC_EXT_PRIORIDAD = ['pdf', 'jpg', 'jpeg', 'png'];
 const DOC_MAX_UPLOAD = 700 * 1024;
-
-function parseFecha(val) {
-  if (!val) return null;
-  const d = new Date(val);
-  return isNaN(d.getTime()) ? null : d;
-}
 
 async function recomputeServiceSummary(vehicleId) {
   const snap = await db.collection('vehicles').doc(vehicleId).collection('services').get();
@@ -28,8 +23,8 @@ async function recomputeServiceSummary(vehicleId) {
     const tipo = s.tipo || 'Otro';
     if (!summary[tipo]) summary[tipo] = null;
     const cur = summary[tipo];
-    const curDate = cur && cur.fecha ? (cur.fecha.seconds ? cur.fecha.seconds * 1000 : new Date(cur.fecha).getTime()) : 0;
-    const newDate = s.fecha ? (s.fecha.seconds ? s.fecha.seconds * 1000 : new Date(s.fecha).getTime()) : 0;
+    const curDate = cur && cur.fecha ? (cur.fecha.seconds ? cur.fecha.seconds * 1000 : toDate(cur.fecha).getTime()) : 0;
+    const newDate = s.fecha ? (s.fecha.seconds ? s.fecha.seconds * 1000 : toDate(s.fecha).getTime()) : 0;
     if (!cur || newDate >= curDate) {
       summary[tipo] = { fecha: s.fecha || null, km: s.km || null, proximoKm: s.proximoKm || null, proximoFecha: s.proximoFecha || null };
     }
