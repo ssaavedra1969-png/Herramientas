@@ -61,7 +61,8 @@ const clientConfig = {
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.FIREBASE_APP_ID,
-  devReadOnly: process.env.DEV_READ_ONLY === 'true'
+  devReadOnly: process.env.DEV_READ_ONLY === 'true',
+  env: process.env.NODE_ENV || 'development'
 };
 
 module.exports = { admin, db, auth, clientConfig };

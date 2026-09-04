@@ -342,6 +342,8 @@ html.theme-${currentTheme} .header-glass {
   background: rgba(${theme.darkBgRGB}, 0.95) !important;
   backdrop-filter: blur(${theme.blurSidebar}) !important;
   border-bottom: 1px solid rgba(${theme.accentRGB}, 0.08) !important;
+  position: relative !important;
+  z-index: 2 !important;
 }
 html.theme-${currentTheme} .nav-link {
   color: rgba(${theme.textMutedRGB}, 0.8) !important;
@@ -476,6 +478,14 @@ html.theme-${currentTheme} .mobile-menu-glass {
   background: rgba(${theme.darkBgRGB}, 0.98) !important;
   backdrop-filter: blur(${theme.blurSidebar}) !important;
   border-bottom: 1px solid rgba(${theme.accentRGB}, 0.08) !important;
+}
+html.theme-${currentTheme} main {
+  position: relative !important;
+  z-index: 1 !important;
+}
+html.theme-${currentTheme} .sidebar-glass {
+  position: relative !important;
+  z-index: 2 !important;
 }
 html.theme-${currentTheme} .card-badge.trompo-yes {
   background: rgba(${theme.accentRGB}, 0.15) !important;
