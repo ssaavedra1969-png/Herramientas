@@ -154,6 +154,8 @@ window.ThemeEngine = (function () {
     if (currentTheme === 'sutil') {
       return `
 html.theme-sutil body {
+  position: relative;
+  z-index: 0;
   background: linear-gradient(145deg, var(--bg-c1) 0%, var(--bg-c2) 50%, var(--bg-c3) 100%) !important;
   animation: warmBgShift 20s ease infinite !important;
 }
@@ -166,7 +168,7 @@ html.theme-sutil body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background:
     linear-gradient(rgba(212,175,55,0.025) 1px, transparent 1px),
@@ -177,7 +179,7 @@ html.theme-sutil body::after {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background:
     radial-gradient(ellipse 60% 50% at 10% 10%, rgba(212,175,55,0.04) 0%, transparent 60%),
@@ -188,6 +190,8 @@ html.theme-sutil body::after {
     if (currentTheme === 'modern') {
       return `
 html.theme-modern body {
+  position: relative;
+  z-index: 0;
   background:
     linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px),
@@ -205,7 +209,7 @@ html.theme-modern body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background:
     radial-gradient(circle at 15% 0%, rgba(6,182,212,0.1) 0%, transparent 40%),
@@ -216,7 +220,7 @@ html.theme-modern body::after {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background: repeating-linear-gradient(
     0deg,
@@ -231,6 +235,8 @@ html.theme-modern body::after {
     if (currentTheme === 'premium') {
       return `
 html.theme-premium body {
+  position: relative;
+  z-index: 0;
   background: linear-gradient(155deg, var(--bg-c1) 0%, var(--bg-c2) 40%, var(--bg-c3) 100%) !important;
   animation: auroraShift 12s ease infinite !important;
 }
@@ -243,7 +249,7 @@ html.theme-premium body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background:
     radial-gradient(ellipse 80% 50% at 20% 0%, rgba(139,92,246,0.08) 0%, transparent 55%),
@@ -264,7 +270,7 @@ html.theme-premium body::after {
   background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
   top: -200px;
   right: -200px;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   animation: orbFloat1 18s ease-in-out infinite !important;
 }
@@ -342,8 +348,6 @@ html.theme-${currentTheme} .header-glass {
   background: rgba(${theme.darkBgRGB}, 0.95) !important;
   backdrop-filter: blur(${theme.blurSidebar}) !important;
   border-bottom: 1px solid rgba(${theme.accentRGB}, 0.08) !important;
-  position: relative !important;
-  z-index: 2 !important;
 }
 html.theme-${currentTheme} .nav-link {
   color: rgba(${theme.textMutedRGB}, 0.8) !important;
@@ -478,14 +482,6 @@ html.theme-${currentTheme} .mobile-menu-glass {
   background: rgba(${theme.darkBgRGB}, 0.98) !important;
   backdrop-filter: blur(${theme.blurSidebar}) !important;
   border-bottom: 1px solid rgba(${theme.accentRGB}, 0.08) !important;
-}
-html.theme-${currentTheme} main {
-  position: relative !important;
-  z-index: 1 !important;
-}
-html.theme-${currentTheme} .sidebar-glass {
-  position: relative !important;
-  z-index: 2 !important;
 }
 html.theme-${currentTheme} .card-badge.trompo-yes {
   background: rgba(${theme.accentRGB}, 0.15) !important;
