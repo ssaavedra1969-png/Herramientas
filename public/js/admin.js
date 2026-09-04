@@ -49,10 +49,10 @@ function renderUsers(users) {
     const isCurrentUser = u.id === (currentUser?.uid || '');
     const isAdminUser = currentUserData?.role === 'Admin';
     const roleStyle = u.role === 'Admin'
-      ? 'background-color:rgba(52,211,153,0.15);color:#34D399'
+      ? 'background-color:rgba(52,211,153,0.15);color:#00E5FF'
       : 'background-color:rgba(96,165,250,0.15);color:#60A5FA';
     return `
-      <tr class="border-b border-white/5 hover:bg-[#d4af37]/10">
+      <tr class="border-b border-white/5 hover:bg-[#2563EB]/10">
         <td class="py-3 pr-3 font-medium">${u.displayName || '—'} ${isCurrentUser ? '<span class="text-xs text-blue-500 ml-1">(tú)</span>' : ''}</td>
         <td class="py-3 pr-3">${u.email || '—'}</td>
         <td class="py-3 pr-3"><span class="status-badge" style="${roleStyle}">${u.role || 'Usuario'}</span></td>
@@ -127,7 +127,7 @@ function viewUser(userId) {
 
   let html = '';
   info.forEach(i => {
-    html += `<div class="flex justify-between py-2 border-b border-[#d4af37]/10">
+    html += `<div class="flex justify-between py-2 border-b border-[#2563EB]/10">
       <span class="text-[#8b9bb4] text-sm">${i.label}</span>
       <span class="text-[#ffffff] text-sm font-medium text-right max-w-[200px] truncate">${i.value}</span>
     </div>`;
@@ -139,7 +139,7 @@ function viewUser(userId) {
     icon: 'info',
     background: '#0F1220',
     color: '#ffffff',
-    confirmButtonColor: '#d4af37',
+    confirmButtonColor: '#2563EB',
     confirmButtonText: 'Cerrar'
   });
 }

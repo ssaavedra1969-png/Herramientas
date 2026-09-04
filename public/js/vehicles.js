@@ -37,13 +37,13 @@ function getBrandLogo(marca) {
   return brandLogos[marca.toLowerCase().trim()] || '';
 }
 
-const truckFallbackSvg = '<svg class="w-10 h-10 text-[#d4af37]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>';
+const truckFallbackSvg = '<svg class="w-10 h-10 text-[#2563EB]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h2m10 1l2-1V8a1 1 0 00-1-1h-4"/></svg>';
 
 function handlePhotoError(el, brandLogo) {
   const fallback = brandLogo
-    ? '<div class="w-full h-40 bg-gradient-to-br from-[#d4af37]/15 via-[#b8960c]/5 to-[#d4af37]/10 flex items-center justify-center">' +
+    ? '<div class="w-full h-40 bg-gradient-to-br from-[#2563EB]/15 via-[#1D4ED8]/5 to-[#2563EB]/10 flex items-center justify-center">' +
       '<div class="card-logo-wrap"><img src="' + brandLogo + '" class="card-logo-img"></div></div>'
-    : '<div class="w-full h-40 bg-gradient-to-br from-[#d4af37]/15 via-[#b8960c]/5 to-[#d4af37]/10 flex items-center justify-center">' +
+    : '<div class="w-full h-40 bg-gradient-to-br from-[#2563EB]/15 via-[#1D4ED8]/5 to-[#2563EB]/10 flex items-center justify-center">' +
       truckFallbackSvg + '</div>';
   el.outerHTML = fallback;
 }
@@ -70,11 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       trompoFilter = btn.dataset.trompoFilter;
       document.querySelectorAll('[data-trompo-filter]').forEach(b => {
-        b.classList.remove('bg-[#d4af37]/30', 'text-[#ffffff]');
-        b.classList.add('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#d4af37]/10');
+        b.classList.remove('bg-[#2563EB]/30', 'text-[#ffffff]');
+        b.classList.add('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#2563EB]/10');
       });
-      btn.classList.add('bg-[#d4af37]/30', 'text-[#ffffff]');
-      btn.classList.remove('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#d4af37]/10');
+      btn.classList.add('bg-[#2563EB]/30', 'text-[#ffffff]');
+      btn.classList.remove('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#2563EB]/10');
       applyFilters();
     });
   });
@@ -107,16 +107,16 @@ function setViewMode(mode, save = true) {
   if (mode === 'card') {
     tableView?.classList.add('hidden');
     cardView?.classList.remove('hidden');
-    tableBtn?.classList.remove('bg-[#d4af37]/30', 'text-[#ffffff]');
+    tableBtn?.classList.remove('bg-[#2563EB]/30', 'text-[#ffffff]');
     tableBtn?.classList.add('text-[#8b9bb4]');
-    cardBtn?.classList.add('bg-[#d4af37]/30', 'text-[#ffffff]');
+    cardBtn?.classList.add('bg-[#2563EB]/30', 'text-[#ffffff]');
     cardBtn?.classList.remove('text-[#8b9bb4]');
   } else {
     tableView?.classList.remove('hidden');
     cardView?.classList.add('hidden');
-    tableBtn?.classList.add('bg-[#d4af37]/30', 'text-[#ffffff]');
+    tableBtn?.classList.add('bg-[#2563EB]/30', 'text-[#ffffff]');
     tableBtn?.classList.remove('text-[#8b9bb4]');
-    cardBtn?.classList.remove('bg-[#d4af37]/30', 'text-[#ffffff]');
+    cardBtn?.classList.remove('bg-[#2563EB]/30', 'text-[#ffffff]');
     cardBtn?.classList.add('text-[#8b9bb4]');
   }
   applyFilters();
@@ -250,10 +250,10 @@ function renderVehicleTable(vehicles) {
     const mv = fmap(v);
     const checked = selectedIds.has(v.id) ? 'checked' : '';
     const checkboxCell = admin ? `<td class="py-3 pr-3" onclick="event.stopPropagation()">
-      <input type="checkbox" class="row-checkbox accent-[#d4af37]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
+      <input type="checkbox" class="row-checkbox accent-[#2563EB]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
     </td>` : '';
     const trompoBadge = mv.trompo
-      ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#d4af37]/20 text-[#d4af37]">Si<span class="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></span></span>`
+      ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#2563EB]/20 text-[#2563EB]">Si<span class="w-1.5 h-1.5 rounded-full bg-[#2563EB]"></span></span>`
       : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#2E3247] text-[#4a5568]">No<span class="w-1.5 h-1.5 rounded-full bg-[#4a5568]"></span></span>`;
     const mf = mv.matafuego || {};
     const mfEstado = mf.estado === 'Con Matafuego';
@@ -267,12 +267,12 @@ function renderVehicleTable(vehicles) {
       : '';
     const matafuegoCell = `
       <div class="flex items-center gap-1.5 flex-wrap">
-        <span class="w-2 h-2 rounded-full ${mfEstado ? 'bg-green-400' : 'bg-red-500'}"></span>
-        <span class="text-xs ${mfEstado ? 'text-green-300' : 'text-red-300'}">${mfEstado ? 'Con' : 'Sin'}</span>
+        <span class="w-2 h-2 rounded-full ${mfEstado ? 'bg-[#00E5FF]' : 'bg-red-500'}"></span>
+        <span class="text-xs ${mfEstado ? 'text-[#00E5FF]' : 'text-red-300'}">${mfEstado ? 'Con' : 'Sin'}</span>
         ${mfVtoHtml}
       </div>`;
     return `
-      <tr class="border-b border-white/5 hover:bg-[#d4af37]/10 cursor-pointer fade-row" onclick="rowClick('${v.id}', event)">
+      <tr class="border-b border-white/5 hover:bg-[#2563EB]/10 cursor-pointer fade-row" onclick="rowClick('${v.id}', event)">
         ${checkboxCell}
         <td class="py-3 pr-3">${mv.interno || '—'}</td>
         <td class="py-3 pr-3 font-medium">${mv.patente || '—'}</td>
@@ -316,14 +316,14 @@ function renderVehicleCards(vehicles) {
       ? '<span class="card-badge trompo-yes">Trompo</span>'
       : '';
 
-    const checkHtml = admin ? `<label class="card-check"><input type="checkbox" class="row-checkbox accent-[#d4af37]" value="${v.id}" ${checked ? 'checked' : ''} onchange="toggleRow('${v.id}', this.checked)"></label>` : '';
+    const checkHtml = admin ? `<label class="card-check"><input type="checkbox" class="row-checkbox accent-[#2563EB]" value="${v.id}" ${checked ? 'checked' : ''} onchange="toggleRow('${v.id}', this.checked)"></label>` : '';
 
     const hasPhoto = !!mv.fotoURL;
     const brandLogo = getBrandLogo(mv.marca);
     const logoHtml = brandLogo
       ? `<div class="card-logo-wrap"><img src="${brandLogo}" alt="${mv.marca}" class="card-logo-img" onerror="this.parentElement.remove()"></div>`
       : '';
-    const fallbackBg = `<div class="w-full h-40 bg-gradient-to-br from-[#d4af37]/8 to-[#d4af37]/5 flex items-center justify-center">${logoHtml || truckFallbackSvg}</div>`;
+    const fallbackBg = `<div class="w-full h-40 bg-gradient-to-br from-[#2563EB]/8 to-[#2563EB]/5 flex items-center justify-center">${logoHtml || truckFallbackSvg}</div>`;
 
     const fotoHtml = hasPhoto
       ? `<div class="relative w-full h-40">
@@ -350,8 +350,8 @@ function renderVehicleCards(vehicles) {
           </div>
           <div class="flex flex-col gap-1">
             ${mv.centroTrabajo ? `<div class="card-detail"><svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>${mv.centroTrabajo}</div>` : ''}
-            ${mv.empresa ? `<div class="card-detail"><svg class="w-3 h-3 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>${mv.empresa}</div>` : ''}
-            ${mv.kilometraje ? `<div class="card-detail"><svg class="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>${Number(mv.kilometraje).toLocaleString('es-AR')} km</div>` : ''}
+            ${mv.empresa ? `<div class="card-detail"><svg class="w-3 h-3 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>${mv.empresa}</div>` : ''}
+            ${mv.kilometraje ? `<div class="card-detail"><svg class="w-3 h-3 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>${Number(mv.kilometraje).toLocaleString('es-AR')} km</div>` : ''}
             ${mv.nroBet ? `<div class="card-detail"><svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>BET: ${mv.nroBet}</div>` : ''}
           </div>
         </div>
@@ -359,7 +359,7 @@ function renderVehicleCards(vehicles) {
           <span class="text-xs text-[#4a5568]">${mv.año || ''}</span>
           <div class="card-actions" onclick="event.stopPropagation()">
             ${admin ? `<button onclick="checkTituloFromCard('${(mv.patente || '').replace(/'/g, "\\'")}')" title="Título de propiedad" class="card-titulo-btn hidden">
-              <svg class="w-4 h-4 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <svg class="w-4 h-4 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </button>` : ''}
             <button onclick="viewVehicle('${v.id}')" title="Ver detalle">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -500,12 +500,12 @@ function sortBy(field) {
   }
   document.querySelectorAll('.sort-arrow').forEach(el => {
     el.textContent = '';
-    el.classList.remove('text-[#d4af37]');
+    el.classList.remove('text-[#2563EB]');
   });
   const activeArrow = document.querySelector(`.sort-arrow[data-field="${field}"]`);
   if (activeArrow) {
     activeArrow.textContent = sortDir === 'asc' ? '▲' : '▼';
-    activeArrow.classList.add('text-[#d4af37]');
+    activeArrow.classList.add('text-[#2563EB]');
   }
   applyFilters();
 }
@@ -520,11 +520,11 @@ function resetFilters() {
   if (document.getElementById('filter-estado')) document.getElementById('filter-estado').value = '';
   trompoFilter = 'all';
   document.querySelectorAll('[data-trompo-filter]').forEach((btn, i) => {
-    btn.classList.remove('bg-[#d4af37]/30', 'text-[#ffffff]');
-    btn.classList.add('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#d4af37]/10');
+    btn.classList.remove('bg-[#2563EB]/30', 'text-[#ffffff]');
+    btn.classList.add('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#2563EB]/10');
     if (i === 0) {
-      btn.classList.add('bg-[#d4af37]/30', 'text-[#ffffff]');
-      btn.classList.remove('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#d4af37]/10');
+      btn.classList.add('bg-[#2563EB]/30', 'text-[#ffffff]');
+      btn.classList.remove('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#2563EB]/10');
     }
   });
   applyFilters();
@@ -757,15 +757,15 @@ function addMultaRow(multa) {
   row.innerHTML = `
     <div class="flex-1 min-w-[120px]">
       <label class="block text-xs text-[#8b9bb4] mb-1">Fecha</label>
-      <input type="date" class="multa-fecha w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0a0e17]/50 border border-[#d4af37]/20 text-[#ffffff]" value="${multa?.fecha || ''}">
+      <input type="date" class="multa-fecha w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0a0e17]/50 border border-[#2563EB]/20 text-[#ffffff]" value="${multa?.fecha || ''}">
     </div>
     <div class="w-28">
       <label class="block text-xs text-[#8b9bb4] mb-1">Importe ($)</label>
-      <input type="number" class="multa-importe w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0a0e17]/50 border border-[#d4af37]/20 text-[#ffffff]" value="${multa?.importe || ''}" step="0.01">
+      <input type="number" class="multa-importe w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0a0e17]/50 border border-[#2563EB]/20 text-[#ffffff]" value="${multa?.importe || ''}" step="0.01">
     </div>
     <div class="flex-[2] min-w-[150px]">
       <label class="block text-xs text-[#8b9bb4] mb-1">Concepto</label>
-      <input type="text" class="multa-concepto w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0a0e17]/50 border border-[#d4af37]/20 text-[#ffffff]" value="${multa?.concepto || ''}" placeholder="Exceso de velocidad">
+      <input type="text" class="multa-concepto w-full px-2 py-1.5 input-neon rounded text-sm bg-[#0a0e17]/50 border border-[#2563EB]/20 text-[#ffffff]" value="${multa?.concepto || ''}" placeholder="Exceso de velocidad">
     </div>
     <div class="flex items-center gap-1 pb-1.5">
       <input type="checkbox" class="multa-pagado" ${multa?.pagado ? 'checked' : ''}>
@@ -788,7 +788,7 @@ function addDocumentoRow(doc) {
   row.innerHTML = `
     <div class="flex-1 min-w-[120px]">
       <label class="block text-xs text-[#8b9bb4] mb-1">Tipo</label>
-      <select class="doc-tipo w-full px-2 py-1.5 border border-[#d4af37]/20 rounded text-sm bg-[#0a0e17]/50 text-[#ffffff]">
+      <select class="doc-tipo w-full px-2 py-1.5 border border-[#2563EB]/20 rounded text-sm bg-[#0a0e17]/50 text-[#ffffff]">
         <option value="">Seleccionar...</option>
         <option value="VTV" ${doc?.tipo === 'VTV' ? 'selected' : ''}>VTV</option>
         <option value="Cédula" ${doc?.tipo === 'Cédula' ? 'selected' : ''}>Cédula</option>
@@ -799,11 +799,11 @@ function addDocumentoRow(doc) {
     </div>
     <div class="w-36">
       <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento</label>
-      <input type="date" class="doc-fecha w-full px-2 py-1.5 border border-[#d4af37]/20 rounded text-sm bg-[#0a0e17]/50 text-[#ffffff]" value="${doc?.fechaVencimiento || ''}">
+      <input type="date" class="doc-fecha w-full px-2 py-1.5 border border-[#2563EB]/20 rounded text-sm bg-[#0a0e17]/50 text-[#ffffff]" value="${doc?.fechaVencimiento || ''}">
     </div>
     <div class="flex-[2] min-w-[180px]">
       <label class="block text-xs text-[#8b9bb4] mb-1">Archivo URL</label>
-      <input type="url" class="doc-url w-full px-2 py-1.5 border border-[#d4af37]/20 rounded text-sm bg-[#0a0e17]/50 text-[#ffffff]" value="${doc?.archivoURL || ''}" placeholder="https://storage.googleapis.com/...">
+      <input type="url" class="doc-url w-full px-2 py-1.5 border border-[#2563EB]/20 rounded text-sm bg-[#0a0e17]/50 text-[#ffffff]" value="${doc?.archivoURL || ''}" placeholder="https://storage.googleapis.com/...">
     </div>
     <button type="button" onclick="this.closest('.documento-row').remove()" class="pb-1.5 text-red-400 hover:text-red-300">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -949,7 +949,7 @@ function showVehicleImportResult(result) {
 
   if (valid.length) {
     csvValidatedData = valid;
-    html += `<div class="p-3 bg-green-900/30 rounded-lg text-sm text-green-400 mb-3">
+    html += `<div class="p-3 bg-[#1e3a8a]/40 rounded-lg text-sm text-[#00E5FF] mb-3">
       <strong>${valid.length} vehículo(s) válido(s) listos para importar</strong>
     </div>
     <div class="overflow-x-auto">
@@ -1332,9 +1332,9 @@ function updateFormatButtons() {
     const btn = document.getElementById('fmt-' + f);
     if (!btn) return;
     if (f === exportFormat) {
-      btn.className = 'export-fmt-btn flex-1 py-3 rounded-xl border-2 border-[#d4af37]/40 bg-[#d4af37]/15 text-[#d4af37] font-semibold text-sm transition-all flex items-center justify-center gap-2';
+      btn.className = 'export-fmt-btn flex-1 py-3 rounded-xl border-2 border-[#2563EB]/40 bg-[#2563EB]/15 text-[#2563EB] font-semibold text-sm transition-all flex items-center justify-center gap-2';
     } else {
-      btn.className = 'export-fmt-btn flex-1 py-3 rounded-xl border border-[#d4af37]/15 bg-[#0a0e17]/30 text-[#8b9bb4] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#d4af37]/30';
+      btn.className = 'export-fmt-btn flex-1 py-3 rounded-xl border border-[#2563EB]/15 bg-[#0a0e17]/30 text-[#8b9bb4] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#2563EB]/30';
     }
   });
 }
@@ -1384,14 +1384,14 @@ function updateExportPreview() {
   let html = `<div style="font-family: Inter, sans-serif; font-size: 10px; color: #ffffff; background: #0a0e17; border-radius: 8px; overflow: hidden;">`;
 
   // Header with gradient
-  html += `<div style="background: linear-gradient(135deg, #d4af37, #d4af37); padding: 16px 12px 12px; text-align: center;">`;
+  html += `<div style="background: linear-gradient(135deg, #2563EB, #2563EB); padding: 16px 12px 12px; text-align: center;">`;
   if (empresa) html += `<div style="font-size: 15px; font-weight: 800; color: #fff; letter-spacing: 1.5px; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">${empresa.toUpperCase()}</div>`;
   if (direccion) html += `<div style="font-size: 9px; color: rgba(255,255,255,0.8); margin-top: 2px;">${direccion}</div>`;
   if (telefono) html += `<div style="font-size: 9px; color: rgba(255,255,255,0.7);">Tel: ${telefono}</div>`;
   html += `</div>`;
 
   // Title bar
-  html += `<div style="background: #141e2d; padding: 10px 12px; text-align: center; border-bottom: 2px solid #d4af37;">`;
+  html += `<div style="background: #141e2d; padding: 10px 12px; text-align: center; border-bottom: 2px solid #2563EB;">`;
   html += `<div style="font-size: 12px; font-weight: 700; color: #ffffff;">${titulo}</div>`;
   if (subtitulo) html += `<div style="font-size: 9px; color: #8b9bb4; margin-top: 2px;">${subtitulo}</div>`;
   html += `</div>`;
@@ -1399,7 +1399,7 @@ function updateExportPreview() {
   // Table
   html += `<div style="overflow-x: auto;"><table style="width:100%; border-collapse:collapse;"><thead><tr>`;
   fields.forEach(f => {
-    html += `<th style="background: #d4af37; color: white; padding: 5px 8px; text-align: left; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space:nowrap;">${f.label}</th>`;
+    html += `<th style="background: #2563EB; color: white; padding: 5px 8px; text-align: left; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space:nowrap;">${f.label}</th>`;
   });
   html += `</tr></thead><tbody>`;
   previewRows.forEach((v, i) => {

@@ -4,11 +4,11 @@
 
   <div class="flex-1 flex flex-col overflow-hidden">
     <div class="lg:hidden header-glass text-[#ffffff] p-3 flex items-center justify-between">
-      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#d4af37]/10">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#2563EB]/10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
-      <span class="w-8 h-8 bg-gradient-to-br from-[#d4af37] to-[#d4af37] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#2563EB] to-[#2563EB] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
     </div>
 
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
@@ -20,7 +20,7 @@
         <!-- Digital Clock -->
         <div class="flex flex-col items-center sm:items-end select-none" style="filter: drop-shadow(0 4px 12px rgba(212,175,55,0.35));">
           <div id="dash-clock" class="relative font-black tracking-[0.15em] leading-none"
-               style="font-size:3rem;background:linear-gradient(135deg,#d4af37 0%,#d4af37 40%,#d4af37 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+               style="font-size:3rem;background:linear-gradient(135deg,#2563EB 0%,#2563EB 40%,#2563EB 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
                       text-shadow:none;
                       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(0 0 8px rgba(212,175,55,0.4));
                       -webkit-text-stroke: 0.5px rgba(255,255,255,0.08);">
@@ -38,7 +38,7 @@
               <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
               <input type="text" id="dash-search"
                 placeholder="Buscar por patente, interno, marca, empresa..."
-                class="w-full pl-9 pr-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/15 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon transition-all focus:border-[#d4af37]/50"
+                class="w-full pl-9 pr-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/15 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon transition-all focus:border-[#2563EB]/50"
                 autocomplete="off">
             </div>
           </div>
@@ -53,14 +53,14 @@
         <!-- Alertas Vehículos -->
         <p class="text-sm font-semibold text-[#8b9bb4] mt-4 mb-2 uppercase tracking-wider">Vehículos</p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#d4af37]/30 transition" onclick="showVehiculosModal()">
+          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#2563EB]/30 transition" onclick="showVehiculosModal()">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-[#8b9bb4] text-xs font-medium">Vehículos Activos</p>
                 <p class="text-3xl font-bold text-[#ffffff] mt-1" id="card-vehiculos"><span class="skeleton skeleton-stat inline-block"></span></p>
               </div>
-              <div class="w-10 h-10 bg-[#d4af37]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+              <div class="w-10 h-10 bg-[#2563EB]/10 rounded-lg flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
               </div>
             </div>
           </div>
@@ -76,15 +76,15 @@
               </div>
             </div>
           </div>
-          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#d4af37]/30 transition" onclick="showSeguroModal()">
+          <div class="glass-card rounded-xl p-4 card-3d flex flex-col justify-center cursor-pointer hover:border-[#2563EB]/30 transition" onclick="showSeguroModal()">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-[#8b9bb4] text-xs font-medium">Seguro por vencer</p>
                 <p class="text-3xl font-bold text-[#ffffff] mt-1" id="card-seguro-proximos"><span class="skeleton skeleton-stat inline-block"></span></p>
                 <p class="text-xs text-[#4a5568] mt-1">≤30 días</p>
               </div>
-              <div class="w-10 h-10 bg-[#d4af37]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <div class="w-10 h-10 bg-[#2563EB]/10 rounded-lg flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
               </div>
             </div>
           </div>
@@ -150,8 +150,8 @@
               <p class="text-lg font-semibold text-[#ffffff]">Empresas</p>
               <p class="text-[#4a5568] text-xs">Click en una empresa para ver sus vehículos</p>
             </div>
-            <div class="w-10 h-10 bg-[#10B981]/10 rounded-lg flex items-center justify-center shrink-0">
-              <svg class="w-5 h-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            <div class="w-10 h-10 bg-[#00E5FF]/10 rounded-lg flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             </div>
           </div>
           <div id="empresas-list" class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
@@ -165,7 +165,7 @@
         <!-- Fleet Health -->
         <div class="glass-card rounded-xl p-5 mt-4" style="border:1px solid rgba(16,185,129,0.15);">
           <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#10B981,#059669);">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#00E5FF,#0891B2);">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
@@ -175,12 +175,12 @@
           </div>
           <div id="fleet-health-bar" class="mb-3">
             <div class="h-3 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.06);">
-              <div id="fleet-health-fill" class="h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(90deg,#10B981,#059669);"></div>
+              <div id="fleet-health-fill" class="h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(90deg,#00E5FF,#0891B2);"></div>
             </div>
           </div>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="fleet-health-stats">
             <div class="text-center p-2 rounded-lg" style="background:rgba(16,185,129,0.06);">
-              <p class="text-[#10B981] text-lg font-bold" id="fh-ok">—</p>
+              <p class="text-[#00E5FF] text-lg font-bold" id="fh-ok">—</p>
               <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Al día</p>
             </div>
             <div class="text-center p-2 rounded-lg" style="background:rgba(249,115,22,0.06);">
@@ -192,7 +192,7 @@
               <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Vencidos</p>
             </div>
             <div class="text-center p-2 rounded-lg" style="background:rgba(212,175,55,0.06);">
-              <p class="text-[#d4af37] text-lg font-bold" id="fh-total">—</p>
+              <p class="text-[#2563EB] text-lg font-bold" id="fh-total">—</p>
               <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Total</p>
             </div>
           </div>
@@ -200,12 +200,12 @@
 
         <!-- Últimos Services -->
         <div class="glass-card rounded-2xl p-5 sm:p-6 mt-4 relative overflow-hidden" style="border:1px solid rgba(212,175,55,0.22);">
-          <div class="pointer-events-none absolute -top-16 -right-16 w-52 h-52 rounded-full opacity-20" style="background:radial-gradient(circle,#d4af37,transparent 70%);filter:blur(30px);"></div>
+          <div class="pointer-events-none absolute -top-16 -right-16 w-52 h-52 rounded-full opacity-20" style="background:radial-gradient(circle,#2563EB,transparent 70%);filter:blur(30px);"></div>
           <div class="absolute inset-x-0 top-0 h-px" style="background:linear-gradient(90deg,transparent,rgba(212,175,55,0.8),rgba(212,175,55,0.6),transparent);"></div>
 
           <div class="flex items-center justify-between gap-3 mb-5">
             <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#d4af37,#d4af37);box-shadow:0 8px 22px -6px rgba(212,175,55,0.55);">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#2563EB,#2563EB);box-shadow:0 8px 22px -6px rgba(212,175,55,0.55);">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               </div>
               <div>
@@ -213,7 +213,7 @@
                 <p class="text-[#8b9bb4] text-xs">Actividad de mantenimiento reciente de la flota</p>
               </div>
             </div>
-            <span id="latest-services-count" class="hidden px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0" style="background:rgba(212,175,55,0.15);color:#d4af37;"></span>
+            <span id="latest-services-count" class="hidden px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0" style="background:rgba(212,175,55,0.15);color:#2563EB;"></span>
           </div>
 
           <div id="latest-services-list" class="relative">
@@ -239,7 +239,7 @@
               </div>
               <div id="dash-modal-body" class="px-5 py-4 max-h-80 overflow-y-auto space-y-2"></div>
               <div id="dash-modal-footer" class="px-5 py-3 border-t border-white/5 flex justify-end">
-                <button onclick="closeDashModal()" class="px-5 py-2 rounded-xl text-sm font-semibold transition" style="background:linear-gradient(135deg,#d4af37,#d4af37);color:#fff;">Cerrar</button>
+                <button onclick="closeDashModal()" class="px-5 py-2 rounded-xl text-sm font-semibold transition" style="background:linear-gradient(135deg,#2563EB,#2563EB);color:#fff;">Cerrar</button>
               </div>
             </div>
           </div>

@@ -698,7 +698,7 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
       catTotals.VTV, catTotals.Seguro,
       catTotals.Combustible + catTotals.Repuestos + catTotals.VTV + catTotals.Seguro
     ];
-    const summaryColors = [PRIMARY, '10B981', '8B5CF6', 'F59E0B', 'FF3366'];
+    const summaryColors = [PRIMARY, '00E5FF', '8B5CF6', 'F59E0B', 'FF3366'];
 
     summaryHeaders.forEach((label, i) => {
       const col = i * 2 + 1;
@@ -747,7 +747,7 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
     });
     headerRowObj.height = 28;
 
-    const catColors = { Combustible: PRIMARY, Repuestos: '10B981' };
+    const catColors = { Combustible: PRIMARY, Repuestos: '00E5FF' };
 
     let rowNum = dataStartRow + 1;
     rows.forEach((r, idx) => {

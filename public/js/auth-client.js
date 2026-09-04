@@ -145,7 +145,7 @@ function setSelectValue(id, val) {
 }
 
 function showToast(message, type = 'success') {
-  const colors = { success: 'text-green-400 bg-green-900/50 border-green-500/30', error: 'text-red-400 bg-red-900/50 border-red-500/30', warning: 'text-yellow-400 bg-yellow-900/50 border-yellow-500/30', info: 'text-blue-400 bg-blue-900/50 border-blue-500/30' };
+  const colors = { success: 'text-[#00E5FF] bg-[#1e3a8a]/60 border-#00E5FF/30', error: 'text-red-400 bg-red-900/50 border-red-500/30', warning: 'text-yellow-400 bg-yellow-900/50 border-yellow-500/30', info: 'text-blue-400 bg-blue-900/50 border-blue-500/30' };
   const toast = document.createElement('div');
   toast.className = `fixed top-4 right-4 z-50 px-5 py-3 rounded-lg border backdrop-blur-sm shadow-2xl transition-all duration-300 animate-slide-up ${colors[type] || 'text-gray-300 bg-gray-800/50 border-gray-600/30'}`;
   toast.textContent = message;
@@ -197,7 +197,7 @@ function friendlyError(e) {
 function createActionButtons(editFn, deleteFn, viewFn) {
   const admin = isAdmin();
   const s = 'event.stopPropagation();';
-  const viewBtn = viewFn ? `<button onclick="${s}${viewFn}" class="text-green-500 hover:text-green-400 mr-2 transition-colors" title="Ver">
+  const viewBtn = viewFn ? `<button onclick="${s}${viewFn}" class="text-[#00E5FF] hover:text-[#00E5FF] mr-2 transition-colors" title="Ver">
     <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>

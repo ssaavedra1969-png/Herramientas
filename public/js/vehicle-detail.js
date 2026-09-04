@@ -181,7 +181,7 @@ function renderMultas() {
       </div>
       <div class="flex items-center gap-2">
         <span class="text-red-400 font-medium">${formatCurrency(m.importe)}</span>
-        ${m.pagado ? '<span class="text-xs text-green-400">Pagado</span>' : '<span class="text-xs text-yellow-400">Pendiente</span>'}
+        ${m.pagado ? '<span class="text-xs text-[#00E5FF]">Pagado</span>' : '<span class="text-xs text-yellow-400">Pendiente</span>'}
       </div>
     </div>
   `).join('');
@@ -363,7 +363,7 @@ function renderDocumentos() {
       if (dias === null) { badgeCls = 'text-teal-300'; badgeTxt = 'Cargado'; }
       else if (dias < 0) { badgeCls = 'text-red-400'; badgeTxt = 'Vencido'; }
       else if (dias <= 30) { badgeCls = 'text-yellow-400'; badgeTxt = `Vence en ${dias}d`; }
-      else { badgeCls = 'text-green-400'; badgeTxt = 'Al día'; }
+      else { badgeCls = 'text-[#00E5FF]'; badgeTxt = 'Al día'; }
     }
     html += `
       <div class="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
@@ -372,7 +372,7 @@ function renderDocumentos() {
           <div class="min-w-0">
             <span class="text-[#ffffff] font-medium text-sm">${label}</span>
             ${vencimientoStr ? `<span class="block text-[10px] text-[#4a5568]">Vence: ${vencimientoStr}</span>` : ''}
-            ${existe ? `<span class="block text-[10px] text-teal-300">${local.nombre}${local.origen === 'carga' ? ' <span class="text-[#d4af37]">(subido)</span>' : ''}</span>` : ''}
+            ${existe ? `<span class="block text-[10px] text-teal-300">${local.nombre}${local.origen === 'carga' ? ' <span class="text-[#2563EB]">(subido)</span>' : ''}</span>` : ''}
           </div>
         </div>
         <div class="flex items-center gap-1 shrink-0">
@@ -392,7 +392,7 @@ function renderDocumentos() {
           <span class="text-[#8b9bb4]">${d.tipo || 'Documento'}</span>
           ${d.fechaVencimiento ? `<span class="text-xs text-[#4a5568] ml-2">Vence: ${d.fechaVencimiento}</span>` : ''}
         </div>
-        ${d.archivoURL ? `<a href="${d.archivoURL}" target="_blank" class="text-[#d4af37] text-xs hover:underline">Ver</a>` : ''}
+        ${d.archivoURL ? `<a href="${d.archivoURL}" target="_blank" class="text-[#2563EB] text-xs hover:underline">Ver</a>` : ''}
       </div>
     `).join('');
   }
@@ -425,14 +425,14 @@ function renderHeroMobile() {
     if (dias === null) return `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-white/10 bg-white/5 text-[#8b9bb4]">${label}</span>`;
     if (dias < 0) return `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-red-400/30 bg-red-500/15 text-red-300">${label} · vencida</span>`;
     if (dias <= 30) return `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-yellow-400/30 bg-yellow-400/15 text-yellow-300">${label} · ${dias}d</span>`;
-    return `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-green-400/20 bg-green-400/10 text-green-300">${label} · al día</span>`;
+    return `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-#00E5FF/20 bg-[#00E5FF]/10 text-[#00E5FF]">${label} · al día</span>`;
   };
 
   let html = '';
   html += chip('VTV', diasRestantes(vehicleData.vtv?.fechaVencimiento));
   html += chip('Seguro', diasRestantes(vehicleData.seguro?.fechaVencimiento));
   if (vehicleData.proximoServiceKm != null || vehicleData.proximoServiceFecha) {
-    html += `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-[#d4af37]/30 bg-[#d4af37]/10 text-[#d4af37]">Service ${vehicleData.proximoServiceKm != null ? vehicleData.proximoServiceKm.toLocaleString() + ' km' : formatDate(vehicleData.proximoServiceFecha)}</span>`;
+    html += `<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-[#2563EB]/30 bg-[#2563EB]/10 text-[#2563EB]">Service ${vehicleData.proximoServiceKm != null ? vehicleData.proximoServiceKm.toLocaleString() + ' km' : formatDate(vehicleData.proximoServiceFecha)}</span>`;
   }
   chips.innerHTML = html;
 }
@@ -460,7 +460,7 @@ function renderMobileDocs() {
       if (dias === null) { badgeTxt = 'Cargado'; badgeCls = 'text-teal-300 bg-teal-400/10'; }
       else if (dias < 0) { badgeTxt = 'Vencido'; badgeCls = 'text-red-400 bg-red-400/10'; }
       else if (dias <= 30) { badgeTxt = `Vence en ${dias}d`; badgeCls = 'text-yellow-400 bg-yellow-400/10'; }
-      else { badgeTxt = 'Al día'; badgeCls = 'text-green-400 bg-green-400/10'; }
+      else { badgeTxt = 'Al día'; badgeCls = 'text-[#00E5FF] bg-[#00E5FF]/10'; }
     }
 
     const verBtn = local
@@ -491,7 +491,7 @@ function renderMobileDocs() {
     badge.textContent = `${presentes}/${MOBILE_DOCS.length}`;
     badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full ' +
       (presentes === 0 ? 'bg-white/5 text-[#8b9bb4]'
-        : presentes === MOBILE_DOCS.length ? 'bg-green-400/10 text-green-400'
+        : presentes === MOBILE_DOCS.length ? 'bg-[#00E5FF]/10 text-[#00E5FF]'
         : 'bg-yellow-400/10 text-yellow-400');
   }
 }
@@ -546,7 +546,7 @@ function openDocumentacionModal() {
         const label = document.createElement('label');
         label.htmlFor = `doc-${key}-file`;
         label.title = 'Subir archivo (PDF, JPG o PNG)';
-        label.className = 'shrink-0 px-2.5 py-1 rounded-md text-[11px] font-medium cursor-pointer border border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10 transition-colors';
+        label.className = 'shrink-0 px-2.5 py-1 rounded-md text-[11px] font-medium cursor-pointer border border-[#2563EB]/30 text-[#2563EB] hover:bg-[#2563EB]/10 transition-colors';
         label.textContent = 'Subir';
         const cont = document.createElement('span');
         cont.className = 'shrink-0 flex items-center';
@@ -577,7 +577,7 @@ function renderDocEstado(key, local, d) {
     if (dias === null) { txt = 'Cargado'; cls = 'text-teal-300'; }
     else if (dias < 0) { txt = 'Vencido'; cls = 'text-red-400'; }
     else if (dias <= 30) { txt = dias + 'd'; cls = 'text-yellow-400'; }
-    else { txt = 'Al día'; cls = 'text-green-400'; }
+    else { txt = 'Al día'; cls = 'text-[#00E5FF]'; }
   }
   el.textContent = txt;
   el.className = 'text-xs font-semibold ' + cls;
@@ -654,11 +654,11 @@ function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.tab-btn').forEach(el => {
-    el.classList.remove('bg-[#d4af37]/10', 'text-[#d4af37]');
+    el.classList.remove('bg-[#2563EB]/10', 'text-[#2563EB]');
     el.classList.add('text-[#8b9bb4]');
   });
   document.getElementById(`tab-content-${tab}`)?.classList.remove('hidden');
-  document.getElementById(`tab-${tab}`)?.classList.add('bg-[#d4af37]/10', 'text-[#d4af37]');
+  document.getElementById(`tab-${tab}`)?.classList.add('bg-[#2563EB]/10', 'text-[#2563EB]');
 
   if (tab === 'qr') {
     setTimeout(generateQR, 100);
@@ -1276,7 +1276,7 @@ function renderServices(items) {
     return;
   }
   tbody.innerHTML = items.map(s => `
-    <tr class="border-b border-white/5 hover:bg-[#d4af37]/10">
+    <tr class="border-b border-white/5 hover:bg-[#2563EB]/10">
       <td class="py-2 pr-2">${formatDate(s.fecha)}</td>
       <td class="py-2 pr-2 font-medium">${s.tipo || '-'}${s.fluido ? ` <span class="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#F59E0B]/15 text-[#F59E0B]">+ ${s.fluido}</span>` : ''}</td>
       <td class="py-2 pr-2">${s.km?.toLocaleString() || '-'}</td>
@@ -1295,7 +1295,7 @@ function renderRepuestos(items) {
     return;
   }
   tbody.innerHTML = items.map(r => `
-    <tr class="border-b border-white/5 hover:bg-[#d4af37]/10">
+    <tr class="border-b border-white/5 hover:bg-[#2563EB]/10">
       <td class="py-2 pr-2">${formatDate(r.fecha)}</td>
       <td class="py-2 pr-2">${r.tipo || '-'}</td>
       <td class="py-2 pr-2 font-medium">${r.pieza || '-'}</td>
@@ -1772,7 +1772,7 @@ function renderHistorial() {
     return;
   }
 
-  const badge = (item) => `<span class="px-2 py-0.5 rounded-full text-xs font-medium mr-2" style="background:${item.kind === 'service' ? '#F59E0B20' : '#10B98120'};color:${item.kind === 'service' ? '#F59E0B' : '#10B981'}">${item.kind === 'service' ? 'Service' : 'Repuesto'}</span>`;
+  const badge = (item) => `<span class="px-2 py-0.5 rounded-full text-xs font-medium mr-2" style="background:${item.kind === 'service' ? '#F59E0B20' : '#00E5FF20'};color:${item.kind === 'service' ? '#F59E0B' : '#00E5FF'}">${item.kind === 'service' ? 'Service' : 'Repuesto'}</span>`;
 
   const line = (item) => {
     const r = item.rec;
@@ -1796,12 +1796,12 @@ function renderHistorial() {
   };
 
   const rowHtml = (item, showBadge) => `
-    <tr class="border-b border-white/5 hover:bg-[#d4af37]/10 cursor-pointer" onclick="${item.kind === 'service' ? 'viewService' : 'viewRepuesto'}('${item.id}')" title="Ver detalle">
+    <tr class="border-b border-white/5 hover:bg-[#2563EB]/10 cursor-pointer" onclick="${item.kind === 'service' ? 'viewService' : 'viewRepuesto'}('${item.id}')" title="Ver detalle">
       <td class="py-2 px-3 text-xs text-[#ffffff] break-words">${showBadge ? badge(item) : ''}${line(item)}</td>
     </tr>`;
 
   const sectionHeader = (title, color, count) => `
-    <tr class="bg-[#d4af37]/15">
+    <tr class="bg-[#2563EB]/15">
       <td class="py-2 px-3 text-xs font-bold text-[#ffffff]">
         <span class="px-2 py-0.5 rounded-full text-xs font-medium mr-2" style="background:${color}20;color:${color}">${title}</span>
         ${count} registro(s)
@@ -1849,7 +1849,7 @@ function renderHistorial() {
   } else {
     const sections = [
       { title: 'Services', color: '#F59E0B', kind: 'service', items: services },
-      { title: 'Repuestos', color: '#10B981', kind: 'repuesto', items: repuestos }
+      { title: 'Repuestos', color: '#00E5FF', kind: 'repuesto', items: repuestos }
     ];
     sections.forEach(sec => {
       if (!sec.items.length) return;

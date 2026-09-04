@@ -1,4 +1,4 @@
-﻿/* ===== GLAMOURS DESIGN SYSTEM ===== */
+/* ===== GLAMOURS DESIGN SYSTEM ===== */
 :root {
   --bg-dark: #02040a;
   --bg-surface: #0a0e17;
@@ -11,10 +11,10 @@
   --text-main: #ffffff;
   --text-muted: #8b9bb4;
   --text-dim: #4a5568;
-  --accent-gold: #d4af37;
-  --accent-gold-dark: #b8960c;
+  --accent-gold: #2563EB;
+  --accent-gold-dark: #1D4ED8;
   --accent-glow: rgba(212, 175, 55, 0.4);
-  --success: #10b981;
+  --success: #00E5FF;
   --success-bg: rgba(16, 185, 129, 0.1);
   --warning: #f59e0b;
   --warning-bg: rgba(245, 158, 11, 0.1);
@@ -710,8 +710,8 @@ body::after {
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .completeness-fill.low { background: linear-gradient(90deg, #EF4444, #F59E0B); }
-.completeness-fill.mid { background: linear-gradient(90deg, #F59E0B, #10B981); }
-.completeness-fill.high { background: linear-gradient(90deg, #10B981, var(--accent-gold)); }
+.completeness-fill.mid { background: linear-gradient(90deg, #F59E0B, #00E5FF); }
+.completeness-fill.high { background: linear-gradient(90deg, #00E5FF, var(--accent-gold)); }
 
 /* Export format buttons */
 .export-fmt-btn:hover { transform: translateY(-1px); }

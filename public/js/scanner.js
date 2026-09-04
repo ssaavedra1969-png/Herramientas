@@ -74,7 +74,7 @@ function onScanSuccess(decodedText, decodedResult) {
     <div class="flex items-center justify-between">
       <div>
         <p class="text-sm text-[#8b9bb4]">Código: <span class="text-[#ffffff] font-mono">${decodedText}</span></p>
-        <p class="text-sm text-[#8b9bb4] mt-1">ID detectado: <span class="text-[#d4af37] font-medium">${vehicleId}</span></p>
+        <p class="text-sm text-[#8b9bb4] mt-1">ID detectado: <span class="text-[#2563EB] font-medium">${vehicleId}</span></p>
       </div>
       <button onclick="goToVehicle('${vehicleId}')" class="btn-primary text-sm px-4 py-2">
         Ver Vehículo
@@ -254,7 +254,7 @@ async function ocrProcessImage(imageData) {
           <div class="mt-3">
             <label class="text-xs text-[#8b9bb4]">Ingresá la patente manualmente:</label>
             <div class="flex gap-2 mt-1">
-              <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon uppercase" maxlength="7">
+              <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon uppercase" maxlength="7">
               <button onclick="ocrManualSearch()" class="btn-primary text-sm px-4 py-2">Buscar</button>
             </div>
           </div>
@@ -319,9 +319,9 @@ function ocrShowCandidates(candidates, rawText) {
 
   const items = candidates.slice(0, 8).map(c => {
     const label = c.score >= 2 ? 'Alta' : c.score === 1 ? 'Media' : 'Baja';
-    const color = c.score >= 2 ? '#10B981' : c.score === 1 ? '#F59E0B' : '#8b9bb4';
+    const color = c.score >= 2 ? '#00E5FF' : c.score === 1 ? '#F59E0B' : '#8b9bb4';
     return `
-      <button onclick="ocrLookupVehicle('${c.plate}')" class="flex items-center justify-between w-full px-3 py-2.5 bg-[#0a0e17]/30 hover:bg-[#d4af37]/10 rounded-lg transition text-left">
+      <button onclick="ocrLookupVehicle('${c.plate}')" class="flex items-center justify-between w-full px-3 py-2.5 bg-[#0a0e17]/30 hover:bg-[#2563EB]/10 rounded-lg transition text-left">
         <span class="text-[#ffffff] font-mono font-bold text-lg tracking-wider">${c.plate}</span>
         <span style="color:${color}" class="text-xs font-medium">${label}</span>
       </button>
@@ -334,7 +334,7 @@ function ocrShowCandidates(candidates, rawText) {
     <div class="mt-3 pt-3 border-t border-white/5">
       <label class="text-xs text-[#8b9bb4]">¿No aparece? Ingresala manual:</label>
       <div class="flex gap-2 mt-1">
-        <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon uppercase" maxlength="7">
+        <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon uppercase" maxlength="7">
         <button onclick="ocrManualSearch()" class="btn-primary text-sm px-4 py-2">Buscar</button>
       </div>
     </div>
@@ -364,7 +364,7 @@ async function ocrLookupVehicle(plate) {
       result.innerHTML = `
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-[#10B981] font-semibold">Patente: ${plate}</p>
+            <p class="text-sm text-[#00E5FF] font-semibold">Patente: ${plate}</p>
             <p class="text-sm text-[#8b9bb4] mt-1">${v.interno || ''} — ${v.marca || ''} ${v.modelo || ''}</p>
             ${v.chofer ? `<p class="text-xs text-[#4a5568] mt-1">Chofer: ${v.chofer}</p>` : ''}
           </div>
@@ -384,7 +384,7 @@ async function ocrLookupVehicle(plate) {
         result.innerHTML = `
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-[#10B981] font-semibold">Interno: ${plate}</p>
+              <p class="text-sm text-[#00E5FF] font-semibold">Interno: ${plate}</p>
               <p class="text-sm text-[#8b9bb4] mt-1">${v.patente || ''} — ${v.marca || ''} ${v.modelo || ''}</p>
             </div>
             <button onclick="window.location.href='/vehicle/${doc.id}'" class="btn-primary text-sm px-4 py-2">
@@ -400,7 +400,7 @@ async function ocrLookupVehicle(plate) {
             <div class="mt-3">
               <label class="text-xs text-[#8b9bb4]">Probá con otra patente:</label>
               <div class="flex gap-2 mt-1">
-                <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon uppercase" maxlength="7">
+                <input type="text" id="ocr-manual-input" placeholder="Ej: AE335KK" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon uppercase" maxlength="7">
                 <button onclick="ocrManualSearch()" class="btn-primary text-sm px-4 py-2">Buscar</button>
               </div>
             </div>

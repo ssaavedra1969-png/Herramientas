@@ -3,18 +3,18 @@
   <%- include('partials/sidebar', { page: 'vehicles' }) %>
   <div class="flex-1 flex flex-col overflow-hidden">
     <div class="lg:hidden header-glass text-[#ffffff] p-3 flex items-center justify-between">
-      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#d4af37]/10">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#2563EB]/10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
-      <span class="w-8 h-8 bg-gradient-to-br from-[#d4af37] to-[#d4af37] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#2563EB] to-[#2563EB] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
     </div>
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
       <!-- Header: Título + Contador + Acciones -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-4">
         <div class="flex items-center gap-2">
           <h1 class="text-xl sm:text-2xl font-bold text-gradient-primary">Vehículos</h1>
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#d4af37]/15 text-[#d4af37] border border-[#d4af37]/20">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20">
             <span id="total-vehicles">0</span>
           </span>
         </div>
@@ -33,8 +33,8 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
               <span class="hidden sm:inline">Importar</span>
             </button>
-            <div id="import-menu" class="hidden absolute right-0 mt-2 w-48 glass-card rounded-lg shadow-xl border border-[#d4af37]/10 z-10">
-              <button onclick="openCsvImport()" class="w-full text-left px-4 py-3 text-sm text-[#ffffff] hover:bg-[#d4af37]/10 flex items-center gap-2 rounded-lg">
+            <div id="import-menu" class="hidden absolute right-0 mt-2 w-48 glass-card rounded-lg shadow-xl border border-[#2563EB]/10 z-10">
+              <button onclick="openCsvImport()" class="w-full text-left px-4 py-3 text-sm text-[#ffffff] hover:bg-[#2563EB]/10 flex items-center gap-2 rounded-lg">
                 <svg class="w-4 h-4 text-[#8b9bb4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Desde CSV/Excel
               </button>
             </div>
@@ -52,23 +52,23 @@
           <!-- Search input -->
           <div class="relative flex-1 min-w-0">
             <svg class="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="search-vehiculo" placeholder="Buscar..." class="w-full pl-8 sm:pl-9 pr-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/15 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon transition-all focus:border-[#d4af37]/50">
+            <input type="text" id="search-vehiculo" placeholder="Buscar..." class="w-full pl-8 sm:pl-9 pr-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/15 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon transition-all focus:border-[#2563EB]/50">
           </div>
           <!-- Filter toggle -->
-          <button id="filter-toggle-btn" onclick="toggleFilters()" class="px-2 sm:px-3 py-2 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#d4af37]/10 rounded-lg transition-colors flex items-center gap-1 border border-transparent hover:border-[#d4af37]/20 shrink-0">
+          <button id="filter-toggle-btn" onclick="toggleFilters()" class="px-2 sm:px-3 py-2 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 rounded-lg transition-colors flex items-center gap-1 border border-transparent hover:border-[#2563EB]/20 shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
             <span class="hidden sm:inline">Filtros</span>
-            <span id="active-filters-count" class="hidden px-1.5 py-0.5 bg-[#d4af37]/30 text-[#d4af37] rounded-full text-[10px] font-bold leading-none"></span>
+            <span id="active-filters-count" class="hidden px-1.5 py-0.5 bg-[#2563EB]/30 text-[#2563EB] rounded-full text-[10px] font-bold leading-none"></span>
           </button>
           <!-- Divider -->
-          <div class="w-px h-5 bg-[#d4af37]/10 shrink-0"></div>
+          <div class="w-px h-5 bg-[#2563EB]/10 shrink-0"></div>
           <!-- View toggle -->
-          <div class="flex rounded-lg overflow-hidden border border-[#d4af37]/15 bg-[#0a0e17]/40 shrink-0">
-            <button id="view-table-btn" onclick="setViewMode('table')" class="px-2 py-1.5 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#d4af37]/10 transition-colors flex items-center gap-1">
+          <div class="flex rounded-lg overflow-hidden border border-[#2563EB]/15 bg-[#0a0e17]/40 shrink-0">
+            <button id="view-table-btn" onclick="setViewMode('table')" class="px-2 py-1.5 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M3 6h18M3 18h18"/></svg>
               <span class="hidden sm:inline">Tabla</span>
             </button>
-            <button id="view-card-btn" onclick="setViewMode('card')" class="px-2 py-1.5 text-xs font-medium text-[#ffffff] bg-[#d4af37]/30 transition-colors flex items-center gap-1">
+            <button id="view-card-btn" onclick="setViewMode('card')" class="px-2 py-1.5 text-xs font-medium text-[#ffffff] bg-[#2563EB]/30 transition-colors flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
               <span class="hidden sm:inline">Cards</span>
             </button>
@@ -78,43 +78,43 @@
         </div>
 
         <!-- Collapsible Filter Panel -->
-        <div id="filter-panel" class="hidden border-t border-[#d4af37]/10 bg-[#0a0e17]/20">
+        <div id="filter-panel" class="hidden border-t border-[#2563EB]/10 bg-[#0a0e17]/20">
           <div class="p-3 space-y-2">
             <!-- Row 1: Dropdowns -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               <div class="flex flex-col gap-0.5">
                 <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Marca</label>
-                <select id="filter-marca" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#d4af37]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
+                <select id="filter-marca" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
                   <option value="" class="bg-[#0a0e17]">Todas</option>
                 </select>
               </div>
               <div class="flex flex-col gap-0.5">
                 <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Tipo</label>
-                <select id="filter-tipo" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#d4af37]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
+                <select id="filter-tipo" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
                   <option value="" class="bg-[#0a0e17]">Todos</option>
                 </select>
               </div>
               <div class="flex flex-col gap-0.5">
                 <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Sub Tipo</label>
-                <select id="filter-subtipo" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#d4af37]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
+                <select id="filter-subtipo" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
                   <option value="" class="bg-[#0a0e17]">Todos</option>
                 </select>
               </div>
               <div class="flex flex-col gap-0.5">
                 <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Centro</label>
-                <select id="filter-centro" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#d4af37]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
+                <select id="filter-centro" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
                   <option value="" class="bg-[#0a0e17]">Todos</option>
                 </select>
               </div>
               <div class="flex flex-col gap-0.5">
                 <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Empresa</label>
-                <select id="filter-empresa" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#d4af37]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
+                <select id="filter-empresa" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
                   <option value="" class="bg-[#0a0e17]">Todas</option>
                 </select>
               </div>
               <div class="flex flex-col gap-0.5">
                 <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Estado</label>
-                <select id="filter-estado" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#d4af37]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
+                <select id="filter-estado" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
                   <option value="" class="bg-[#0a0e17]">Todos</option>
                   <option value="Activo" class="bg-[#0a0e17]">Activo</option>
                   <option value="Baja" class="bg-[#0a0e17]">Baja</option>
@@ -122,16 +122,16 @@
               </div>
             </div>
             <!-- Row 2: Trompo + Limpiar -->
-            <div class="flex items-center justify-between pt-1 border-t border-[#d4af37]/5">
+            <div class="flex items-center justify-between pt-1 border-t border-[#2563EB]/5">
               <div class="flex items-center gap-2">
                 <span class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Trompo</span>
-                <div class="flex rounded-md overflow-hidden border border-[#d4af37]/15 bg-[#0a0e17]/40">
-                  <button data-trompo-filter="all" class="px-3 py-1 text-xs font-medium text-[#ffffff] bg-[#d4af37]/30 transition-colors">Todos</button>
-                  <button data-trompo-filter="yes" class="px-3 py-1 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#d4af37]/10 transition-colors">Si</button>
-                  <button data-trompo-filter="no" class="px-3 py-1 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#d4af37]/10 transition-colors">No</button>
+                <div class="flex rounded-md overflow-hidden border border-[#2563EB]/15 bg-[#0a0e17]/40">
+                  <button data-trompo-filter="all" class="px-3 py-1 text-xs font-medium text-[#ffffff] bg-[#2563EB]/30 transition-colors">Todos</button>
+                  <button data-trompo-filter="yes" class="px-3 py-1 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">Si</button>
+                  <button data-trompo-filter="no" class="px-3 py-1 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">No</button>
                 </div>
               </div>
-              <button onclick="resetFilters()" class="px-2.5 py-1 text-xs text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#d4af37]/10 transition-colors rounded-lg flex items-center gap-1 border border-transparent hover:border-[#d4af37]/20">
+              <button onclick="resetFilters()" class="px-2.5 py-1 text-xs text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors rounded-lg flex items-center gap-1 border border-transparent hover:border-[#2563EB]/20">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 Limpiar filtros
               </button>
@@ -139,7 +139,7 @@
           </div>
         </div>
         <% if (currentUserData?.role === 'Admin') { %>
-        <div id="bulk-bar" class="hidden flex items-center justify-between px-4 py-2 bg-[#d4af37]/10 border-b border-[#d4af37]/20 text-sm">
+        <div id="bulk-bar" class="hidden flex items-center justify-between px-4 py-2 bg-[#2563EB]/10 border-b border-[#2563EB]/20 text-sm">
           <span class="text-[#8b9bb4]"><span id="bulk-count">0</span> seleccionado(s)</span>
           <button onclick="deleteSelectedVehicles()" class="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition text-sm font-medium">🗑️ Eliminar seleccionados</button>
         </div>
@@ -147,13 +147,13 @@
         <div class="table-container p-4 hidden" id="view-table">
           <table class="w-full text-sm">
             <thead>
-              <tr class="text-left text-[#8b9bb4] border-b border-[#d4af37]/10">
+              <tr class="text-left text-[#8b9bb4] border-b border-[#2563EB]/10">
                 <% if (currentUserData?.role === 'Admin') { %>
                 <th class="pb-3 font-medium w-10">
-                  <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" class="accent-[#d4af37]">
+                  <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" class="accent-[#2563EB]">
                 </th>
                 <% } %>
-                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('interno')">Interno <span class="sort-arrow text-[#d4af37]" data-field="interno">▲</span></th>
+                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('interno')">Interno <span class="sort-arrow text-[#2563EB]" data-field="interno">▲</span></th>
                 <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('patente')">Patente <span class="sort-arrow" data-field="patente"></span></th>
                 <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('marca')">Marca / Modelo <span class="sort-arrow" data-field="marca"></span></th>
                 <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('tipo')">Tipo <span class="sort-arrow" data-field="tipo"></span></th>
@@ -183,7 +183,7 @@
 <!-- Modal Formulario Vehículo -->
 <div id="modal-vehiculo" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
   <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#d4af37]/10 sticky top-0 z-10" style="background: #141e2d;">
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#2563EB]/10 sticky top-0 z-10" style="background: #141e2d;">
       <h3 class="text-base sm:text-lg font-bold text-[#ffffff]" id="modal-vehiculo-title">Nuevo Vehículo</h3>
       <button onclick="closeVehicleModal()" class="text-[#8b9bb4] hover:text-[#ffffff] transition-colors p-1">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -195,25 +195,25 @@
       <!-- Sección: Datos Generales -->
       <div>
         <h4 class="text-md font-semibold text-[#ffffff] mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <svg class="w-5 h-5 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           Datos Generales
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">N° Interno</label>
-            <input type="text" id="v-interno" readonly class="w-full px-3 py-2 bg-[#0a0e17]/30 border border-[#d4af37]/10 rounded-lg text-sm text-[#4a5568] cursor-not-allowed" placeholder="Se genera automáticamente">
+            <input type="text" id="v-interno" readonly class="w-full px-3 py-2 bg-[#0a0e17]/30 border border-[#2563EB]/10 rounded-lg text-sm text-[#4a5568] cursor-not-allowed" placeholder="Se genera automáticamente">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Nro BET</label>
-            <input type="text" id="v-nroBet" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Nro asignado por planta">
+            <input type="text" id="v-nroBet" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Nro asignado por planta">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Patente *</label>
-            <input type="text" id="v-patente" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="ABC123" maxlength="10" style="text-transform:uppercase">
+            <input type="text" id="v-patente" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="ABC123" maxlength="10" style="text-transform:uppercase">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Marca</label>
-            <select id="v-marca" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <select id="v-marca" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
               <option value="" class="bg-[#0a0e17]">Seleccionar...</option>
               <option value="Mercedes Benz" class="bg-[#0a0e17]">Mercedes Benz</option>
               <option value="Scania" class="bg-[#0a0e17]">Scania</option>
@@ -240,23 +240,23 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Modelo</label>
-            <input type="text" id="v-modelo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Modelo">
+            <input type="text" id="v-modelo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Modelo">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Año</label>
-            <input type="number" id="v-anio" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="2024" min="1980" max="2026">
+            <input type="number" id="v-anio" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="2024" min="1980" max="2026">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Chasis (N° de serie)</label>
-            <input type="text" id="v-chasis" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="9BM1234567890ABC">
+            <input type="text" id="v-chasis" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="9BM1234567890ABC">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">N° de Motor</label>
-            <input type="text" id="v-numeroMotor" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Motor XYZ-12345">
+            <input type="text" id="v-numeroMotor" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Motor XYZ-12345">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Tipo</label>
-            <select id="v-tipo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <select id="v-tipo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
               <option value="" class="bg-[#0a0e17]">Seleccionar...</option>
               <option value="Camión volcador" class="bg-[#0a0e17]">Camión volcador</option>
               <option value="mixer" class="bg-[#0a0e17]">Mixer</option>
@@ -287,7 +287,7 @@
            </div>
            <div>
               <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Sub Tipo</label>
-              <select id="v-subtipo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+              <select id="v-subtipo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
                <option value="" class="bg-[#0a0e17]">Seleccionar...</option>
                <option value="Indumix" class="bg-[#0a0e17]">Indumix</option>
                <option value="Tzr" class="bg-[#0a0e17]">Tzr</option>
@@ -303,12 +303,12 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Capacidad de Carga (kg)</label>
-            <input type="number" id="v-capacidadCarga" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="25000" step="100">
+            <input type="number" id="v-capacidadCarga" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="25000" step="100">
            </div>
            <div class="flex items-end gap-2 pt-6">
              <label class="flex items-center gap-3 cursor-pointer">
                <input type="checkbox" id="v-trompo" class="sr-only peer">
-               <div class="relative w-10 h-5 bg-[#2E3247] rounded-full peer-checked:bg-[#d4af37] transition-colors">
+               <div class="relative w-10 h-5 bg-[#2E3247] rounded-full peer-checked:bg-[#2563EB] transition-colors">
                  <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-[#ffffff] rounded-full transition-transform peer-checked:translate-x-5"></div>
                </div>
                <span class="text-sm font-medium text-[#8b9bb4]">Trompo</span>
@@ -318,59 +318,59 @@
 
          <!-- Campos condicionales del Trompo -->
          <div id="v-trompo-fields" class="hidden">
-           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-4 bg-[#d4af37]/5 rounded-xl border border-[#d4af37]/20">
+           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-4 bg-[#2563EB]/5 rounded-xl border border-[#2563EB]/20">
              <div>
                <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Marca Trompo</label>
-               <input type="text" id="v-marcaTrompo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Marina">
+               <input type="text" id="v-marcaTrompo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Marina">
              </div>
              <div>
                <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Nro Serie Trompo</label>
-               <input type="text" id="v-serieTrompo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="ST-12345">
+               <input type="text" id="v-serieTrompo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="ST-12345">
              </div>
              <div>
                <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Modelo Trompo</label>
-               <input type="text" id="v-modeloTrompo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Modelo X">
+               <input type="text" id="v-modeloTrompo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Modelo X">
              </div>
              <div>
                <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Carga M3 Trompo</label>
-               <input type="text" id="v-cargaM3Trompo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="8 M3">
+               <input type="text" id="v-cargaM3Trompo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="8 M3">
              </div>
            </div>
          </div>
        </div>
 
-       <hr class="border-[#d4af37]/10">
+       <hr class="border-[#2563EB]/10">
 
        <!-- Sección: Estado y Mediciones -->
       <div>
         <h4 class="text-md font-semibold text-[#ffffff] mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <svg class="w-5 h-5 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Estado y Mediciones
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Kilometraje</label>
-            <input type="number" id="v-kilometraje" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="0">
+            <input type="number" id="v-kilometraje" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="0">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">VTV - Fecha Realización</label>
-            <input type="date" id="v-vtvFechaRealizacion" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <input type="date" id="v-vtvFechaRealizacion" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">VTV - Vencimiento *</label>
-            <input type="date" id="v-vencimientoVTV" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <input type="date" id="v-vencimientoVTV" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">VTV - Costo ($)</label>
-            <input type="number" id="v-vtvCosto" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="0" step="0.01">
+            <input type="number" id="v-vtvCosto" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="0" step="0.01">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">VTV - Centro Medición</label>
-            <input type="text" id="v-vtvCentro" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Centro de revisión técnica">
+            <input type="text" id="v-vtvCentro" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Centro de revisión técnica">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">VTV - Resultado</label>
-            <select id="v-vtvResultado" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <select id="v-vtvResultado" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
               <option value="Pendiente" class="bg-[#0a0e17]">Pendiente</option>
               <option value="Aprobado" class="bg-[#0a0e17]">Aprobado</option>
               <option value="Rechazado" class="bg-[#0a0e17]">Rechazado</option>
@@ -379,7 +379,7 @@
         </div>
       </div>
 
-      <hr class="border-[#d4af37]/10">
+      <hr class="border-[#2563EB]/10">
 
       <!-- Sección: Seguro -->
       <div>
@@ -390,15 +390,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Compañía / Marca</label>
-            <input type="text" id="v-seguroCompania" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Rivadavia Seguros">
+            <input type="text" id="v-seguroCompania" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Rivadavia Seguros">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">N° Póliza</label>
-            <input type="text" id="v-seguroPoliza" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="POL-2024-12345">
+            <input type="text" id="v-seguroPoliza" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="POL-2024-12345">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Tipo de Seguro</label>
-            <select id="v-seguroTipo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <select id="v-seguroTipo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
               <option value="" class="bg-[#0a0e17]">Seleccionar...</option>
               <option value="Responsabilidad Civil" class="bg-[#0a0e17]">Responsabilidad Civil</option>
               <option value="Todo Riesgo" class="bg-[#0a0e17]">Todo Riesgo</option>
@@ -408,16 +408,16 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Vencimiento del seguro</label>
-            <input type="date" id="v-seguroVencimiento" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <input type="date" id="v-seguroVencimiento" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Costo del seguro ($)</label>
-            <input type="number" id="v-seguroCosto" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="0" step="0.01">
+            <input type="number" id="v-seguroCosto" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="0" step="0.01">
           </div>
         </div>
       </div>
 
-      <hr class="border-[#d4af37]/10">
+      <hr class="border-[#2563EB]/10">
 
       <!-- Sección: Matafuego -->
       <div>
@@ -428,23 +428,23 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Estado</label>
-            <select id="v-matafuegoEstado" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <select id="v-matafuegoEstado" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
               <option value="Sin Matafuego" class="bg-[#0a0e17]">Sin Matafuego</option>
               <option value="Con Matafuego" class="bg-[#0a0e17]">Con Matafuego</option>
             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Fecha de control</label>
-            <input type="date" id="v-matafuegoFechaControl" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <input type="date" id="v-matafuegoFechaControl" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Fecha de Vto.</label>
-            <input type="date" id="v-matafuegoFechaVto" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <input type="date" id="v-matafuegoFechaVto" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
           </div>
         </div>
       </div>
 
-      <hr class="border-[#d4af37]/10">
+      <hr class="border-[#2563EB]/10">
 
       <!-- Sección: Service -->
       <div>
@@ -455,16 +455,16 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Próximo service (km)</label>
-            <input type="number" id="v-proximoServiceKm" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="10000">
+            <input type="number" id="v-proximoServiceKm" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="10000">
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Próximo service (fecha)</label>
-            <input type="date" id="v-proximoServiceFecha" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <input type="date" id="v-proximoServiceFecha" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
           </div>
         </div>
       </div>
 
-      <hr class="border-[#d4af37]/10">
+      <hr class="border-[#2563EB]/10">
 
       <!-- Sección: Chofer -->
       <div>
@@ -475,28 +475,28 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
            <div>
              <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Nombre</label>
-             <input type="text" id="v-chofer" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Juan Pérez">
+             <input type="text" id="v-chofer" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Juan Pérez">
            </div>
            <div>
              <label class="block text-sm font-medium text-[#8b9bb4] mb-1">DNI</label>
-             <input type="text" id="v-dni" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="30123456" maxlength="10">
+             <input type="text" id="v-dni" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="30123456" maxlength="10">
            </div>
            <div>
              <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Vto. DNI</label>
-             <input type="date" id="v-vencimientoDNI" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+             <input type="date" id="v-vencimientoDNI" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
            </div>
            <div>
              <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Registro</label>
-             <input type="text" id="v-registro" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Registro profesional">
+             <input type="text" id="v-registro" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Registro profesional">
            </div>
            <div>
              <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Vto. Registro</label>
-             <input type="date" id="v-vencimientoRegistro" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+             <input type="date" id="v-vencimientoRegistro" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
            </div>
         </div>
       </div>
 
-      <hr class="border-[#d4af37]/10">
+      <hr class="border-[#2563EB]/10">
 
       <!-- Sección: Ubicación -->
       <div>
@@ -507,7 +507,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Centro de Trabajo</label>
-            <select id="v-centroTrabajo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <select id="v-centroTrabajo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
               <option value="" class="bg-[#0a0e17]">Seleccionar...</option>
               <option value="Lujan" class="bg-[#0a0e17]">Lujan</option>
               <option value="Campana" class="bg-[#0a0e17]">Campana</option>
@@ -518,7 +518,7 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Empresa</label>
-            <input type="text" id="v-empresa" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="FRAFIL SRL">
+            <input type="text" id="v-empresa" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="FRAFIL SRL">
           </div>
         </div>
       </div>
@@ -535,7 +535,7 @@
         <button type="button" onclick="addMultaRow()" class="mt-2 px-3 py-1.5 text-xs bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition">+ Agregar multa</button>
       </div>
 
-      <hr class="border-[#d4af37]/10">
+      <hr class="border-[#2563EB]/10">
 
       <!-- Sección: Documentos -->
       <div>
@@ -549,7 +549,7 @@
         <button type="button" onclick="addDocumentoRow()" class="mt-2 px-3 py-1.5 text-xs bg-teal-500/10 text-teal-400 rounded-lg hover:bg-teal-500/20 transition">+ Agregar documento</button>
       </div>
 
-      <hr class="border-[#d4af37]/10">
+      <hr class="border-[#2563EB]/10">
 
       <!-- Sección: Observaciones -->
       <div>
@@ -557,16 +557,16 @@
           <svg class="w-5 h-5 text-[#8b9bb4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
           Observaciones
         </h4>
-        <textarea id="v-observaciones" rows="3" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Notas adicionales..."></textarea>
+        <textarea id="v-observaciones" rows="3" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Notas adicionales..."></textarea>
       </div>
 
       <!-- Sección: Foto -->
       <div>
         <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Foto (URL)</label>
-        <input type="url" id="v-foto" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="https://storage.googleapis.com/...">
+        <input type="url" id="v-foto" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="https://storage.googleapis.com/...">
       </div>
 
-      <div class="flex justify-end gap-3 pt-4 border-t border-[#d4af37]/10">
+      <div class="flex justify-end gap-3 pt-4 border-t border-[#2563EB]/10">
         <button type="button" onclick="closeVehicleModal()" class="px-3 sm:px-4 py-2 text-[#8b9bb4] hover:text-[#ffffff] text-sm transition-colors">Cancelar</button>
         <button type="submit" class="btn-primary text-sm px-4 sm:px-6 py-2">Guardar</button>
       </div>
@@ -577,14 +577,14 @@
 <!-- Modal Importación CSV -->
 <div id="modal-csv-import" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-3 sm:p-4">
   <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#d4af37]/10 sticky top-0 z-10" style="background: #141e2d;">
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#2563EB]/10 sticky top-0 z-10" style="background: #141e2d;">
       <h3 class="text-base sm:text-lg font-bold text-[#ffffff]">Importar vehículos</h3>
       <button onclick="closeCsvImport()" class="text-[#8b9bb4] hover:text-[#ffffff] transition-colors p-1">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="p-4 sm:p-6 space-y-3 sm:space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 sm:p-4 bg-[#d4af37]/10 rounded-lg border border-[#d4af37]/10">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 sm:p-4 bg-[#2563EB]/10 rounded-lg border border-[#2563EB]/10">
         <span class="text-sm text-[#ffffff]">1. Descargá la plantilla</span>
         <div class="flex gap-2">
           <button onclick="downloadCsvTemplate()" class="btn-secondary text-xs px-3 py-1.5">CSV</button>
@@ -593,7 +593,7 @@
       </div>
       <div>
         <label class="block text-sm font-medium text-[#8b9bb4] mb-2">2. Seleccioná el archivo (CSV o Excel):</label>
-        <input type="file" id="csv-file-input" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-[#ffffff] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#d4af37]/10 file:text-[#d4af37] hover:file:bg-[#d4af37]/20">
+        <input type="file" id="csv-file-input" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-[#ffffff] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#2563EB]/10 file:text-[#2563EB] hover:file:bg-[#2563EB]/20">
       </div>
       <div id="csv-import-preview"></div>
       <div class="flex justify-end gap-3">
@@ -614,14 +614,14 @@
     </div>
     <p id="progress-text" class="text-sm text-[#8b9bb4] text-center">Preparando...</p>
     <p id="progress-detail" class="text-xs text-[#4a5568] text-center mt-1"></p>
-    <button id="btn-progress-close" onclick="closeProgressModal()" class="mt-4 w-full px-4 py-2 bg-[#d4af37]/10 text-[#d4af37] text-sm rounded-lg hover:bg-[#d4af37]/20 transition hidden">Cerrar</button>
+    <button id="btn-progress-close" onclick="closeProgressModal()" class="mt-4 w-full px-4 py-2 bg-[#2563EB]/10 text-[#2563EB] text-sm rounded-lg hover:bg-[#2563EB]/20 transition hidden">Cerrar</button>
   </div>
 </div>
 
 <!-- Modal Exportar Vehículos -->
 <div id="modal-export" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-3 sm:p-4">
   <div class="glass-card rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto modal-content">
-    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#d4af37]/10 sticky top-0 z-10" style="background: #141e2d;">
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#2563EB]/10 sticky top-0 z-10" style="background: #141e2d;">
       <h3 class="text-base sm:text-lg font-bold text-[#ffffff]">Exportar Vehículos</h3>
       <button onclick="closeExportModal()" class="text-[#8b9bb4] hover:text-[#ffffff] transition-colors p-1">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -633,15 +633,15 @@
       <div>
         <label class="block text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider mb-2">Formato de salida</label>
         <div class="flex gap-2">
-          <button onclick="setExportFormat('xlsx')" id="fmt-xlsx" class="export-fmt-btn flex-1 py-3 rounded-xl border-2 border-[#d4af37]/40 bg-[#d4af37]/15 text-[#d4af37] font-semibold text-sm transition-all flex items-center justify-center gap-2">
+          <button onclick="setExportFormat('xlsx')" id="fmt-xlsx" class="export-fmt-btn flex-1 py-3 rounded-xl border-2 border-[#2563EB]/40 bg-[#2563EB]/15 text-[#2563EB] font-semibold text-sm transition-all flex items-center justify-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             Excel (.xlsx)
           </button>
-          <button onclick="setExportFormat('csv')" id="fmt-csv" class="export-fmt-btn flex-1 py-3 rounded-xl border border-[#d4af37]/15 bg-[#0a0e17]/30 text-[#8b9bb4] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#d4af37]/30">
+          <button onclick="setExportFormat('csv')" id="fmt-csv" class="export-fmt-btn flex-1 py-3 rounded-xl border border-[#2563EB]/15 bg-[#0a0e17]/30 text-[#8b9bb4] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#2563EB]/30">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             CSV (.csv)
           </button>
-          <button onclick="setExportFormat('pdf')" id="fmt-pdf" class="export-fmt-btn flex-1 py-3 rounded-xl border border-[#d4af37]/15 bg-[#0a0e17]/30 text-[#8b9bb4] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#d4af37]/30">
+          <button onclick="setExportFormat('pdf')" id="fmt-pdf" class="export-fmt-btn flex-1 py-3 rounded-xl border border-[#2563EB]/15 bg-[#0a0e17]/30 text-[#8b9bb4] font-medium text-sm transition-all flex items-center justify-center gap-2 hover:border-[#2563EB]/30">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
             PDF (.pdf)
           </button>
@@ -654,15 +654,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs text-[#4a5568] mb-1">Nombre</label>
-            <input type="text" id="exp-empresa" value="Grupo Falpat SRL" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <input type="text" id="exp-empresa" value="Grupo Falpat SRL" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
           </div>
           <div>
             <label class="block text-xs text-[#4a5568] mb-1">Dirección</label>
-            <input type="text" id="exp-direccion" value="San Martín, Buenos Aires" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <input type="text" id="exp-direccion" value="San Martín, Buenos Aires" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
           </div>
           <div>
             <label class="block text-xs text-[#4a5568] mb-1">Teléfono</label>
-            <input type="text" id="exp-telefono" value="" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon" placeholder="Opcional">
+            <input type="text" id="exp-telefono" value="" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon" placeholder="Opcional">
           </div>
         </div>
       </div>
@@ -673,11 +673,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs text-[#4a5568] mb-1">Título</label>
-            <input type="text" id="exp-titulo" value="Listado de Vehículos" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <input type="text" id="exp-titulo" value="Listado de Vehículos" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
           </div>
           <div>
             <label class="block text-xs text-[#4a5568] mb-1">Subtítulo</label>
-            <input type="text" id="exp-subtitulo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#d4af37]/20 rounded-lg text-sm text-[#ffffff] input-neon" placeholder="Ej: Julio 2026, Flota Completa...">
+            <input type="text" id="exp-subtitulo" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon" placeholder="Ej: Julio 2026, Flota Completa...">
           </div>
         </div>
       </div>
@@ -687,128 +687,128 @@
         <div class="flex items-center justify-between mb-3">
           <label class="text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider">Campos a incluir</label>
           <div class="flex gap-2">
-            <button onclick="toggleAllExportFields(true)" class="text-xs px-3 py-1 rounded-lg bg-[#d4af37]/10 text-[#d4af37] hover:bg-[#d4af37]/20 transition">Marcar todos</button>
+            <button onclick="toggleAllExportFields(true)" class="text-xs px-3 py-1 rounded-lg bg-[#2563EB]/10 text-[#2563EB] hover:bg-[#2563EB]/20 transition">Marcar todos</button>
             <button onclick="toggleAllExportFields(false)" class="text-xs px-3 py-1 rounded-lg bg-[#0a0e17]/30 text-[#4a5568] hover:text-[#8b9bb4] transition">Limpiar</button>
           </div>
         </div>
 
         <!-- Identificación -->
         <div class="mb-3">
-          <div class="text-[10px] font-bold text-[#4a5568] uppercase tracking-widest mb-2 border-b border-[#d4af37]/5 pb-1">Identificación</div>
+          <div class="text-[10px] font-bold text-[#4a5568] uppercase tracking-widest mb-2 border-b border-[#2563EB]/5 pb-1">Identificación</div>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1.5">
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="interno" checked> N° Interno
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="interno" checked> N° Interno
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="patente" checked> Patente
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="patente" checked> Patente
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="marca" checked> Marca
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="marca" checked> Marca
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="modelo" checked> Modelo
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="modelo" checked> Modelo
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="anio" checked> Año
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="anio" checked> Año
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="tipo" checked> Tipo
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="tipo" checked> Tipo
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="subtipo" checked> Subtipo
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="subtipo" checked> Subtipo
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="trompo" checked> Trompo
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="trompo" checked> Trompo
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="nroBet" checked> Nro BET
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="nroBet" checked> Nro BET
             </label>
           </div>
         </div>
 
         <!-- Técnico -->
         <div class="mb-3">
-          <div class="text-[10px] font-bold text-[#4a5568] uppercase tracking-widest mb-2 border-b border-[#d4af37]/5 pb-1">Técnico</div>
+          <div class="text-[10px] font-bold text-[#4a5568] uppercase tracking-widest mb-2 border-b border-[#2563EB]/5 pb-1">Técnico</div>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1.5">
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="chasis" checked> Chasis
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="chasis" checked> Chasis
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="numeroMotor" checked> N° Motor
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="numeroMotor" checked> N° Motor
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="kilometraje" checked> Kilometraje
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="kilometraje" checked> Kilometraje
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="horometro" checked> Horómetro
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="horometro" checked> Horómetro
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="capacidadCarga" checked> Cap. Carga
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="capacidadCarga" checked> Cap. Carga
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="marcaTrompo"> Marca Trompo
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="marcaTrompo"> Marca Trompo
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="serieTrompo"> Serie Trompo
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="serieTrompo"> Serie Trompo
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="modeloTrompo"> Modelo Trompo
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="modeloTrompo"> Modelo Trompo
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="cargaM3Trompo"> Carga M3
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="cargaM3Trompo"> Carga M3
             </label>
           </div>
         </div>
 
         <!-- Operación -->
         <div class="mb-3">
-          <div class="text-[10px] font-bold text-[#4a5568] uppercase tracking-widest mb-2 border-b border-[#d4af37]/5 pb-1">Operación</div>
+          <div class="text-[10px] font-bold text-[#4a5568] uppercase tracking-widest mb-2 border-b border-[#2563EB]/5 pb-1">Operación</div>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1.5">
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="estadoGeneral" checked> Estado
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="estadoGeneral" checked> Estado
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="empresa" checked> Empresa
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="empresa" checked> Empresa
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="centroTrabajo" checked> Centro Trabajo
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="centroTrabajo" checked> Centro Trabajo
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="chofer" checked> Chofer
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="chofer" checked> Chofer
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="dni" checked> DNI
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="dni" checked> DNI
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="vencimientoDNI"> Vto. DNI
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="vencimientoDNI"> Vto. DNI
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="registro"> Registro
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="registro"> Registro
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="vencimientoRegistro"> Vto. Registro
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="vencimientoRegistro"> Vto. Registro
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="observaciones"> Observaciones
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="observaciones"> Observaciones
             </label>
           </div>
         </div>
 
         <!-- Documentación -->
         <div>
-          <div class="text-[10px] font-bold text-[#4a5568] uppercase tracking-widest mb-2 border-b border-[#d4af37]/5 pb-1">Documentación</div>
+          <div class="text-[10px] font-bold text-[#4a5568] uppercase tracking-widest mb-2 border-b border-[#2563EB]/5 pb-1">Documentación</div>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1.5">
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="vtvVencimiento"> VTV Venc.
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="vtvVencimiento"> VTV Venc.
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="seguroVencimiento"> Seguro Venc.
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="seguroVencimiento"> Seguro Venc.
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="proximoService"> Próx. Service
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="proximoService"> Próx. Service
             </label>
-            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#d4af37] transition-colors py-0.5">
-              <input type="checkbox" class="export-field accent-[#d4af37]" value="fechaAlta"> Fecha Alta
+            <label class="flex items-center gap-2 text-sm text-[#ffffff] cursor-pointer hover:text-[#2563EB] transition-colors py-0.5">
+              <input type="checkbox" class="export-field accent-[#2563EB]" value="fechaAlta"> Fecha Alta
             </label>
           </div>
         </div>

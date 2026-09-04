@@ -216,7 +216,7 @@ function llenarPanelColumnas() {
   const grid = document.getElementById('fv-columnas-grid');
   grid.innerHTML = FIELDS.map(f => {
     const chk = visibleCols.has(f.key) ? 'checked' : '';
-    return `<label class="flex items-center gap-2 text-[0.75rem] text-[#9ca3af] cursor-pointer hover:text-[#f3f4f6]"><input type="checkbox" class="form-checkbox text-[#d4af37]" data-key="${f.key}" ${chk}> ${esc(f.label)}</label>`;
+    return `<label class="flex items-center gap-2 text-[0.75rem] text-[#9ca3af] cursor-pointer hover:text-[#f3f4f6]"><input type="checkbox" class="form-checkbox text-[#2563EB]" data-key="${f.key}" ${chk}> ${esc(f.label)}</label>`;
   }).join('');
   grid.onchange = (e) => {
     const key = e.target.dataset.key;
@@ -345,7 +345,7 @@ function celdaFlota(v, f) {
   }
   if (f.key === 'trompo') {
     return v.trompo
-      ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#d4af37]/15 text-[#d4af37]">Sí</span>'
+      ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#2563EB]/15 text-[#2563EB]">Sí</span>'
       : '<span class="px-2 py-0.5 rounded-full text-[10px] bg-white/5 text-[#4a5568]">No</span>';
   }
   if (f.type === 'date') return fechaCol(v[f.key]);
@@ -448,7 +448,7 @@ function renderDoc() {
     tbody.innerHTML = rows.map(v => {
       const cells = DOC_TIPOS.map(t => `<td class="text-center">${docCell(t, !!(v.docs && v.docs[t]))}</td>`).join('');
       const badge = v.faltantes === 0
-        ? '<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-400/20 text-green-400">OK</span>'
+        ? '<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#00E5FF]/20 text-[#00E5FF]">OK</span>'
         : `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold ${v.faltantes >= 3 ? 'bg-red-400/20 text-red-400' : v.faltantes >= 2 ? 'bg-yellow-400/20 text-yellow-400' : 'bg-orange-400/20 text-orange-400'}">${v.faltantes}</span>`;
       return `<tr>
         <td class="text-[#ffffff] font-medium">${esc(v.patente)}</td>
@@ -473,7 +473,7 @@ function renderDoc() {
 
 function docCell(tipo, presente) {
   if (presente) {
-    return `<span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-green-400/15 text-green-400" title="${esc(DOC_LABELS[tipo] || tipo)} presente">
+    return `<span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#00E5FF]/15 text-[#00E5FF]" title="${esc(DOC_LABELS[tipo] || tipo)} presente">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
     </span>`;
   }
