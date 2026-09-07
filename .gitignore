@@ -14,3 +14,4 @@ papeles/
 
 # Respaldos del optimizador de adjuntos (Optimizaciones)
 **/_originales/
+.env*

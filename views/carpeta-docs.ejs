@@ -1,0 +1,394 @@
+<%
+function toDate(v) { if (!v) return null; if (v.toDate) return v.toDate(); if (v instanceof Date) return v; const d = new Date(v); return isNaN(d.getTime()) ? null : d; }
+function fmtD(v) { const d = toDate(v); if (!d) return null; return d.toLocaleDateString('es-AR'); }
+const hoy = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' });
+const DOCS = [
+  { nombre: 'Título del vehículo', venc: null },
+  { nombre: 'Cédula de identificación', venc: null },
+  { nombre: 'Seguro', venc: 'seguro' },
+  { nombre: 'VTV — Verificación Técnica', venc: 'vtv' },
+  { nombre: 'Registro del conductor', venc: 'registro' },
+  { nombre: 'DNI del conductor', venc: 'dni' },
+  { nombre: 'Service / Historial de mantenimiento', venc: 'service' }
+];
+function vencDe(v, tipo) {
+  if (tipo === 'seguro') return v.seguro && v.seguro.fechaVencimiento;
+  if (tipo === 'vtv') return v.vtv && v.vtv.fechaVencimiento;
+  if (tipo === 'registro') return v.vencimientoRegistro;
+  if (tipo === 'dni') return v.vencimientoDNI;
+  if (tipo === 'service') return v.proximoServiceFecha;
+  return null;
+}
+const LOGO = logoDataUri || '/images/fp3d.png';
+const ROWS_P1 = 20;
+const ROWS_RS = 26;
+const idxPages = Math.max(1, 1 + Math.ceil(Math.max(0, vehicles.length - ROWS_P1) / ROWS_RS));
+const PAGE_OFFSET = idxPages;
+const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
+%><!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carpeta de Documentación — Grupo Falpat SRL</title>
+  <style>
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+    body { background: #10142a; font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, Arial, sans-serif; margin: 0; padding: 20px; color: #1a1a2e; }
+
+    /* ---------- Toolbar (no se imprime) ---------- */
+    .toolbar { max-width: 900px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .toolbar h1 { color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; }
+    .toolbar p { color: #8b9bb4; font-size: 13px; margin: 2px 0 0; }
+    .btn-print { background: linear-gradient(135deg, #2563EB, #2563EB); color: #fff; padding: 10px 24px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: opacity 0.15s; }
+    .btn-print:hover { opacity: 0.92; }
+    .btn-back { background: rgba(255,255,255,0.1); color: #ffffff; padding: 10px 20px; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+    .btn-back:hover { background: rgba(255,255,255,0.15); }
+    .info-bar { background: rgba(255,255,255,0.06); border: 1px solid rgba(37,99,235,0.25); border-radius: 10px; padding: 10px 16px; color: #8b9bb4; font-size: 12px; max-width: 900px; margin: 0 auto 16px; display: flex; gap: 20px; flex-wrap: wrap; }
+    .info-bar span { display: flex; align-items: center; gap: 4px; }
+    .info-bar strong { color: #ffffff; }
+
+    /* ---------- Hoja A4 ---------- */
+    .page {
+      width: 210mm;
+      height: 297mm;
+      background: #ffffff;
+      margin: 0 auto 16px;
+      page-break-after: always;
+      break-after: page;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .page:last-child { page-break-after: auto; break-after: auto; }
+
+    /* ---------- Header común ---------- */
+    .doc-header {
+      background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 60%, #0ea5e9 130%);
+      padding: 8mm 10mm 7mm;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .doc-header::after {
+      content: '';
+      position: absolute;
+      right: -8mm; top: -16mm;
+      width: 55mm; height: 55mm;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 70%);
+      pointer-events: none;
+    }
+    .hd-logo { width: 14mm; height: 14mm; border-radius: 2.5mm; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; box-shadow: 0 2mm 6mm rgba(0,0,0,0.28); }
+    .hd-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .hd-brand { font-size: 13pt; font-weight: 800; letter-spacing: 0.4px; line-height: 1.1; }
+    .hd-brand-sub { font-size: 6.5pt; opacity: 0.88; letter-spacing: 0.3px; }
+    .hd-title { text-align: right; }
+    .hd-title-main { font-size: 13pt; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; line-height: 1.1; }
+    .hd-title-sub { font-size: 6.5pt; opacity: 0.9; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* ---------- Índice maestro ---------- */
+    .indice-body { padding: 6mm 10mm; flex: 1; display: flex; flex-direction: column; }
+    .indice-intro { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 4mm; }
+    .indice-intro h2 { margin: 0; font-size: 15pt; font-weight: 800; color: #1a1a2e; letter-spacing: 0.5px; }
+    .indice-intro p { margin: 1.5mm 0 0; font-size: 8pt; color: #6b6b8a; }
+    .indice-fecha { font-size: 7.5pt; color: #6b6b8a; font-weight: 600; }
+    .indice-table { width: 100%; border-collapse: collapse; }
+    .indice-table thead th {
+      background: #2563EB; color: #fff; font-size: 7.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;
+      padding: 2.6mm 2.5mm; text-align: left;
+    }
+    .indice-table thead th:first-child { border-radius: 2mm 0 0 0; width: 11mm; }
+    .indice-table thead th:last-child { border-radius: 0 2mm 0 0; }
+    .indice-table tbody td { padding: 2.2mm 2.5mm; font-size: 8.5pt; border-bottom: 0.3mm solid #e8e6f2; }
+    .indice-table tbody tr:nth-child(even) { background: #f4f6fc; }
+    .it-interno { font-weight: 800; color: #1a1a2e; }
+    .it-patente { font-weight: 800; color: #2563EB; letter-spacing: 0.8px; font-size: 9.5pt; }
+    .it-folio {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 9mm; height: 6mm; border-radius: 1.5mm;
+      background: #eef2ff; border: 0.35mm solid #2563EB; color: #1D4ED8;
+      font-weight: 800; font-size: 9pt;
+    }
+    .it-empresa { color: #3f4756; font-size: 8pt; }
+    .indice-total { margin-top: 3mm; text-align: right; font-size: 8pt; color: #6b6b8a; font-weight: 600; }
+    .indice-leyenda { margin-top: 4mm; border: 0.4mm solid #d9d6ea; border-radius: 2.5mm; padding: 2.6mm 4mm; font-size: 7pt; color: #5c5378; background: #fafaff; line-height: 1.55; }
+    .indice-leyenda b { color: #1D4ED8; }
+
+    /* ---------- Carátula ---------- */
+    .caratula-body { padding: 6mm 10mm 6mm; overflow: hidden; }
+    .folio-chip {
+      background: rgba(255,255,255,0.18); border: 0.4mm solid rgba(255,255,255,0.55);
+      border-radius: 2mm; padding: 1.5mm 3mm; text-align: center;
+    }
+    .folio-chip-label { font-size: 5.5pt; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.9; font-weight: 700; }
+    .folio-chip-num { font-size: 13pt; font-weight: 900; line-height: 1.1; letter-spacing: 0.5px; }
+
+    .identidad { display: flex; gap: 5mm; margin-top: 5mm; }
+    .id-box {
+      flex: 1; border-radius: 3.5mm; padding: 4mm 5mm; position: relative; overflow: hidden;
+      border: 1.1mm solid #2563EB; background: #fff;
+    }
+    .id-box-interno { background: linear-gradient(135deg, #2563EB, #1D4ED8); border: none; color: #fff; }
+    .id-label { font-size: 7pt; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+    .id-interno .id-label { color: rgba(255,255,255,0.85); }
+    .id-patente .id-label { color: #2563EB; }
+    .id-valor { font-size: 30pt; font-weight: 900; line-height: 1; letter-spacing: 1px; margin-top: 1.5mm; }
+    .id-patente .id-valor { color: #1a1a2e; }
+    .id-sub { font-size: 7pt; color: rgba(255,255,255,0.85); font-weight: 600; margin-top: 1mm; }
+    .id-sub-patente { font-size: 7pt; color: #2563EB; font-weight: 600; margin-top: 1mm; }
+
+    .ficha-grid { margin-top: 5mm; display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 5mm; }
+    .fg-cell { border: 0.4mm solid #d9d6ea; border-radius: 2mm; padding: 2mm 3mm; background: #fafaff; min-height: 11mm; }
+    .fg-label { font-size: 6pt; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: #2563EB; }
+    .fg-value { font-size: 10pt; font-weight: 700; color: #1a1a2e; margin-top: 0.5mm; min-height: 4.5mm; }
+
+    .sec-title { display: flex; align-items: center; gap: 2.5mm; margin: 6mm 0 2.5mm; }
+    .sec-title-g { width: 3.5mm; height: 3.5mm; border-radius: 1mm; background: linear-gradient(135deg, #2563EB, #2563EB); flex-shrink: 0; }
+    .sec-title-t { font-size: 11pt; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #1a1a2e; }
+    .sec-title-s { font-size: 7pt; color: #8b9bb4; font-weight: 600; margin-left: 1mm; }
+
+    .docs-table { width: 100%; border-collapse: collapse; }
+    .docs-table thead th {
+      background: #2563EB; color: #fff; font-size: 7pt; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+      padding: 2.2mm 2mm; text-align: left;
+    }
+    .docs-table thead th:first-child { border-radius: 2mm 0 0 0; }
+    .docs-table thead th:last-child { border-radius: 0 2mm 0 0; }
+    .docs-table tbody td { padding: 2.2mm 2mm; font-size: 9pt; border-bottom: 0.3mm solid #e8e6f2; }
+    .docs-table tbody tr:nth-child(even) { background: #f6f8ff; }
+    .dt-nombre { font-weight: 600; color: #1a1a2e; }
+    .dt-venc { color: #3f4756; font-size: 8.5pt; white-space: nowrap; }
+    .dt-check {
+      width: 11mm; height: 7mm; margin: 0 auto; border: 0.4mm solid #2a2a44; border-radius: 1.5mm;
+      display: block; background: #fff;
+    }
+    .dt-folio-edit { border: 0.35mm solid #c9c6e2; border-radius: 1.2mm; display: inline-block; width: 16mm; height: 5.5mm; background: #fff; }
+
+    /* ---------- Pie de página ---------- */
+    .page-footer {
+      margin-top: auto; padding: 3mm 10mm 3.5mm;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 6.5pt; color: #a0a0b8;
+      border-top: 0.8mm solid transparent;
+      border-image: linear-gradient(90deg, #2563EB, #2563EB) 1;
+      background: #fff;
+      flex-shrink: 0;
+    }
+    .page-footer-abs {
+      position: absolute; bottom: 0; left: 0; right: 0;
+    }
+    .footer-brand { font-weight: 700; letter-spacing: 0.5px; color: #5c5378; }
+    .footer-dot { width: 2mm; height: 2mm; border-radius: 50%; background: linear-gradient(135deg, #2563EB, #2563EB); display: inline-block; vertical-align: middle; }
+    .footer-pag { font-weight: 700; color: #1D4ED8; }
+
+    @media print {
+      @page { size: A4 portrait; margin: 0; }
+      body { background: #fff !important; padding: 0; margin: 0; }
+      .no-print { display: none !important; }
+      .page { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="no-print">
+    <div class="toolbar">
+      <div>
+        <h1>Carpeta de Documentación</h1>
+        <p>Índice maestro + carátula por vehículo para el bibliorato físico</p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="window.print()" class="btn-print">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Imprimir (índice + <%= vehicles.length %> carátulas)
+        </button>
+        <a href="/vehicles" class="btn-back">Volver</a>
+      </div>
+    </div>
+    <div class="info-bar">
+      <span><strong><%= vehicles.length %></strong> vehículos</span>
+      <span><strong><%= idxPages %></strong> hojas de índice</span>
+      <span><strong>1 carátula por hoja</strong> — A4 vertical</span>
+      <span><strong><%= TOTAL_PAGES %></strong> páginas en total</span>
+    </div>
+  </div>
+
+  <!-- ================= ÍNDICE MAESTRO (paginado A4) ================= -->
+  <% for (let p = 0; p < idxPages; p++) { %>
+    <% const start = p === 0 ? 0 : ROWS_P1 + (p - 1) * ROWS_RS; %>
+    <% const paginaRows = p === 0 ? Math.min(ROWS_P1, vehicles.length) : Math.min(ROWS_RS, vehicles.length - start); %>
+    <% const isLast = start + paginaRows >= vehicles.length; %>
+
+    <div class="page">
+      <div class="doc-header">
+        <div style="display:flex;align-items:center;gap:3mm;z-index:1;">
+          <div class="hd-logo"><img src="<%= LOGO %>" alt="Logo"></div>
+          <div>
+            <div class="hd-brand">GRUPO FALPAT SRL</div>
+            <div class="hd-brand-sub">Control de Mantenimiento · Flota de Vehículos</div>
+          </div>
+        </div>
+        <div class="hd-title" style="z-index:1;">
+          <div class="hd-title-main">Carpeta de Documentación</div>
+          <div class="hd-title-sub">Índice Maestro — Bibliorato</div>
+        </div>
+      </div>
+
+      <div class="indice-body">
+        <% if (p === 0) { %>
+        <div class="indice-intro">
+          <div>
+            <h2>Índice de la Flota</h2>
+            <p>Guía de búsqueda: ordenar las carátulas en este mismo orden dentro del bibliorato.</p>
+          </div>
+          <div class="indice-fecha">Generado: <%= hoy %></div>
+        </div>
+        <% } %>
+
+        <table class="indice-table">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Interno</th>
+              <th>Patente</th>
+              <th>Marca / Modelo</th>
+              <th>Año</th>
+              <th>Empresa</th>
+              <th>Folio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for (let r = 0; r < paginaRows; r++) { %>
+              <% const v = vehicles[start + r]; %>
+              <tr>
+                <td style="color:#8b9bb4;font-weight:700;"><%= start + r + 1 %></td>
+                <td class="it-interno"><%= v.interno || '' %></td>
+                <td class="it-patente"><%= v.patente || '' %></td>
+                <td><%= [v.marca, v.modelo].filter(Boolean).join(' ') %></td>
+                <td style="color:#3f4756;"><%= v.año || '' %></td>
+                <td class="it-empresa"><%= v.empresa || '' %></td>
+                <td><span class="it-folio"><%= start + r + 1 %></span></td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+
+        <% if (isLast) { %>
+          <div class="indice-total">Total de vehículos en carpeta: <strong style="color:#1D4ED8;"><%= vehicles.length %></strong></div>
+          <div class="indice-leyenda">
+            <b>¿Cómo usar esta carpeta?</b><br>
+            Cada carátula marca el inicio de la documentación de un vehículo. Dentro de cada una, los documentos se archivan en este orden fijo:
+            <b>Título → Cédula → Seguro → VTV → Registro del conductor → DNI del conductor → Service.</b>
+            Al guardar un documento, marcar la casilla "Adjuntado" y anotar el folio interno si se desea. Se recomienda imprimir las carátulas en cartulina de color (una por vehículo) para separarlas en el bibliorato.
+          </div>
+        <% } %>
+      </div>
+
+      <div class="page-footer">
+        <span class="footer-brand">GRUPO FALPAT SRL · Índice Maestro</span>
+        <span><span class="footer-dot"></span>&nbsp; Página <span class="footer-pag"><%= p + 1 %> de <%= idxPages %></span></span>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- ================= CARÁTULAS POR VEHÍCULO ================= -->
+  <% vehicles.forEach((v, i) => { %>
+  <div class="page">
+    <div class="doc-header">
+      <div style="display:flex;align-items:center;gap:3mm;z-index:1;">
+        <div class="hd-logo"><img src="<%= LOGO %>" alt="Logo"></div>
+        <div>
+          <div class="hd-brand">GRUPO FALPAT SRL</div>
+          <div class="hd-brand-sub">Control de Mantenimiento · Flota de Vehículos</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5mm;z-index:1;">
+        <div class="hd-title">
+          <div class="hd-title-main">Carátula de Vehículo</div>
+          <div class="hd-title-sub">Documentación física</div>
+        </div>
+        <div class="folio-chip">
+          <div class="folio-chip-label">Folio</div>
+          <div class="folio-chip-num"><%= i + 1 %></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="caratula-body">
+      <div class="identidad">
+        <div class="id-box id-box-interno">
+          <div class="id-label">Interno</div>
+          <div class="id-valor"><%= v.interno || '' %></div>
+          <% if (v.nroBet) { %>
+          <div class="id-sub">N° BET: <%= v.nroBet %></div>
+          <% } else { %>
+          <div class="id-sub">Vehiculo de la flota</div>
+          <% } %>
+        </div>
+        <div class="id-box id-patente">
+          <div class="id-label">Patente</div>
+          <div class="id-valor"><%= (v.patente || '').toUpperCase() %></div>
+          <div class="id-sub-patente"><%= v.tipo || '' %><%= v.subtipo ? ' · ' + v.subtipo : '' %></div>
+        </div>
+      </div>
+
+      <div class="ficha-grid">
+        <div class="fg-cell">
+          <div class="fg-label">Marca / Modelo</div>
+          <div class="fg-value"><%= [v.marca, v.modelo].filter(Boolean).join(' ') %></div>
+        </div>
+        <div class="fg-cell">
+          <div class="fg-label">Año</div>
+          <div class="fg-value"><%= v.año || '' %></div>
+        </div>
+        <div class="fg-cell">
+          <div class="fg-label">N° de chasis</div>
+          <div class="fg-value" style="font-size:9pt;font-family:Consolas,monospace;"><%= v.chasis || '' %></div>
+        </div>
+        <div class="fg-cell">
+          <div class="fg-label">N° de motor</div>
+          <div class="fg-value" style="font-size:9pt;font-family:Consolas,monospace;"><%= v.numeroMotor || '' %></div>
+        </div>
+      </div>
+
+      <div class="sec-title">
+        <div class="sec-title-g"></div>
+        <div class="sec-title-t">Documentos de este vehículo</div>
+        <span class="sec-title-s">(archivar en este orden y marcar al adjuntar)</span>
+      </div>
+
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th style="width:58%;">Documento</th>
+            <th style="width:24%;">Vencimiento</th>
+            <th style="width:9%;">Adjuntado</th>
+            <th style="width:9%;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% DOCS.forEach(d => { %>
+          <tr>
+            <td class="dt-nombre"><%= d.nombre %></td>
+            <td class="dt-venc"><%= vencDe(v, d.venc) ? fmtD(vencDe(v, d.venc)) : '' %></td>
+            <td style="text-align:center;"><span class="dt-check"></span></td>
+            <td style="text-align:center;"><span class="dt-folio-edit"></span></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="page-footer">
+      <span class="footer-brand">GRUPO FALPAT SRL · Carátula <%= v.interno || '' %> <%= v.patente || '' %></span>
+      <span><span class="footer-dot"></span>&nbsp; Página <span class="footer-pag"><%= i + 1 + PAGE_OFFSET %> de <%= TOTAL_PAGES %></span></span>
+    </div>
+  </div>
+  <% }); %>
+</body>
+</html>

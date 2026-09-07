@@ -60,6 +60,10 @@ const qrGroupOpen = ['scan', 'stickers', 'fichas'].includes(currentPage);
           <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9h6m-6 4h6m-6-8h6"/></svg>
           Fichas Taller
         </a>
+        <a href="/vehicles/carpeta-docs" target="_blank" class="nav-link text-sm <%= currentPage === 'carpeta' ? 'active' : '' %>">
+          <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h4l1 1h7a2 2 0 012 2v1H3V7zm0 2h18l-1.5 10a2 2 0 01-2 1.8H6.5a2 2 0 01-2-1.8L3 9z"/></svg>
+          Carpeta Docs
+        </a>
         <% } %>
       </div>
     </div>

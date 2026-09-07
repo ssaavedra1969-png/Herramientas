@@ -235,6 +235,27 @@ app.get('/vehicles/fichas-taller-bulk', requireAuth, requireAdminPage, async (re
   }
 });
 
+app.get('/vehicles/carpeta-docs', requireAuth, requireAdminPage, async (req, res) => {
+  try {
+    const { db } = require('./config/firebase');
+    const snap = await db.collection('vehicles').get();
+    const vehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(v => v.estadoGeneral !== 'Baja')
+      .sort((a, b) => String(a.interno || '').localeCompare(String(b.interno || ''), 'es', { numeric: true }));
+    let logoDataUri = null;
+    try {
+      const logoPath = path.join(__dirname, 'public', 'images', 'fp3d.png');
+      if (fs.existsSync(logoPath)) {
+        logoDataUri = 'data:image/png;base64,' + fs.readFileSync(logoPath).toString('base64');
+      }
+    } catch (e) { /* logo opcional */ }
+    res.render('carpeta-docs', { vehicles, logoDataUri });
+  } catch (e) {
+    console.error('carpeta-docs:', e.message);
+    res.status(500).send('Error del servidor');
+  }
+});
+
 app.get('/reports', requireAuth, requireAdminPage, (req, res) => {
   res.render('reports', {
     title: 'Reportes',
