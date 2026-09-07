@@ -210,6 +210,37 @@ input, select, textarea {
   box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 20px rgba(212,175,55,0.08);
 }
 
+/* 3D alert cards — glass + blue gradient glow */
+.alert-3d {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  background: linear-gradient(145deg, rgba(37,99,235,0.32) 0%, rgba(14,165,233,0.14) 50%, rgba(30,64,175,0.24) 100%);
+  border-color: rgba(59,130,246,0.35);
+  box-shadow:
+    0 20px 45px -15px rgba(0,0,0,0.65),
+    0 0 30px -8px rgba(37,99,235,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    inset 0 0 22px -4px rgba(96,165,250,0.28);
+}
+.alert-3d::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 55%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(147,197,253,0.22), transparent);
+  pointer-events: none;
+}
+.alert-3d:hover {
+  transform: translateY(-6px) rotateX(4deg) scale(1.01);
+  box-shadow:
+    0 34px 70px -18px rgba(0,0,0,0.75),
+    0 0 55px -5px rgba(37,99,235,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.16),
+    inset 0 0 28px -4px rgba(96,165,250,0.4);
+}
+
 /* Table container */
 .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .table-container table { min-width: 700px; }
@@ -457,6 +488,8 @@ main { position: relative; }
   body { background: white !important; color: black !important; }
   #sidebar, #menu-toggle, .no-print, .header-glass { display: none !important; }
   .glass-card { background: white !important; border: 1px solid #ddd !important; box-shadow: none !important; }
+  .alert-3d { background: white !important; border: 1px solid #ddd !important; box-shadow: none !important; }
+  .alert-3d::before { display: none; }
   .text-gradient-primary { -webkit-text-fill-color: #333; background: none; }
 }
 
@@ -672,6 +705,8 @@ main { position: relative; }
   body { background: white !important; color: black !important; }
   #sidebar, #menu-toggle, .no-print, .header-glass { display: none !important; }
   .glass-card { background: white !important; border: 1px solid #ddd !important; box-shadow: none !important; }
+  .alert-3d { background: white !important; border: 1px solid #ddd !important; box-shadow: none !important; }
+  .alert-3d::before { display: none; }
   .text-gradient-primary { -webkit-text-fill-color: #333; background: none; }
   #vehicle-hero { display: none !important; }
 }
