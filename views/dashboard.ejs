@@ -17,16 +17,24 @@
           <h1 class="text-2xl font-bold text-gradient-primary">Dashboard</h1>
           <p class="text-[#8b9bb4] text-sm">Panel de control general</p>
         </div>
-        <!-- Digital Clock -->
-        <div class="flex flex-col items-center sm:items-end select-none" style="filter: drop-shadow(0 4px 12px rgba(212,175,55,0.35));">
-          <div id="dash-clock" class="relative font-black tracking-[0.15em] leading-none"
-               style="font-size:3rem;background:linear-gradient(135deg,#2563EB 0%,#2563EB 40%,#2563EB 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-                      text-shadow:none;
-                      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(0 0 8px rgba(212,175,55,0.4));
-                      -webkit-text-stroke: 0.5px rgba(255,255,255,0.08);">
-            00:00:00
+        <!-- Digital Clock (flip) -->
+        <div class="flex flex-col items-center sm:items-end select-none">
+          <div id="dash-clock" class="flex items-center gap-1.5">
+            <div class="flip-card">
+              <div class="flip-am" id="flip-am">AM</div>
+              <div class="flip-digit" id="flip-hh">00</div>
+              <div class="flip-hinge"></div>
+            </div>
+            <div class="flip-card">
+              <div class="flip-digit" id="flip-mm">00</div>
+              <div class="flip-hinge"></div>
+            </div>
+            <div class="flip-card">
+              <div class="flip-digit" id="flip-ss">00</div>
+              <div class="flip-hinge"></div>
+            </div>
           </div>
-          <p id="dash-date" class="text-[#A0A8BF] font-medium mt-1" style="font-size:0.7rem;letter-spacing:0.08em;text-shadow:0 1px 3px rgba(0,0,0,0.5);"></p>
+          <p id="dash-date" class="text-[#A0A8BF] font-medium mt-1 text-center sm:text-right" style="font-size:0.7rem;letter-spacing:0.08em;text-shadow:0 1px 3px rgba(0,0,0,0.5);"></p>
         </div>
       </div>
 
@@ -219,6 +227,49 @@
             <div class="text-center p-2 rounded-lg" style="background:rgba(212,175,55,0.06);">
               <p class="text-[#2563EB] text-lg font-bold" id="fh-total">—</p>
               <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Total</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+          <div class="glass-card rounded-xl p-5" style="border:1px solid rgba(212,175,55,0.15);">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#d4af37,#b8960c);box-shadow:0 0 16px rgba(212,175,55,0.35);">
+                  <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M7 14l3-3 3 3 5-6"/></svg>
+                </div>
+                <div>
+                  <h3 class="text-base font-black text-[#ffffff]">Combustible mensual</h3>
+                  <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Litros y gasto · últimos meses</p>
+                </div>
+              </div>
+              <span id="combustible-count" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0" style="background:rgba(212,175,55,0.15);color:#d4af37;"></span>
+            </div>
+            <div class="relative" style="height:280px;">
+              <canvas id="combustibleChart"></canvas>
+              <div id="combustible-empty" class="absolute inset-0 flex items-center justify-center text-[#4a5568] text-sm hidden">Cargando…</div>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-xl p-5" style="border:1px solid rgba(212,175,55,0.15);">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#3b82f6,#6366f1);box-shadow:0 0 16px rgba(59,130,246,0.35);">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.05A2 2 0 0115 5.05V6a2 2 0 01-2 2h-2a2 2 0 01-2-2v-.95a2 2 0 01.05-.95 9 9 0 11-8.95 8.95A2 2 0 014 16h2a2 2 0 012 2v2a2 2 0 01-2 2 9 9 0 01-1-17.95z"/></svg>
+                </div>
+                <div>
+                  <h3 class="text-base font-black text-[#ffffff]">Estado de la flota</h3>
+                  <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Documentación y vencimientos</p>
+                </div>
+              </div>
+            </div>
+            <div class="relative flex items-center justify-center" style="height:280px;">
+              <canvas id="fleetChart"></canvas>
+              <div id="fleet-center" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Flota activa</p>
+                <p class="text-3xl font-black text-[#d4af37]" id="fleet-center-total">—</p>
+              </div>
             </div>
           </div>
         </div>

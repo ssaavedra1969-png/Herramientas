@@ -427,9 +427,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initDashClock() {
-  const clockEl = document.getElementById('dash-clock');
   const dateEl = document.getElementById('dash-date');
-  if (!clockEl || !dateEl) return;
+  if (!dateEl) return;
 
   const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -438,7 +437,17 @@ function initDashClock() {
 
   function tick() {
     const now = new Date();
-    clockEl.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    const h = now.getHours();
+    const isAm = h < 12;
+    const hh = isAm ? pad(h) : pad(h - 12);
+    const amEl = document.getElementById('flip-am');
+    const hhEl = document.getElementById('flip-hh');
+    const mmEl = document.getElementById('flip-mm');
+    const ssEl = document.getElementById('flip-ss');
+    if (amEl) amEl.textContent = isAm ? 'AM' : 'PM';
+    if (hhEl) hhEl.textContent = hh;
+    if (mmEl) mmEl.textContent = pad(now.getMinutes());
+    if (ssEl) ssEl.textContent = pad(now.getSeconds());
     dateEl.textContent = days[now.getDay()] + ' ' + now.getDate() + ' de ' + months[now.getMonth()] + ' ' + now.getFullYear();
   }
 
