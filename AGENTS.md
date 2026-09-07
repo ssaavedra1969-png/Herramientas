@@ -173,6 +173,28 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 - **Server local**: `node server.js` NO recarga en caliente cambios de server.js/rutas (solo vistas y estáticos). Tras tocar rutas: matar el proceso del puerto 3000 (`Get-NetTCPConnection -LocalPort 3000`) y relanzar `node server.js` (o `npm run dev` = `node --watch server.js`). Vistas `.ejs` y `public/` se ven al refrescar.
 - **`DEV_READ_ONLY=true` en `.env`**: en local TODAS las escrituras a Firestore están bloqueadas (usa la misma base que producción). Revisar antes de "probar" funciones de guardado.
 
+## Carga masiva de vencimientos (Excel → Firestore)
+
+Herramienta: **`npm run cargar:vencimientos`** → `scripts/cargar-vencimientos.js`.
+
+**Origen:** lee el Excel que genera el análisis de documentos en `PATENTE/Vtos/CONTROL_VENCIMIENTOS_<fecha>.xlsx` (hoja con columnas `Patente | Tipo documento | Vencimiento | Nota`). Toma el archivo más reciente de la carpeta.
+
+**Mapa de campos (mismo patrón que el modal de documentación de la web):**
+
+| Tipo en Excel | Campo principal | Campo genérico |
+|---------------|-----------------|----------------|
+| VTV | `vtv.fechaVencimiento` | `documentacion.vtv.fechaVencimiento` |
+| Seguro | `seguro.fechaVencimiento` | `documentacion.seguro.fechaVencimiento` |
+| Registro | `vencimientoRegistro` | `documentacion.registro.fechaVencimiento` |
+| DNI | `vencimientoDNI` | `documentacion.dni.fechaVencimiento` |
+| Cedula | — (solo genérico) | `documentacion.cedula.fechaVencimiento` |
+| Titulo | — (solo genérico) | `documentacion.titulo.fechaVencimiento` |
+
+- Las celdas **`SIN CARGA`** y **`NO VENCE`** se ignoran (no escriben nada).
+- Las patentes que no existen en Firestore (solo tienen PDF en `PATENTE/`) se saltan con `SKIP` (ej: AD718OH, AD957RY, AE192RO, AG889XV).
+- Uso: `npm run cargar:vencimientos` (escribe), `--dry-run` (solo muestra), `--patente=AB922TD`, `--archivo=PATENTE/Vtos/otro.xlsx`.
+- Detalle técnico: NO incluir claves con valor `undefined` en `update()` de Firestore (lanza error) — solo agregar las claves que tienen fecha.
+
 ## Optimizaciones — herramienta de adjuntos (FUERA del repo)
 
 Proyecto aparte en `C:\AI\Antigravity\FALPAT srl\Optimizaciones` (no es parte del repo Herramientas). Convierte PDFs/fotos de `PATENTE/` en un **PDF A4 estandarizado y liviano** con marca de agua en banda diagonal **"Propiedad de Grupo Falpat SRL"**. 100% local (Python + Flask + PyMuPDF + Pillow), **no** toca Firebase ni se despliega en Vercel. Solo escribe archivos en la carpeta `PATENTE/`.

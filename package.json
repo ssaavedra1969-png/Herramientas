@@ -10,7 +10,8 @@
     "restore": "node scripts/restore-firebase.js",
     "dev:snapshot": "node scripts/snapshot-dev.js",
     "dev:restore": "node scripts/restore-dev.js",
-    "subir:docs": "node scripts/subir-documentos.js"
+    "subir:docs": "node scripts/subir-documentos.js",
+    "cargar:vencimientos": "node scripts/cargar-vencimientos.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.6",
