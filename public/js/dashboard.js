@@ -148,6 +148,51 @@ function showSeguroModal() {
   openDashModal('Seguro por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#2563EB,#7C3AED)', iconSvg, body);
 }
 
+function showCedulaModal() {
+  const alerts = allVehicles.filter(v => {
+    if (v.estadoGeneral === 'Baja') return false;
+    const d = daysUntil(v.documentacion?.cedula?.fechaVencimiento);
+    return d !== null && d <= 30;
+  }).sort((a, b) => (daysUntil(a.documentacion?.cedula?.fechaVencimiento) || 999) - (daysUntil(b.documentacion?.cedula?.fechaVencimiento) || 999));
+  const iconSvg = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>';
+  if (alerts.length === 0) {
+    openDashModal('Cédula por vencer', 'Todo al día', 'linear-gradient(135deg,#00E5FF,#0891B2)', iconSvg, '<div class="text-center py-6"><p class="text-[#00E5FF] font-medium">Todas las cédulas están al día</p></div>');
+    return;
+  }
+  const body = alerts.map(v => {
+    const d = daysUntil(v.documentacion?.cedula?.fechaVencimiento);
+    const isCritical = d <= 0;
+    const isWarning = d > 0 && d <= 7;
+    const borderColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#0EA5E9';
+    const bgColor = isCritical ? 'rgba(239,68,68,0.08)' : isWarning ? 'rgba(249,115,22,0.08)' : 'rgba(14,165,233,0.08)';
+    const textColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#0EA5E9';
+    const statusLabel = isCritical ? 'VENCIDA' : isWarning ? 'URGENTE' : 'PRÓXIMA';
+    const statusBg = isCritical ? 'rgba(239,68,68,0.15)' : isWarning ? 'rgba(249,115,22,0.15)' : 'rgba(14,165,233,0.15)';
+    const dateStr = v.documentacion?.cedula?.fechaVencimiento?.toDate ? v.documentacion.cedula.fechaVencimiento.toDate().toLocaleDateString('es-AR') : '—';
+    return `
+    <div class="rounded-xl p-3.5 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid ${borderColor};background:${bgColor};" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style="background:rgba(14,165,233,0.15);color:#2563EB;">${(v.interno || '?').substring(0,4)}</div>
+          <div>
+            <p class="text-[#ffffff] font-semibold text-sm tracking-wide">${v.patente || '—'}</p>
+            <p class="text-[#4a5568] text-[10px]">${v.marca || ''} ${v.modelo || ''} ${v.empresa ? '· ' + v.empresa : ''}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider" style="background:${statusBg};color:${textColor};">${statusLabel}</span>
+          <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencida' : d + ' días'}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
+        <span>Vence: ${dateStr}</span>
+        <span class="text-[#4a5568]">·</span><span>Cédula</span>
+      </div>
+    </div>`;
+  }).join('');
+  openDashModal('Cédula por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#00E5FF,#2563EB)', iconSvg, body);
+}
+
 function showMatafuegoModal() {
   const alerts = allVehicles.filter(v => {
     if (v.estadoGeneral === 'Baja') return false;
@@ -292,23 +337,26 @@ function showDniModal() {
 
 function serviceDue(v) {
   if (v.estadoGeneral === 'Baja') return false;
+  const d = daysUntil(v.proximoServiceFecha);
+  if (d !== null) return d <= 30;
   const km = v.kilometraje;
   if (v.proximoServiceKm != null && km != null) {
     return (v.proximoServiceKm - km) <= 500;
   }
-  const d = daysUntil(v.proximoServiceFecha);
-  return d !== null && d <= 30;
+  return false;
 }
 
 function showServiceModal() {
-  const alerts = allVehicles.filter(v => serviceDue(v)).map(v => ({
-    v,
-    remainKm: v.proximoServiceKm != null && v.kilometraje != null ? v.proximoServiceKm - v.kilometraje : null,
-    days: daysUntil(v.proximoServiceFecha)
-  })).sort((a, b) => {
-    if (a.remainKm != null && b.remainKm != null) return a.remainKm - b.remainKm;
-    if (a.remainKm != null) return -1;
-    if (b.remainKm != null) return 1;
+  const alerts = allVehicles.filter(v => serviceDue(v)).map(v => {
+    const days = daysUntil(v.proximoServiceFecha);
+    const useKm = days === null;
+    const remainKm = useKm && v.proximoServiceKm != null && v.kilometraje != null
+      ? v.proximoServiceKm - v.kilometraje
+      : null;
+    return { v, remainKm, days, useKm };
+  }).sort((a, b) => {
+    if (a.useKm !== b.useKm) return a.useKm ? 1 : -1;
+    if (a.useKm) return (a.remainKm ?? 999) - (b.remainKm ?? 999);
     return (a.days ?? 999) - (b.days ?? 999);
   });
   const iconSvg = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>';
@@ -316,18 +364,20 @@ function showServiceModal() {
     openDashModal('Service por vencer', 'Todo al día', 'linear-gradient(135deg,#00E5FF,#0891B2)', '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>', '<div class="text-center py-6"><p class="text-[#00E5FF] font-medium">Todos los services están al día</p></div>');
     return;
   }
-  const body = alerts.map(({ v, remainKm, days }) => {
-    const isCritical = (remainKm != null && remainKm <= 0) || (remainKm == null && days <= 0);
-    const isWarning = !isCritical && ((remainKm != null && remainKm <= 100) || (remainKm == null && days <= 7));
+  const body = alerts.map(({ v, remainKm, days, useKm }) => {
+    const isCritical = (useKm && remainKm <= 0) || (!useKm && days <= 0);
+    const isWarning = !isCritical && ((useKm && remainKm <= 100) || (!useKm && days <= 7));
     const borderColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#F59E0B';
     const bgColor = isCritical ? 'rgba(239,68,68,0.08)' : isWarning ? 'rgba(249,115,22,0.08)' : 'rgba(245,158,11,0.08)';
     const textColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#F59E0B';
     const statusLabel = isCritical ? 'VENCIDO' : isWarning ? 'URGENTE' : 'PRÓXIMO';
     const statusBg = isCritical ? 'rgba(239,68,68,0.15)' : isWarning ? 'rgba(249,115,22,0.15)' : 'rgba(245,158,11,0.15)';
-    const detail = remainKm != null
+    const detail = useKm
       ? `${remainKm <= 0 ? 'Vencido por' : 'Faltan'} ${Math.abs(remainKm).toLocaleString()} km`
       : `${days <= 0 ? 'Vencido' : days + ' días'}`;
-    const proxStr = v.proximoServiceKm != null ? v.proximoServiceKm.toLocaleString() + ' km' : (v.proximoServiceFecha?.toDate ? v.proximoServiceFecha.toDate().toLocaleDateString('es-AR') : '—');
+    const proxStr = v.proximoServiceFecha?.toDate
+      ? v.proximoServiceFecha.toDate().toLocaleDateString('es-AR')
+      : (v.proximoServiceKm != null ? v.proximoServiceKm.toLocaleString() + ' km' : '—');
     const tipo = v.proximoServiceTipo || '';
     return `
     <div class="rounded-xl p-3.5 transition hover:bg-white/[0.03] cursor-pointer" style="border-left:3px solid ${borderColor};background:${bgColor};" onclick="closeDashModal();window.location.href='/vehicle/${v.id}'">
@@ -638,8 +688,8 @@ function initRealtimeListeners() {
     const prevVehiculos = parseInt(elVehiculos.textContent) || 0;
     animateValue(elVehiculos, prevVehiculos, active, 800);
 
-    let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0, serviceCount = 0, matafuegoCount = 0;
-    let vtvDoc = 0, seguroDoc = 0, matafuegoDoc = 0;
+    let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0, serviceCount = 0, matafuegoCount = 0, cedulaCount = 0;
+    let vtvDoc = 0, seguroDoc = 0, matafuegoDoc = 0, cedulaDoc = 0;
     all.forEach(v => {
       if (v.estadoGeneral === 'Baja') return;
       const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
@@ -656,6 +706,9 @@ function initRealtimeListeners() {
       const matDays = daysUntil(v.matafuego?.fechaVto);
       if (matDays !== null && matDays <= 30) matafuegoCount++;
       if (v.matafuego?.fechaVto) matafuegoDoc++;
+      const cedDays = daysUntil(v.documentacion?.cedula?.fechaVencimiento);
+      if (cedDays !== null && cedDays <= 30) cedulaCount++;
+      if (v.documentacion?.cedula?.fechaVencimiento) cedulaDoc++;
     });
 
     const elVtv = document.getElementById('card-vtv-proximas');
@@ -688,6 +741,13 @@ function initRealtimeListeners() {
       animateValue(elMatafuego, prevMat, matafuegoCount, 800);
     }
     renderDocCount('card-matafuego-docs', matafuegoDoc, active);
+
+    const elCedula = document.getElementById('card-cedula-proximas');
+    if (elCedula) {
+      const prevCedula = parseInt(elCedula.textContent) || 0;
+      animateValue(elCedula, prevCedula, cedulaCount, 800);
+    }
+    renderDocCount('card-cedula-docs', cedulaDoc, active);
 
     renderEmpresas(all);
     renderFleetHealth(all);
