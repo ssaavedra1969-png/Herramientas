@@ -639,12 +639,15 @@ function initRealtimeListeners() {
     animateValue(elVehiculos, prevVehiculos, active, 800);
 
     let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0, serviceCount = 0, matafuegoCount = 0;
+    let vtvDoc = 0, seguroDoc = 0, matafuegoDoc = 0;
     all.forEach(v => {
       if (v.estadoGeneral === 'Baja') return;
       const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
       if (vtvDays !== null && vtvDays <= 30) vtvCount++;
+      if (v.vtv?.fechaVencimiento) vtvDoc++;
       const segDays = daysUntil(v.seguro?.fechaVencimiento);
       if (segDays !== null && segDays <= 30) seguroCount++;
+      if (v.seguro?.fechaVencimiento) seguroDoc++;
       const regDays = daysUntil(v.vencimientoRegistro);
       if (regDays !== null && regDays <= 30) registroCount++;
       const dniDays = daysUntil(v.vencimientoDNI);
@@ -652,15 +655,18 @@ function initRealtimeListeners() {
       if (serviceDue(v)) serviceCount++;
       const matDays = daysUntil(v.matafuego?.fechaVto);
       if (matDays !== null && matDays <= 30) matafuegoCount++;
+      if (v.matafuego?.fechaVto) matafuegoDoc++;
     });
 
     const elVtv = document.getElementById('card-vtv-proximas');
     const prevVtv = parseInt(elVtv.textContent) || 0;
     animateValue(elVtv, prevVtv, vtvCount, 800);
+    renderDocCount('card-vtv-docs', vtvDoc, active);
 
     const elSeg = document.getElementById('card-seguro-proximos');
     const prevSeg = parseInt(elSeg.textContent) || 0;
     animateValue(elSeg, prevSeg, seguroCount, 800);
+    renderDocCount('card-seguro-docs', seguroDoc, active);
 
     const elReg = document.getElementById('card-registro-proximos');
     const prevReg = parseInt(elReg.textContent) || 0;
@@ -681,6 +687,7 @@ function initRealtimeListeners() {
       const prevMat = parseInt(elMatafuego.textContent) || 0;
       animateValue(elMatafuego, prevMat, matafuegoCount, 800);
     }
+    renderDocCount('card-matafuego-docs', matafuegoDoc, active);
 
     renderEmpresas(all);
     renderFleetHealth(all);
@@ -783,4 +790,15 @@ function renderFleetHealth(vehicles) {
   if (elWarn) elWarn.textContent = warn;
   if (elCrit) elCrit.textContent = crit;
   if (elTotal) elTotal.textContent = total;
+}
+
+function renderDocCount(elId, withDoc, total) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const missing = total - withDoc;
+  if (missing > 0) {
+    el.innerHTML = `<span style="color:#EF4444;font-weight:700">${withDoc} de ${total}</span> <span style="color:#EF4444;font-size:11px;font-weight:600">(${missing} sin cargar)</span>`;
+  } else {
+    el.innerHTML = `<span style="color:#22C55E;font-weight:700">${withDoc} de ${total}</span> <span style="color:#22C55E;font-size:11px;font-weight:600">✓</span>`;
+  }
 }
