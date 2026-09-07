@@ -215,13 +215,13 @@ input, select, textarea {
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.35s ease, box-shadow 0.35s ease;
-  background: linear-gradient(145deg, rgba(37,99,235,0.32) 0%, rgba(14,165,233,0.14) 50%, rgba(30,64,175,0.24) 100%);
-  border-color: rgba(59,130,246,0.35);
+  background: linear-gradient(145deg, rgba(37,99,235,0.11) 0%, rgba(14,165,233,0.05) 50%, rgba(30,64,175,0.09) 100%);
+  border-color: rgba(59,130,246,0.16);
   box-shadow:
-    0 20px 45px -15px rgba(0,0,0,0.65),
-    0 0 30px -8px rgba(37,99,235,0.45),
-    inset 0 1px 0 rgba(255,255,255,0.12),
-    inset 0 0 22px -4px rgba(96,165,250,0.28);
+    0 20px 45px -15px rgba(0,0,0,0.55),
+    0 0 20px -12px rgba(37,99,235,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    inset 0 0 16px -6px rgba(96,165,250,0.12);
 }
 .alert-3d::before {
   content: '';
@@ -229,16 +229,16 @@ input, select, textarea {
   top: 0; left: 0; right: 0;
   height: 55%;
   border-radius: inherit;
-  background: linear-gradient(180deg, rgba(147,197,253,0.22), transparent);
+  background: linear-gradient(180deg, rgba(147,197,253,0.09), transparent);
   pointer-events: none;
 }
 .alert-3d:hover {
   transform: translateY(-6px) rotateX(4deg) scale(1.01);
   box-shadow:
-    0 34px 70px -18px rgba(0,0,0,0.75),
-    0 0 55px -5px rgba(37,99,235,0.6),
-    inset 0 1px 0 rgba(255,255,255,0.16),
-    inset 0 0 28px -4px rgba(96,165,250,0.4);
+    0 34px 70px -18px rgba(0,0,0,0.65),
+    0 0 32px -12px rgba(37,99,235,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 0 18px -6px rgba(96,165,250,0.16);
 }
 
 /* Table container */
