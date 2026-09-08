@@ -230,49 +230,6 @@
           </div>
         </div>
 
-        <!-- Estadísticas -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-          <div class="glass-card rounded-xl p-5" style="border:1px solid rgba(212,175,55,0.15);">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#d4af37,#b8960c);box-shadow:0 0 16px rgba(212,175,55,0.35);">
-                  <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M7 14l3-3 3 3 5-6"/></svg>
-                </div>
-                <div>
-                  <h3 class="text-base font-black text-[#ffffff]">Combustible mensual</h3>
-                  <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Litros y gasto · últimos meses</p>
-                </div>
-              </div>
-              <span id="combustible-count" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0" style="background:rgba(212,175,55,0.15);color:#d4af37;"></span>
-            </div>
-            <div class="relative" style="height:280px;">
-              <canvas id="combustibleChart"></canvas>
-              <div id="combustible-empty" class="absolute inset-0 flex items-center justify-center text-[#4a5568] text-sm hidden">Cargando…</div>
-            </div>
-          </div>
-
-          <div class="glass-card rounded-xl p-5" style="border:1px solid rgba(212,175,55,0.15);">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#3b82f6,#6366f1);box-shadow:0 0 16px rgba(59,130,246,0.35);">
-                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.05A2 2 0 0115 5.05V6a2 2 0 01-2 2h-2a2 2 0 01-2-2v-.95a2 2 0 01.05-.95 9 9 0 11-8.95 8.95A2 2 0 014 16h2a2 2 0 012 2v2a2 2 0 01-2 2 9 9 0 01-1-17.95z"/></svg>
-                </div>
-                <div>
-                  <h3 class="text-base font-black text-[#ffffff]">Estado de la flota</h3>
-                  <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Documentación y vencimientos</p>
-                </div>
-              </div>
-            </div>
-            <div class="relative flex items-center justify-center" style="height:280px;">
-              <canvas id="fleetChart"></canvas>
-              <div id="fleet-center" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Flota activa</p>
-                <p class="text-3xl font-black text-[#d4af37]" id="fleet-center-total">—</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Últimos Services -->
         <div class="glass-card rounded-2xl p-5 sm:p-6 mt-4 relative overflow-hidden" style="border:1px solid rgba(212,175,55,0.22);">
           <div class="pointer-events-none absolute -top-16 -right-16 w-52 h-52 rounded-full opacity-20" style="background:radial-gradient(circle,#2563EB,transparent 70%);filter:blur(30px);"></div>
