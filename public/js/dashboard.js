@@ -773,7 +773,7 @@ function renderEmpresas(vehicles) {
   container.innerHTML = empresas.map(e => {
     const count = vehicles.filter(v => v.empresa === e && v.estadoGeneral !== 'Baja').length;
     return `
-      <div class="empresa-card rounded-xl p-3 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-[#00E5FF]/10" style="border:1px solid rgba(16,185,129,0.15);background:rgba(16,185,129,0.04);" onclick="showEmpresaModal('${e.replace(/'/g, "\\'")}')">
+      <div class="empresa-card rounded-xl p-3 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-[#00E5FF]/10 card-3d alert-3d" onclick="showEmpresaModal('${e.replace(/'/g, "\\'")}')">
         <div class="flex items-center gap-2.5 mb-2">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#00E5FF,#0891B2);">
             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/></svg>
