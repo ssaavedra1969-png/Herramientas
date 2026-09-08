@@ -437,15 +437,10 @@ function initDashClock() {
 
   function tick() {
     const now = new Date();
-    const h = now.getHours();
-    const isAm = h < 12;
-    const hh = isAm ? pad(h) : pad(h - 12);
-    const amEl = document.getElementById('flip-am');
     const hhEl = document.getElementById('flip-hh');
     const mmEl = document.getElementById('flip-mm');
     const ssEl = document.getElementById('flip-ss');
-    if (amEl) amEl.textContent = isAm ? 'AM' : 'PM';
-    if (hhEl) hhEl.textContent = hh;
+    if (hhEl) hhEl.textContent = pad(now.getHours());
     if (mmEl) mmEl.textContent = pad(now.getMinutes());
     if (ssEl) ssEl.textContent = pad(now.getSeconds());
     dateEl.textContent = days[now.getDay()] + ' ' + now.getDate() + ' de ' + months[now.getMonth()] + ' ' + now.getFullYear();

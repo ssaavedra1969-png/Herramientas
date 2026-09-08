@@ -12,6 +12,7 @@
     body { background: linear-gradient(135deg, #0a0e17 0%, #1a1a3e 50%, #0a0e17 100%); min-height: 100vh; min-height: 100dvh; }
     .glass-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.15); backdrop-filter: blur(12px); }
     .text-gradient-primary { background: linear-gradient(135deg, #2563EB, #2563EB); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .title-page { font-family: -apple-system, 'Segoe UI', sans-serif; font-weight: 800; background: linear-gradient(180deg, #f6e7a4 0%, #d4af37 45%, #b8960c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .admin-bar { position: sticky; top: 0; z-index: 50; background: rgba(10,10,26,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212,175,55,0.2); }
     .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
     .btn-primary { background: linear-gradient(135deg, #2563EB, #2563EB); color: #fff; padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
@@ -94,7 +95,7 @@
 
       <% if (vencimientos && vencimientos.length) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
-        <h2 class="text-sm font-bold text-gradient-primary mb-3">Vencimientos</h2>
+        <h2 class="text-sm font-bold title-page mb-3">Vencimientos</h2>
         <div class="space-y-2">
           <% vencimientos.forEach(vc => {
             const fechaTxt = vc.date ? vc.date.toLocaleDateString('es-AR') : '';
@@ -119,7 +120,7 @@
 
       <% if (vehicle.chofer || vehicle.dni || vehicle.registro || vehicle.centroTrabajo) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
-        <h2 class="text-sm font-bold text-gradient-primary mb-3">Chofer</h2>
+        <h2 class="text-sm font-bold title-page mb-3">Chofer</h2>
         <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
           <% if (vehicle.chofer) { %><div><p class="text-[#8b9bb4] text-[10px]">Chofer</p><p class="font-semibold text-[#ffffff]"><%= vehicle.chofer %></p></div><% } %>
           <% if (vehicle.dni) { %><div><p class="text-[#8b9bb4] text-[10px]">DNI</p><p class="font-semibold text-[#ffffff]"><%= vehicle.dni %></p></div><% } %>
@@ -131,7 +132,7 @@
 
       <% if (vehicle.observaciones) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
-        <h2 class="text-sm font-bold text-gradient-primary mb-1">Observaciones</h2>
+        <h2 class="text-sm font-bold title-page mb-1">Observaciones</h2>
         <p class="text-[#8b9bb4] text-xs"><%= vehicle.observaciones %></p>
       </div>
       <% } %>
@@ -145,7 +146,7 @@
           const fSvc = vehicle.proximoServiceFecha?.toDate ? vehicle.proximoServiceFecha.toDate() : (vehicle.proximoServiceFecha ? new Date(vehicle.proximoServiceFecha) : null);
       %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
-        <h2 class="text-sm font-bold text-gradient-primary mb-2">Próximos Services</h2>
+        <h2 class="text-sm font-bold title-page mb-2">Próximos Services</h2>
         <div class="grid grid-cols-2 gap-3 text-xs">
           <% if (vehicle.proximoServiceKm) { %><div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5"><p class="text-[#8b9bb4] text-[10px]">Kilometraje</p><p class="font-bold text-[#ffffff]"><%= Number(vehicle.proximoServiceKm).toLocaleString('es-AR') %> km</p></div><% } %>
           <% if (fSvc) {
@@ -175,7 +176,7 @@
 
       <% if ((recentServices && recentServices.length) || (recentRepuestos && recentRepuestos.length)) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
-        <h2 class="text-sm font-bold text-gradient-primary mb-3">Últimos movimientos</h2>
+        <h2 class="text-sm font-bold title-page mb-3">Últimos movimientos</h2>
         <div class="space-y-2">
           <% (recentRepuestos || []).forEach(r => { %>
           <div class="flex items-start justify-between gap-2 bg-white/[0.03] rounded-lg px-3 py-2 border border-white/5">
@@ -205,7 +206,7 @@
 
 
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
-        <h2 class="text-sm font-bold text-gradient-primary mb-1">Documentos del vehículo</h2>
+        <h2 class="text-sm font-bold title-page mb-1">Documentos del vehículo</h2>
         <p class="text-[#8b9bb4] text-[10px] mb-3">Cédula · Seguro · VTV — solo lectura</p>
         <div class="space-y-2">
           <% const docRows = [ { key: 'cedula', label: 'Cédula' }, { key: 'seguro', label: 'Seguro' }, { key: 'vtv', label: 'VTV' } ]; %>
@@ -240,7 +241,7 @@
           <div class="w-14 h-14 bg-gradient-to-br from-[#2563EB] to-[#2563EB] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-[#2563EB]/30">
             <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           </div>
-          <h2 class="text-lg font-bold text-[#ffffff]">Acceso Admin</h2>
+          <h2 class="text-lg font-bold title-page">Acceso Admin</h2>
           <p class="text-[#8b9bb4] text-xs mt-1">Ingresá tus credenciales para editar</p>
         </div>
         <div id="login-error" class="hidden mb-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center"></div>
