@@ -2,6 +2,7 @@
 function toDate(v) { if (!v) return null; if (v.toDate) return v.toDate(); if (v instanceof Date) return v; const d = new Date(v); return isNaN(d.getTime()) ? null : d; }
 function fmtD(v) { const d = toDate(v); if (!d) return null; return d.toLocaleDateString('es-AR'); }
 const hoy = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' });
+const DOC_ORDEN = ['titulo', 'cedula', 'seguro', 'vtv', 'registro', 'dni'];
 const DOCS = [
   { nombre: 'Título del vehículo', tipo: 'titulo', venc: null },
   { nombre: 'Cédula de identificación', tipo: 'cedula', venc: null },
@@ -23,10 +24,23 @@ const _modoPdf = !!(locals && locals.modoPdf);
 const LOGO = logoDataUri || '/images/fp3d.png';
 const ROWS_P1 = 20;
 const ROWS_RS = 26;
+const SOLO_NOVEDADES = !!(locals && locals.soloNovedades);
+const DESDE_TXT = (locals && locals.desde) || null;
+const DESDE_ISO = (locals && locals.desdeISO) || '';
 const idxPages = Math.max(1, 1 + Math.ceil(Math.max(0, vehicles.length - ROWS_P1) / ROWS_RS));
 const PAGE_OFFSET = idxPages;
+const esNuevo = (v) => !SOLO_NOVEDADES || !!v._novedad;
 const TOTAL_DOCS = vehicles.reduce((acc, v) => acc + Object.keys(v.docsCarpeta || {}).length, 0);
+let TOTAL_DOCS_NOV = vehicles.reduce((acc, v) => {
+  if (!esNuevo(v)) return acc;
+  const tipos = v._tiposNuevos || DOC_ORDEN;
+  const dc = v.docsCarpeta || {};
+  return acc + DOC_ORDEN.filter(t => tipos.indexOf(t) >= 0 && dc[t]).length;
+}, 0);
+if (TOTAL_DOCS_NOV === 0) TOTAL_DOCS_NOV = TOTAL_DOCS;
+const CARATS_IMP = vehicles.filter(v => esNuevo(v)).length;
 const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
+const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
 %><!DOCTYPE html>
 <html lang="es">
 <head>
@@ -48,6 +62,18 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
     .info-bar { background: rgba(255,255,255,0.06); border: 1px solid rgba(37,99,235,0.25); border-radius: 10px; padding: 10px 16px; color: #8b9bb4; font-size: 12px; max-width: 900px; margin: 0 auto 16px; display: flex; gap: 20px; flex-wrap: wrap; }
     .info-bar span { display: flex; align-items: center; gap: 4px; }
     .info-bar strong { color: #ffffff; }
+    .mode-bar { background: rgba(255,255,255,0.06); border: 1px solid rgba(37,99,235,0.25); border-radius: 10px; padding: 8px 14px; max-width: 900px; margin: 0 auto 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: #8b9bb4; }
+    .mode-bar b { color: #ffffff; }
+    .mode-label { font-weight: 600; }
+    .mode-btn { background: rgba(255,255,255,0.1); color: #cfd6e6; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; border: 1px solid rgba(255,255,255,0.12); transition: background 0.15s; }
+    .mode-btn:hover { background: rgba(255,255,255,0.18); }
+    .mode-btn.active { background: linear-gradient(135deg,#2563EB,#0ea5e9); color: #fff; border-color: transparent; }
+    .mode-btn.mark-btn { background: rgba(234,179,8,0.18); border-color: rgba(234,179,8,0.4); color: #fbbf24; }
+    .mode-btn.mark-btn:hover { background: rgba(234,179,8,0.3); }
+    .alert-success { max-width: 900px; margin: 0 auto 14px; padding: 10px 16px; border-radius: 10px; background: rgba(22,163,74,0.12); border: 1px solid rgba(22,163,74,0.4); color: #86efac; font-size: 13px; }
+    .alert-success b { color: #ffffff; }
+    .badge-nuevo { display: inline-block; margin-left: 5px; padding: 0.6mm 2mm; border-radius: 1mm; background: #f59e0b; color: #fff; font-size: 6.5pt; font-weight: 800; letter-spacing: 0.5px; vertical-align: middle; }
+    .indice-table tbody tr.nuevo-row td { background: #fffbeb; }
 
     /* ---------- Hoja A4 ---------- */
     .page {
@@ -244,9 +270,9 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
         <p>Índice maestro + carátula por vehículo + documentos</p>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <a href="/vehicles/carpeta-docs/pdf" class="btn-print" style="text-decoration:none;background:linear-gradient(135deg,#16a34a,#16a34a);">
+        <a href="<%= DESDE_ISO ? '/vehicles/carpeta-docs/pdf?solo=novedades&desde=' + DESDE_ISO : '/vehicles/carpeta-docs/pdf' %>" class="btn-print" style="text-decoration:none;background:linear-gradient(135deg,#16a34a,#16a34a);">
           <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          Descargar los <%= TOTAL_DOCS %> Documentos (PDF)
+          Descargar <%= SOLO_NOVEDADES ? 'las Novedades' : 'Todos' %> (<%= SOLO_NOVEDADES ? TOTAL_DOCS_NOV : TOTAL_DOCS %> docs · PDF)
         </a>
         <button onclick="window.print()" class="btn-print">
           <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
@@ -255,12 +281,27 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
         <a href="/vehicles" class="btn-back">Volver</a>
       </div>
     </div>
+
+    <% if (marcado) { %>
+    <div class="alert-success">
+      Se marcó la última impresión. A partir de ahora esta vista solo muestra lo generado después de <b><%= DESDE_TXT %></b>.
+    </div>
+    <% } %>
+
+    <div class="mode-bar">
+      <div class="mode-label">Modo de vista · novedades desde <b><%= DESDE_TXT || '—' %></b>:</div>
+      <a href="/vehicles/carpeta-docs" class="mode-btn <%= SOLO_NOVEDADES ? 'active' : '' %>">Solo Novedades</a>
+      <a href="/vehicles/carpeta-docs?desde=all" class="mode-btn <%= SOLO_NOVEDADES ? '' : 'active' %>">Ver Todo</a>
+      <form id="formMarcar" action="/vehicles/carpeta-docs/marcar" method="post" style="display:inline;margin-left:auto;">
+        <button type="submit" class="mode-btn mark-btn">✓ Marcar impresos hoy</button>
+      </form>
+    </div>
+
     <div class="info-bar">
       <span><strong><%= vehicles.length %></strong> vehículos</span>
-      <span><strong><%= idxPages %></strong> hojas índice</span>
-      <span><strong><%= vehicles.length %></strong> carátulas</span>
-      <span><strong><%= TOTAL_DOCS %></strong> documentos</span>
-      <span><strong><%= TOTAL_PAGES %></strong> hojas en total</span>
+      <span><strong><%= SOLO_NOVEDADES ? CARATS_IMP : vehicles.length %></strong> carátulas<%= SOLO_NOVEDADES ? ' (novedades)' : '' %></span>
+      <span><strong><%= SOLO_NOVEDADES ? TOTAL_DOCS_NOV : TOTAL_DOCS %></strong> documentos a descargar</span>
+      <span><strong><%= SOLO_NOVEDADES ? TOTAL_PRINT : TOTAL_PAGES %></strong> hojas a imprimir</span>
     </div>
     <div class="info-bar" style="border-color:rgba(234,179,8,0.3);background:rgba(234,179,8,0.06);">
       <span style="color:#fbbf24;font-weight:700;">Configuración de impresión:</span>
@@ -270,6 +311,7 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
   <% } %>
 
   <!-- ================= ÍNDICE MAESTRO (paginado A4) ================= -->
+  <% let pagImpresas = idxPages; %>
   <% for (let p = 0; p < idxPages; p++) { %>
     <% const start = p === 0 ? 0 : ROWS_P1 + (p - 1) * ROWS_RS; %>
     <% const paginaRows = p === 0 ? Math.min(ROWS_P1, vehicles.length) : Math.min(ROWS_RS, vehicles.length - start); %>
@@ -316,10 +358,10 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
           <tbody>
             <% for (let r = 0; r < paginaRows; r++) { %>
               <% const v = vehicles[start + r]; %>
-              <tr>
+              <tr class="<%= SOLO_NOVEDADES && v._novedad ? 'nuevo-row' : '' %>">
                 <td style="color:#8b9bb4;font-weight:700;"><%= start + r + 1 %></td>
                 <td class="it-interno"><%= v.interno || '' %></td>
-                <td class="it-patente"><%= v.patente || '' %></td>
+                <td class="it-patente"><%= v.patente || '' %><% if (SOLO_NOVEDADES && v._novedad) { %><span class="badge-nuevo">NUEVO</span><% } %></td>
                 <td><%= [v.marca, v.modelo].filter(Boolean).join(' ') %></td>
                 <td style="color:#3f4756;"><%= v.año || '' %></td>
                 <td class="it-empresa"><%= v.empresa || '' %></td>
@@ -349,6 +391,7 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
 
   <!-- ================= CARÁTULAS POR VEHÍCULO ================= -->
   <% vehicles.forEach((v, i) => { %>
+  <% if (esNuevo(v)) { pagImpresas++; %>
   <div class="page">
     <div class="doc-header">
       <div style="display:flex;align-items:center;gap:3mm;z-index:1;">
@@ -444,7 +487,7 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
 
     <div class="page-footer">
       <span class="footer-brand">GRUPO FALPAT SRL · Carátula <%= v.interno || '' %> <%= v.patente || '' %></span>
-      <span><span class="footer-dot"></span>&nbsp; Página <span class="footer-pag"><%= i + 1 + PAGE_OFFSET %> de <%= TOTAL_PAGES %></span></span>
+      <span><span class="footer-dot"></span>&nbsp; Página <span class="footer-pag"><%= pagImpresas %> de <%= SOLO_NOVEDADES ? TOTAL_PRINT : TOTAL_PAGES %></span></span>
     </div>
   </div>
 
@@ -465,6 +508,19 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
   </div>
   <% } %>
 
+  <% } %>
   <% }); %>
+  <script>
+    (function(){
+      var f = document.getElementById('formMarcar');
+      if (!f) return;
+      f.addEventListener('submit', function(e){
+        e.preventDefault();
+        fetch('/vehicles/carpeta-docs/marcar', { method:'POST', credentials:'same-origin' })
+          .then(function(){ window.location.href = '/vehicles/carpeta-docs?marcado=1'; })
+          .catch(function(){ alert('Error al marcar.'); });
+      });
+    })();
+  </script>
 </body>
 </html>

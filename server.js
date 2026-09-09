@@ -28,11 +28,11 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('No permitido por CORS'));
-    }
+    if (!origin || origin === 'null') return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(origin)) return callback(null, true);
+    console.error('[CORS] Rechazado origin:', origin);
+    callback(new Error('No permitido por CORS'));
   },
   credentials: true
 }));
@@ -237,26 +237,99 @@ app.get('/vehicles/fichas-taller-bulk', requireAuth, requireAdminPage, async (re
 
 const DOC_ORDEN = ['titulo', 'cedula', 'seguro', 'vtv', 'registro', 'dni'];
 
+function toDateFS(v) {
+  if (!v) return null;
+  if (v.toDate) return v.toDate();
+  if (v instanceof Date) return v;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function parseDesdeParam(s) {
+  if (!s) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (!m) return null;
+  return new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00Z`);
+}
+
+async function cargarVehiculosCarpeta() {
+  const { db } = require('./config/firebase');
+  const snap = await db.collection('vehicles').get();
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .filter(v => v.estadoGeneral !== 'Baja')
+    .sort((a, b) => String(a.interno || '').localeCompare(String(b.interno || ''), 'es', { numeric: true }))
+    .map(v => ({ ...v, docsCarpeta: scanDocsCarpeta(v.patente || '') }));
+}
+
+async function leerUltimaGeneracion(db) {
+  const cfg = await db.collection('config').doc('carpetaDocs').get().catch(() => null);
+  if (!cfg || !cfg.exists) return null;
+  return toDateFS(cfg.get('ultimaGeneracion'));
+}
+
+function resolverDesde(req, ultimaGen) {
+  return parseDesdeParam(req.query.desde) || ultimaGen || null;
+}
+
+async function marcarNovedades(vehicles, desde) {
+  let cambios = {};
+  if (desde) {
+    cambios = await require('./lib/github-docs').cambiosDesde(desde.toISOString());
+  }
+  for (const v of vehicles) {
+    const patente = (v.patente || '').toUpperCase();
+    const creadoEl = toDateFS(v.createdAt);
+    const esVehNuevo = desde ? !!(creadoEl && creadoEl >= desde) : true;
+    const tipos = esVehNuevo ? DOC_ORDEN : (cambios[patente] ? [...cambios[patente]] : []);
+    v._novedad = !desde || esVehNuevo || tipos.length > 0;
+    v._esVehNuevo = esVehNuevo;
+    v._tiposNuevos = tipos;
+  }
+  return cambios;
+}
+
 app.get('/vehicles/carpeta-docs/pdf', requireAuth, requireAdminPage, async (req, res) => {
   try {
-    const { PDFDocument, StandardFonts } = require('pdf-lib');
     const { db } = require('./config/firebase');
-    const snap = await db.collection('vehicles').get();
-    const vehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(v => v.estadoGeneral !== 'Baja')
-      .sort((a, b) => String(a.interno || '').localeCompare(String(b.interno || ''), 'es', { numeric: true }))
-      .map(v => ({ ...v, docsCarpeta: scanDocsCarpeta(v.patente || '') }))
-      .filter(v => Object.keys(v.docsCarpeta).length > 0);
+    const vehicles = await cargarVehiculosCarpeta();
+    const solo = req.query.solo === 'novedades';
+    let desde = null;
+    let nombreBase = 'carpeta-documentacion';
 
+    if (solo) {
+      const ultimaGen = await leerUltimaGeneracion(db);
+      desde = resolverDesde(req, ultimaGen);
+      if (desde) {
+        await marcarNovedades(vehicles, desde);
+        vehicles.forEach(v => {
+          const permitidos = v._tiposNuevos || [];
+          v.docsOrdenados = DOC_ORDEN
+            .map(t => ({ tipo: t, doc: v.docsCarpeta[t] }))
+            .filter(x => x.doc && x.doc.nombre.toLowerCase().endsWith('.pdf') && permitidos.includes(x.tipo));
+        });
+        nombreBase = `carpeta-novedades-${desde.toISOString().slice(0, 10)}`;
+      } else {
+        vehicles.forEach(v => {
+          v.docsOrdenados = DOC_ORDEN
+            .map(t => ({ tipo: t, doc: v.docsCarpeta[t] }))
+            .filter(x => x.doc && x.doc.nombre.toLowerCase().endsWith('.pdf'));
+        });
+      }
+    } else {
+      vehicles.forEach(v => {
+        v.docsOrdenados = DOC_ORDEN
+          .map(t => ({ tipo: t, doc: v.docsCarpeta[t] }))
+          .filter(x => x.doc && x.doc.nombre.toLowerCase().endsWith('.pdf'));
+      });
+    }
+
+    const { PDFDocument, StandardFonts } = require('pdf-lib');
     const out = await PDFDocument.create();
     const font = await out.embedFont(StandardFonts.HelveticaBold);
     const fontNormal = await out.embedFont(StandardFonts.Helvetica);
 
     for (const v of vehicles) {
-      const docsOrdenados = DOC_ORDEN
-        .map(t => ({ tipo: t, doc: v.docsCarpeta[t] }))
-        .filter(x => x.doc && x.doc.nombre.toLowerCase().endsWith('.pdf'));
-
+      const docsOrdenados = (v.docsOrdenados || []).filter(x => x.doc && x.doc.nombre.toLowerCase().endsWith('.pdf'));
       if (!docsOrdenados.length) continue;
 
       /* Hoja separadora con los datos del vehículo */
@@ -291,7 +364,7 @@ app.get('/vehicles/carpeta-docs/pdf', requireAuth, requireAdminPage, async (req,
 
     const finalBytes = await out.save();
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="carpeta-documentacion-${new Date().toISOString().slice(0, 10)}.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${nombreBase}-${new Date().toISOString().slice(0, 10)}.pdf"`);
     res.send(Buffer.from(finalBytes));
   } catch (e) {
     console.error('carpeta-docs/pdf:', e.message);
@@ -299,14 +372,27 @@ app.get('/vehicles/carpeta-docs/pdf', requireAuth, requireAdminPage, async (req,
   }
 });
 
+app.post('/vehicles/carpeta-docs/marcar', requireAuth, requireAdminPage, async (req, res) => {
+  try {
+    if (process.env.DEV_READ_ONLY === 'true') {
+      return res.status(400).send('DEV_READ_ONLY activo: no se puede escribir en local. Probá en producción.');
+    }
+    const { db } = require('./config/firebase');
+    await db.collection('config').doc('carpetaDocs').set({
+      ultimaGeneracion: new Date(),
+      actualizadoEl: new Date()
+    }, { merge: true });
+    return res.redirect('/vehicles/carpeta-docs?marcado=1');
+  } catch (e) {
+    console.error('carpeta-docs/marcar:', e.message);
+    res.status(500).send('Error al marcar la última impresión');
+  }
+});
+
 app.get('/vehicles/carpeta-docs', requireAuth, requireAdminPage, async (req, res) => {
   try {
     const { db } = require('./config/firebase');
-    const snap = await db.collection('vehicles').get();
-    const vehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(v => v.estadoGeneral !== 'Baja')
-      .sort((a, b) => String(a.interno || '').localeCompare(String(b.interno || ''), 'es', { numeric: true }))
-      .map(v => ({ ...v, docsCarpeta: scanDocsCarpeta(v.patente || '') }));
+    const vehicles = await cargarVehiculosCarpeta();
     let logoDataUri = null;
     try {
       const logoPath = path.join(__dirname, 'public', 'images', 'fp3d.png');
@@ -314,7 +400,27 @@ app.get('/vehicles/carpeta-docs', requireAuth, requireAdminPage, async (req, res
         logoDataUri = 'data:image/png;base64,' + fs.readFileSync(logoPath).toString('base64');
       }
     } catch (e) { /* logo opcional */ }
-    res.render('carpeta-docs', { vehicles, logoDataUri });
+
+    const verTodo = req.query.desde === 'all';
+    let desde = null;
+    let cambios = {};
+    if (verTodo) {
+      await marcarNovedades(vehicles, null);
+    } else {
+      const ultimaGen = await leerUltimaGeneracion(db);
+      desde = resolverDesde(req, ultimaGen);
+      cambios = await marcarNovedades(vehicles, desde);
+    }
+
+    res.render('carpeta-docs', {
+      vehicles,
+      logoDataUri,
+      soloNovedades: !!desde,
+      desde: desde ? desde.toLocaleDateString('es-AR') : null,
+      desdeISO: desde ? desde.toISOString().slice(0, 10) : null,
+      cambios: Object.fromEntries(Object.entries(cambios).map(([k, v]) => [k, [...v]])),
+      marcado: req.query.marcado === '1'
+    });
   } catch (e) {
     console.error('carpeta-docs:', e.message);
     res.status(500).send('Error del servidor');
