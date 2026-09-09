@@ -3,13 +3,13 @@ function toDate(v) { if (!v) return null; if (v.toDate) return v.toDate(); if (v
 function fmtD(v) { const d = toDate(v); if (!d) return null; return d.toLocaleDateString('es-AR'); }
 const hoy = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' });
 const DOCS = [
-  { nombre: 'Título del vehículo', venc: null },
-  { nombre: 'Cédula de identificación', venc: null },
-  { nombre: 'Seguro', venc: 'seguro' },
-  { nombre: 'VTV — Verificación Técnica', venc: 'vtv' },
-  { nombre: 'Registro del conductor', venc: 'registro' },
-  { nombre: 'DNI del conductor', venc: 'dni' },
-  { nombre: 'Service / Historial de mantenimiento', venc: 'service' }
+  { nombre: 'Título del vehículo', tipo: 'titulo', venc: null },
+  { nombre: 'Cédula de identificación', tipo: 'cedula', venc: null },
+  { nombre: 'Seguro', tipo: 'seguro', venc: 'seguro' },
+  { nombre: 'VTV — Verificación Técnica', tipo: 'vtv', venc: 'vtv' },
+  { nombre: 'Registro del conductor', tipo: 'registro', venc: 'registro' },
+  { nombre: 'DNI del conductor', tipo: 'dni', venc: 'dni' },
+  { nombre: 'Service / Historial de mantenimiento', tipo: 'service', venc: 'service' }
 ];
 function vencDe(v, tipo) {
   if (tipo === 'seguro') return v.seguro && v.seguro.fechaVencimiento;
@@ -19,11 +19,13 @@ function vencDe(v, tipo) {
   if (tipo === 'service') return v.proximoServiceFecha;
   return null;
 }
+const _modoPdf = !!(locals && locals.modoPdf);
 const LOGO = logoDataUri || '/images/fp3d.png';
 const ROWS_P1 = 20;
 const ROWS_RS = 26;
 const idxPages = Math.max(1, 1 + Math.ceil(Math.max(0, vehicles.length - ROWS_P1) / ROWS_RS));
 const PAGE_OFFSET = idxPages;
+const TOTAL_DOCS = vehicles.reduce((acc, v) => acc + Object.keys(v.docsCarpeta || {}).length, 0);
 const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
 %><!DOCTYPE html>
 <html lang="es">
@@ -50,7 +52,7 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
     /* ---------- Hoja A4 ---------- */
     .page {
       width: 210mm;
-      height: 297mm;
+      min-height: 297mm;
       background: #ffffff;
       margin: 0 auto 16px;
       page-break-after: always;
@@ -169,6 +171,44 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
     }
     .dt-folio-edit { border: 0.35mm solid #c9c6e2; border-radius: 1.2mm; display: inline-block; width: 16mm; height: 5.5mm; background: #fff; }
 
+    /* ---------- Página de documento embebido ---------- */
+    .doc-page-header {
+      background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 60%, #0ea5e9 130%);
+      padding: 5mm 10mm 5mm;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-page-header::after {
+      content: '';
+      position: absolute;
+      right: -8mm; top: -16mm;
+      width: 55mm; height: 55mm;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 70%);
+      pointer-events: none;
+    }
+    .doc-page-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      overflow: hidden;
+      background: #f0f2f5;
+    }
+    .doc-page-body embed,
+    .doc-page-body object {
+      width: 100%;
+      height: 100%;
+      min-height: 260mm;
+    }
+    .doc-page-archivo { font-size: 6.5pt; opacity: 0.85; margin-top: 1mm; }
+
     /* ---------- Pie de página ---------- */
     .page-footer {
       margin-top: auto; padding: 3mm 10mm 3.5mm;
@@ -196,27 +236,42 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
 </head>
 <body>
 
+  <% if (!_modoPdf) { %>
   <div class="no-print">
     <div class="toolbar">
       <div>
         <h1>Carpeta de Documentación</h1>
-        <p>Índice maestro + carátula por vehículo para el bibliorato físico</p>
+        <p>Índice maestro + carátula por vehículo + documentos</p>
       </div>
-      <div style="display:flex;gap:10px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="/vehicles/carpeta-docs/print-pdf" class="btn-print" style="text-decoration:none;background:linear-gradient(135deg,#7c3aed,#7c3aed);">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Descargar Índice + Carátulas (PDF)
+        </a>
+        <a href="/vehicles/carpeta-docs/pdf" class="btn-print" style="text-decoration:none;background:linear-gradient(135deg,#16a34a,#16a34a);">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Descargar los <%= TOTAL_DOCS %> Documentos (PDF)
+        </a>
         <button onclick="window.print()" class="btn-print">
           <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-          Imprimir (índice + <%= vehicles.length %> carátulas)
+          Imprimir desde el navegador
         </button>
         <a href="/vehicles" class="btn-back">Volver</a>
       </div>
     </div>
     <div class="info-bar">
       <span><strong><%= vehicles.length %></strong> vehículos</span>
-      <span><strong><%= idxPages %></strong> hojas de índice</span>
-      <span><strong>1 carátula por hoja</strong> — A4 vertical</span>
-      <span><strong><%= TOTAL_PAGES %></strong> páginas en total</span>
+      <span><strong><%= idxPages %></strong> hojas índice</span>
+      <span><strong><%= vehicles.length %></strong> carátulas</span>
+      <span><strong><%= TOTAL_DOCS %></strong> documentos</span>
+      <span><strong><%= TOTAL_PAGES %></strong> hojas en total</span>
+    </div>
+    <div class="info-bar" style="border-color:rgba(234,179,8,0.3);background:rgba(234,179,8,0.06);">
+      <span style="color:#fbbf24;font-weight:700;">Configuración de impresión:</span>
+      <span>A4 · Márgenes: <strong style="color:#fff;">Ninguno</strong> · Escala: <strong style="color:#fff;">100%</strong> · Activar <strong style="color:#fff;">"Gráficos de fondo"</strong></span>
     </div>
   </div>
+  <% } %>
 
   <!-- ================= ÍNDICE MAESTRO (paginado A4) ================= -->
   <% for (let p = 0; p < idxPages; p++) { %>
@@ -368,16 +423,23 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
             <th style="width:58%;">Documento</th>
             <th style="width:24%;">Vencimiento</th>
             <th style="width:9%;">Adjuntado</th>
-            <th style="width:9%;"></th>
+            <th style="width:9%;">Archivo</th>
           </tr>
         </thead>
         <tbody>
+          <% const docsCarpeta = v.docsCarpeta || {}; %>
           <% DOCS.forEach(d => { %>
           <tr>
             <td class="dt-nombre"><%= d.nombre %></td>
             <td class="dt-venc"><%= vencDe(v, d.venc) ? fmtD(vencDe(v, d.venc)) : '' %></td>
             <td style="text-align:center;"><span class="dt-check"></span></td>
-            <td style="text-align:center;"><span class="dt-folio-edit"></span></td>
+            <td style="text-align:center;">
+              <% if (docsCarpeta[d.tipo]) { %>
+                <a href="<%= docsCarpeta[d.tipo].url %>" target="_blank" style="color:#2563EB;font-size:8pt;text-decoration:underline;cursor:pointer;">Ver</a>
+              <% } else { %>
+                <span style="color:#ccc;font-size:8pt;">—</span>
+              <% } %>
+            </td>
           </tr>
           <% }); %>
         </tbody>
@@ -389,6 +451,24 @@ const TOTAL_PAGES = vehicles.length + PAGE_OFFSET;
       <span><span class="footer-dot"></span>&nbsp; Página <span class="footer-pag"><%= i + 1 + PAGE_OFFSET %> de <%= TOTAL_PAGES %></span></span>
     </div>
   </div>
+
+  <!-- ================= DOCUMENTOS EN VISTA (no se imprimen; usar botón verde) ================= -->
+  <% if (!_modoPdf) { const dc = v.docsCarpeta || {}; const docsVista = DOCS.filter(d => d.tipo !== 'service' && dc[d.tipo]); %>
+  <div class="no-print" style="max-width:210mm;margin:8mm auto;">
+    <% docsVista.forEach(d => { const doc = dc[d.tipo]; %>
+      <div class="screen-doc">
+        <div style="display:flex;align-items:center;gap:3mm;padding:3mm 4mm;background:#12203c;color:#fff;">
+          <div style="flex:1;font-size:12px;font-weight:700;">
+            <%= v.interno || '' %> — <%= (v.patente || '').toUpperCase() %> · <%= d.nombre %>
+          </div>
+          <div style="font-size:11px;opacity:.8;"><%= doc.nombre || doc.nome || '' %></div>
+        </div>
+        <iframe src="<%= doc.url %>#toolbar=0&navpanes=0&view=FitH" style="width:100%;height:280mm;border:1px solid #dfe6f0;"></iframe>
+      </div>
+    <% }); %>
+  </div>
+  <% } %>
+
   <% }); %>
 </body>
 </html>

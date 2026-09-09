@@ -235,13 +235,145 @@ app.get('/vehicles/fichas-taller-bulk', requireAuth, requireAdminPage, async (re
   }
 });
 
+const DOC_ORDEN = ['titulo', 'cedula', 'seguro', 'vtv', 'registro', 'dni'];
+
+app.get('/vehicles/carpeta-docs/pdf', requireAuth, requireAdminPage, async (req, res) => {
+  try {
+    const { PDFDocument, StandardFonts } = require('pdf-lib');
+    const { db } = require('./config/firebase');
+    const snap = await db.collection('vehicles').get();
+    const vehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(v => v.estadoGeneral !== 'Baja')
+      .sort((a, b) => String(a.interno || '').localeCompare(String(b.interno || ''), 'es', { numeric: true }))
+      .map(v => ({ ...v, docsCarpeta: scanDocsCarpeta(v.patente || '') }))
+      .filter(v => Object.keys(v.docsCarpeta).length > 0);
+
+    const out = await PDFDocument.create();
+    const font = await out.embedFont(StandardFonts.HelveticaBold);
+    const fontNormal = await out.embedFont(StandardFonts.Helvetica);
+
+    for (const v of vehicles) {
+      const docsOrdenados = DOC_ORDEN
+        .map(t => ({ tipo: t, doc: v.docsCarpeta[t] }))
+        .filter(x => x.doc && x.doc.nombre.toLowerCase().endsWith('.pdf'));
+
+      if (!docsOrdenados.length) continue;
+
+      /* Hoja separadora con los datos del vehículo */
+      let sep = out.addPage([595.28, 841.89]); // A4 portrait
+      sep.setFont(font);
+      sep.setFontSize(24);
+      sep.drawText(`${v.interno || ''} — ${(v.patente || '').toUpperCase()}`, { x: 60, y: 730 });
+      sep.setFont(fontNormal);
+      sep.setFontSize(13);
+      let y = 690;
+      const lineas = [
+        [v.marca, v.modelo].filter(Boolean).join(' '),
+        v.año ? 'Año: ' + v.año : null,
+        v.empresa ? 'Empresa: ' + v.empresa : null,
+        docsOrdenados.length + ' documento(s) a continuación'
+      ].filter(Boolean);
+      for (const l of lineas) {
+        sep.drawText(l, { x: 60, y });
+        y -= 22;
+      }
+
+      /* Unir los PDFs del vehículo en orden fijo */
+      for (const { doc } of docsOrdenados) {
+        const rutaDoc = path.join(process.cwd(), 'PATENTE', (v.patente || '').toUpperCase(), doc.nombre);
+        if (!fs.existsSync(rutaDoc)) continue;
+        const bytes = fs.readFileSync(rutaDoc);
+        const src = await PDFDocument.load(bytes, { ignoreEncryption: true });
+        const pages = await out.copyPages(src, src.getPageIndices());
+        pages.forEach(p => out.addPage(p));
+      }
+    }
+
+    const finalBytes = await out.save();
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="carpeta-documentacion-${new Date().toISOString().slice(0, 10)}.pdf"`);
+    res.send(Buffer.from(finalBytes));
+  } catch (e) {
+    console.error('carpeta-docs/pdf:', e.message);
+    res.status(500).send('Error generando el PDF');
+  }
+});
+
+const { execFile } = require('child_process');
+
+app.get('/vehicles/carpeta-docs/print-pdf', requireAuth, requireAdminPage, async (req, res) => {
+  const tmpHtml = path.join(require('os').tmpdir(), 'carpeta-docs-' + Date.now() + '.html');
+  const tmpPdf = tmpHtml.replace('.html', '.pdf');
+  try {
+    const { db } = require('./config/firebase');
+    const snap = await db.collection('vehicles').get();
+    const vehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(v => v.estadoGeneral !== 'Baja')
+      .sort((a, b) => String(a.interno || '').localeCompare(String(b.interno || ''), 'es', { numeric: true }))
+      .map(v => ({ ...v, docsCarpeta: scanDocsCarpeta(v.patente || '') }));
+    let logoDataUri = null;
+    try {
+      const logoPath = path.join(__dirname, 'public', 'images', 'fp3d.png');
+      if (fs.existsSync(logoPath)) {
+        logoDataUri = 'data:image/png;base64,' + fs.readFileSync(logoPath).toString('base64');
+      }
+    } catch (e) { /* logo opcional */ }
+
+    const html = require('ejs').render(fs.readFileSync(path.join(__dirname, 'views', 'carpeta-docs.ejs'), 'utf8'), {
+      vehicles,
+      logoDataUri,
+      modoPdf: true
+    }, { filename: path.join(__dirname, 'views', 'carpeta-docs.ejs') });
+
+    fs.writeFileSync(tmpHtml, html);
+
+    const chromePaths = [
+      path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(process.env.LOCALAPPDATA || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+      path.join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+    ].filter(p => p && fs.existsSync(p));
+
+    if (!chromePaths.length) {
+      return res.status(500).send('No se encontró Chrome/Edge para generar el PDF. Usá "Imprimir desde el navegador".');
+    }
+
+    const out = await new Promise((resolve, reject) => {
+      execFile(chromePaths[0], [
+        '--headless=new',
+        '--disable-gpu',
+        '--no-sandbox',
+        '--no-pdf-header-footer',
+        '--print-to-pdf=' + tmpPdf,
+        'file:///' + tmpHtml.replace(/\\/g, '/')
+      ], { timeout: 120000, windowsHide: true }, (err) => {
+        if (err) return reject(err);
+        if (!fs.existsSync(tmpPdf)) return reject(new Error('Chrome no generó el PDF'));
+        resolve(fs.readFileSync(tmpPdf));
+      });
+    });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="indice-y-caratulas-${new Date().toISOString().slice(0, 10)}.pdf"`);
+    res.send(out);
+  } catch (e) {
+    console.error('carpeta-docs/print-pdf:', e.message);
+    res.status(500).send('Error generando el PDF de índice y carátulas: ' + e.message);
+  } finally {
+    try { if (fs.existsSync(tmpHtml)) fs.unlinkSync(tmpHtml); } catch (e) {}
+    try { if (fs.existsSync(tmpPdf)) fs.unlinkSync(tmpPdf); } catch (e) {}
+  }
+});
+
 app.get('/vehicles/carpeta-docs', requireAuth, requireAdminPage, async (req, res) => {
   try {
     const { db } = require('./config/firebase');
     const snap = await db.collection('vehicles').get();
     const vehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .filter(v => v.estadoGeneral !== 'Baja')
-      .sort((a, b) => String(a.interno || '').localeCompare(String(b.interno || ''), 'es', { numeric: true }));
+      .sort((a, b) => String(a.interno || '').localeCompare(String(b.interno || ''), 'es', { numeric: true }))
+      .map(v => ({ ...v, docsCarpeta: scanDocsCarpeta(v.patente || '') }));
     let logoDataUri = null;
     try {
       const logoPath = path.join(__dirname, 'public', 'images', 'fp3d.png');
