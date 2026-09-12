@@ -709,7 +709,7 @@ function initRealtimeListeners() {
     animateValue(elVehiculos, prevVehiculos, active, 800);
 
     let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0, serviceCount = 0, matafuegoCount = 0, cedulaCount = 0;
-    let vtvDoc = 0, seguroDoc = 0, matafuegoDoc = 0, cedulaDoc = 0, cedulaTotal = 0;
+    let vtvDoc = 0, seguroDoc = 0, matafuegoDoc = 0, cedulaDocPresentes = 0;
     all.forEach(v => {
       if (v.estadoGeneral === 'Baja') return;
       const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
@@ -728,8 +728,7 @@ function initRealtimeListeners() {
       if (v.matafuego?.fechaVto) matafuegoDoc++;
       const cedDays = daysUntil(v.documentacion?.cedula?.fechaVencimiento);
       if (cedDays !== null && cedDays <= 30) cedulaCount++;
-      if (v.documentacion?.cedula?.fechaVencimiento) cedulaDoc++;
-      if (cedulaPresentes?.has(String(v.patente || '').toUpperCase())) cedulaTotal++;
+      if (cedulaPresentes?.has(String(v.patente || '').toUpperCase())) cedulaDocPresentes++;
     });
 
     const elVtv = document.getElementById('card-vtv-proximas');
@@ -768,7 +767,7 @@ function initRealtimeListeners() {
       const prevCedula = parseInt(elCedula.textContent) || 0;
       animateValue(elCedula, prevCedula, cedulaCount, 800);
     }
-    if (cedulaPresentes) renderDocCount('card-cedula-docs', cedulaDoc, cedulaTotal);
+    if (cedulaPresentes) renderDocCount('card-cedula-docs', cedulaDocPresentes, active);
 
     renderEmpresas(all);
     renderFleetHealth(all);

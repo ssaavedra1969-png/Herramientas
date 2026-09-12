@@ -12,11 +12,13 @@
  *   Cedula   -> documentacion.cedula.fechaVencimiento (solo genérico)
  *   Titulo   -> documentacion.titulo.fechaVencimiento (solo genérico)
  *
- * Las celdas "SIN CARGA" y "NO VENCE" se ignoran (no se escriben).
+ * Las celdas "SIN CARGA" se ignoran (no se escriben). Las celdas "NO VENCE"
+ * marcan documentacion.<tipo>.noVence = true (no tienen vencimiento).
  *
  * Uso:
  *   node scripts/cargar-vencimientos.js              # carga todo
  *   node scripts/cargar-vencimientos.js --dry-run    # solo muestra qué haría
+ *   node scripts/cargar-vencimientos.js --tipo=cedula  # solo un tipo de documento
  *   node scripts/cargar-vencimientos.js --archivo PATENTE/Vtos/otro.xlsx
  *   node scripts/cargar-vencimientos.js --patente AB922TD
  */
@@ -29,6 +31,7 @@ const XLSX = require('xlsx');
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry-run');
 const soloPatente = (args.find(a => a.startsWith('--patente=')) || '').split('=')[1] || null;
+const soloTipo = (args.find(a => a.startsWith('--tipo=')) || '').split('=')[1] || null;
 const archivoArg = (args.find(a => a.startsWith('--archivo=')) || '').split('=')[1] || null;
 
 // normaliza a dd/mm/yyyy (acepta también 2026-10-07 y Date/serial de Excel)
@@ -76,9 +79,13 @@ for (const r of filas) {
   const tipo = String(r['Tipo documento'] || '').trim();
   if (!pat || !tipo) continue;
   if (soloPatente && pat !== soloPatente.toUpperCase()) continue;
-  const fecha = normFecha(r.Vencimiento);
-  if (!fecha) continue; // SIN CARGA / NO VENCE / vacío
-  (porPatente[pat] = porPatente[pat] || []).push({ tipo, fecha });
+  if (soloTipo && tipo.toLowerCase() !== soloTipo.toLowerCase()) continue;
+  const raw = String(r.Vencimiento || '').trim();
+  const esNoVence = raw.toUpperCase() === 'NO VENCE';
+  const fecha = normFecha(raw);
+  if (fecha) (porPatente[pat] = porPatente[pat] || []).push({ tipo, fecha });
+  else if (esNoVence) (porPatente[pat] = porPatente[pat] || []).push({ tipo, noVence: true });
+  // SIN CARGA / vacío / no parseable -> se ignora
 }
 
 async function main() {
@@ -96,15 +103,22 @@ async function main() {
       };
       let cambiado = false;
       const toques = [];
-      for (const { tipo, fecha } of items) {
+      for (const item of items) {
+        const key = item.tipo.toLowerCase();
+        if (item.noVence) {
+          update.documentacion[key] = { ...((update.documentacion[key] || {})), noVence: true };
+          toques.push(`${item.tipo}=NO VENCE`);
+          cambiado = true;
+          continue;
+        }
+        const { fecha } = item;
         const ts = tsDate(fecha);
-        const key = tipo.toLowerCase();
-        if (tipo === 'VTV' || key === 'vtv') update.vtv.fechaVencimiento = ts;
-        else if (tipo === 'Seguro' || key === 'seguro') update.seguro.fechaVencimiento = ts;
-        else if (tipo === 'Registro' || key === 'registro') update.vencimientoRegistro = ts;
-        else if (tipo === 'DNI' || key === 'dni') update.vencimientoDNI = ts;
-        update.documentacion[key] = { ...((update.documentacion[key] || {})), fechaVencimiento: ts };
-        toques.push(`${tipo}=${String(fecha.d).padStart(2, '0')}/${String(fecha.m).padStart(2, '0')}/${fecha.y}`);
+        if (item.tipo === 'VTV' || key === 'vtv') update.vtv.fechaVencimiento = ts;
+        else if (item.tipo === 'Seguro' || key === 'seguro') update.seguro.fechaVencimiento = ts;
+        else if (item.tipo === 'Registro' || key === 'registro') update.vencimientoRegistro = ts;
+        else if (item.tipo === 'DNI' || key === 'dni') update.vencimientoDNI = ts;
+        update.documentacion[key] = { ...((update.documentacion[key] || {})), fechaVencimiento: ts, noVence: false };
+        toques.push(`${item.tipo}=${String(fecha.d).padStart(2, '0')}/${String(fecha.m).padStart(2, '0')}/${fecha.y}`);
         cambiado = true;
       }
       if (!cambiado) { sinCambio++; continue; }

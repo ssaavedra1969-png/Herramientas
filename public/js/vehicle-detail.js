@@ -360,7 +360,8 @@ function renderDocumentos() {
     const existe = !!local;
     let badgeCls = 'text-[#4a5568]', badgeTxt = 'Sin cargar';
     if (existe) {
-      if (dias === null) { badgeCls = 'text-teal-300'; badgeTxt = 'Cargado'; }
+      if (dias === null && vehicleData.documentacion?.[key]?.noVence) { badgeCls = 'text-teal-300'; badgeTxt = 'No vence'; }
+      else if (dias === null) { badgeCls = 'text-teal-300'; badgeTxt = 'Cargado'; }
       else if (dias < 0) { badgeCls = 'text-red-400'; badgeTxt = 'Vencido'; }
       else if (dias <= 30) { badgeCls = 'text-yellow-400'; badgeTxt = `Vence en ${dias}d`; }
       else { badgeCls = 'text-[#00E5FF]'; badgeTxt = 'Al día'; }
@@ -570,6 +571,7 @@ function renderDocEstado(key, local, d) {
   if (!el) return;
   let txt, cls;
   if (!local) { txt = 'Sin cargar'; cls = 'text-[#4a5568]'; }
+  else if (d && d.noVence && !d.fechaVencimiento) { txt = 'No vence'; cls = 'text-teal-300'; }
   else if (!d || !d.fechaVencimiento) { txt = 'Cargado'; cls = 'text-teal-300'; }
   else {
     const vto = toDate(d.fechaVencimiento);
