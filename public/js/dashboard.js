@@ -1,4 +1,5 @@
 let allVehicles = [];
+let cedulaPresentes = null;
 
 function openDashModal(title, subtitle, iconBg, iconSvg, bodyHtml) {
   document.getElementById('dash-modal-title').textContent = title;
@@ -682,8 +683,23 @@ function initMobileMenu() {
   });
 }
 
+async function loadCedulaPresentes() {
+  if (cedulaPresentes) return cedulaPresentes;
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/vehicles/documentos/reporte', { headers });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    cedulaPresentes = new Set((data.rows || []).filter(r => r.docs?.cedula).map(r => String(r.patente || '').toUpperCase()));
+  } catch (e) {
+    console.warn('Error cargando cédulas presentes:', e);
+  }
+  return cedulaPresentes;
+}
+
 function initRealtimeListeners() {
-  db.collection('vehicles').orderBy('interno').onSnapshot((snapshot) => {
+  db.collection('vehicles').orderBy('interno').onSnapshot(async (snapshot) => {
+    await loadCedulaPresentes();
     const all = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     allVehicles = all;
     const active = all.filter(d => d.estadoGeneral !== 'Baja').length;
@@ -693,7 +709,7 @@ function initRealtimeListeners() {
     animateValue(elVehiculos, prevVehiculos, active, 800);
 
     let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0, serviceCount = 0, matafuegoCount = 0, cedulaCount = 0;
-    let vtvDoc = 0, seguroDoc = 0, matafuegoDoc = 0, cedulaDoc = 0;
+    let vtvDoc = 0, seguroDoc = 0, matafuegoDoc = 0, cedulaDoc = 0, cedulaTotal = 0;
     all.forEach(v => {
       if (v.estadoGeneral === 'Baja') return;
       const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
@@ -713,6 +729,7 @@ function initRealtimeListeners() {
       const cedDays = daysUntil(v.documentacion?.cedula?.fechaVencimiento);
       if (cedDays !== null && cedDays <= 30) cedulaCount++;
       if (v.documentacion?.cedula?.fechaVencimiento) cedulaDoc++;
+      if (cedulaPresentes?.has(String(v.patente || '').toUpperCase())) cedulaTotal++;
     });
 
     const elVtv = document.getElementById('card-vtv-proximas');
@@ -751,7 +768,7 @@ function initRealtimeListeners() {
       const prevCedula = parseInt(elCedula.textContent) || 0;
       animateValue(elCedula, prevCedula, cedulaCount, 800);
     }
-    renderDocCount('card-cedula-docs', cedulaDoc, active);
+    if (cedulaPresentes) renderDocCount('card-cedula-docs', cedulaDoc, cedulaTotal);
 
     renderEmpresas(all);
     renderFleetHealth(all);
