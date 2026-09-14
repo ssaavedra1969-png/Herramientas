@@ -93,14 +93,15 @@ function buildMainRow(r) {
   const isOpen = SVC.openIds.has(v.id);
   const proxBig = sum.minFecha ? fmtFecha(sum.minFecha) : '—';
   const proxSub = sum.nextTipo ? esc(sum.nextTipo) : '—';
-  const vencBig = Number.isFinite(info.days) ? (info.days <= 0 ? 'Vencido' : `en ${info.days} días`) : '—';
+  const days = sum.minFecha ? daysUntil(sum.minFecha) : info.days;
+  const vencBig = Number.isFinite(days) ? (days <= 0 ? 'Vencido' : `en ${days} días`) : '—';
   const rowBorder = info.estado === 'vencido' ? 'border-l-2 border-l-[#EF4444]' : info.estado === 'por_vencer' ? 'border-l-2 border-l-[#F97316]' : info.estado === 'proximo' ? 'border-l-2 border-l-[#FACC15]' : '';
   return `
   <tr class="border-b border-white/5 cursor-pointer hover:bg-white/[0.02] transition-colors ${rowBorder}" onclick="service.toggle('${v.id}')">
     <td class="px-1.5 py-2 text-center w-8"><svg class="w-3.5 h-3.5 mx-auto text-[#4a5568] transition-transform ${isOpen?'rotate-90':''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></td>
     <td class="px-2 py-2"><span class="font-semibold text-[#ffffff] tracking-wide">${esc(v.patente)}</span><div class="text-[10px] text-[#4a5568]">Int. ${esc(v.interno || '—')}</div></td>
     <td class="px-2 py-2 text-[#8b9bb4] text-xs">${esc(v.marca || '')} ${esc(v.modelo || '')}<div class="text-[10px] text-[#4a5568]">${esc(v.empresa || '—')}${v.centroTrabajo ? ' · ' + esc(v.centroTrabajo) : ''}</div></td>
-    <td class="px-2 py-2 text-xs">${fmtFecha(r.lastServiceMs)}<div class="text-[10px] text-[#4a5568]">${esc(r.lastServiceTipo || '')}</div></td>
+    <td class="px-2 py-2 text-xs">${fmtFecha(r.serviceMs)}<div class="text-[10px] text-[#4a5568]">${esc(r.lastServiceTipo || '')}</div></td>
     <td class="px-2 py-2 text-xs"><span class="font-medium text-[#ffffff]">${proxBig}</span><div class="text-[10px] text-[#4a5568]">${proxSub}</div></td>
     <td class="px-2 py-2 text-xs" style="color:${e.color}">${vencBig}</td>
     <td class="px-3 py-2 text-right"><span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider border ${e.pill}">${e.label}</span></td>
