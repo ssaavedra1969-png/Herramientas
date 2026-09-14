@@ -24,8 +24,9 @@ function toMs(x) {
 
 function daysUntil(x) {
   const ms = toMs(x);
-  if (ms === null) return null;
-  return Math.floor((ms - Date.now()) / 86400000);
+  if (ms == null) return null;
+  const d = Math.floor((ms - Date.now()) / 86400000);
+  return Number.isFinite(d) ? d : null;
 }
 
 function fmtFecha(x) {
