@@ -530,6 +530,21 @@ router.get('/:id/services', verifyToken, async (req, res) => {
   }
 });
 
+router.get('/services/panel', verifyToken, async (req, res) => {
+  try {
+    const vsnap = await db.collection('vehicles').orderBy('interno', 'asc').get();
+    const vehicles = vsnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const result = {};
+    for (const v of vehicles) {
+      const s = await db.collection('vehicles').doc(v.id).collection('services').orderBy('fecha', 'desc').get();
+      result[v.id] = { vehiculo: v, services: s.docs.map(d => ({ id: d.id, ...d.data() })) };
+    }
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/:id/services', verifyToken, requireAdmin, async (req, res) => {
   try {
     const km = parseInt(req.body.km) || null;

@@ -1,0 +1,88 @@
+<%- include('partials/head') %>
+<div class="flex h-screen overflow-hidden">
+  <%- include('partials/sidebar', { page: 'service' }) %>
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="lg:hidden header-glass text-[#ffffff] p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#2563EB]/10">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#2563EB] to-[#2563EB] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+    </div>
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <!-- Header -->
+      <div class="flex items-center gap-3 mb-4">
+        <h1 class="text-lg sm:text-xl font-bold tracking-wide">Service</h1>
+        <span class="px-2 py-0.5 rounded-md bg-[#2563EB]/15 text-[#2563EB] text-xs font-bold"><span id="total-vehicles">0</span> vehículos</span>
+        <button onclick="service.reload()" class="ml-auto p-1.5 rounded-md text-[#4a5568] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors" title="Actualizar">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="mb-3">
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="service-search" placeholder="Buscar por patente, interno, marca, tipo... " class="w-full pl-9 pr-3 py-2 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] focus:border-[#2563EB]/50 outline-none transition-all">
+        </div>
+      </div>
+
+      <!-- Estado pills (vehículos con service) -->
+      <div class="flex flex-wrap items-center gap-1.5 mb-3" id="estado-pills"></div>
+
+      <!-- Próximos agrupados -->
+      <div id="svc-proximos" class="hidden mb-4"></div>
+
+      <!-- Sección 1: Vehículos con service -->
+      <div class="glass-card rounded-xl overflow-hidden mb-4">
+        <div class="px-4 py-3 flex items-center gap-2 border-b border-white/5 bg-white/[0.02]">
+          <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
+          <h2 class="text-sm font-bold tracking-wide text-[#ffffff]">Con service realizado</h2>
+          <span class="px-2 py-0.5 rounded-md bg-[#2563EB]/15 text-[#2563EB] text-xs font-bold"><span id="svc-with-count">0</span></span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[720px]">
+            <thead>
+              <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
+                <th class="px-3 py-2.5 text-left font-semibold w-8"></th>
+                <th class="px-2 py-2.5 text-left font-semibold"><button class="sort-btn uppercase" data-sort="patente">Patente <span class="sort-arrow text-[#2563EB]"></span></button></th>
+                <th class="px-2 py-2.5 text-left font-semibold">Vehículo</th>
+                <th class="px-2 py-2.5 text-left font-semibold"><button class="sort-btn uppercase" data-sort="service">Últ. service <span class="sort-arrow text-[#2563EB]"></span></button></th>
+                <th class="px-2 py-2.5 text-left font-semibold"><button class="sort-btn uppercase" data-sort="due">Próx. fecha <span class="sort-arrow text-[#2563EB]"></span></button></th>
+                <th class="px-2 py-2.5 text-left font-semibold">Vencimiento</th>
+                <th class="px-3 py-2.5 text-right font-semibold">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="service-body"></tbody>
+          </table>
+        </div>
+        <div id="service-empty" class="hidden py-16 text-center text-[#4a5568] text-sm">No hay vehículos que coincidan</div>
+      </div>
+
+      <!-- Sección 2: Vehículos sin service -->
+      <div class="glass-card rounded-xl overflow-hidden" id="svc-without">
+        <div class="px-4 py-3 flex items-center gap-2 border-b border-white/5 bg-white/[0.02]">
+          <span class="w-2 h-2 rounded-full bg-[#4a5568]"></span>
+          <h2 class="text-sm font-bold tracking-wide text-[#8b9bb4]">Sin service realizado</h2>
+          <span class="px-2 py-0.5 rounded-md bg-[#4a5568]/15 text-[#8b9bb4] text-xs font-bold"><span id="svc-without-count">0</span></span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[520px]">
+            <thead>
+              <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
+                <th class="px-3 py-2.5 text-left font-semibold">Patente</th>
+                <th class="px-2 py-2.5 text-left font-semibold">Vehículo</th>
+                <th class="px-2 py-2.5 text-left font-semibold">Empresa</th>
+                <th class="px-3 py-2.5 text-right font-semibold">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="service-without-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<%- include('partials/mobile-menu', { page: 'service' }) %>
+<script src="/js/service.js?v=<%= Date.now() %>"></script>
+<%- include('partials/footer') %>

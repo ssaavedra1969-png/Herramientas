@@ -108,6 +108,16 @@ app.get('/vehicles', requireAuth, (req, res) => {
   });
 });
 
+app.get('/service', requireAuth, (req, res) => {
+  res.render('service', {
+    title: 'Service',
+    page: 'service',
+    clientConfig: res.locals.clientConfig,
+    currentUser: res.locals.currentUser,
+    currentUserData: res.locals.currentUserData
+  });
+});
+
 app.get('/vehicle/scan', requireAuth, (req, res) => {
   res.render('scanner', {
     title: 'Escanear Vehículo',
