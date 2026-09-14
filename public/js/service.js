@@ -13,7 +13,8 @@ let SVC = {
 const normStr = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 function toMs(x) {
-  if (!x) return null;
+  if (x == null) return null;
+  if (typeof x === 'number') return Number.isFinite(x) ? x : null;
   if (typeof x.toDate === 'function') return x.toDate().getTime();
   if (x instanceof Date) return x.getTime();
   if (x.seconds != null) return x.seconds * 1000;
