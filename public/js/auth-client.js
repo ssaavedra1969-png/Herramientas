@@ -10,7 +10,7 @@ async function completeSignIn(user) {
   currentUser = user;
   const loginPage = window.location.pathname === '/login' || window.location.pathname === '/';
   try {
-    if (!sessionStorage.getItem('sessionInit')) {
+    if (loginPage || !sessionStorage.getItem('sessionInit')) {
       const token = await user.getIdToken();
       const res = await fetch('/api/auth/session', {
         method: 'POST',
