@@ -66,9 +66,9 @@ function serviceSummaryOf(vehicleId) {
 }
 
 function computeEstado(v, sum) {
-  const days = daysUntil(sum.minFecha);
   const has = (SVC.services.get(v.id) || new Map()).size > 0;
   if (sum.minFecha == null) return { estado: has ? 'al_dia' : 'sin_service', days: null };
+  const days = daysUntil(sum.minFecha);
   if (days <= 0) return { estado: 'vencido', days };
   if (days <= 30) return { estado: 'por_vencer', days };
   return { estado: 'proximo', days };
@@ -92,7 +92,7 @@ function buildMainRow(r) {
   const isOpen = SVC.openIds.has(v.id);
   const proxBig = sum.minFecha ? fmtFecha(sum.minFecha) : '—';
   const proxSub = sum.nextTipo ? esc(sum.nextTipo) : '—';
-  const vencBig = info.days != null ? (info.days <= 0 ? 'Vencido' : `en ${info.days} días`) : '—';
+  const vencBig = Number.isFinite(info.days) ? (info.days <= 0 ? 'Vencido' : `en ${info.days} días`) : '—';
   const rowBorder = info.estado === 'vencido' ? 'border-l-2 border-l-[#EF4444]' : info.estado === 'por_vencer' ? 'border-l-2 border-l-[#F97316]' : info.estado === 'proximo' ? 'border-l-2 border-l-[#FACC15]' : '';
   return `
   <tr class="border-b border-white/5 cursor-pointer hover:bg-white/[0.02] transition-colors ${rowBorder}" onclick="service.toggle('${v.id}')">
@@ -170,7 +170,7 @@ function buildProximos(list) {
       ${list.map(r => {
         const v = r.v, e = ESTADO[r.info.estado], sum = r.sum;
         const days = r.info.days;
-        const txt = days != null ? (days <= 0 ? `vencido hace ${Math.abs(days)} día${Math.abs(days) === 1 ? '' : 's'}` : `en ${days} día${days === 1 ? '' : 's'}`) : '—';
+        const txt = Number.isFinite(days) ? (days <= 0 ? `vencido hace ${Math.abs(days)} día${Math.abs(days) === 1 ? '' : 's'}` : `en ${days} día${days === 1 ? '' : 's'}`) : '—';
         const border = r.info.estado === 'vencido' ? 'border-l-[#EF4444]' : 'border-l-[#F97316]';
         return `
       <a href="/vehicle/${v.id}" class="flex items-center gap-3 px-3 py-2 hover:bg-white/[0.03] transition-colors border-l-2 ${border}">
