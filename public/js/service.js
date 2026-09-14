@@ -16,7 +16,8 @@ function toMs(x) {
   if (!x) return null;
   if (typeof x.toDate === 'function') return x.toDate().getTime();
   if (x instanceof Date) return x.getTime();
-  if (x.seconds) return x.seconds * 1000;
+  if (x.seconds != null) return x.seconds * 1000;
+  if (x._seconds != null) return x._seconds * 1000;
   const n = Date.parse(x);
   return isNaN(n) ? null : n;
 }
