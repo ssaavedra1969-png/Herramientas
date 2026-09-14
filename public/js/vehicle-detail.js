@@ -997,8 +997,6 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
       fechaControl: getDateValue('v-matafuegoFechaControl'),
       fechaVto: getDateValue('v-matafuegoFechaVto')
     },
-    proximoServiceKm: parseInt(document.getElementById('v-proximoServiceKm').value) || null,
-    proximoServiceFecha: getDateValue('v-proximoServiceFecha'),
     centroTrabajo: document.getElementById('v-centroTrabajo').value,
     chofer: document.getElementById('v-chofer').value.trim() || '',
     dni: document.getElementById('v-dni').value.trim() || '',

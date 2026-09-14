@@ -322,8 +322,6 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
         fechaVencimiento: seguro.fechaVencimiento ? new Date(seguro.fechaVencimiento) : null,
         costo: parseFloat(seguro.costo) || null
       },
-      proximoServiceKm: parseInt(req.body.proximoServiceKm) || null,
-      proximoServiceFecha: req.body.proximoServiceFecha ? new Date(req.body.proximoServiceFecha) : null,
       centroTrabajo: req.body.centroTrabajo || '',
       chofer: req.body.chofer?.trim() || '',
       dni: req.body.dni?.trim() || '',
@@ -398,8 +396,6 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
         fechaVencimiento: seguro.fechaVencimiento ? new Date(seguro.fechaVencimiento) : null,
         costo: parseFloat(seguro.costo) || null
       },
-      proximoServiceKm: parseInt(req.body.proximoServiceKm) || null,
-      proximoServiceFecha: req.body.proximoServiceFecha ? new Date(req.body.proximoServiceFecha) : null,
       centroTrabajo: req.body.centroTrabajo || '',
       chofer: req.body.chofer?.trim() || '',
       dni: req.body.dni?.trim() || '',
@@ -583,7 +579,7 @@ router.get('/template/excel', verifyToken, async (req, res) => {
       'modeloTrompo','cargaM3Trompo','kilometraje','vtvFechaRealizacion',
       'vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania',
       'seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto',
-      'proximoServiceKm','proximoServiceFecha','chofer','dni','vencimientoDNI','registro','vencimientoRegistro','empresa',
+      'chofer','dni','vencimientoDNI','registro','vencimientoRegistro','empresa',
       'centroTrabajo','observaciones'
     ];
 

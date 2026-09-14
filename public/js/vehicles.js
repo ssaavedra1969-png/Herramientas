@@ -699,8 +699,6 @@ async function saveVehicle(e) {
       fechaControl: getDateValue('v-matafuegoFechaControl'),
       fechaVto: getDateValue('v-matafuegoFechaVto')
     },
-    proximoServiceKm: parseInt(document.getElementById('v-proximoServiceKm').value) || null,
-    proximoServiceFecha: getDateValue('v-proximoServiceFecha'),
     centroTrabajo: document.getElementById('v-centroTrabajo').value,
     chofer: document.getElementById('v-chofer').value.trim() || '',
     dni: document.getElementById('v-dni').value.trim() || '',
@@ -836,8 +834,8 @@ function closeCsvImport() {
 }
 
 function downloadCsvTemplate() {
-  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','nroBet','tipo','subtipo','capacidadCarga','trompo','marcaTrompo','serieTrompo','modeloTrompo','cargaM3Trompo','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','proximoServiceKm','proximoServiceFecha','chofer','dni','vencimientoDNI','registro','vencimientoRegistro','empresa','centroTrabajo','observaciones'];
-  const sample = ['ABC123','V001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','BET-500','mixer','Indumix','25000','Si','Marina','ST-12345','Modelo X','8 M3','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','160000','2026-07-15','Juan Pérez','30123456','2030-12-31','REG-2024-001','2028-06-30','FRAFIL SRL','Lujan','Último cambio de cubiertas a los 140.000 km'];
+  const headers = ['patente','interno','marca','modelo','año','chasis','numeroMotor','nroBet','tipo','subtipo','capacidadCarga','trompo','marcaTrompo','serieTrompo','modeloTrompo','cargaM3Trompo','kilometraje','vtvFechaRealizacion','vtvVencimiento','vtvCosto','vtvCentro','vtvResultado','seguroCompania','seguroPoliza','seguroTipo','seguroVencimiento','seguroCosto','chofer','dni','vencimientoDNI','registro','vencimientoRegistro','empresa','centroTrabajo','observaciones'];
+  const sample = ['ABC123','V001','Mercedes Benz','Atego 1718','2022','9BM1234567890ABC','Motor XYZ-12345','BET-500','mixer','Indumix','25000','Si','Marina','ST-12345','Modelo X','8 M3','158000','2026-03-15','2026-08-31','25000','Campana','Aprobado','Rivadavia Seguros','POL-2024-12345','Todo Riesgo','2026-09-30','120000','Juan Pérez','30123456','2030-12-31','REG-2024-001','2028-06-30','FRAFIL SRL','Lujan','Último cambio de cubiertas a los 140.000 km'];
   const BOM = '\uFEFF';
   const csv = BOM + headers.join(',') + '\n' + sample.join(',') + '\n';
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -919,8 +917,6 @@ function parseVehicleRows(rows) {
         seguroTipo: (row.seguroTipo || '').toString().trim(),
         seguroVencimiento: row.seguroVencimiento || '',
         seguroCosto: parseFloat(row.seguroCosto) || null,
-        proximoServiceKm: parseFloat(row.proximoServiceKm) || null,
-        proximoServiceFecha: row.proximoServiceFecha || '',
         chofer: (row.chofer || '').toString().trim(),
         dni: (row.dni || '').toString().trim(),
         vencimientoDNI: row.vencimientoDNI || '',
@@ -1042,8 +1038,7 @@ function validateCsvImport() {
             'vtv costo':'vtvCosto','vtv centro':'vtvCentro','vtv resultado':'vtvResultado',
             'seguro compania':'seguroCompania','seguro poliza':'seguroPoliza',
             'seguro tipo':'seguroTipo','seguro vencimiento':'seguroVencimiento',
-            'seguro costo':'seguroCosto','prox service km':'proximoServiceKm',
-            'prox service fecha':'proximoServiceFecha',
+            'seguro costo':'seguroCosto',
             'conductor':'chofer','chofer':'chofer','dni':'dni','vto dni':'vencimientoDNI',
             'registro':'registro','vto registro':'vencimientoRegistro','empresa':'empresa',
             'centro trabajo':'centroTrabajo','observaciones':'observaciones'
@@ -1162,8 +1157,6 @@ async function executeCsvImport() {
         resultado: row.vtvResultado || 'Pendiente'
       },
       seguro: Object.keys(seguro).length ? seguro : {},
-      proximoServiceKm: row.proximoServiceKm || null,
-      proximoServiceFecha: toTimestamp(row.proximoServiceFecha),
       chofer: row.chofer || '',
       dni: row.dni || '',
       vencimientoDNI: toTimestamp(row.vencimientoDNI),
