@@ -333,7 +333,7 @@ function initRealtime() {
   clearListeners();
   if (SVC.timer) { clearInterval(SVC.timer); SVC.timer = null; }
   loadPanel();
-  SVC.timer = setInterval(loadPanel, 60000);
+  SVC.timer = setInterval(() => { if (!document.hidden) loadPanel(); }, 300000);
 
   const qv = db.collection('vehicles').onSnapshot(snap => {
     SVC.vehicles = new Map();

@@ -532,12 +532,16 @@ router.get('/:id/services', verifyToken, async (req, res) => {
 
 router.get('/services/panel', verifyToken, async (req, res) => {
   try {
-    const vsnap = await db.collection('vehicles').orderBy('interno', 'asc').get();
-    const vehicles = vsnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const [vsnap, ssnap] = await Promise.all([
+      db.collection('vehicles').orderBy('interno', 'asc').get(),
+      db.collectionGroup('services').orderBy('fecha', 'desc').get()
+    ]);
     const result = {};
-    for (const v of vehicles) {
-      const s = await db.collection('vehicles').doc(v.id).collection('services').orderBy('fecha', 'desc').get();
-      result[v.id] = { vehiculo: v, services: s.docs.map(d => ({ id: d.id, ...d.data() })) };
+    vsnap.docs.forEach(d => { result[d.id] = { vehiculo: { id: d.id, ...d.data() }, services: [] }; });
+    for (const d of ssnap.docs) {
+      const vehicleId = d.ref.parent.parent.id;
+      if (!result[vehicleId]) continue;
+      result[vehicleId].services.push({ id: d.id, ...d.data() });
     }
     res.json(result);
   } catch (error) {
