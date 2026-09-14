@@ -61,12 +61,17 @@ async function loadUser(req, res, next) {
     try {
       const decoded = await adminAuth.verifySessionCookie(token, false);
       res.locals.currentUser = decoded;
+      res.locals.currentUserData = null;
 
-      const userDoc = await db.collection('users').doc(decoded.uid).get();
-      if (userDoc.exists) {
-        res.locals.currentUserData = await ensureFirstAdmin(decoded.uid);
-      } else {
-        res.locals.currentUserData = await createUserIfMissing(decoded.uid, decoded.email?.split('@')[0], decoded.email);
+      try {
+        const userDoc = await db.collection('users').doc(decoded.uid).get();
+        if (userDoc.exists) {
+          res.locals.currentUserData = await ensureFirstAdmin(decoded.uid);
+        } else {
+          res.locals.currentUserData = await createUserIfMissing(decoded.uid, decoded.email?.split('@')[0], decoded.email);
+        }
+      } catch (err) {
+        console.error('[loadUser] Error leyendo datos del usuario (sesión preservada):', err.code || err.message);
       }
 
       res.locals.clientConfig = require('../config/firebase').clientConfig;
