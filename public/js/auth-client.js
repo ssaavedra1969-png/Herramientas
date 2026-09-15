@@ -21,20 +21,25 @@ async function completeSignIn(user) {
       sessionStorage.setItem('sessionInit', '1');
     }
 
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    if (userDoc.exists) {
-      currentUserData = userDoc.data();
+    const serverUserData = window.__SERVER_USER_DATA;
+    if (serverUserData?.role) {
+      currentUserData = serverUserData;
     } else {
-      const allSnap = await db.collection('users').limit(1).get();
-      const isFirst = allSnap.empty;
-      const newUser = {
-        email: user.email,
-        role: isFirst ? 'Admin' : 'Usuario',
-        displayName: user.displayName || user.email.split('@')[0],
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      await db.collection('users').doc(user.uid).set(newUser);
-      currentUserData = newUser;
+      const userDoc = await db.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        currentUserData = userDoc.data();
+      } else {
+        const allSnap = await db.collection('users').limit(1).get();
+        const isFirst = allSnap.empty;
+        const newUser = {
+          email: user.email,
+          role: isFirst ? 'Admin' : 'Usuario',
+          displayName: user.displayName || user.email.split('@')[0],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        await db.collection('users').doc(user.uid).set(newUser);
+        currentUserData = newUser;
+      }
     }
 
     if (loginPage) window.location.href = '/dashboard';
