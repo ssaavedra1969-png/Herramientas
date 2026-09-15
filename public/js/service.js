@@ -1,3 +1,10 @@
+const SVC_BUILD = 'service.js-b:2-dias-fix';
+console.log('[service.js] build:', SVC_BUILD);
+document.addEventListener('DOMContentLoaded', () => {
+  const f = document.getElementById('svc-build-flag');
+  if (f) f.textContent = SVC_BUILD;
+});
+
 let SVC = {
   vehicles: new Map(),
   services: new Map(),

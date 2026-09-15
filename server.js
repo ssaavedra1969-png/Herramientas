@@ -57,13 +57,11 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view cache', false);
 
-// Disable static file cache in development
-if (process.env.NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
-    res.set('Cache-Control', 'no-store');
-    next();
-  });
-}
+// Disable cache: static files must always be fresh (prevents stale service.js/HTML)
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/titulos', express.static(path.join(__dirname, 'titulo')));
