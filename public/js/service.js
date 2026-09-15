@@ -15,6 +15,8 @@ let SVC = {
   openIds: new Set(),
   unsubscribers: [],
   timer: null,
+  visibilityHandler: null,
+  lastPanelLoad: 0,
   isMock: window.location.search.includes('debug=mock')
 };
 
@@ -335,13 +337,25 @@ function initMobileMenu() {
   back?.addEventListener('click', () => menu?.classList.add('hidden'));
 }
 
-function clearListeners() { SVC.unsubscribers.forEach(u => { try { u(); } catch (e) {} }); SVC.unsubscribers = []; }
+function clearListeners() {
+  SVC.unsubscribers.forEach(u => { try { u(); } catch (e) {} });
+  SVC.unsubscribers = [];
+  if (SVC.visibilityHandler) { document.removeEventListener('visibilitychange', SVC.visibilityHandler); SVC.visibilityHandler = null; }
+  clearInterval(SVC.timer); SVC.timer = null;
+}
 
 function initRealtime() {
   clearListeners();
-  if (SVC.timer) { clearInterval(SVC.timer); SVC.timer = null; }
+  if (SVC.visibilityHandler) { document.removeEventListener('visibilitychange', SVC.visibilityHandler); }
+  clearInterval(SVC.timer); SVC.timer = null;
   loadPanel();
-  SVC.timer = setInterval(() => { if (!document.hidden) loadPanel(); }, 300000);
+  const MIN_REFRESH_MS = 60000;
+  SVC.visibilityHandler = () => {
+    if (document.hidden) return;
+    const since = Date.now() - (SVC.lastPanelLoad || 0);
+    if (since > MIN_REFRESH_MS) loadPanel();
+  };
+  document.addEventListener('visibilitychange', SVC.visibilityHandler);
 
   if (SVC.isMock) return;
   const qv = db.collection('vehicles').onSnapshot(snap => {
@@ -369,6 +383,7 @@ async function loadPanel() {
     }
     SVC.services = services;
     SVC.vehicles = vehicles;
+    SVC.lastPanelLoad = Date.now();
     render();
   } catch (e) {
     console.error('Error cargando panel services:', e.message);
