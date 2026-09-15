@@ -1,14 +1,17 @@
 const { auth: adminAuth, db } = require('../config/firebase');
 
-async function ensureFirstAdmin(uid) {
-  const userRef = db.collection('users').doc(uid);
-  const userDoc = await userRef.get();
-  if (!userDoc.exists) return null;
-  const data = userDoc.data();
+async function ensureFirstAdmin(uid, userDoc) {
+  let doc = userDoc;
+  if (!doc) {
+    const userRef = db.collection('users').doc(uid);
+    doc = await userRef.get();
+  }
+  if (!doc.exists) return null;
+  const data = doc.data();
   if (data.role && data.role !== 'Usuario') return data;
   const adminSnap = await db.collection('users').where('role', '==', 'Admin').limit(1).get();
   if (adminSnap.empty) {
-    await userRef.update({ role: 'Admin' });
+    await db.collection('users').doc(uid).update({ role: 'Admin' });
     data.role = 'Admin';
   }
   return data;
@@ -37,7 +40,7 @@ async function verifyToken(req, res, next) {
 
     const userDoc = await db.collection('users').doc(decoded.uid).get();
     if (userDoc.exists) {
-      req.userData = await ensureFirstAdmin(decoded.uid);
+      req.userData = await ensureFirstAdmin(decoded.uid, userDoc);
     } else {
       req.userData = await createUserIfMissing(decoded.uid, decoded.email?.split('@')[0], decoded.email);
     }
@@ -75,7 +78,7 @@ async function loadUser(req, res, next) {
       try {
         const userDoc = await db.collection('users').doc(decoded.uid).get();
         if (userDoc.exists) {
-          res.locals.currentUserData = await ensureFirstAdmin(decoded.uid);
+          res.locals.currentUserData = await ensureFirstAdmin(decoded.uid, userDoc);
         } else {
           res.locals.currentUserData = await createUserIfMissing(decoded.uid, decoded.email?.split('@')[0], decoded.email);
         }
