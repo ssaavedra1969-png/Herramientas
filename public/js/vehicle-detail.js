@@ -46,7 +46,7 @@ async function loadVehicle() {
   document.getElementById('vehicle-title').textContent = `${vehicleData.patente || 'Vehículo'} - Int. ${vehicleData.interno || ''}`;
   document.getElementById('vehicle-subtitle').textContent = `${vehicleData.marca || ''} ${vehicleData.modelo || ''} (${vehicleData.tipo || ''})`;
 
-  applyMixerDefault();
+  applyReglaServicio();
 
   renderGeneralInfo();
   renderSeguro();
@@ -1046,14 +1046,45 @@ const SERVICE_FLUIDO = {
   'Cambio pastillas de freno': 'Cambio líquido de frenos'
 };
 
-function esMixerVehicle() {
-  return /mixer/.test(String(vehicleData?.tipo || '').toLowerCase());
+function getTipoUnificado() {
+  const t = String(vehicleData?.tipo || '').trim().toLowerCase();
+  if (t.includes('mixer')) return 'Mixer';
+  if (t === 'auto' || t === 'camioneta') return t === 'auto' ? 'Auto' : 'Camioneta';
+  return null;
 }
 
-function applyMixerDefault() {
-  const el = document.getElementById('s-intervalo');
-  if (!el || el.value) return;
-  el.value = esMixerVehicle() ? '10000' : '';
+function getServiceRegla() {
+  const tipo = getTipoUnificado();
+  if (tipo === 'Mixer') return { intervalo: 30000, meses: 9 };
+  if (tipo === 'Auto' || tipo === 'Camioneta') return { intervalo: 10000, meses: 6 };
+  return null;
+}
+
+function addMeses(fechaStr, meses) {
+  if (!fechaStr) return '';
+  const d = new Date(fechaStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return '';
+  const dia = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + meses);
+  const ultimo = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(dia, ultimo));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function applyReglaServicio() {
+  const regla = getServiceRegla();
+  if (!regla) return;
+  const intervaloEl = document.getElementById('s-intervalo');
+  const kmEl = document.getElementById('s-km');
+  const proxKmEl = document.getElementById('s-proximoKm');
+  const fechaEl = document.getElementById('s-fecha');
+  const proxFechaEl = document.getElementById('s-proximoFecha');
+  if (!intervaloEl) return;
+  intervaloEl.value = regla.intervalo;
+  const km = parseInt(kmEl?.value) || 0;
+  if (proxKmEl) proxKmEl.value = km ? km + regla.intervalo : '';
+  if (proxFechaEl && fechaEl) proxFechaEl.value = addMeses(fechaEl.value, regla.meses);
 }
 
 function addServicioSuggestion(name) {
@@ -1093,6 +1124,7 @@ function initServiceForm() {
   }
 
   const updateProximoKm = () => {
+    if (getServiceRegla()) { applyReglaServicio(); return; }
     if (proximoKmTouched) return;
     const km = parseInt(kmEl.value) || 0;
     const intervalo = parseInt(intervaloEl.value) || 0;
@@ -1117,13 +1149,17 @@ function initServiceForm() {
 
   tipoEl.addEventListener('input', () => {
     addServicioSuggestion(tipoEl.value);
-    const def = SERVICE_DEFAULT_KM[tipoEl.value];
-    if (def) {
-      intervaloEl.value = def;
-      updateProximoKm();
-    } else if (esMixerVehicle()) {
-      intervaloEl.value = 10000;
-      updateProximoKm();
+    if (getServiceRegla()) {
+      applyReglaServicio();
+    } else {
+      const def = SERVICE_DEFAULT_KM[tipoEl.value];
+      if (def) {
+        intervaloEl.value = def;
+        updateProximoKm();
+      } else {
+        intervaloEl.value = '';
+        updateProximoKm();
+      }
     }
     updateFluido();
   });
@@ -1133,11 +1169,16 @@ function initServiceForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!isAdmin()) return;
+    const regla = getServiceRegla();
     const km = parseInt(kmEl.value) || null;
-    const intervalo = parseInt(intervaloEl.value) || null;
-    const proximoKm = parseInt(proximoKmEl.value) || (km && intervalo ? km + intervalo : null);
+    const intervalo = regla ? regla.intervalo : (parseInt(intervaloEl.value) || null);
+    const proximoKm = regla
+      ? (km != null ? km + regla.intervalo : null)
+      : (parseInt(proximoKmEl.value) || (km && intervalo ? km + intervalo : null));
     const fechaStr = document.getElementById('s-fecha').value;
-    const proximoFechaStr = document.getElementById('s-proximoFecha').value;
+    const proximoFechaStr = regla
+      ? addMeses(fechaStr, regla.meses)
+      : document.getElementById('s-proximoFecha').value;
     const data = {
       fecha: fechaStr ? firebase.firestore.Timestamp.fromDate(new Date(fechaStr + 'T00:00:00')) : null,
       tipo: tipoEl.value,
@@ -1168,7 +1209,7 @@ function initServiceForm() {
       form.reset();
       document.getElementById('s-fecha').value = new Date().toISOString().split('T')[0];
       proximoKmTouched = false;
-      applyMixerDefault();
+      applyReglaServicio();
       editingServiceId = null;
       const submitBtn = document.getElementById('service-submit-btn');
       if (submitBtn) submitBtn.textContent = 'Agregar Service';
@@ -1480,9 +1521,9 @@ function cancelServiceEdit() {
   proximoKmTouched = false;
   const form = document.getElementById('form-service');
   if (form) form.reset();
-  applyMixerDefault();
   const fechaEl = document.getElementById('s-fecha');
   if (fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
+  applyReglaServicio();
   const submitBtn = document.getElementById('service-submit-btn');
   if (submitBtn) submitBtn.textContent = 'Agregar Service';
   const cancelBtn = document.getElementById('service-cancel-btn');

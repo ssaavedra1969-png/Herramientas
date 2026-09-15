@@ -7,7 +7,8 @@ let SVC = {
   estadoPill: '',
   openIds: new Set(),
   unsubscribers: [],
-  timer: null
+  timer: null,
+  isMock: window.location.search.includes('debug=mock')
 };
 
 const normStr = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -335,6 +336,7 @@ function initRealtime() {
   loadPanel();
   SVC.timer = setInterval(() => { if (!document.hidden) loadPanel(); }, 300000);
 
+  if (SVC.isMock) return;
   const qv = db.collection('vehicles').onSnapshot(snap => {
     SVC.vehicles = new Map();
     snap.docs.forEach(d => SVC.vehicles.set(d.id, d.data()));
@@ -345,8 +347,9 @@ function initRealtime() {
 
 async function loadPanel() {
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch('/api/vehicles/services/panel', { headers });
+    const headers = SVC.isMock ? {} : await getAuthHeaders();
+    const url = SVC.isMock ? '/api/vehicles/services/panel-mock' : '/api/vehicles/services/panel';
+    const res = await fetch(url, { headers });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const services = new Map();

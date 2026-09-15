@@ -1,4 +1,10 @@
-﻿<script>
+﻿<% if (mockMode) { %>
+<script>
+  window.__SERVER_USER_DATA = { role: 'Admin', displayName: 'Modo Mock' };
+  window.__IS_ADMIN = true;
+</script>
+<% } else { %>
+<script>
   const FIREBASE_CONFIG = <%- JSON.stringify(clientConfig) %>;
   window.__DEV_READ_ONLY = <%- clientConfig.devReadOnly ? 'true' : 'false' %>;
   firebase.initializeApp(FIREBASE_CONFIG);
@@ -8,5 +14,6 @@
 <script src="/js/dev-readonly.js?v=<%= Date.now() %>"></script>
 <% } %>
 <script src="/js/auth-client.js?v=<%= Date.now() %>"></script>
+<% } %>
 </body>
 </html>

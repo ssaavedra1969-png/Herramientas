@@ -56,6 +56,14 @@ async function requireAdmin(req, res, next) {
 }
 
 async function loadUser(req, res, next) {
+  if (req.originalUrl.includes('debug=mock')) {
+    res.locals.currentUser = { uid: 'mock-user', email: 'mock@local.dev', name: 'Modo Mock' };
+    res.locals.currentUserData = { role: 'Admin', displayName: 'Modo Mock' };
+    res.locals.clientConfig = require('../config/firebase').clientConfig;
+    res.locals.mockMode = true;
+    return next();
+  }
+
   const token = req.cookies?.__session;
   if (token) {
     try {

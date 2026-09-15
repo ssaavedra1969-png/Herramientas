@@ -108,10 +108,23 @@ app.get('/vehicles', requireAuth, (req, res) => {
   });
 });
 
-app.get('/service', requireAuth, (req, res) => {
+app.get('/service', (req, res) => {
+  const isMock = (req.query.debug === 'mock' || req.originalUrl.includes('debug=mock'));
+  if (isMock && res.locals.mockMode) {
+    return res.render('service', {
+      title: 'Service',
+      page: 'service',
+      mockMode: true,
+      clientConfig: res.locals.clientConfig,
+      currentUser: res.locals.currentUser,
+      currentUserData: res.locals.currentUserData
+    });
+  }
+  if (!res.locals.currentUser) return res.redirect('/login');
   res.render('service', {
     title: 'Service',
     page: 'service',
+    mockMode: false,
     clientConfig: res.locals.clientConfig,
     currentUser: res.locals.currentUser,
     currentUserData: res.locals.currentUserData

@@ -530,11 +530,76 @@ router.get('/:id/services', verifyToken, async (req, res) => {
   }
 });
 
+router.get('/services/panel-mock', (req, res) => {
+  const TIPOS = ['Mixer', 'Camion', 'Auto', 'Camioneta'];
+  const PATENTES = ['AG719TT', 'AE192RO', 'AB922TD', 'AD718OH', 'AD957RY', 'AG889XV'];
+  const MARCAS = ['Iveco', 'Mercedes-Benz', 'Volkswagen', 'Ford', 'Scania', 'Toyota'];
+  const MODELOS = ['Tector', '1114', 'Amarok', 'Ranger', 'R420', 'Hilux'];
+  const EMPRESAS = ['FALPAT', 'FALCON', 'PILAR'];
+  const TIPOS_SVC = ['Mecánico', 'Service 10.000km', 'Service 30.000km', 'Hormigonera', 'Legal'];
+  const PROVEEDORES = ['Taller Falpat', 'Serviacero', 'Tecnohidraulica', 'Capacitación'];
+  const result = {};
+  for (let i = 1; i <= 52; i++) {
+    const id = 'mock-' + i;
+    const interno = 'V-' + String(i).padStart(5, '0');
+    const patente = i <= PATENTES.length ? PATENTES[i - 1] : 'AB' + String(100 + i) + 'CD';
+    const tipo = TIPOS[i % TIPOS.length];
+    const nServ = (i * 7) % 12;
+    const services = [];
+    const baseFecha = Date.now() - (i * 30 + 20) * 86400000;
+    for (let j = 0; j <= nServ; j++) {
+      const fechaMs = baseFecha + (j * 83) * 86400000;
+      const fecha = new Date(fechaMs).toISOString();
+      const km = 21000 + j * ((i % 3) ? 10000 : 30000);
+      const proxKm = km + ((tipo === 'Mixer') ? 30000 : 10000);
+      const proxFecha = new Date(fechaMs + ((tipo === 'Mixer') ? 270 : 180) * 86400000).toISOString();
+      services.push({
+        id: 's-' + i + '-' + j,
+        fecha,
+        tipo: TIPOS_SVC[(i + j) % TIPOS_SVC.length],
+        km,
+        intervaloKm: (tipo === 'Mixer') ? 30000 : 10000,
+        proximoKm: (j % 4 === 2) ? null : proxKm,
+        proximoFecha: (j % 4 === 2) ? null : proxFecha,
+        costo: (j % 3 === 0) ? 45000 + (i * 1300) : null,
+        proveedor: PROVEEDORES[(i + j) % PROVEEDORES.length]
+      });
+    }
+    const vencDays = (i % 5) - 2;
+    const last = services[services.length - 1];
+    result[id] = {
+      vehiculo: {
+        id,
+        patente,
+        interno,
+        tipo,
+        marca: MARCAS[i % MARCAS.length],
+        modelo: MODELOS[i % MODELOS.length],
+        empresa: EMPRESAS[i % EMPRESAS.length],
+        centroTrabajo: (i % 3 === 0) ? 'Cantera Norte' : '',
+        kilometraje: last ? last.km : 15000 + i * 900,
+        horometro: (i % 4 === 0) ? 8000 + i * 120 : null,
+        nroBet: (i % 5 === 0) ? 'BET-' + (200 + i) : '',
+        chofer: (i % 4 === 0) ? 'Carlos Pérez' : '',
+        estadoGeneral: (i % 6 === 0) ? 'Bueno' : 'Regular',
+        serviceSummary: last ? { [last.tipo]: { fecha: last.fecha, km: last.km, proximoKm: last.proximoKm, proximoFecha: last.proximoFecha } } : {},
+        proximoServiceKm: last ? last.proximoKm : null,
+        proximoServiceFecha: last ? last.proximoFecha : null,
+        proximoServiceTipo: last ? last.tipo : null,
+        vtv: { fechaVencimiento: new Date(Date.now() + vencDays * 86400000).toISOString() },
+        seguro: { fechaVencimiento: new Date(Date.now() + (vencDays + 5) * 86400000).toISOString() }
+      },
+      services
+    };
+  }
+  res.json(result);
+});
+
 router.get('/services/panel', verifyToken, async (req, res) => {
   try {
     const [vsnap, ssnap] = await Promise.all([
       db.collection('vehicles').orderBy('interno', 'asc').get(),
-      db.collectionGroup('services').orderBy('fecha', 'desc').get()
+      db.collectionGroup('services').get()
     ]);
     const result = {};
     vsnap.docs.forEach(d => { result[d.id] = { vehiculo: { id: d.id, ...d.data() }, services: [] }; });
@@ -542,6 +607,13 @@ router.get('/services/panel', verifyToken, async (req, res) => {
       const vehicleId = d.ref.parent.parent.id;
       if (!result[vehicleId]) continue;
       result[vehicleId].services.push({ id: d.id, ...d.data() });
+    }
+    for (const key of Object.keys(result)) {
+      result[key].services.sort((a, b) => {
+        const ta = a.fecha ? (a.fecha.seconds != null ? a.fecha.seconds * 1000 : a.fecha._seconds != null ? a.fecha._seconds * 1000 : new Date(a.fecha).getTime()) : 0;
+        const tb = b.fecha ? (b.fecha.seconds != null ? b.fecha.seconds * 1000 : b.fecha._seconds != null ? b.fecha._seconds * 1000 : new Date(b.fecha).getTime()) : 0;
+        return tb - ta;
+      });
     }
     res.json(result);
   } catch (error) {
