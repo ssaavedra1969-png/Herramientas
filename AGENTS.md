@@ -43,7 +43,9 @@ Si el push falla: `git pull origin main` y repetir el push.
 
 La IA SIEMPRE debe ejecutar `git pull origin main` al inicio de cada sesión.
 
-Archivo completo de reglas: `GUIA-INSTALACION.txt` (sección "ANEXO — REGLAS PARA IA")
+Archivo completo de reglas: `documentacion/GUIA-INSTALACION.txt` (sección "ANEXO — REGLAS PARA IA")
+
+Toda la documentación del proyecto está en `documentacion/` (índice: `documentacion/README.md`).
 
 ## Stack
 - **Runtime:** Node.js + Express

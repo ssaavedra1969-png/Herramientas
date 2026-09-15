@@ -283,7 +283,16 @@ Herramientas/
 │   ├── restore-firebase.js    # Restaurar backup
 │   ├── deploy-rules.js        # Deploy reglas Firestore
 │   └── export-vehiculos.xlsx  # Exportar vehiculos a Excel
-└── SETUP.md                   # Esta guia de instalacion
+├── documentacion/             # Toda la documentacion del proyecto
+│   ├── README.md              # Indice maestro (mapa de todos los docs)
+│   ├── GUIA-INSTALACION.txt   # Esta guia de instalacion
+│   ├── SETUP.md               # Resumen corto de instalacion
+│   ├── CHANGELOG.md           # Historial de cambios por sesion
+│   ├── MS_BASE.md             # Decision: migracion SQL Server (no implementado)
+│   ├── RESUMEN-SESION-*.md    # Resumenes de sesiones puntuales
+│   ├── TAREAS_PENDIENTES/     # Backlog priorizado (P0-P3)
+│   └── rollback/              # Guias de rollback de optimizaciones
+└── AGENTS.md                  # Reglas criticas para IA (entrada principal)
 
 
 STACK TECNICO
