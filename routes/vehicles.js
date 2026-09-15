@@ -12,6 +12,20 @@ const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
 const DOC_EXT_PRIORIDAD = ['pdf', 'jpg', 'jpeg', 'png'];
 const DOC_MAX_UPLOAD = 700 * 1024;
 
+const TTL_PANEL_SERVICES = 120 * 1000;
+const TTL_REPORTE_DOCUMENTOS = 60 * 1000;
+const cacheTTL = new Map();
+
+function getCache(key, ttl) {
+  const hit = cacheTTL.get(key);
+  if (hit && Date.now() - hit.t < ttl) return hit.value;
+  if (hit) cacheTTL.delete(key);
+  return null;
+}
+function setCache(key, value) {
+  cacheTTL.set(key, { t: Date.now(), value });
+}
+
 async function recomputeServiceSummary(vehicleId) {
   const snap = await db.collection('vehicles').doc(vehicleId).collection('services').get();
   const summary = {};
@@ -75,6 +89,8 @@ function scanDocumentosCarpeta(patente) {
 
 router.get('/documentos/reporte', verifyToken, async (req, res) => {
   try {
+    const cacheado = getCache('reporte-documentos', TTL_REPORTE_DOCUMENTOS);
+    if (cacheado) return res.json(cacheado);
     const snap = await db.collection('vehicles').get();
     const rows = snap.docs.map(d => {
       const v = d.data();
@@ -98,7 +114,9 @@ router.get('/documentos/reporte', verifyToken, async (req, res) => {
       };
     });
     rows.sort((a, b) => b.faltantes - a.faltantes || a.patente.localeCompare(b.patente));
-    res.json({ rows, tipos: DOC_TIPOS });
+    const payload = { rows, tipos: DOC_TIPOS };
+    setCache('reporte-documentos', payload);
+    res.json(payload);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -242,6 +260,7 @@ router.post('/:id/documentos/:tipo/upload', verifyToken, requireAdmin, async (re
       await db.collection('vehicles').doc(req.params.id).update({ [`docsAdjuntos.${tipo}`]: admin.firestore.FieldValue.delete() });
     }
 
+    cacheTTL.delete('reporte-documentos');
     res.json({ ok: true, tipo, limpiados: resultado.limpiados });
   } catch (error) {
     res.status(error.code === 'NO_TOKEN' ? 503 : 500).json({ error: error.message });
@@ -276,6 +295,7 @@ router.delete('/:id/documentos/:tipo', verifyToken, requireAdmin, async (req, re
       return res.status(404).json({ error: 'No hay documento de ese tipo en GitHub ni en los adjuntos' });
     }
 
+    cacheTTL.delete('reporte-documentos');
     res.json({ ok: true, borrados, subido: borradoSubido });
   } catch (error) {
     res.status(error.code === 'NO_TOKEN' ? 503 : 500).json({ error: error.message });
@@ -347,6 +367,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
     }
 
     const docRef = await db.collection('vehicles').add(data);
+    cacheTTL.delete('reporte-documentos');
     res.status(201).json({ id: docRef.id, ...data });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -410,6 +431,7 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
     };
 
     await db.collection('vehicles').doc(req.params.id).update(data);
+    cacheTTL.delete('reporte-documentos');
     res.json({ id: req.params.id, ...data });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -435,6 +457,8 @@ router.delete('/:id', verifyToken, requireAdmin, async (req, res) => {
     const doc = await vehicleRef.get();
     if (!doc.exists) return res.status(404).json({ error: 'No encontrado' });
     await deleteVehicleWithSubcollections(vehicleRef);
+    cacheTTL.delete('reporte-documentos');
+    cacheTTL.delete('panel-services');
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -597,6 +621,8 @@ router.get('/services/panel-mock', (req, res) => {
 
 router.get('/services/panel', verifyToken, async (req, res) => {
   try {
+    const cacheado = getCache('panel-services', TTL_PANEL_SERVICES);
+    if (cacheado) return res.json(cacheado);
     const [vsnap, ssnap] = await Promise.all([
       db.collection('vehicles').orderBy('interno', 'asc').get(),
       db.collectionGroup('services').get()
@@ -615,6 +641,7 @@ router.get('/services/panel', verifyToken, async (req, res) => {
         return tb - ta;
       });
     }
+    setCache('panel-services', result);
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -642,6 +669,7 @@ router.post('/:id/services', verifyToken, requireAdmin, async (req, res) => {
     };
     const ref = await db.collection('vehicles').doc(req.params.id).collection('services').add(data);
     await recomputeServiceSummary(req.params.id);
+    cacheTTL.delete('panel-services');
     res.status(201).json({ id: ref.id, ...data });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -652,6 +680,7 @@ router.delete('/:id/services/:entryId', verifyToken, requireAdmin, async (req, r
   try {
     await db.collection('vehicles').doc(req.params.id).collection('services').doc(req.params.entryId).delete();
     await recomputeServiceSummary(req.params.id);
+    cacheTTL.delete('panel-services');
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
