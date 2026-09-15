@@ -56,6 +56,7 @@ async function requireAdmin(req, res, next) {
 }
 
 async function loadUser(req, res, next) {
+  res.locals.mockMode = false;
   if (req.originalUrl.includes('debug=mock')) {
     res.locals.currentUser = { uid: 'mock-user', email: 'mock@local.dev', name: 'Modo Mock' };
     res.locals.currentUserData = { role: 'Admin', displayName: 'Modo Mock' };
