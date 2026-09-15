@@ -31,7 +31,7 @@ function toMs(x) {
   return isNaN(n) ? null : n;
 }
 
-function daysUntil(x) {
+function serviceDaysUntil(x) {
   const ms = toMs(x);
   if (ms == null) return null;
   const d = Math.floor((ms - Date.now()) / 86400000);
@@ -77,7 +77,7 @@ function serviceSummaryOf(vehicleId) {
 function computeEstado(v, sum) {
   const has = (SVC.services.get(v.id) || new Map()).size > 0;
   if (sum.minFecha == null) return { estado: has ? 'al_dia' : 'sin_service', days: null };
-  const days = daysUntil(sum.minFecha);
+  const days = serviceDaysUntil(sum.minFecha);
   if (days <= 0) return { estado: 'vencido', days };
   if (days <= 30) return { estado: 'por_vencer', days };
   return { estado: 'proximo', days };
@@ -101,7 +101,7 @@ function buildMainRow(r) {
   const isOpen = SVC.openIds.has(v.id);
   const proxBig = sum.minFecha ? fmtFecha(sum.minFecha) : '—';
   const proxSub = sum.nextTipo ? esc(sum.nextTipo) : '—';
-  const days = sum.minFecha ? daysUntil(sum.minFecha) : info.days;
+  const days = sum.minFecha ? serviceDaysUntil(sum.minFecha) : info.days;
   const vencBig = Number.isFinite(days) ? (days <= 0 ? 'Vencido' : `en ${days} días`) : '—';
   const rowBorder = info.estado === 'vencido' ? 'border-l-2 border-l-[#EF4444]' : info.estado === 'por_vencer' ? 'border-l-2 border-l-[#F97316]' : info.estado === 'proximo' ? 'border-l-2 border-l-[#FACC15]' : '';
   return `
