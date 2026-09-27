@@ -349,6 +349,12 @@ async function assignElement(e) {
 
 function openAddElementoModal() {
   document.getElementById('form-add-elemento').reset();
+  const tipoSel = document.getElementById('ae-new-tipo');
+  const internoInput = document.getElementById('ae-new-interno');
+  const prefijos = { vehiculo: 'V', herramienta: 'H', equipo: 'E', ropa: 'R', material: 'M' };
+  tipoSel.onchange = function() {
+    internoInput.value = this.value ? (prefijos[this.value] || '') + '___' : '';
+  };
   showModal('modal-add-elemento');
 }
 function closeAddElementoModal() { hideModal('modal-add-elemento'); }
@@ -357,17 +363,16 @@ async function addElemento(e) {
   e.preventDefault();
   const tipo = document.getElementById('ae-new-tipo').value;
   const nombre = document.getElementById('ae-new-nombre').value.trim();
-  const interno = document.getElementById('ae-new-interno').value.trim();
   const marca = document.getElementById('ae-new-marca').value.trim();
   const modelo = document.getElementById('ae-new-modelo').value.trim();
   const stock = parseInt(document.getElementById('ae-new-stock').value) || 1;
   const desc = document.getElementById('ae-new-desc').value.trim();
-  if (!tipo || !nombre || !interno) return showToast('Completá tipo, nombre e ID', 'error');
+  if (!tipo || !nombre) return showToast('Completá tipo y nombre', 'error');
   try {
     const headers = await getAuthHeaders();
     const res = await fetch(`/api/centros/elementos/disponibles`, {
       method: 'POST', headers,
-      body: JSON.stringify({ tipo, interno, nombre, descripcion: desc, marca, modelo, stock })
+      body: JSON.stringify({ tipo, nombre, descripcion: desc, marca, modelo, stock })
     });
     if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
     closeAddElementoModal();
