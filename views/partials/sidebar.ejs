@@ -37,27 +37,25 @@ const qrGroupOpen = ['scan', 'stickers', 'fichas'].includes(currentPage);
       <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
       Reportes
     </a>
-    <% if (isAdmin) { %>
-    <a href="/admin" class="nav-link <%= currentPage === 'admin' ? 'active' : '' %>">
-      <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
-      Usuarios
+    <a href="/centros" class="nav-link <%= currentPage === 'centros' ? 'active' : '' %>">
+    <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+    Centros de Trabajo
+  </a>
+  <div class="nav-group-wrap">
+  <button type="button" onclick="toggleNavGroup(this)" class="nav-link w-full justify-between <%= qrGroupOpen ? 'active' : '' %>" style="background:none;border:none;cursor:pointer;font-family:inherit">
+    <span class="flex items-center">
+      <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+      Utilidades
+    </span>
+    <svg class="w-4 h-4 transition-transform chevron <%= qrGroupOpen ? 'rotate-180' : '' %>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+  </button>
+  <div class="nav-group mt-1 space-y-1 <%= qrGroupOpen ? '' : 'hidden' %>">
+    <a href="/vehicle/scan" class="nav-link text-sm <%= currentPage === 'scan' ? 'active' : '' %>">
+      <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
+      Escáner QR
     </a>
-    <% } %>
-    <div class="nav-group-wrap">
-      <button type="button" onclick="toggleNavGroup(this)" class="nav-link w-full justify-between <%= qrGroupOpen ? 'active' : '' %>" style="background:none;border:none;cursor:pointer;font-family:inherit">
-        <span class="flex items-center">
-          <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
-          Utilidades
-        </span>
-        <svg class="w-4 h-4 transition-transform chevron <%= qrGroupOpen ? 'rotate-180' : '' %>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-      </button>
-      <div class="nav-group mt-1 space-y-1 <%= qrGroupOpen ? '' : 'hidden' %>">
-        <a href="/vehicle/scan" class="nav-link text-sm <%= currentPage === 'scan' ? 'active' : '' %>">
-          <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
-          Escáner QR
-        </a>
-        <% if (isAdmin) { %>
-        <a href="/vehicles/qr-stickers-bulk" target="_blank" class="nav-link text-sm <%= currentPage === 'stickers' ? 'active' : '' %>">
+    <% if (isAdmin) { %>
+    <a href="/vehicles/qr-stickers-bulk" target="_blank" class="nav-link text-sm <%= currentPage === 'stickers' ? 'active' : '' %>">
           <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a1 1 0 011 1v5a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 101-2zm0 11h.01M7 16v-3m0 0h.01M7 16h.01m8-2v3m-6-6h6a2 2 0 012 2v4a2 2 0 01-2 2h-6a2 2 0 01-2-2v-4a2 2 0 012-2zM17 5h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V7a2 2 0 012-2z"/></svg>
           Stickers QR
         </a>
@@ -68,10 +66,6 @@ const qrGroupOpen = ['scan', 'stickers', 'fichas'].includes(currentPage);
         <a href="/vehicles/carpeta-docs" target="_blank" class="nav-link text-sm <%= currentPage === 'carpeta' ? 'active' : '' %>">
           <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h4l1 1h7a2 2 0 012 2v1H3V7zm0 2h18l-1.5 10a2 2 0 01-2 1.8H6.5a2 2 0 01-2-1.8L3 9z"/></svg>
           Carpeta Docs
-        </a>
-        <a href="/centros" class="nav-link text-sm <%= currentPage === 'centros' ? 'active' : '' %>">
-          <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-          Centros de Trabajo
         </a>
         <% } %>
       </div>
