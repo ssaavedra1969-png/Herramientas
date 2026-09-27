@@ -41,7 +41,7 @@ async function getVehicleList() {
     const v = d.data();
     return {
       id: d.id,
-      elementoId: v.patente || v.interno || '',
+      interno: v.patente || v.interno || '',
       nombre: `${v.patente || v.interno || ''} — ${v.marca || ''} ${v.modelo || ''} ${v.anio || ''}`.trim()
     };
   });
@@ -52,7 +52,7 @@ async function getCatalogElements(tipo) {
   const snap = await col.get();
   return snap.docs.map(d => {
     const data = d.data();
-    return { id: d.id, nombre: data.nombre, elementoId: data.elementoId, marca: data.marca || '', modelo: data.modelo || '', descripcion: data.descripcion || '', stock: data.stock || 0 };
+    return { id: d.id, nombre: data.nombre, interno: data.interno || data.elementoId || '', marca: data.marca || '', modelo: data.modelo || '', descripcion: data.descripcion || '', stock: data.stock || 0 };
   });
 }
 
@@ -74,13 +74,13 @@ router.get('/elementos/disponibles/:tipo', verifyToken, async (req, res) => {
 
 router.post('/elementos/disponibles', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { tipo, elementoId, nombre, descripcion, marca, modelo, stock } = req.body;
-    if (!tipo || !elementoId) return res.status(400).json({ error: 'tipo y elementoId son obligatorios' });
+    const { tipo, interno, nombre, descripcion, marca, modelo, stock } = req.body;
+    if (!tipo || !interno) return res.status(400).json({ error: 'tipo e interno son obligatorios' });
     if (!TIPOS_ELEMENTOS.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
     await db.collection('elementos_catalogo').add({
       tipo,
-      elementoId,
-      nombre: nombre || elementoId,
+      interno,
+      nombre: nombre || interno,
       descripcion: descripcion || '',
       marca: marca || '',
       modelo: modelo || '',
@@ -193,12 +193,12 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
 
 router.post('/:id/elementos', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { elementoId, elementoTipo, origenCentro, observaciones } = req.body;
-    if (!elementoId || !elementoTipo) {
-      return res.status(400).json({ error: 'elementoId y elementoTipo son obligatorios' });
+    const { interno, elementoTipo, origenCentro, observaciones } = req.body;
+    if (!interno || !elementoTipo) {
+      return res.status(400).json({ error: 'interno y elementoTipo son obligatorios' });
     }
     const docRef = await db.collection(`centros/${req.params.id}/elementos`).add({
-      elementoId,
+      interno,
       elementoTipo,
       origenCentro: origenCentro || null,
       fechaAsignacion: new Date(),
@@ -208,7 +208,7 @@ router.post('/:id/elementos', verifyToken, requireAdmin, async (req, res) => {
     });
     cacheTTL.delete(`centro-${req.params.id}`);
     cacheTTL.delete('centros-list');
-    res.status(201).json({ id: docRef.id, elementoId, elementoTipo });
+    res.status(201).json({ id: docRef.id, interno, elementoTipo });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

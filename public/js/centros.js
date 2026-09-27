@@ -54,7 +54,7 @@ function filterCatalogo(tipo) {
   empty?.classList.add('hidden');
   tbody.innerHTML = data.map(e => `
     <tr class="border-b border-white/5 hover:bg-[#00E5FF]/10">
-      <td class="px-4 py-3 font-mono text-[#00E5FF] text-xs">${esc(e.elementoId)}</td>
+      <td class="px-4 py-3 font-mono text-[#00E5FF] text-xs">${esc(e.interno)}</td>
       <td class="px-4 py-3 text-[#ffffff]">${esc(e.nombre)}</td>
       <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.marca || '—')} ${e.modelo ? '<span class="text-[#2563EB]"> ' + esc(e.modelo) + '</span>' : ''}</td>
       <td class="px-4 py-3 text-center">${e.stock ?? 0}</td>
@@ -222,7 +222,7 @@ async function openDetalleCentro(centroId) {
           ${elems.map(e => `
             <div class="flex items-center justify-between py-1.5 border-b border-white/5">
               <div>
-                <span class="text-[#ffffff] text-sm font-medium">${esc(e.elementoId)}</span>
+                <span class="text-[#ffffff] text-sm font-medium">${esc(e.interno)}</span>
                 <span class="text-xs text-[#8b9bb4] ml-2">${e.elementoTipo}</span>
                 <span class="text-xs text-[#4a5568] ml-2">${formatDate(e.fechaAsignacion)}</span>
                 ${e.origenCentro ? `<span class="text-xs text-[#2563EB] ml-2">desde ${esc(e.origenCentro)}</span>` : ''}
@@ -259,7 +259,7 @@ function openAsignarModal(centroId) {
   ae_elementosCache = [];
   const tipoSelect = document.getElementById('ae-elementoTipo');
   tipoSelect.value = '';
-  const elemSelect = document.getElementById('ae-elementoId');
+  const elemSelect = document.getElementById('ae-interno');
   elemSelect.innerHTML = '<option value="">Seleccionar tipo primero...</option>';
   elemSelect.classList.remove('hidden');
   document.getElementById('ae-custom-id').classList.add('hidden');
@@ -269,7 +269,7 @@ function closeAsignarModal() { hideModal('modal-asignar'); }
 
 async function onTipoChange() {
   const tipo = document.getElementById('ae-elementoTipo').value;
-  const elemSelect = document.getElementById('ae-elementoId');
+  const elemSelect = document.getElementById('ae-interno');
   const customId = document.getElementById('ae-custom-id');
 
   if (!tipo || !TIPOS_ELEM.includes(tipo)) {
@@ -293,7 +293,7 @@ async function onTipoChange() {
       if (!vehiculos.length) {
         elemSelect.innerHTML = '<option value="">Sin vehículos registrados</option>';
       } else {
-        elemSelect.innerHTML = vehiculos.map(v => `<option value="${esc(v.elementoId)}">${esc(v.nombre)}</option>`).join('');
+        elemSelect.innerHTML = vehiculos.map(v => `<option value="${esc(v.interno)}">${esc(v.nombre)}</option>`).join('');
       }
     } catch (e) {
       elemSelect.innerHTML = '<option value="">Error al cargar</option>';
@@ -310,7 +310,7 @@ async function onTipoChange() {
       if (!elems.length) {
         elemSelect.innerHTML = '<option value="">Sin elementos en catálogo</option>';
       } else {
-        elemSelect.innerHTML = elems.map(e => `<option value="${esc(e.elementoId)}">${esc(e.nombre)} ${e.marca ? '- ' + esc(e.marca) : ''} ${e.modelo ? '- ' + esc(e.modelo) : ''}</option>`).join('');
+        elemSelect.innerHTML = elems.map(e => `<option value="${esc(e.interno)}">${esc(e.nombre)} ${e.marca ? '- ' + esc(e.marca) : ''} ${e.modelo ? '- ' + esc(e.modelo) : ''}</option>`).join('');
       }
     } catch (e) {
       elemSelect.innerHTML = '<option value="">Error al cargar</option>';
@@ -323,18 +323,18 @@ async function assignElement(e) {
   e.preventDefault();
   if (!currentCentroId) return showToast('Error: centro no seleccionado', 'error');
   const tipo = document.getElementById('ae-elementoTipo').value;
-  const elemSelect = document.getElementById('ae-elementoId');
-  const customId = document.getElementById('ae-custom-elementoId');
-  const elementoId = (ae_tipoActual && elemSelect && !elemSelect.classList.contains('hidden'))
+  const elemSelect = document.getElementById('ae-interno');
+  const customId = document.getElementById('ae-custom-id');
+  const interno = (ae_tipoActual && elemSelect && !elemSelect.classList.contains('hidden'))
     ? elemSelect.value
     : (customId ? customId.value.trim() : '');
-  if (!tipo || !elementoId) return showToast('Completá tipo e ID', 'error');
+  if (!tipo || !interno) return showToast('Completá tipo e ID', 'error');
   try {
     const headers = await getAuthHeaders();
     const res = await fetch(`/api/centros/${currentCentroId}/elementos`, {
       method: 'POST', headers,
       body: JSON.stringify({
-        elementoId,
+        interno,
         elementoTipo: tipo,
         origenCentro: document.getElementById('ae-origenCentro').value.trim() || null,
         observaciones: document.getElementById('ae-observaciones').value.trim()
@@ -357,17 +357,17 @@ async function addElemento(e) {
   e.preventDefault();
   const tipo = document.getElementById('ae-new-tipo').value;
   const nombre = document.getElementById('ae-new-nombre').value.trim();
-  const elementoId = document.getElementById('ae-new-elementoId').value.trim();
+  const interno = document.getElementById('ae-new-interno').value.trim();
   const marca = document.getElementById('ae-new-marca').value.trim();
   const modelo = document.getElementById('ae-new-modelo').value.trim();
   const stock = parseInt(document.getElementById('ae-new-stock').value) || 1;
   const desc = document.getElementById('ae-new-desc').value.trim();
-  if (!tipo || !nombre || !elementoId) return showToast('Completá tipo, nombre e ID', 'error');
+  if (!tipo || !nombre || !interno) return showToast('Completá tipo, nombre e ID', 'error');
   try {
     const headers = await getAuthHeaders();
     const res = await fetch(`/api/centros/elementos/disponibles`, {
       method: 'POST', headers,
-      body: JSON.stringify({ tipo, elementoId, nombre, descripcion: desc, marca, modelo, stock })
+      body: JSON.stringify({ tipo, interno, nombre, descripcion: desc, marca, modelo, stock })
     });
     if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
     closeAddElementoModal();
