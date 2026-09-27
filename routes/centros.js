@@ -48,12 +48,14 @@ async function getVehicleList() {
 }
 
 async function getCatalogElements(tipo) {
-  const col = db.collection('elementos_catalogo').where('tipo', '==', tipo).orderBy('nombre', 'asc');
+  const col = db.collection('elementos_catalogo').where('tipo', '==', tipo);
   const snap = await col.get();
-  return snap.docs.map(d => {
+  const items = snap.docs.map(d => {
     const data = d.data();
     return { id: d.id, nombre: data.nombre, interno: data.interno || data.elementoId || '', marca: data.marca || '', modelo: data.modelo || '', descripcion: data.descripcion || '', stock: data.stock || 0 };
   });
+  items.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  return items;
 }
 
 async function getAvailableElements(tipo) {
