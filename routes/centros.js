@@ -19,6 +19,22 @@ function setCache(key, value) {
 /* ── CATÁLOGO DE ELEMENTOS ── */
 const TIPOS_ELEMENTOS = ['vehiculo', 'herramienta', 'equipo', 'ropa', 'material'];
 
+function cleanTimestamps(obj) {
+  const cleaned = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v && v.constructor && v.constructor.name === 'Timestamp') {
+      cleaned[k] = v.toDate().toISOString();
+    } else if (v && typeof v === 'object' && !Array.isArray(v)) {
+      cleaned[k] = cleanTimestamps(v);
+    } else if (Array.isArray(v)) {
+      cleaned[k] = v.map(item => typeof item === 'object' ? cleanTimestamps(item) : item);
+    } else {
+      cleaned[k] = v;
+    }
+  }
+  return cleaned;
+}
+
 async function getVehicleList() {
   const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
   return snap.docs.map(d => {
@@ -34,7 +50,10 @@ async function getVehicleList() {
 async function getCatalogElements(tipo) {
   const col = db.collection('elementos_catalogo').where('tipo', '==', tipo).orderBy('nombre', 'asc');
   const snap = await col.get();
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snap.docs.map(d => {
+    const data = d.data();
+    return { id: d.id, nombre: data.nombre, elementoId: data.elementoId, marca: data.marca || '', modelo: data.modelo || '', descripcion: data.descripcion || '', stock: data.stock || 0 };
+  });
 }
 
 async function getAvailableElements(tipo) {
@@ -47,7 +66,7 @@ router.get('/elementos/disponibles/:tipo', verifyToken, async (req, res) => {
     const tipo = req.params.tipo;
     if (!TIPOS_ELEMENTOS.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
     const elements = await getAvailableElements(tipo);
-    res.json(elements);
+    res.json(elements.map(e => cleanTimestamps(e)));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -88,7 +107,7 @@ router.get('/catalogo', verifyToken, async (req, res) => {
     const catalogo = {};
     for (const tipo of tipos) {
       const snap = await db.collection('elementos_catalogo').where('tipo', '==', tipo).orderBy('nombre', 'asc').get();
-      catalogo[tipo] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      catalogo[tipo] = snap.docs.map(d => cleanTimestamps({ id: d.id, ...d.data() }));
     }
     res.json(catalogo);
   } catch (error) {
@@ -102,7 +121,7 @@ router.get('/', verifyToken, async (req, res) => {
     const cacheado = getCache('centros-list', TTL_CENTROS);
     if (cacheado) return res.json(cacheado);
     const snapshot = await db.collection('centros').orderBy('nombre', 'asc').get();
-    const centros = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    const centros = snapshot.docs.map(d => cleanTimestamps({ id: d.id, ...d.data() }));
     setCache('centros-list', centros);
     res.json(centros);
   } catch (error) {
@@ -138,11 +157,11 @@ router.get('/:id', verifyToken, async (req, res) => {
     if (cacheado) return res.json(cacheado);
     const doc = await db.collection('centros').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: 'Centro no encontrado' });
-    const centro = { id: doc.id, ...doc.data() };
+    const centro = cleanTimestamps({ id: doc.id, ...doc.data() });
 
     const elementosSnap = await db.collection(`centros/${req.params.id}/elementos`)
       .orderBy('fechaAsignacion', 'desc').get();
-    const elementos = elementosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const elementos = elementosSnap.docs.map(d => cleanTimestamps({ id: d.id, ...d.data() }));
     centro.elementos = elementos;
     centro.totalElementos = elementos.length;
     centro.asignados = elementos.filter(e => !e.fechaDevolucion || e.fechaDevolucion === '').length;
