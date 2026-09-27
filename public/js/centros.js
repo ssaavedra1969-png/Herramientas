@@ -55,7 +55,7 @@ function filterCatalogo(tipo) {
     <tr class="border-b border-white/5 hover:bg-[#00E5FF]/10">
       <td class="px-4 py-3 font-mono text-[#00E5FF] text-xs">${esc(e.elementoId)}</td>
       <td class="px-4 py-3 text-[#ffffff]">${esc(e.nombre)}</td>
-      <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.marca || '—')}</td>
+      <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.marca || '—')} ${e.modelo ? '<span class="text-[#2563EB]"> ' + esc(e.modelo) + '</span>' : ''}</td>
       <td class="px-4 py-3 text-center">${e.stock ?? 0}</td>
       <td class="px-3 py-3 no-print">
         <button onclick="deleteCatalogoItem('${e.id}')" class="text-[#EF4444] hover:text-red-300 text-xs" title="Eliminar">✕</button>
@@ -309,7 +309,7 @@ async function onTipoChange() {
       if (!elems.length) {
         elemSelect.innerHTML = '<option value="">Sin elementos en catálogo</option>';
       } else {
-        elemSelect.innerHTML = elems.map(e => `<option value="${esc(e.elementoId)}">${esc(e.nombre)} ${e.marca ? '- ' + esc(e.marca) : ''}</option>`).join('');
+        elemSelect.innerHTML = elems.map(e => `<option value="${esc(e.elementoId)}">${esc(e.nombre)} ${e.marca ? '- ' + esc(e.marca) : ''} ${e.modelo ? '- ' + esc(e.modelo) : ''}</option>`).join('');
       }
     } catch (e) {
       elemSelect.innerHTML = '<option value="">Error al cargar</option>';
@@ -358,6 +358,7 @@ async function addElemento(e) {
   const nombre = document.getElementById('ae-new-nombre').value.trim();
   const elementoId = document.getElementById('ae-new-elementoId').value.trim();
   const marca = document.getElementById('ae-new-marca').value.trim();
+  const modelo = document.getElementById('ae-new-modelo').value.trim();
   const stock = parseInt(document.getElementById('ae-new-stock').value) || 1;
   const desc = document.getElementById('ae-new-desc').value.trim();
   if (!tipo || !nombre || !elementoId) return showToast('Completá tipo, nombre e ID', 'error');
@@ -365,7 +366,7 @@ async function addElemento(e) {
     const headers = await getAuthHeaders();
     const res = await fetch(`/api/centros/elementos/disponibles`, {
       method: 'POST', headers,
-      body: JSON.stringify({ tipo, elementoId, nombre, descripcion: desc, marca, stock })
+      body: JSON.stringify({ tipo, elementoId, nombre, descripcion: desc, marca, modelo, stock })
     });
     if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
     closeAddElementoModal();

@@ -74,7 +74,7 @@ router.get('/elementos/disponibles/:tipo', verifyToken, async (req, res) => {
 
 router.post('/elementos/disponibles', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { tipo, elementoId, nombre, descripcion, marca, stock } = req.body;
+    const { tipo, elementoId, nombre, descripcion, marca, modelo, stock } = req.body;
     if (!tipo || !elementoId) return res.status(400).json({ error: 'tipo y elementoId son obligatorios' });
     if (!TIPOS_ELEMENTOS.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
     await db.collection('elementos_catalogo').add({
@@ -83,6 +83,7 @@ router.post('/elementos/disponibles', verifyToken, requireAdmin, async (req, res
       nombre: nombre || elementoId,
       descripcion: descripcion || '',
       marca: marca || '',
+      modelo: modelo || '',
       stock: stock || 1,
       createdAt: new Date()
     });
