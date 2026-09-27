@@ -33,8 +33,9 @@ async function loadCatalogo() {
     const res = await fetch('/api/centros/catalogo', { headers });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     catalogoData = await res.json();
-    const tipo = document.getElementById('catalogo-tipo').value;
-    filterCatalogo(tipo);
+    const sel = document.getElementById('catalogo-tipo');
+    if (!sel.value) sel.value = 'equipo';
+    filterCatalogo(sel.value);
   } catch (e) {
     console.error('Error cargando catálogo:', e);
   }
