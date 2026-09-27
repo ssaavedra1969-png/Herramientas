@@ -3,7 +3,6 @@ let centrosData = [];
 let currentCentroId = null;
 let filterEstado = '';
 let filterSearch = '';
-let currentCatalogoTipo = 'herramienta';
 let catalogoData = {};
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -34,14 +33,16 @@ async function loadCatalogo() {
     const res = await fetch('/api/centros/catalogo', { headers });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     catalogoData = await res.json();
-    filterCatalogo(currentCatalogoTipo);
+    const tipo = document.getElementById('catalogo-tipo').value;
+    filterCatalogo(tipo);
   } catch (e) {
     console.error('Error cargando catálogo:', e);
   }
 }
 
 function filterCatalogo(tipo) {
-  currentCatalogoTipo = tipo;
+  const sel = document.getElementById('catalogo-tipo');
+  if (sel) sel.value = tipo;
   const data = catalogoData[tipo] || [];
   const tbody = document.getElementById('catalogo-table-body');
   const empty = document.getElementById('catalogo-empty');

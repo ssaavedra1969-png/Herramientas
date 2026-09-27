@@ -87,11 +87,14 @@
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Agregar
             </button>
           </div>
-          <div id="catalogo-tabs" class="flex gap-1 p-2 border-b border-white/5 overflow-x-auto">
-            <button onclick="filterCatalogo('herramienta')" class="cat-tab px-3 py-1 text-[10px] font-bold rounded-full bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20" data-tipo="herramienta">🛠️ Herramientas</button>
-            <button onclick="filterCatalogo('equipo')" class="cat-tab px-3 py-1 text-[10px] font-bold rounded-full bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20" data-tipo="equipo">⚙️ Equipos</button>
-            <button onclick="filterCatalogo('ropa')" class="cat-tab px-3 py-1 text-[10px] font-bold rounded-full bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20" data-tipo="ropa">👕 Ropa</button>
-            <button onclick="filterCatalogo('material')" class="cat-tab px-3 py-1 text-[10px] font-bold rounded-full bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20" data-tipo="material">📦 Material</button>
+          <div class="p-4 border-b border-white/5">
+            <label class="block text-xs text-[#8b9bb4] mb-2">Seleccionar tipo</label>
+            <select id="catalogo-tipo" onchange="filterCatalogo(this.value)" class="w-full max-w-xs px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+              <option value="herramienta">🛠️ Herramientas</option>
+              <option value="equipo">⚙️ Equipos</option>
+              <option value="ropa">👕 Ropa</option>
+              <option value="material">📦 Material</option>
+            </select>
           </div>
           <div id="catalogo-table-container">
             <table class="w-full text-sm min-w-[720px]">
@@ -100,12 +103,13 @@
                   <th class="px-4 py-3 text-left font-semibold">ID</th>
                   <th class="px-4 py-3 text-left font-semibold">Nombre</th>
                   <th class="px-4 py-3 text-left font-semibold">Marca</th>
+                  <th class="px-4 py-3 text-left font-semibold">Modelo</th>
                   <th class="px-4 py-3 text-center font-semibold">Stock</th>
                   <th class="px-3 py-3 no-print"></th>
                 </tr>
               </thead>
               <tbody id="catalogo-table-body">
-                <tr><td colspan="5" class="text-center py-8 text-gray-400">Cargando catálogo...</td></tr>
+                <tr><td colspan="6" class="text-center py-8 text-gray-400">Cargando catálogo...</td></tr>
               </tbody>
             </table>
           </div>
