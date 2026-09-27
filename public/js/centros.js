@@ -3,15 +3,66 @@ let centrosData = [];
 let currentCentroId = null;
 let filterEstado = '';
 let filterSearch = '';
+let currentCatalogoTipo = 'herramienta';
+let catalogoData = {};
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   loadCentros();
+  loadCatalogo();
   document.getElementById('search-centro')?.addEventListener('input', (e) => {
     filterSearch = e.target.value.trim().toLowerCase();
     renderCentros();
   });
 });
+
+function switchTab(tab) {
+  document.getElementById('section-centros').classList.toggle('hidden', tab !== 'centros');
+  document.getElementById('section-catalogo').classList.toggle('hidden', tab !== 'catalogo');
+  document.getElementById('tab-centros').className = tab === 'centros'
+    ? 'px-4 py-2 text-xs font-bold rounded-lg bg-[#2563EB] text-white transition-colors'
+    : 'px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors';
+  document.getElementById('tab-catalogo').className = tab === 'catalogo'
+    ? 'px-4 py-2 text-xs font-bold rounded-lg bg-[#00E5FF] text-[#0a0e17] transition-colors'
+    : 'px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors';
+  if (tab === 'catalogo') loadCatalogo();
+}
+
+async function loadCatalogo() {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/centros/catalogo', { headers });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    catalogoData = await res.json();
+    filterCatalogo(currentCatalogoTipo);
+  } catch (e) {
+    console.error('Error cargando catálogo:', e);
+  }
+}
+
+function filterCatalogo(tipo) {
+  currentCatalogoTipo = tipo;
+  const data = catalogoData[tipo] || [];
+  const tbody = document.getElementById('catalogo-table-body');
+  const empty = document.getElementById('catalogo-empty');
+  if (!data.length) {
+    tbody.innerHTML = '';
+    empty?.classList.remove('hidden');
+    return;
+  }
+  empty?.classList.add('hidden');
+  tbody.innerHTML = data.map(e => `
+    <tr class="border-b border-white/5 hover:bg-[#00E5FF]/10">
+      <td class="px-4 py-3 font-mono text-[#00E5FF] text-xs">${esc(e.elementoId)}</td>
+      <td class="px-4 py-3 text-[#ffffff]">${esc(e.nombre)}</td>
+      <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.marca || '—')}</td>
+      <td class="px-4 py-3 text-center">${e.stock ?? 0}</td>
+      <td class="px-3 py-3 no-print">
+        <button onclick="deleteCatalogoItem('${e.id}')" class="text-[#EF4444] hover:text-red-300 text-xs" title="Eliminar">✕</button>
+      </td>
+    </tr>
+  `).join('');
+}
 
 function initMobileMenu() {
   document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
@@ -356,6 +407,17 @@ async function confirmCloseCentro() {
     closeCerrarModal();
     showToast('Obra cerrada');
     await loadCentros();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function deleteCatalogoItem(id) {
+  if (!confirm('¿Eliminar este elemento del catálogo?')) return;
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/centros/elementos/disponibles/${id}`, { method: 'DELETE', headers });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+    showToast('Elemento eliminado');
+    loadCatalogo();
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
 

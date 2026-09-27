@@ -81,6 +81,20 @@ router.delete('/elementos/disponibles/:id', verifyToken, requireAdmin, async (re
     res.status(500).json({ error: error.message });
   }
 });
+
+router.get('/catalogo', verifyToken, async (req, res) => {
+  try {
+    const tipos = TIPOS_ELEMENTOS;
+    const catalogo = {};
+    for (const tipo of tipos) {
+      const snap = await db.collection('elementos_catalogo').where('tipo', '==', tipo).orderBy('nombre', 'asc').get();
+      catalogo[tipo] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+    res.json(catalogo);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 /* ── FIN CATÁLOGO ── */
 
 router.get('/', verifyToken, async (req, res) => {

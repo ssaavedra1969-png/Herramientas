@@ -40,34 +40,81 @@
         </div>
       </div>
 
-      <div class="glass-card rounded-xl overflow-hidden mb-4">
-        <div class="px-4 py-3 flex items-center gap-2 border-b border-white/5 bg-white/[0.02]">
-          <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
-          <h2 class="text-sm font-bold tracking-wide text-[#ffffff]">Centros Activos</h2>
-          <span class="px-2 py-0.5 rounded-md bg-[#2563EB]/15 text-[#2563EB] text-xs font-bold"><span id="activos-count">0</span></span>
+      <div class="flex gap-1 mb-4 no-print">
+        <button id="tab-centros" onclick="switchTab('centros')" class="px-4 py-2 text-xs font-bold rounded-lg bg-[#2563EB] text-white transition-colors">Centros</button>
+        <button id="tab-catalogo" onclick="switchTab('catalogo')" class="px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors">Catálogo</button>
+      </div>
+
+      <div id="section-centros">
+        <div class="glass-card rounded-xl overflow-hidden mb-4">
+          <div class="px-4 py-3 flex items-center gap-2 border-b border-white/5 bg-white/[0.02]">
+            <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
+            <h2 class="text-sm font-bold tracking-wide text-[#ffffff]">Centros Activos</h2>
+            <span class="px-2 py-0.5 rounded-md bg-[#2563EB]/15 text-[#2563EB] text-xs font-bold"><span id="activos-count">0</span></span>
+          </div>
+          <div id="centros-table-container">
+            <table class="w-full text-sm min-w-[720px]">
+              <thead>
+                <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
+                  <th class="px-4 py-3 text-left font-semibold">Nombre</th>
+                  <th class="px-4 py-3 text-left font-semibold">Ubicación</th>
+                  <th class="px-4 py-3 text-left font-semibold">Estado</th>
+                  <th class="px-4 py-3 text-center font-semibold">Elementos</th>
+                  <th class="px-4 py-3 text-center font-semibold">Asignados</th>
+                  <th class="px-4 py-3 text-left font-semibold">Creado</th>
+                  <th class="px-3 py-3 no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="centros-table-body">
+                <tr><td colspan="7" class="text-center py-8 text-gray-400">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="centros-empty" class="hidden text-center py-12 text-[#4a5568]">
+            <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            <p>No hay centros de trabajo registrados</p>
+            <p class="text-xs mt-1">Creá la primera obra para comenzar</p>
+          </div>
         </div>
-        <div id="centros-table-container">
-          <table class="w-full text-sm min-w-[720px]">
-            <thead>
-              <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
-                <th class="px-4 py-3 text-left font-semibold">Nombre</th>
-                <th class="px-4 py-3 text-left font-semibold">Ubicación</th>
-                <th class="px-4 py-3 text-left font-semibold">Estado</th>
-                <th class="px-4 py-3 text-center font-semibold">Elementos</th>
-                <th class="px-4 py-3 text-center font-semibold">Asignados</th>
-                <th class="px-4 py-3 text-left font-semibold">Creado</th>
-                <th class="px-3 py-3 no-print"></th>
-              </tr>
-            </thead>
-            <tbody id="centros-table-body">
-              <tr><td colspan="7" class="text-center py-8 text-gray-400">Cargando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div id="centros-empty" class="hidden text-center py-12 text-[#4a5568]">
-          <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-          <p>No hay centros de trabajo registrados</p>
-          <p class="text-xs mt-1">Creá la primera obra para comenzar</p>
+      </div>
+
+      <div id="section-catalogo" class="hidden">
+        <div class="glass-card rounded-xl overflow-hidden mb-4">
+          <div class="px-4 py-3 flex items-center justify-between border-b border-white/5 bg-white/[0.02]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#00E5FF]"></span>
+              <h2 class="text-sm font-bold tracking-wide text-[#ffffff]">Catálogo de Elementos</h2>
+            </div>
+            <button onclick="openAddElementoModal()" class="btn-primary text-xs flex items-center gap-1 px-3 py-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Agregar
+            </button>
+          </div>
+          <div id="catalogo-tabs" class="flex gap-1 p-2 border-b border-white/5 overflow-x-auto">
+            <button onclick="filterCatalogo('herramienta')" class="cat-tab px-3 py-1 text-[10px] font-bold rounded-full bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20" data-tipo="herramienta">🛠️ Herramientas</button>
+            <button onclick="filterCatalogo('equipo')" class="cat-tab px-3 py-1 text-[10px] font-bold rounded-full bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20" data-tipo="equipo">⚙️ Equipos</button>
+            <button onclick="filterCatalogo('ropa')" class="cat-tab px-3 py-1 text-[10px] font-bold rounded-full bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20" data-tipo="ropa">👕 Ropa</button>
+            <button onclick="filterCatalogo('material')" class="cat-tab px-3 py-1 text-[10px] font-bold rounded-full bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20" data-tipo="material">📦 Material</button>
+          </div>
+          <div id="catalogo-table-container">
+            <table class="w-full text-sm min-w-[720px]">
+              <thead>
+                <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
+                  <th class="px-4 py-3 text-left font-semibold">ID</th>
+                  <th class="px-4 py-3 text-left font-semibold">Nombre</th>
+                  <th class="px-4 py-3 text-left font-semibold">Marca</th>
+                  <th class="px-4 py-3 text-center font-semibold">Stock</th>
+                  <th class="px-3 py-3 no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="catalogo-table-body">
+                <tr><td colspan="5" class="text-center py-8 text-gray-400">Cargando catálogo...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="catalogo-empty" class="hidden text-center py-12 text-[#4a5568]">
+            <p>No hay elementos en este tipo</p>
+            <p class="text-xs mt-1">Agregá el primero con el botón +</p>
+          </div>
         </div>
       </div>
     </main>
