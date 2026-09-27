@@ -5,17 +5,12 @@ PATENTE/
 **/_originales/
 .env*
 *.pdf
-*.jpg
-*.jpeg
-*.png
 *.mp4
 *.webm
-*.zip
 *.tar.gz
 *.tgz
 .DS_Store
 *.log
 Backups/
 ENTRADA/
-imagenes/
 papeles/
