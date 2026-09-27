@@ -108,6 +108,15 @@ app.get('/vehicles', requireAuth, (req, res) => {
   });
 });
 
+app.get('/centros', requireAuth, (req, res) => {
+  res.render('centros', {
+    title: 'Centros de Trabajo',
+    clientConfig: res.locals.clientConfig,
+    currentUser: res.locals.currentUser,
+    currentUserData: res.locals.currentUserData
+  });
+});
+
 app.get('/service', (req, res) => {
   const isMock = (req.query.debug === 'mock' || req.originalUrl.includes('debug=mock'));
   if (isMock && res.locals.mockMode) {
