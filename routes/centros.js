@@ -74,13 +74,26 @@ router.get('/elementos/disponibles/:tipo', verifyToken, async (req, res) => {
 
 const TIPOS_PREFIJO = { vehiculo: 'V', herramienta: 'H', equipo: 'E', ropa: 'R', material: 'M' };
 
-async function generateInterno(tipo) {
+async function getNextCatalogNumber(tipo) {
   const prefijo = TIPOS_PREFIJO[tipo];
-  const snap = await db.collection('elementos_catalogo').where('tipo', '==', tipo).orderBy('interno', 'desc').limit(1).get();
-  if (snap.empty) return `${prefijo}001`;
-  const last = snap.docs[0].data().interno || '';
-  const num = parseInt(last.replace(prefijo, '')) || 0;
-  return `${prefijo}${String(num + 1).padStart(3, '0')}`;
+  const counterRef = db.collection('counters').doc(tipo);
+  const result = await db.runTransaction(async (transaction) => {
+    const doc = await transaction.get(counterRef);
+    if (!doc.exists) {
+      const snap = await db.collection('elementos_catalogo').where('tipo', '==', tipo).get();
+      let max = 0;
+      snap.docs.forEach(d => {
+        const m = (d.data().interno || '').match(new RegExp(`^${prefijo}0*(\\d+)$`));
+        if (m) { const n = parseInt(m[1], 10); if (n > max) max = n; }
+      });
+      transaction.set(counterRef, { current: max });
+      return { number: max + 1, formatted: `${prefijo}${String(max + 1).padStart(3, '0')}` };
+    }
+    const next = (doc.data().current || 0) + 1;
+    transaction.update(counterRef, { current: next });
+    return { number: next, formatted: `${prefijo}${String(next).padStart(3, '0')}` };
+  });
+  return result;
 }
 
 router.post('/elementos/disponibles', verifyToken, requireAdmin, async (req, res) => {
@@ -88,10 +101,10 @@ router.post('/elementos/disponibles', verifyToken, requireAdmin, async (req, res
     const { tipo, nombre, descripcion, marca, modelo, stock } = req.body;
     if (!tipo || !nombre) return res.status(400).json({ error: 'tipo y nombre son obligatorios' });
     if (!TIPOS_ELEMENTOS.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
-    const interno = await generateInterno(tipo);
+    const { formatted } = await getNextCatalogNumber(tipo);
     await db.collection('elementos_catalogo').add({
       tipo,
-      interno,
+      interno: formatted,
       nombre,
       descripcion: descripcion || '',
       marca: marca || '',
