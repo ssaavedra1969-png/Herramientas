@@ -24,6 +24,11 @@ const tipos = {
 
 async function main() {
   const batch = db.batch();
+  // Limpiar counters existentes
+  Object.keys(tipos).forEach(tipo => {
+    batch.set(db.collection('counters').doc(tipo), { current: tipos[tipo].length }, { merge: true });
+  });
+  // Cargar catalogo
   Object.entries(tipos).forEach(([tipo, items]) => {
     items.forEach(item => {
       const ref = db.collection('elementos_catalogo').doc();
@@ -31,7 +36,7 @@ async function main() {
     });
   });
   await batch.commit();
-  console.log('Catalogo cargado OK');
+  console.log('Catalogo cargado OK con counters');
   process.exit(0);
 }
 main().catch(e => { console.log('Error:', e.message); process.exit(1); });
