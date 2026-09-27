@@ -16,6 +16,73 @@ function setCache(key, value) {
   cacheTTL.set(key, { t: Date.now(), value });
 }
 
+/* ── CATÁLOGO DE ELEMENTOS ── */
+const TIPOS_ELEMENTOS = ['vehiculo', 'herramienta', 'equipo', 'ropa', 'material'];
+
+async function getVehicleList() {
+  const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
+  return snap.docs.map(d => {
+    const v = d.data();
+    return {
+      id: d.id,
+      elementoId: v.patente || v.interno || '',
+      nombre: `${v.patente || v.interno || ''} — ${v.marca || ''} ${v.modelo || ''} ${v.anio || ''}`.trim()
+    };
+  });
+}
+
+async function getCatalogElements(tipo) {
+  const col = db.collection('elementos_catalogo').where('tipo', '==', tipo).orderBy('nombre', 'asc');
+  const snap = await col.get();
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+async function getAvailableElements(tipo) {
+  if (tipo === 'vehiculo') return await getVehicleList();
+  return await getCatalogElements(tipo);
+}
+
+router.get('/elementos/disponibles/:tipo', verifyToken, async (req, res) => {
+  try {
+    const tipo = req.params.tipo;
+    if (!TIPOS_ELEMENTOS.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
+    const elements = await getAvailableElements(tipo);
+    res.json(elements);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/elementos/disponibles', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { tipo, elementoId, nombre, descripcion, marca, stock } = req.body;
+    if (!tipo || !elementoId) return res.status(400).json({ error: 'tipo y elementoId son obligatorios' });
+    if (!TIPOS_ELEMENTOS.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
+    await db.collection('elementos_catalogo').add({
+      tipo,
+      elementoId,
+      nombre: nombre || elementoId,
+      descripcion: descripcion || '',
+      marca: marca || '',
+      stock: stock || 1,
+      createdAt: new Date()
+    });
+    res.status(201).json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/elementos/disponibles/:id', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    await db.collection('elementos_catalogo').doc(req.params.id).delete();
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+/* ── FIN CATÁLOGO ── */
+
 router.get('/', verifyToken, async (req, res) => {
   try {
     const cacheado = getCache('centros-list', TTL_CENTROS);

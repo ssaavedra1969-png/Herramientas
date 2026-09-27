@@ -1,3 +1,4 @@
+const TIPOS_ELEM = ['vehiculo', 'herramienta', 'equipo', 'ropa', 'material'];
 let centrosData = [];
 let currentCentroId = null;
 let filterEstado = '';
@@ -196,26 +197,93 @@ async function openDetalleCentro(centroId) {
 function closeDetalleCentro() { hideModal('modal-detalle-centro'); currentCentroId = null; }
 
 /* ── Modal Asignar Elemento ── */
+let ae_tipoActual = '';
+let ae_elementosCache = [];
+
 function openAsignarModal(centroId) {
   currentCentroId = centroId;
   document.getElementById('form-asignar').reset();
+  ae_tipoActual = '';
+  ae_elementosCache = [];
+  const tipoSelect = document.getElementById('ae-elementoTipo');
+  tipoSelect.value = '';
+  const elemSelect = document.getElementById('ae-elementoId');
+  elemSelect.innerHTML = '<option value="">Seleccionar tipo primero...</option>';
+  elemSelect.classList.remove('hidden');
+  document.getElementById('ae-custom-id').classList.add('hidden');
   showModal('modal-asignar');
 }
 function closeAsignarModal() { hideModal('modal-asignar'); }
 
+async function onTipoChange() {
+  const tipo = document.getElementById('ae-elementoTipo').value;
+  const elemSelect = document.getElementById('ae-elementoId');
+  const customId = document.getElementById('ae-custom-id');
+
+  if (!tipo || !TIPOS_ELEM.includes(tipo)) {
+    elemSelect.innerHTML = '<option value="">Seleccionar tipo primero...</option>';
+    elemSelect.classList.remove('hidden');
+    customId.classList.add('hidden');
+    ae_tipoActual = tipo;
+    return;
+  }
+
+  if (tipo === 'vehiculo') {
+    elemSelect.classList.remove('hidden');
+    customId.classList.add('hidden');
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(`/api/centros/elementos/disponibles/${tipo}`, { headers });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const vehiculos = await res.json();
+      ae_elementosCache = vehiculos;
+      elemSelect.innerHTML = '<option value="">Cargando vehículos...</option>';
+      if (!vehiculos.length) {
+        elemSelect.innerHTML = '<option value="">Sin vehículos registrados</option>';
+      } else {
+        elemSelect.innerHTML = vehiculos.map(v => `<option value="${esc(v.elementoId)}">${esc(v.nombre)}</option>`).join('');
+      }
+    } catch (e) {
+      elemSelect.innerHTML = '<option value="">Error al cargar</option>';
+    }
+  } else {
+    elemSelect.classList.remove('hidden');
+    customId.classList.add('hidden');
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(`/api/centros/elementos/disponibles/${tipo}`, { headers });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const elems = await res.json();
+      ae_elementosCache = elems;
+      if (!elems.length) {
+        elemSelect.innerHTML = '<option value="">Sin elementos en catálogo</option>';
+      } else {
+        elemSelect.innerHTML = elems.map(e => `<option value="${esc(e.elementoId)}">${esc(e.nombre)} ${e.marca ? '- ' + esc(e.marca) : ''}</option>`).join('');
+      }
+    } catch (e) {
+      elemSelect.innerHTML = '<option value="">Error al cargar</option>';
+    }
+  }
+  ae_tipoActual = tipo;
+}
+
 async function assignElement(e) {
   e.preventDefault();
   if (!currentCentroId) return showToast('Error: centro no seleccionado', 'error');
-  const elementoId = document.getElementById('ae-elementoId').value.trim();
-  const elementoTipo = document.getElementById('ae-elementoTipo').value;
-  if (!elementoId || !elementoTipo) return showToast('Completá ID y Tipo', 'error');
+  const tipo = document.getElementById('ae-elementoTipo').value;
+  const elemSelect = document.getElementById('ae-elementoId');
+  const customId = document.getElementById('ae-custom-elementoId');
+  const elementoId = (ae_tipoActual && elemSelect && !elemSelect.classList.contains('hidden'))
+    ? elemSelect.value
+    : (customId ? customId.value.trim() : '');
+  if (!tipo || !elementoId) return showToast('Completá tipo e ID', 'error');
   try {
     const headers = await getAuthHeaders();
     const res = await fetch(`/api/centros/${currentCentroId}/elementos`, {
       method: 'POST', headers,
       body: JSON.stringify({
         elementoId,
-        elementoTipo,
+        elementoTipo: tipo,
         origenCentro: document.getElementById('ae-origenCentro').value.trim() || null,
         observaciones: document.getElementById('ae-observaciones').value.trim()
       })
@@ -224,6 +292,34 @@ async function assignElement(e) {
     closeAsignarModal();
     showToast('Elemento asignado');
     await loadCentros();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+function openAddElementoModal() {
+  document.getElementById('form-add-elemento').reset();
+  showModal('modal-add-elemento');
+}
+function closeAddElementoModal() { hideModal('modal-add-elemento'); }
+
+async function addElemento(e) {
+  e.preventDefault();
+  const tipo = document.getElementById('ae-new-tipo').value;
+  const nombre = document.getElementById('ae-new-nombre').value.trim();
+  const elementoId = document.getElementById('ae-new-elementoId').value.trim();
+  const marca = document.getElementById('ae-new-marca').value.trim();
+  const stock = parseInt(document.getElementById('ae-new-stock').value) || 1;
+  const desc = document.getElementById('ae-new-desc').value.trim();
+  if (!tipo || !nombre || !elementoId) return showToast('Completá tipo, nombre e ID', 'error');
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/centros/elementos/disponibles`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ tipo, elementoId, nombre, descripcion: desc, marca, stock })
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+    closeAddElementoModal();
+    showToast('Elemento agregado al catálogo');
+    onTipoChange();
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
 

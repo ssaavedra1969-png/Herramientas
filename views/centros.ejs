@@ -127,12 +127,8 @@
     <form id="form-asignar" onsubmit="assignElement(event)">
       <div class="space-y-3">
         <div>
-          <label class="block text-xs text-[#8b9bb4] mb-1">ID del Elemento *</label>
-          <input type="text" id="ae-elementoId" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ej: V-00123 o ASSET-001">
-        </div>
-        <div>
           <label class="block text-xs text-[#8b9bb4] mb-1">Tipo *</label>
-          <select id="ae-elementoTipo" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+          <select id="ae-elementoTipo" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon" onchange="onTipoChange()">
             <option value="">Seleccionar...</option>
             <option value="vehiculo">Vehículo</option>
             <option value="herramienta">Herramienta</option>
@@ -140,6 +136,19 @@
             <option value="ropa">Ropa</option>
             <option value="material">Material</option>
           </select>
+        </div>
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Elemento *</label>
+          <div class="flex gap-2">
+            <select id="ae-elementoId" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+              <option value="">Seleccionar tipo primero...</option>
+            </select>
+            <button type="button" onclick="openAddElementoModal()" class="px-3 py-2 bg-[#2563EB]/20 border border-[#2563EB]/30 rounded-lg text-[#2563EB] hover:bg-[#2563EB]/30 text-sm font-bold transition-colors" title="Agregar nuevo elemento al catálogo">+</button>
+          </div>
+        </div>
+        <div id="ae-custom-id" class="hidden">
+          <label class="block text-xs text-[#8b9bb4] mb-1">ID del Elemento *</label>
+          <input type="text" id="ae-custom-elementoId" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ej: ASSET-001">
         </div>
         <div>
           <label class="block text-xs text-[#8b9bb4] mb-1">Origen (si viene de otro centro)</label>
@@ -153,6 +162,55 @@
       <div class="flex gap-2 mt-4">
         <button type="button" onclick="closeAsignarModal()" class="flex-1 px-4 py-2 text-sm rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] hover:border-[#4a5568] transition-colors">Cancelar</button>
         <button type="submit" class="flex-1 px-4 py-2 text-sm rounded-lg bg-[#2563EB] text-white font-medium hover:bg-[#1d4ed8] transition-colors">Asignar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Agregar Elemento al Catálogo -->
+<div id="modal-add-elemento" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="glass-card rounded-xl p-6 w-full max-w-md mx-4 border border-[#2563EB]/20">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-[#ffffff]">Agregar Elemento al Catálogo</h3>
+      <button onclick="closeAddElementoModal()" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <form id="form-add-elemento" onsubmit="addElemento(event)">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Tipo *</label>
+          <select id="ae-new-tipo" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <option value="herramienta">Herramienta</option>
+            <option value="equipo">Equipo</option>
+            <option value="ropa">Ropa</option>
+            <option value="material">Material</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Nombre *</label>
+          <input type="text" id="ae-new-nombre" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ej: Llave Allen 8mm">
+        </div>
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">ID del Elemento *</label>
+          <input type="text" id="ae-new-elementoId" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ej: ASSET-HER-001">
+        </div>
+        <div class="flex gap-2">
+          <div class="flex-1">
+            <label class="block text-xs text-[#8b9bb4] mb-1">Marca</label>
+            <input type="text" id="ae-new-marca" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ej: Bosch">
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs text-[#8b9bb4] mb-1">Stock</label>
+            <input type="number" id="ae-new-stock" value="1" min="0" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Descripción</label>
+          <textarea id="ae-new-desc" rows="2" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon resize-none" placeholder="Notas..."></textarea>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button type="button" onclick="closeAddElementoModal()" class="flex-1 px-4 py-2 text-sm rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] hover:border-[#4a5568] transition-colors">Cancelar</button>
+        <button type="submit" class="flex-1 px-4 py-2 text-sm rounded-lg bg-[#2563EB] text-white font-medium hover:bg-[#1d4ed8] transition-colors">Agregar al Catálogo</button>
       </div>
     </form>
   </div>
