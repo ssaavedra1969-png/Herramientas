@@ -371,6 +371,7 @@ async function addElemento(e) {
     if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
     closeAddElementoModal();
     showToast('Elemento agregado al catálogo');
+    document.getElementById('catalogo-tipo').value = tipo;
     loadCatalogo();
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
