@@ -90,6 +90,7 @@
           <div class="p-4 border-b border-white/5">
             <label class="block text-xs text-[#8b9bb4] mb-2">Seleccionar tipo</label>
             <select id="catalogo-tipo" onchange="filterCatalogo(this.value)" class="w-full max-w-xs px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+              <option value="vehiculo">🚗 Vehículos</option>
               <option value="herramienta">🛠️ Herramientas</option>
               <option value="equipo">⚙️ Equipos</option>
               <option value="ropa">👕 Ropa</option>
@@ -108,9 +109,7 @@
                   <th class="px-3 py-3 no-print"></th>
                 </tr>
               </thead>
-              <tbody id="catalogo-table-body">
-                <tr><td colspan="6" class="text-center py-8 text-gray-400">Cargando catálogo...</td></tr>
-              </tbody>
+<tbody id="catalogo-table-body"></tbody>
             </table>
           </div>
           <div id="catalogo-empty" class="hidden text-center py-12 text-[#4a5568]">

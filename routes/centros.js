@@ -134,8 +134,8 @@ router.get('/catalogo', verifyToken, async (req, res) => {
     const tipos = TIPOS_ELEMENTOS;
     const catalogo = {};
     for (const tipo of tipos) {
-      const snap = await db.collection('elementos_catalogo').where('tipo', '==', tipo).orderBy('nombre', 'asc').get();
-      catalogo[tipo] = snap.docs.map(d => cleanTimestamps({ id: d.id, ...d.data() }));
+      const snap = await db.collection('elementos_catalogo').where('tipo', '==', tipo).get();
+      catalogo[tipo] = snap.docs.map(d => cleanTimestamps({ id: d.id, ...d.data() })).sort((a, b) => a.nombre.localeCompare(b.nombre));
     }
     res.json(catalogo);
   } catch (error) {
