@@ -12,6 +12,7 @@ const { loadUser, requireAuth, requireAdminPage } = require('./middleware/auth')
 const { devReadOnly } = require('./middleware/dev-readonly');
 const authRoutes = require('./routes/auth');
 const vehiclesRoutes = require('./routes/vehicles');
+const centrosRoutes = require('./routes/centros');
 
 const adminRoutes = require('./routes/admin');
 
@@ -71,6 +72,7 @@ app.use(loadUser);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehiclesRoutes);
+app.use('/api/centros', centrosRoutes);
 
 app.use('/api/admin', adminRoutes);
 

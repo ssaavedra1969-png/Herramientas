@@ -1,0 +1,182 @@
+<%- include('partials/head') %>
+<div class="flex h-screen overflow-hidden">
+  <%- include('partials/sidebar', { page: 'centros' }) %>
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="lg:hidden header-glass text-[#ffffff] p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#2563EB]/10">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#2563EB] to-[#2563EB] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+    </div>
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-4">
+        <div class="flex items-center gap-2">
+          <h1 class="text-xl sm:text-2xl font-bold title-page">Centros de Trabajo</h1>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20">
+            <span id="total-centros">0</span>
+          </span>
+        </div>
+        <% if (currentUserData?.role === 'Admin') { %>
+        <button onclick="openNewCentroModal()" class="btn-primary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Nueva Obra
+        </button>
+        <% } %>
+      </div>
+
+      <div class="glass-card rounded-xl overflow-hidden mb-4">
+        <div class="flex items-center gap-2 p-2 sm:p-3 search-controls">
+          <div class="relative flex-1 min-w-0">
+            <svg class="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="search-centro" placeholder="Buscar centro de trabajo..." class="w-full pl-8 sm:pl-9 pr-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/15 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon transition-all focus:border-[#2563EB]/50">
+          </div>
+          <select id="filter-estado" class="px-2 py-2 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 rounded-lg transition-colors border border-transparent hover:border-[#2563EB]/20 bg-[#0a0e17]/40" onchange="filterByEstado(this.value)">
+            <option value="">Todos</option>
+            <option value="activa">Activa</option>
+            <option value="pausada">Pausada</option>
+            <option value="cerrada">Cerrada</option>
+          </select>
+          <span id="active-filters-count" class="hidden px-1.5 py-0.5 bg-[#2563EB]/30 text-[#2563EB] rounded-full text-[10px] font-bold leading-none"></span>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-xl overflow-hidden mb-4">
+        <div class="px-4 py-3 flex items-center gap-2 border-b border-white/5 bg-white/[0.02]">
+          <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
+          <h2 class="text-sm font-bold tracking-wide text-[#ffffff]">Centros Activos</h2>
+          <span class="px-2 py-0.5 rounded-md bg-[#2563EB]/15 text-[#2563EB] text-xs font-bold"><span id="activos-count">0</span></span>
+        </div>
+        <div id="centros-table-container">
+          <table class="w-full text-sm min-w-[720px]">
+            <thead>
+              <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
+                <th class="px-4 py-3 text-left font-semibold">Nombre</th>
+                <th class="px-4 py-3 text-left font-semibold">Ubicación</th>
+                <th class="px-4 py-3 text-left font-semibold">Estado</th>
+                <th class="px-4 py-3 text-center font-semibold">Elementos</th>
+                <th class="px-4 py-3 text-center font-semibold">Asignados</th>
+                <th class="px-4 py-3 text-left font-semibold">Creado</th>
+                <th class="px-3 py-3 no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="centros-table-body">
+              <tr><td colspan="7" class="text-center py-8 text-gray-400">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="centros-empty" class="hidden text-center py-12 text-[#4a5568]">
+          <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          <p>No hay centros de trabajo registrados</p>
+          <p class="text-xs mt-1">Creá la primera obra para comenzar</p>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal Nuevo Centro -->
+<div id="modal-nuevo-centro" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="glass-card rounded-xl p-6 w-full max-w-md mx-4 border border-[#2563EB]/20">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-[#ffffff]">Nueva Obra</h3>
+      <button onclick="closeNewCentroModal()" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <form id="form-nuevo-centro" onsubmit="createCentro(event)">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Nombre *</label>
+          <input type="text" id="nc-nombre" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ej: Carlos Casares - Ampliación">
+        </div>
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Ubicación</label>
+          <input type="text" id="nc-ubicacion" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ciudad, provincia">
+        </div>
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Observaciones</label>
+          <textarea id="nc-observaciones" rows="3" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon resize-none" placeholder="Notas sobre la obra..."></textarea>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button type="button" onclick="closeNewCentroModal()" class="flex-1 px-4 py-2 text-sm rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] hover:border-[#4a5568] transition-colors">Cancelar</button>
+        <button type="submit" class="flex-1 px-4 py-2 text-sm rounded-lg bg-[#2563EB] text-white font-medium hover:bg-[#1d4ed8] transition-colors">Crear Obra</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Detalle Centro -->
+<div id="modal-detalle-centro" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="glass-card rounded-xl p-6 w-full max-w-2xl mx-4 border border-[#2563EB]/20 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-[#ffffff]" id="dc-nombre">Centro</h3>
+      <button onclick="closeDetalleCentro()" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <div id="dc-details" class="mb-4"></div>
+    <div id="dc-elementos" class="mb-4"></div>
+    <div id="dc-actions" class="flex gap-2 flex-wrap"></div>
+  </div>
+</div>
+
+<!-- Modal Asignar Elemento -->
+<div id="modal-asignar" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="glass-card rounded-xl p-6 w-full max-w-md mx-4 border border-[#2563EB]/20">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-[#ffffff]">Asignar Elemento</h3>
+      <button onclick="closeAsignarModal()" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <form id="form-asignar" onsubmit="assignElement(event)">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">ID del Elemento *</label>
+          <input type="text" id="ae-elementoId" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ej: V-00123 o ASSET-001">
+        </div>
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Tipo *</label>
+          <select id="ae-elementoTipo" required class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <option value="">Seleccionar...</option>
+            <option value="vehiculo">Vehículo</option>
+            <option value="herramienta">Herramienta</option>
+            <option value="equipo">Equipo</option>
+            <option value="ropa">Ropa</option>
+            <option value="material">Material</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Origen (si viene de otro centro)</label>
+          <input type="text" id="ae-origenCentro" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ej: Luján">
+        </div>
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Observaciones</label>
+          <textarea id="ae-observaciones" rows="2" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon resize-none" placeholder="Notas..."></textarea>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button type="button" onclick="closeAsignarModal()" class="flex-1 px-4 py-2 text-sm rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] hover:border-[#4a5568] transition-colors">Cancelar</button>
+        <button type="submit" class="flex-1 px-4 py-2 text-sm rounded-lg bg-[#2563EB] text-white font-medium hover:bg-[#1d4ed8] transition-colors">Asignar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Cerrar Centro -->
+<div id="modal-cerrar" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="glass-card rounded-xl p-6 w-full max-w-md mx-4 border border-[#F97316]/20">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-lg bg-[#F97316]/20 flex items-center justify-center">
+        <svg class="w-5 h-5 text-[#F97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-[#ffffff]">Cerrar Obra</h3>
+        <p class="text-xs text-[#8b9bb4]">Se registrará el cierre definitivo</p>
+      </div>
+    </div>
+    <p class="text-sm text-[#4a5568] mb-4">Al cerrar esta obra, se marcará como <strong class="text-[#F97316]">cerrada</strong>. Podés ver el historial de elementos desde el detalle. <strong>¿Deseas continuar?</strong></p>
+    <div class="flex gap-2">
+      <button onclick="closeCerrarModal()" class="flex-1 px-4 py-2 text-sm rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] hover:border-[#4a5568] transition-colors">Cancelar</button>
+      <button onclick="confirmCloseCentro()" class="flex-1 px-4 py-2 text-sm rounded-lg bg-[#F97316] text-white font-medium hover:bg-[#ea580c] transition-colors">Cerrar Obra</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/centros.js"></script>
+<%- include('partials/footer') %>
