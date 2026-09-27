@@ -1,5 +1,5 @@
 require('dotenv').config();
-const {db} = require('./config/firebase');
+const {db} = require('../config/firebase');
 
 const tipos = {
   'herramienta': [
