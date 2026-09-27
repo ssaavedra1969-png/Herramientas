@@ -57,7 +57,8 @@ function filterCatalogo(tipo) {
     <tr class="border-b border-white/5 hover:bg-[#00E5FF]/10">
       <td class="px-4 py-3 font-mono text-[#00E5FF] text-xs">${esc(e.interno)}</td>
       <td class="px-4 py-3 text-[#ffffff]">${esc(e.nombre)}</td>
-      <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.marca || '—')} ${e.modelo ? '<span class="text-[#2563EB]"> ' + esc(e.modelo) + '</span>' : ''}</td>
+      <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.marca || '—')}</td>
+      <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.modelo || '—')}</td>
       <td class="px-4 py-3 text-center">${e.stock ?? 0}</td>
       <td class="px-3 py-3 no-print">
         <button onclick="deleteCatalogoItem('${e.id}')" class="text-[#EF4444] hover:text-red-300 text-xs" title="Eliminar">✕</button>
