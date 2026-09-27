@@ -349,12 +349,6 @@ async function assignElement(e) {
 
 function openAddElementoModal() {
   document.getElementById('form-add-elemento').reset();
-  const tipoSel = document.getElementById('ae-new-tipo');
-  const internoInput = document.getElementById('ae-new-interno');
-  const prefijos = { vehiculo: 'V', herramienta: 'H', equipo: 'E', ropa: 'R', material: 'M' };
-  tipoSel.onchange = function() {
-    internoInput.value = this.value ? (prefijos[this.value] || '') + '___' : '';
-  };
   showModal('modal-add-elemento');
 }
 function closeAddElementoModal() { hideModal('modal-add-elemento'); }
