@@ -41,6 +41,7 @@
       <div class="flex gap-1 mb-4 no-print">
         <button id="tab-centros" onclick="switchTab('centros')" class="px-4 py-2 text-xs font-bold rounded-lg bg-[#2563EB] text-white transition-colors">Centros</button>
         <button id="tab-catalogo" onclick="switchTab('catalogo')" class="px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors">Catálogo</button>
+        <button id="tab-elementos" onclick="switchTab('elementos')" class="px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors">Elementos</button>
       </div>
 
       <div id="section-centros">
@@ -115,6 +116,64 @@
           <div id="catalogo-empty" class="hidden text-center py-12 text-[#4a5568]">
             <p>No hay elementos en este tipo</p>
             <p class="text-xs mt-1">Agregá el primero con el botón +</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="section-elementos" class="hidden">
+        <div class="glass-card rounded-xl overflow-hidden mb-4">
+          <div class="px-4 py-3 flex items-center justify-between border-b border-white/5 bg-white/[0.02]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#10B981]"></span>
+              <h2 class="text-sm font-bold tracking-wide text-[#ffffff]">Elementos Asignados</h2>
+              <span class="px-2 py-0.5 rounded-md bg-[#10B981]/15 text-[#10B981] text-xs font-bold"><span id="elementos-total">0</span></span>
+            </div>
+          </div>
+          <div class="p-3 border-b border-white/5">
+            <div class="flex flex-wrap items-center gap-2">
+              <input type="text" id="elementos-search" placeholder="Buscar por interno..." class="px-3 py-1.5 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon w-48">
+              <select id="elementos-filter-centro" class="px-3 py-1.5 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+                <option value="">Todos los centros</option>
+              </select>
+              <select id="elementos-filter-tipo" class="px-3 py-1.5 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+                <option value="">Todos los tipos</option>
+                <option value="vehiculo">Vehículo</option>
+                <option value="herramienta">Herramienta</option>
+                <option value="equipo">Equipo</option>
+                <option value="ropa">Ropa</option>
+                <option value="material">Material</option>
+              </select>
+              <select id="elementos-filter-estado" class="px-3 py-1.5 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+                <option value="">Todos los estados</option>
+                <option value="asignado">Asignado</option>
+                <option value="devuelto">Devuelto</option>
+              </select>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm min-w-[800px]">
+              <thead>
+                <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
+                  <th class="px-4 py-3 text-left font-semibold cursor-pointer hover:text-white select-none" onclick="sortElementos('centroNombre')">Centro <span class="sort-ind"></span></th>
+                  <th class="px-4 py-3 text-left font-semibold cursor-pointer hover:text-white select-none" onclick="sortElementos('interno')">Interno <span class="sort-ind"></span></th>
+                  <th class="px-4 py-3 text-left font-semibold">Nombre</th>
+                  <th class="px-4 py-3 text-left font-semibold">Marca</th>
+                  <th class="px-4 py-3 text-left font-semibold">Modelo</th>
+                  <th class="px-4 py-3 text-left font-semibold cursor-pointer hover:text-white select-none" onclick="sortElementos('elementoTipo')">Tipo <span class="sort-ind"></span></th>
+                  <th class="px-4 py-3 text-left font-semibold cursor-pointer hover:text-white select-none" onclick="sortElementos('fechaAsignacion')">Asignación <span class="sort-ind"></span></th>
+                  <th class="px-4 py-3 text-left font-semibold">Origen</th>
+                  <th class="px-4 py-3 text-left font-semibold">Estado</th>
+                  <th class="px-4 py-3 text-left font-semibold">Observaciones</th>
+                  <th class="px-3 py-3 no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="elementos-table-body">
+                <tr><td colspan="11" class="text-center py-8 text-gray-400">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="elementos-empty" class="hidden text-center py-12 text-[#4a5568]">
+            <p>No hay elementos asignados</p>
           </div>
         </div>
       </div>

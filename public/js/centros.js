@@ -4,7 +4,9 @@ let currentCentroId = null;
 let filterEstado = '';
 let filterSearch = '';
 let catalogoData = {};
-let sortState = { centros: { col: null, asc: true }, catalogo: { col: null, asc: true } };
+let elementosData = [];
+let elementosFilter = { search: '', centro: '', tipo: '', estado: '' };
+let sortState = { centros: { col: null, asc: true }, catalogo: { col: null, asc: true }, elementos: { col: null, asc: true } };
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -14,18 +16,39 @@ document.addEventListener('DOMContentLoaded', () => {
     filterSearch = e.target.value.trim().toLowerCase();
     renderCentros();
   });
+  document.getElementById('elementos-search')?.addEventListener('input', (e) => {
+    elementosFilter.search = e.target.value.trim().toLowerCase();
+    renderElementos();
+  });
+  document.getElementById('elementos-filter-centro')?.addEventListener('change', (e) => {
+    elementosFilter.centro = e.target.value;
+    renderElementos();
+  });
+  document.getElementById('elementos-filter-tipo')?.addEventListener('change', (e) => {
+    elementosFilter.tipo = e.target.value;
+    renderElementos();
+  });
+  document.getElementById('elementos-filter-estado')?.addEventListener('change', (e) => {
+    elementosFilter.estado = e.target.value;
+    renderElementos();
+  });
 });
 
 function switchTab(tab) {
   document.getElementById('section-centros').classList.toggle('hidden', tab !== 'centros');
   document.getElementById('section-catalogo').classList.toggle('hidden', tab !== 'catalogo');
+  document.getElementById('section-elementos').classList.toggle('hidden', tab !== 'elementos');
   document.getElementById('tab-centros').className = tab === 'centros'
     ? 'px-4 py-2 text-xs font-bold rounded-lg bg-[#2563EB] text-white transition-colors'
     : 'px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors';
   document.getElementById('tab-catalogo').className = tab === 'catalogo'
     ? 'px-4 py-2 text-xs font-bold rounded-lg bg-[#00E5FF] text-[#0a0e17] transition-colors'
     : 'px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors';
+  document.getElementById('tab-elementos').className = tab === 'elementos'
+    ? 'px-4 py-2 text-xs font-bold rounded-lg bg-[#10B981] text-white transition-colors'
+    : 'px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors';
   if (tab === 'catalogo') loadCatalogo();
+  if (tab === 'elementos') loadElementos();
 }
 
 async function loadCatalogo() {
@@ -259,21 +282,34 @@ async function openDetalleCentro(centroId) {
       elemDiv.innerHTML = '<p class="text-[#4a5568] text-sm">No hay elementos asignados</p>';
     } else {
       elemDiv.innerHTML = `
-        <div class="text-xs text-[#8b9bb4] uppercase tracking-wider mb-2">Elementos Asignados</div>
-        <div class="space-y-1">
-          ${elems.map(e => `
-            <div class="flex items-center justify-between py-1.5 border-b border-white/5">
-              <div>
-                <span class="text-[#ffffff] text-sm font-medium">${esc(e.interno)}</span>
-                <span class="text-xs text-[#8b9bb4] ml-2">${e.elementoTipo}</span>
-                <span class="text-xs text-[#4a5568] ml-2">${formatDate(e.fechaAsignacion)}</span>
-                ${e.origenCentro ? `<span class="text-xs text-[#2563EB] ml-2">desde ${esc(e.origenCentro)}</span>` : ''}
-              </div>
-              <div class="flex items-center gap-2">
-                ${!e.fechaDevolucion || e.fechaDevolucion === '' ? `<button onclick="returnElement('${centroId}', '${e.id}')" class="text-xs text-[#00E5FF] hover:underline">Devolver</button>` : `<span class="text-xs text-[#00E5FF]">Devuelto ${formatDate(e.fechaDevolucion)}</span>`}
-              </div>
-            </div>
-          `).join('')}
+        <div class="text-xs text-[#8b9bb4] uppercase tracking-wider mb-2">Elementos Asignados (${elems.length})</div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs min-w-[500px]">
+            <thead>
+              <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
+                <th class="px-2 py-2 text-left font-semibold">Interno</th>
+                <th class="px-2 py-2 text-left font-semibold">Tipo</th>
+                <th class="px-2 py-2 text-left font-semibold">Asignación</th>
+                <th class="px-2 py-2 text-left font-semibold">Estado</th>
+                <th class="px-2 py-2 text-left font-semibold">Obs.</th>
+                <th class="px-2 py-2 no-print"></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${elems.map(e => {
+                const asignado = !e.fechaDevolucion || e.fechaDevolucion === '';
+                return `
+                <tr class="border-b border-white/5">
+                  <td class="px-2 py-2 text-[#ffffff] font-medium">${esc(e.interno)}</td>
+                  <td class="px-2 py-2 text-[#8b9bb4]">${e.elementoTipo}</td>
+                  <td class="px-2 py-2 text-[#8b9bb4]">${formatDate(e.fechaAsignacion)}</td>
+                  <td class="px-2 py-2">${asignado ? '<span class="text-[#10B981]">Asignado</span>' : `<span class="text-[#4a5568]">Devuelto ${formatDate(e.fechaDevolucion)}</span>`}</td>
+                  <td class="px-2 py-2 text-[#4a5568] max-w-[120px] truncate">${esc(e.observaciones || '')}</td>
+                  <td class="px-2 py-2 no-print">${asignado ? `<button onclick="returnElement('${centroId}', '${e.id}')" class="text-[#00E5FF] hover:underline">Devolver</button>` : ''}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
         </div>`;
     }
 
@@ -591,6 +627,111 @@ async function editElemento(e) {
     showToast('Elemento actualizado');
     loadCatalogo();
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+function nombreCentro(id) {
+  const c = centrosData.find(x => x.id === id);
+  return c ? c.nombre : id;
+}
+
+/* ── Pestaña Elementos ── */
+async function loadElementos() {
+  const tbody = document.getElementById('elementos-table-body');
+  try {
+    if (!centrosData.length) await loadCentros();
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/centros/elementos', { headers });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || 'HTTP ' + res.status);
+    }
+    elementosData = await res.json();
+    const centroSel = document.getElementById('elementos-filter-centro');
+    const currentVal = centroSel.value;
+    const centros = [...new Set(elementosData.map(e => e.centroId))];
+    centros.sort();
+    centros.forEach(c => {
+      if (!centroSel.querySelector(`option[value="${c}"]`)) {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = nombreCentro(c);
+        centroSel.appendChild(opt);
+      }
+    });
+    centroSel.value = currentVal;
+    renderElementos();
+  } catch (e) {
+    console.error('Error cargando elementos:', e);
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-red-400">Error: ' + esc(e.message) + '</td></tr>';
+  }
+}
+
+function renderElementos() {
+  let filtered = [...elementosData];
+  if (elementosFilter.search) {
+    filtered = filtered.filter(e => (e.interno || '').toLowerCase().includes(elementosFilter.search));
+  }
+  if (elementosFilter.centro) {
+    filtered = filtered.filter(e => e.centroId === elementosFilter.centro);
+  }
+  if (elementosFilter.tipo) {
+    filtered = filtered.filter(e => e.elementoTipo === elementosFilter.tipo);
+  }
+  if (elementosFilter.estado) {
+    if (elementosFilter.estado === 'asignado') {
+      filtered = filtered.filter(e => !e.fechaDevolucion || e.fechaDevolucion === '');
+    } else {
+      filtered = filtered.filter(e => e.fechaDevolucion && e.fechaDevolucion !== '');
+    }
+  }
+  const totalEl = document.getElementById('elementos-total');
+  if (totalEl) totalEl.textContent = filtered.length;
+  const tbody = document.getElementById('elementos-table-body');
+  const empty = document.getElementById('elementos-empty');
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    empty?.classList.remove('hidden');
+    return;
+  }
+  empty?.classList.add('hidden');
+  tbody.innerHTML = filtered.map(e => {
+    const asignado = !e.fechaDevolucion || e.fechaDevolucion === '';
+    return `
+      <tr class="border-b border-white/5 hover:bg-[#10B981]/5">
+        <td class="px-4 py-3 text-[#ffffff] font-medium">${esc(nombreCentro(e.centroId))}</td>
+        <td class="px-4 py-3 text-[#00E5FF] font-mono text-xs">${esc(e.interno)}</td>
+        <td class="px-4 py-3 text-[#8b9bb4]">${esc(e.nombre || '')}</td>
+        <td class="px-4 py-3 text-[#8b9bb4]">${esc(e.marca || '')}</td>
+        <td class="px-4 py-3 text-[#8b9bb4]">${esc(e.modelo || '')}</td>
+        <td class="px-4 py-3 text-[#8b9bb4]">${e.elementoTipo}</td>
+        <td class="px-4 py-3 text-[#8b9bb4] text-xs">${formatDate(e.fechaAsignacion)}</td>
+        <td class="px-4 py-3 text-[#8b9bb4] text-xs">${e.origenCentro ? esc(e.origenCentro) : '—'}</td>
+        <td class="px-4 py-3">${asignado ? '<span class="text-[#10B981] text-xs font-bold">Asignado</span>' : `<span class="text-[#4a5568] text-xs">Devuelto ${formatDate(e.fechaDevolucion)}</span>`}</td>
+        <td class="px-4 py-3 text-[#4a5568] text-xs max-w-[150px] truncate">${esc(e.observaciones || '')}</td>
+        <td class="px-3 py-3 no-print">${asignado ? `<button onclick="returnElement('${e.centroId}', '${e.id}')" class="text-[#00E5FF] hover:underline text-xs">Devolver</button>` : ''}</td>
+      </tr>`;
+  }).join('');
+}
+
+function sortElementos(col) {
+  const state = sortState.elementos;
+  if (state.col === col) {
+    state.asc = !state.asc;
+  } else {
+    state.col = col;
+    state.asc = true;
+  }
+  const dir = state.asc ? 1 : -1;
+  elementosData.sort((a, b) => {
+    let va = a[col], vb = b[col];
+    if (col === 'fechaAsignacion') { va = va || ''; vb = vb || ''; }
+    if (typeof va === 'string') return va.localeCompare(vb) * dir;
+    return ((va || 0) - (vb || 0)) * dir;
+  });
+  renderElementos();
+  document.querySelectorAll(`th[onclick^="sortElementos('"] .sort-ind`).forEach(el => el.textContent = '');
+  const th = document.querySelector(`th[onclick="sortElementos('${col}')"] .sort-ind`);
+  if (th) th.textContent = state.asc ? '▲' : '▼';
 }
 
 /* ── Helpers ── */

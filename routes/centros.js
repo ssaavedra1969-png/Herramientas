@@ -183,7 +183,15 @@ router.get('/', verifyToken, async (req, res) => {
     const cacheado = getCache('centros-list', TTL_CENTROS);
     if (cacheado) return res.json(cacheado);
     const snapshot = await db.collection('centros').orderBy('nombre', 'asc').get();
-    const centros = snapshot.docs.map(d => cleanTimestamps({ id: d.id, ...d.data() }));
+    const centros = await Promise.all(snapshot.docs.map(async (d) => {
+      const centro = cleanTimestamps({ id: d.id, ...d.data() });
+      const elementosSnap = await db.collection(`centros/${d.id}/elementos`).get();
+      const elementos = elementosSnap.docs.map(e => e.data());
+      centro.totalElementos = elementos.length;
+      centro.asignados = elementos.filter(e => !e.fechaDevolucion || e.fechaDevolucion === '').length;
+      centro.devueltos = elementos.filter(e => e.fechaDevolucion && e.fechaDevolucion !== '').length;
+      return centro;
+    }));
     setCache('centros-list', centros);
     res.json(centros);
   } catch (error) {
@@ -207,6 +215,61 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
     });
     cacheTTL.delete('centros-list');
     res.status(201).json({ id: docRef.id, nombre });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/elementos', verifyToken, async (req, res) => {
+  try {
+    const snap = await db.collectionGroup('elementos').get();
+    const items = snap.docs.map(d => {
+      const data = d.data();
+      const centroId = d.ref.parent.parent.id;
+      return {
+        id: d.id,
+        centroId,
+        interno: data.interno || '',
+        elementoTipo: data.elementoTipo || '',
+        fechaAsignacion: data.fechaAsignacion || null,
+        fechaDevolucion: data.fechaDevolucion || null,
+        origenCentro: data.origenCentro || null,
+        observaciones: data.observaciones || ''
+      };
+    });
+
+    const vehiculosSnap = await db.collection('vehicles').get();
+    const vehMap = {};
+    vehiculosSnap.docs.forEach(d => {
+      const v = d.data();
+      vehMap[v.interno] = { nombre: `${v.patente || v.interno || ''} — ${v.marca || ''} ${v.modelo || ''} ${v.anio || ''}`.trim(), marca: v.marca || '', modelo: v.modelo || '' };
+    });
+
+    const catalogoSnap = await db.collection('elementos_catalogo').get();
+    const catMap = {};
+    catalogoSnap.docs.forEach(d => {
+      const c = d.data();
+      catMap[c.interno] = { nombre: c.nombre || '', marca: c.marca || '', modelo: c.modelo || '' };
+    });
+
+    const elementos = items.map(e => {
+      const info = e.elementoTipo === 'vehiculo'
+        ? vehMap[e.interno]
+        : catMap[e.interno];
+      return cleanTimestamps({
+        ...e,
+        nombre: info?.nombre || '',
+        marca: info?.marca || '',
+        modelo: info?.modelo || ''
+      });
+    });
+
+    elementos.sort((a, b) => {
+      const fa = a.fechaAsignacion ? new Date(a.fechaAsignacion).getTime() : 0;
+      const fb = b.fechaAsignacion ? new Date(b.fechaAsignacion).getTime() : 0;
+      return fb - fa;
+    });
+    res.json(elementos);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
