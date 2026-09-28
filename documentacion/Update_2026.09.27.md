@@ -142,9 +142,9 @@ match /centros/{centroId} {
 - No hay datos de Firestore que modificar (colecciones nuevas, no tocan las existentes)
 
 ## Pendiente
-- [ ] Probar en localhost:3000 (npm start / node server.js)
+- [x] Probar en localhost ✅ (mock mode verificado)
 - [ ] Crear índices en Firebase Console (si firestore.indexes.json no aplica automáticamente)
-- [ ] Deploy a Vercel (`vercel --prod`)
+- [x] Deploy a Vercel ✅ (`https://falpat-control-de-vehiculos.vercel.app`)
 - [ ] Test de rollback
 - [ ] Crear centro de prueba ("Carlos Casares")
 - [ ] Asignar elementos de prueba
@@ -152,7 +152,8 @@ match /centros/{centroId} {
 
 ---
 Fecha: 2026-09-27
-Estado: Implementación completa local, pendiente deploy
+Estado: Implementación completa, deploy exitoso
 Sesión: Implementación completa
-Commit esperado: TBD
-Servidor verificado: OK
+Commits: `d72ec34`, `f40620e`, `01858eb`, `b84e5ef`, `01963aa`
+Deploy: https://falpat-control-de-vehiculos.vercel.app
+Notas: PATENTE excluido de deploy Vercel (.vercelignore) por limite 100MB

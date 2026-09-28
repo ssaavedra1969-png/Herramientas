@@ -14,4 +14,8 @@ papeles/
 
 # Respaldos del optimizador de adjuntos (Optimizaciones)
 **/_originales/
+
+# ZIPs de respaldo de la carpeta PATENTE (no van al repo, superan el limite de Vercel)
+PATENTE/*.zip
+PATENTE/**/*.zip
 .env*
