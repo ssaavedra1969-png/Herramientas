@@ -1,18 +1,33 @@
 let allVehicles = [];
 let cedulaPresentes = null;
 
+/* Escribe texto si el elemento existe. Auxiliar global: acá hay muchos ids
+   opcionales y un `getElementById(...).textContent` sin guardar hace que todo
+   el render posterior muera en silencio (pasó con card-vtv-proximas). */
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
 function openDashModal(title, subtitle, iconBg, iconSvg, bodyHtml) {
-  document.getElementById('dash-modal-title').textContent = title;
-  document.getElementById('dash-modal-subtitle').textContent = subtitle;
+  setText('dash-modal-title', title);
+  setText('dash-modal-subtitle', subtitle);
   const icon = document.getElementById('dash-modal-icon');
-  icon.style.background = iconBg;
-  icon.innerHTML = iconSvg;
-  document.getElementById('dash-modal-body').innerHTML = bodyHtml;
-  document.getElementById('dash-modal').classList.remove('hidden');
+  if (icon) {
+    icon.style.background = iconBg;
+    icon.innerHTML = iconSvg;
+  }
+  const body = document.getElementById('dash-modal-body');
+  if (body) body.innerHTML = bodyHtml;
+  const modal = document.getElementById('dash-modal');
+  if (modal) modal.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
 }
 function closeDashModal() {
-  document.getElementById('dash-modal').classList.add('hidden');
+  const modal = document.getElementById('dash-modal');
+  if (modal) modal.classList.add('hidden');
+  // El scroll se destraba igual: si el modal no existe, antes se quedaba
+  // bloqueada la página entera.
   document.body.style.overflow = '';
 }
 
@@ -663,80 +678,34 @@ function initRealtimeListeners() {
     }
     setSev('vehiculos', active);
 
-    let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0, serviceCount = 0, matafuegoCount = 0, cedulaCount = 0;
-    let vtvDoc = 0, seguroDoc = 0, matafuegoDoc = 0, cedulaDocPresentes = 0;
-    let registroDoc = 0, dniDoc = 0, serviceDoc = 0;
+    let counts = { total: 0 };
+    let docs   = { total: 0 };
     all.forEach(v => {
       if (v.estadoGeneral === 'Baja') return;
-      const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
-      if (vtvDays !== null && vtvDays <= 30) vtvCount++;
-      if (v.vtv?.fechaVencimiento) vtvDoc++;
-      const segDays = daysUntil(v.seguro?.fechaVencimiento);
-      if (segDays !== null && segDays <= 30) seguroCount++;
-      if (v.seguro?.fechaVencimiento) seguroDoc++;
-      const regDays = daysUntil(v.vencimientoRegistro);
-      if (regDays !== null && regDays <= 30) registroCount++;
-      if (v.vencimientoRegistro) registroDoc++;
-      const dniDays = daysUntil(v.vencimientoDNI);
-      if (dniDays !== null && dniDays <= 30) dniCount++;
-      if (v.vencimientoDNI) dniDoc++;
-      if (serviceDue(v)) serviceCount++;
-      if (v.proximoServiceFecha) serviceDoc++;
-      const matDays = daysUntil(v.matafuego?.fechaVto);
-      if (matDays !== null && matDays <= 30) matafuegoCount++;
-      if (v.matafuego?.fechaVto) matafuegoDoc++;
-      const cedDays = daysUntil(v.documentacion?.cedula?.fechaVencimiento);
-      if (cedDays !== null && cedDays <= 30) cedulaCount++;
-      if (cedulaPresentes?.has(String(v.patente || '').toUpperCase())) cedulaDocPresentes++;
+      counts.total++;
+      DOC_TYPES.forEach(t => {
+        const days = daysUntil(t.get(v));
+        if (days !== null && days <= 30) counts[t.k] = (counts[t.k] || 0) + 1;
+      });
+      if (v.vtv?.fechaVencimiento)             docs.vtv       = (docs.vtv       || 0) + 1;
+      if (v.seguro?.fechaVencimiento)          docs.seguro    = (docs.seguro    || 0) + 1;
+      if (v.matafuego?.fechaVto)               docs.matafuego = (docs.matafuego || 0) + 1;
+      if (v.vencimientoRegistro)                docs.registro  = (docs.registro  || 0) + 1;
+      if (v.vencimientoDNI)                     docs.dni       = (docs.dni       || 0) + 1;
+      if (v.proximoServiceFecha)                docs.service   = (docs.service   || 0) + 1;
+      if (cedulaPresentes?.has(String(v.patente || '').toUpperCase()))
+        docs.cedula = (docs.cedula || 0) + 1;
     });
+    // Service no entra en DOC_TYPES: se mide por fecha o por km restantes.
+    const svcDue = all.filter(v => v.estadoGeneral !== 'Baja' && serviceDue(v)).length;
+    if (svcDue) counts.service = (counts.service || 0) + svcDue;
 
-    const elVtv = document.getElementById('card-vtv-proximas');
-    const prevVtv = parseInt(elVtv.textContent) || 0;
-    animateValue(elVtv, prevVtv, vtvCount, 800);
-    setSev('vtv', vtvCount);
-    renderDocCount('card-vtv-docs', vtvDoc, active);
-
-    const elSeg = document.getElementById('card-seguro-proximos');
-    const prevSeg = parseInt(elSeg.textContent) || 0;
-    animateValue(elSeg, prevSeg, seguroCount, 800);
-    setSev('seguro', seguroCount);
-    renderDocCount('card-seguro-docs', seguroDoc, active);
-
-    const elReg = document.getElementById('card-registro-proximos');
-    const prevReg = parseInt(elReg.textContent) || 0;
-    animateValue(elReg, prevReg, registroCount, 800);
-    setSev('registro', registroCount);
-    renderDocCount('card-registro-docs', registroDoc, active);
-
-    const elDni = document.getElementById('card-dni-proximos');
-    const prevDni = parseInt(elDni.textContent) || 0;
-    animateValue(elDni, prevDni, dniCount, 800);
-    setSev('dni', dniCount);
-    renderDocCount('card-dni-docs', dniDoc, active);
-
-    const elService = document.getElementById('card-service-proximos');
-    if (elService) {
-      const prevService = parseInt(elService.textContent) || 0;
-      animateValue(elService, prevService, serviceCount, 800);
-      setSev('service', serviceCount);
-    }
-    renderDocCount('card-service-docs', serviceDoc, active);
-
-    const elMatafuego = document.getElementById('card-matafuego-proximos');
-    if (elMatafuego) {
-      const prevMat = parseInt(elMatafuego.textContent) || 0;
-      animateValue(elMatafuego, prevMat, matafuegoCount, 800);
-      setSev('matafuego', matafuegoCount);
-    }
-    renderDocCount('card-matafuego-docs', matafuegoDoc, active);
-
-    const elCedula = document.getElementById('card-cedula-proximas');
-    if (elCedula) {
-      const prevCedula = parseInt(elCedula.textContent) || 0;
-      animateValue(elCedula, prevCedula, cedulaCount, 800);
-      setSev('cedula', cedulaCount);
-    }
-    if (cedulaPresentes) renderDocCount('card-cedula-docs', cedulaDocPresentes, active);
+    /* Todas las tarjetas se escriben con setCard, que guarda el elemento
+       internamente. Antes cada una repetía `getElementById(...).textContent`
+       sin guardar, así que un solo id mal escrito (o faltante) tiraba
+       TypeError y mataba TODO lo que venía después: KPIs hero, empresas,
+       salud de flota y services quedaban en 0 sin avisar. */
+    setCardCounts(counts, docs, active);
 
     const expiries = collectExpiries(all);
     renderHeroKpis(all, expiries);
@@ -802,7 +771,7 @@ function renderHeroKpis(vehicles, items) {
   const active = vehicles.filter(v => v.estadoGeneral !== 'Baja');
   const bajas = vehicles.length - active.length;
 
-  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  // setText es global (arriba del archivo): no redefinirlo acá.
 
   setText('kpi-flota-hint', bajas > 0 ? `${bajas} de baja` : `${active.length} en servicio`);
 
@@ -1063,6 +1032,24 @@ function renderDocCount(elId, withDoc, total) {
   } else {
     el.innerHTML = `<span class="t-ok">${withDoc} de ${total}</span> <span class="t-ok text-xs font-semibold">✓ completo</span>`;
   }
+}
+
+/* Escribe las 7 tarjetas de alerta en una sola pasada.
+   Los ids salen del array `alerts` de dashboard.ejs:
+     card-{k}-proximos   (el número grande)   -> OJO: "proximos", no "proximas"
+     card-{k}-docs       (la línea de detalle)
+   Todo guardado: que falte un id no puede volver a cortar el render entero. */
+const ALERT_KEYS = ['vtv', 'seguro', 'cedula', 'matafuego', 'registro', 'dni', 'service'];
+
+function setCardCounts(counts, docs, active) {
+  ALERT_KEYS.forEach(k => {
+    const n = counts[k] || 0;
+    const el = document.getElementById('card-' + k + '-proximos');
+    if (el) animateValue(el, parseInt(el.textContent) || 0, n, 800);
+    setSev(k, n);
+    if (k === 'cedula' && !cedulaPresentes) return;
+    renderDocCount('card-' + k + '-docs', docs[k] || 0, active);
+  });
 }
 
 /* Severidad visual de cada tarjeta de alerta segun la cantidad real.

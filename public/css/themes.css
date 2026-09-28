@@ -1460,14 +1460,13 @@ tr:hover .row-actions, .row-actions:focus-within { opacity: 1; }
   margin-right: calc(var(--sp-5) * -1);
 }
 
-/* Páginas sin topbar: flotante arriba a la derecha, con aire para que no
-   se pegue al borde ni tape contenido. Oculto en móvil. */
+/* Páginas sin topbar: la caja va arriba a la derecha pero EN FLUJO normal
+   (no `position: fixed`). Se probó fija y tapaba el contenido de las 12
+   páginas que no tienen barra: nada de z-index ni overlay. Oculta en móvil. */
 .clock-float {
-  position: fixed;
-  top: 12px;
-  right: 14px;
-  z-index: var(--z-float);
   display: none;
+  width: max-content;
+  margin: var(--sp-3) var(--sp-4) 0 auto;
 }
 @media (min-width: 640px) {
   .clock-float { display: flex; }
