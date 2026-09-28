@@ -79,6 +79,7 @@ views/
   maintenance.ejs            # Listado mantenimientos + modal CRUD
   reports.ejs                # Reportes financieros
   admin.ejs                  # Gestión de usuarios
+  centros.ejs                # Centros de Trabajo / Obras (lista, catálogo, modales crear/editar/eliminar)
   partials/head.ejs          # Head con SDKs CDN
   partials/sidebar.ejs       # Sidebar navegación
   partials/footer.ejs        # Firebase init + auth-client.js
@@ -90,10 +91,14 @@ public/js/
   maintenance.js             # CRUD mantenimientos
   reports.js                 # Reportes financieros
   admin.js                   # Roles de usuario
+  centros.js                 # Obras: tabla, catálogo, asignar/devolver, editar, eliminar
 scripts/
   subir-documentos.js        # Sube la carpeta PATENTE/ a producción (pull+add+commit+push) → npm run subir:docs
+  cargar-vencimientos.js     # Vencimientos desde Excel de PATENTE/Vtos/ → npm run cargar:vencimientos
+  generar-control-documentacion.js  # Genera CONTROL_FALTANTES / CONTROL_VENCIDOS en PATENTE/Reportes/ → npm run generar:control
 PATENTE/
   {patente}/{tipo}.ext        # Documentos obligatorios versionados (fuente leída por la app en Vercel)
+  Reportes/                   # Excel de control generados por npm run generar:control (ignorados por git)
 ```
 
 ## Firestore Collections
@@ -109,7 +114,15 @@ Campos clave: tipo (Mecánico/Legal), vehiculoId, fechaRealizacion, proximaFecha
 Campos clave: role (Admin|Usuario), displayName, email
 
 ### `counters`
-Documento único con campo `current` para auto-increment de números internos de vehículos.
+Documento único con campo `current` para auto-increment de números internos de vehículos. OJO: hay **varios docs** en esta colección, no uno solo — `vehicles-{tipo}` para los internos de vehículos y `cat-{prefijo}` para los del catálogo de elementos (los prefijos salen de `PREFIJOS_CATALOGO` en `routes/centros.js`).
+
+### `centros` (Centros de Trabajo / Obras)
+Doc de catálogo por obra: `nombre`, `estado` (`activa`|`pausada`|`cerrada`), `ubicacion`, `observaciones`, `createdAt`, `updatedAt`.
+Subcolección `elementos/{docId}`: `elementoId`, `elementoTipo` (`vehiculo`|`herramienta`|`equipo`|`ropa`|`material`), `fechaAsignacion`, `fechaDevolucion` ("" = asignado), `origenCentro`, `observaciones`.
+**Se puede eliminar una obra, pero `DELETE /api/centros/:id` se niega con 409 si queda algún elemento sin devolver** (lee la subcolección y filtra en memoria, NO con `where('fechaDevolucion','==','')`: los elementos viejos no tienen ese campo y se colarían). Detalle: `documentacion/Update_2026.09.28.md`.
+
+### `elementos_catalogo`
+Catálogo de elementos no-vehículo: `nombre`, `interno` (con prefijo por tipo), `tipo`, `marca`, `modelo`, `descripcion`, `stock`. Alimenta el selector de elementos de las obras. Editable desde la pestaña Catálogo de `/centros`.
 
 ## Auth y permisos
 - `isAdmin()` = `currentUserData?.role === 'Admin'`
@@ -156,7 +169,13 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 
 ## Registro de cambios recientes (para puesta al día de IA)
 
-Último commit: `970afba` (pusheado a `origin/main`, working tree limpio, **desplegado en producción** y verificado: `/css/themes.css`, `/js/clock.js`, `/js/theme.js`, `/js/command-palette.js` devuelven 200 con el contenido nuevo).
+Último commit: `0ecb9a8` (pusheado a `origin/main`, working tree limpio, **desplegado en producción** por integración Git). Trae tres cosas: dashboard de vencimientos separado (vencidos vs. por vencer), documentación leída de `PATENTE/` + Excel de control, y **editar/eliminar Obras** en `/centros`.
+
+- **Vencimientos del dashboard (commit `0ecb9a8`)** — cada tipo de documento se cuenta dos veces en `public/js/dashboard.js`: `vencidos` (fecha pasada) y `proximos` (1 a 30 días). **El número grande de la tarjeta cuenta solo los que están por vencer** (es la lista de trabajo) y los vencidos van aparte con su cantidad. Estado real de la flota: 28 por vencer / 25 vencidos (VTV 2+6, Seguro 26+10, Cédula 0+6, Registro 0+2, DNI 0+1). La documentación sale de la **carpeta `PATENTE/{patente}/`**, no del mapa `documentacion`; el archivo subido desde la web tiene prioridad. Service sigue por fecha y por km. Detalle: `documentacion/Update_2026.09.28.md`.
+
+- **Excel de control de documentación (`npm run generar:control`)** — `scripts/generar-control-documentacion.js` genera en `PATENTE/Reportes/`: `CONTROL_FALTANTES_YYYY-MM-DD.xlsx` (un renglón por documento faltante; 158 al 2026-09-28) y `CONTROL_VENCIDOS_YYYY-MM-DD.xlsx` (documentos vencidos; 25 al 2026-09-28). Se regeneran con ese comando; **los `.xlsx` NO van a git** (ignorados), así que en otra PC hay que correrlo.
+
+- **Editar y eliminar Obras (commit `0ecb9a8`)** — `PUT /api/centros/:id` ahora acepta `nombre` y valida `estado`; `DELETE /api/centros/:id` (Admin) borra la subcolección `elementos` por lotes de 400 y el doc, pero **se niega con 409 si queda algún elemento sin devolver**. En la UI (`views/centros.ejs` + `public/js/centros.js`): botones editar/eliminar en la tabla y en el detalle, 2 modales nuevos, y **guardas `isAdmin()` que falban** (la página es `requireAuth`, no admin-only, así que antes los botones se le mostraban a cualquiera y fallaban con 403). Al abrir el modal de borrado se pide `GET /api/centros/:id` porque **`asignados`/`totalElementos` solo vienen en el detalle, no en la lista**.
 
 - **Rediseño visual del shell (commit `970afba`)** — 4 temas, topbar con reloj, ranking de empresas y services. Ver detalle abajo en "Sistema de temas y shell".
 
@@ -235,10 +254,11 @@ Corrida rápida: `node --check` en cada JS modificado, llaves CSS balanceadas (4
 - **Deploy por `vercel --prod --yes` NO equivale a pushear git**: producción siempre quedó al día, pero origin quedó atrás (commit `a1176ec` estuvo solo en Vercel). Al cerrar sesión, chequear que `origin/main == HEAD`.
 - **Server local**: `node server.js` NO recarga en caliente cambios de server.js/rutas (solo vistas y estáticos). Tras tocar rutas: matar el proceso del puerto 3000 (`Get-NetTCPConnection -LocalPort 3000`) y relanzar `node server.js` (o `npm run dev` = `node --watch server.js`). Vistas `.ejs` y `public/` se ven al refrescar.
 - **`DEV_READ_ONLY=true` en `.env`**: en local TODAS las escrituras a Firestore están bloqueadas (usa la misma base que producción). Revisar antes de "probar" funciones de guardado.
-- **Pre-commit hook**: bloquea el commit si `HEAD != origin/main`, lo que incluye estar ADELANTADO (commits locales sin pushear). No es un error real: la alerta dice "DESACTUALIZADO" pero aplica también cuando quedaron commits sin pushear. Solución: `git push origin main` del commit pendiente ANTES de commitear de nuevo. Verificar con: `git rev-parse HEAD` vs `git rev-parse origin/main`.
-- **Deploy por `vercel --prod --yes` NO equivale a pushear git**: producción siempre quedó al día, pero origin quedó atrás (commit `a1176ec` estuvo solo en Vercel). Al cerrar sesión, chequear que `origin/main == HEAD`.
-- **Server local**: `node server.js` NO recarga en caliente cambios de server.js/rutas (solo vistas y estáticos). Tras tocar rutas: matar el proceso del puerto 3000 (`Get-NetTCPConnection -LocalPort 3000`) y relanzar `node server.js` (o `npm run dev` = `node --watch server.js`). Vistas `.ejs` y `public/` se ven al refrescar.
-- **`DEV_READ_ONLY=true` en `.env`**: en local TODAS las escrituras a Firestore están bloqueadas (usa la misma base que producción). Revisar antes de "probar" funciones de guardado.
+- **La guarda read-only es un MIDDLEWARE montado en `server.js` (`app.use('/api/', devReadOnly)`), NO un bloqueo a nivel Firestore.** Un test/harness que monte `routes/x.js` en su propio Express **se saltea la guarda y escribe en la base de producción**. Para probar endpoints de escritura: (a) montar también `middleware/dev-readonly.js` en el harness, o (b) fakear `config/firebase.js` en `require.cache` con un `db` falso y ejercitar la ruta real (así se prueban batches, 409 y validaciones sin riesgo). Con el fake hay que emular a mano los `where`, los lotes (un `commit` borra SOLO los refs del lote) y `doc.exists`.
+- **Un commit por sesión si usás el pre-commit hook**: el hook bloquea cuando `HEAD != origin/main`, así que para commitear un segundo cambio en la misma sesión hay que pushear el primero.
+- **Probar contra un fake también destapa bugs reales**: en la sesión del 2026-09-28 el fake de centros encontró que el `PUT` no recortaba `ubicacion`/`observaciones` (el `POST` sí) y que la tabla de obras no tenía guardas `isAdmin()` (la página es `requireAuth`, no admin-only).
+- **Los contadores de subcolecciones no vienen en los endpoints de lista**: p. ej. `asignados`/`totalElementos` solo vienen en `GET /api/centros/:id`, no en `GET /api/centros`. Si la UI los necesita, que pida el detalle.
+- **Campos con `undefined` en `update()` de Firestore tiran error**: armar el objeto solo con las claves que tienen valor (mismo cuidado que en `cargar-vencimientos.js`).
 
 ## Carga masiva de vencimientos (Excel → Firestore)
 

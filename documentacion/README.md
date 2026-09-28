@@ -18,6 +18,7 @@
 | **`CHANGELOG.md`** | Historial de cambios por sesión (features, fixes, commits, deploys, rescates). | Revisar qué se hizo en el pasado. |
 | **`MS_BASE.md`** | Análisis de una **posible migración de Firestore → Microsoft SQL Server** (pros/contras). Es un documento de decisión, NO está implementado. | Evaluar futuro de la infraestructura. |
 | **`RESUMEN-SESION-*.md`** | Resúmenes detallados de sesiones puntuales (diagnósticos, bugs, decisiones). Patrón: `RESUMEN-SESION-YYYY-MM-DD.md`. | Puesta al día de qué pasó en una sesión concreta. |
+| **`Update_YYYY.MM.DD.md`** | Detalle técnico de una sesión de trabajo: qué se cambió, por qué, cómo se verificó y qué quedó pendiente. Patrón: `Update_YYYY.MM.DD.md` (ej: `Update_2026.09.28.md` = vencimientos del dashboard + Excel de control + editar/eliminar Obras; `Update_2026.09.27.md` = alta de Centros de Trabajo). | Entender el por qué de un cambio antes de tocarlo. |
 | **`TAREAS_PENDIENTES/`** | Backlog priorizado de tareas en archivos `.md` independientes. Índice: `00-INDICE.md` (P0 bugs → P1 seguridad → P2 refactor → P3 cosmético). | Saber qué tareas quedaron pendientes. |
 | **`rollback/`** | Guías de rollback de optimizaciones (ej: `OPTIMIZACION-LECTURAS-ROLLBACK.md`). | Revertir un lote de cambios sin perder trabajo posterior. |
 
@@ -36,11 +37,14 @@
 | `config/firebase.js` | Init Admin SDK (con `projectId: sa.project_id` explícito — requisito local). |
 | `middleware/auth.js` | `verifyToken`, `requireAdmin`, `loadUser` (define `res.locals.*` y `res.locals.mockMode`), `requireAuth`, `requireAdminPage`, `_baseVars`. |
 | `routes/auth.js` | Login/sesión Firebase Auth + cookies. |
-| `routes/vehicles.js` | CRUD vehículos, subcolecciones combustible/repuestos, **panel services** (`/services/panel`, `/services/panel-mock`), documentos (`/documentos/*`), import/export. |
+| `routes/vehicles.js` | CRUD vehículos, subcolecciones combustible/repuestos, **panel services** (`/services/panel`, `/services/panel-mock`), documentos (`/documentos/*`), **reporte global de documentación** (`/api/vehicles/documentos/reporte`, lee todo `PATENTE/`), import/export. |
+| `routes/centros.js` | Centros de Trabajo / Obras: catálogo, crear, **editar (PUT: nombre/ubicación/estado/observaciones)**, **eliminar (DELETE: borra subcolección `elementos` + doc, con 409 si quedan elementos sin devolver)**, asignar/devolver elementos. |
 | `routes/maintenance.js` | CRUD mantenimientos. |
 | `routes/admin.js` | Dashboard stats, reportes, export Excel, backup, `latest-services`. |
+| `lib/github-docs.js` | Lectura de la carpeta `PATENTE/` vía API de GitHub: `listarPatenteGlobal()` (todo el árbol en 1 request), `cambiosDesde()`, `esDeTipo()`. |
 | `scripts/subir-documentos.js` | Sube `PATENTE/` a producción (pull+add+commit+push, solo esa carpeta). → `npm run subir:docs` |
 | `scripts/cargar-vencimientos.js` | Carga masiva de vencimientos desde Excel de `PATENTE/Vtos/`. → `npm run cargar:vencimientos` |
+| `scripts/generar-control-documentacion.js` | Genera `CONTROL_FALTANTES_*.xlsx` y `CONTROL_VENCIDOS_*.xlsx` en `PATENTE/Reportes/`. → `npm run generar:control` |
 
 ### Frontend (EJS + JS cliente)
 | Archivo | Contenido |
@@ -57,6 +61,7 @@
 | `public/js/service.js` | Página Service: tabla sortable, filtros, vencimientos. **Usa `serviceDaysUntil()`** (no colisiona con auth-client). |
 | `public/js/reports.js` | Reportes financieros. |
 | `public/js/admin.js` | Roles de usuario. |
+| `public/js/centros.js` | Obras: tabla con filtros, pestaña Catálogo, asignar/devolver, editar y eliminar. |
 | `public/js/theme-engine.js` | ThemeEngine v3 (3 temas visuales animados). |
 | `public/css/theme-*.css` | Variables de temas del ThemeEngine. |
 
@@ -65,6 +70,7 @@
 |------|-----------|
 | `PATENTE/{patente}/{tipo}.ext` | Documentos obligatorios versionados en git (título, cédula, seguro, vtv, registro, dni). Prioridad `pdf > jpg > jpeg > png`. Llegan a Vercel por integración Git. |
 | `PATENTE/Vtos/` | Excel `CONTROL_VENCIMIENTOS_*.xlsx` (fuente de carga masiva de vencimientos). |
+| `PATENTE/Reportes/` | `CONTROL_FALTANTES_*.xlsx` y `CONTROL_VENCIDOS_*.xlsx` generados por `npm run generar:control` (ignorados por git: se regeneran con ese comando). |
 | `titulo/` | Patrón previo de versionado (41 PDFs), reemplazado por `PATENTE/`. |
 | `docsadjuntos/{id}/{tipo}` | (Firestore subcolección) archivos subidos manualmente desde la web (límite 700KB). |
 
@@ -81,7 +87,9 @@
 | `vehicles/{id}/services` | **Services realizados** (fecha, tipo, km, intervaloKm, proximoKm, proximoFecha, costo, proveedor). |
 | `maintenance` | Mantenimientos (Mecánico/Legal). |
 | `users` | Usuarios (role Admin/Usuario, displayName, email). |
-| `counters` | `current` para auto-increment de números internos (`V-XXXXX`). |
+| `counters` | `current` para auto-increment de números internos (`V-XXXXX`, y `cat-{prefijo}` para el catálogo de elementos). |
+| `centros` | Obras del Centro de Trabajo + subcolección `elementos/` (asignaciones, con `fechaDevolucion` "" = pendiente). |
+| `elementos_catalogo` | Catálogo de elementos no-vehículo (herramientas, ropa, equipos, materiales) que se asignan a las obras. |
 | `config` | Config global: `carpetaDocs.ultimaGeneracion`, etc. |
 
 ### Notas clave

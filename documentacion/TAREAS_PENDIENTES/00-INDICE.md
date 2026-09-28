@@ -14,6 +14,14 @@
   ```
 - Cada instructivo P0 incluye esta misma sección al final.
 
+## PENDIENTES DE LA SESIÓN 2026-09-28 (ver `../Update_2026.09.28.md`)
+
+| # | Qué falta | Por qué |
+|---|-----------|---------|
+| 1 | **Probar un borrado real de una obra en producción** (crear una obra de prueba, asignarle un elemento, confirmar que el `DELETE` se niega con 409, devolverlo y después eliminarla). | El camino de escritura de `DELETE /api/centros/:id` se verificó contra un `db` fake (29/29), pero **nunca se ejecutó contra Firestore real** porque `DEV_READ_ONLY=true` bloquea las escrituras en local. El 409 (la parte que protege los datos) ya está verificado. |
+| 2 | **Revisar en pantalla el dashboard** con los nuevos números (28 por vencer / 25 vencidos) y la separación de vencidos. | Los conteos se simularon con los datos reales, pero no hubo revisión visual de las 4 tarjetas en el navegador. |
+| 3 | **Correr `npm run generar:control` en la otra PC** antes de usar los Excel. | Los `.xlsx` están ignorados por git: no viajan al repo y hay que regenerarlos donde se los vaya a usar. |
+
 ## Cómo usar esta carpeta
 
 Cada archivo `.md` es una tarea independiente con:
