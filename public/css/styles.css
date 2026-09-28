@@ -181,10 +181,10 @@ input, select, textarea {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-.skeleton-row { height: 3rem; margin-bottom: 0.25rem; }
+.skeleton-row { height: 2rem; margin-bottom: 0.25rem; }
 .skeleton-card { height: 10rem; }
-.skeleton-text { height: 1rem; width: 60%; margin: 0.25rem 0; }
-.skeleton-stat { height: 3.5rem; width: 40%; }
+.skeleton-text { height: 0.75rem; width: 60%; margin: 0.25rem 0; }
+.skeleton-stat { height: 1.25rem; width: 32px; }
 
 /* ├Ültimos Services ÔÇö timeline items */
 @keyframes svcFadeInUp {

@@ -2,282 +2,215 @@
 <div class="flex h-screen overflow-hidden">
   <%- include('partials/sidebar', { page: 'dashboard' }) %>
 
-  <div class="flex-1 flex flex-col overflow-hidden">
-    <div class="lg:hidden header-glass text-[#ffffff] p-3 flex items-center justify-between">
-      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#2563EB]/10">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
-      <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
-      <span class="w-8 h-8 bg-gradient-to-br from-[#2563EB] to-[#2563EB] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
-    </div>
+  <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+    <%- include('partials/topbar', { page: 'dashboard' }) %>
 
-    <main class="flex-1 overflow-y-auto p-4 md:p-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div class="text-left">
-          <h1 class="text-2xl font-bold title-page">Dashboard</h1>
-          <p class="text-[#8b9bb4] text-sm">Panel de control general</p>
+    <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+
+      <!-- ══ Encabezado ══ -->
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div class="min-w-0">
+          <h1 class="title-page">Panel de control</h1>
+          <p class="t-muted text-sm mt-0.5">Estado general de la flota de Grupo Falpat</p>
         </div>
-        <!-- Digital Clock (flip) -->
-        <div class="flex flex-col items-center sm:items-end select-none">
-          <div id="dash-clock" class="flex items-center gap-1.5">
-            <div class="flip-card">
-              <div class="flip-digit" id="flip-hh">00</div>
-              <div class="flip-hinge"></div>
-            </div>
-            <div class="flip-card">
-              <div class="flip-digit" id="flip-mm">00</div>
-              <div class="flip-hinge"></div>
-            </div>
-            <div class="flip-card">
-              <div class="flip-digit" id="flip-ss">00</div>
-              <div class="flip-hinge"></div>
-            </div>
-          </div>
-          <p id="dash-date" class="text-[#A0A8BF] font-medium mt-1 text-center sm:text-right" style="font-size:0.7rem;letter-spacing:0.08em;text-shadow:0 1px 3px rgba(0,0,0,0.5);"></p>
+        <!-- Buscador -->
+        <div class="relative flex-1 lg:w-72 lg:flex-none">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 t-subtle pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+          <input type="text" id="dash-search" placeholder="Buscar patente, marca, empresa..." class="input !pl-10">
+          <div id="dash-search-results" class="hidden absolute top-full left-0 right-0 mt-2 card overflow-hidden z-30 max-h-80 overflow-y-auto"></div>
         </div>
       </div>
 
-      <!-- Quick Search -->
-      <div class="relative mt-4">
-        <div class="glass-card rounded-xl overflow-hidden">
-          <div class="flex items-center gap-2 p-3">
-            <div class="relative flex-1">
-              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              <input type="text" id="dash-search"
-                placeholder="Buscar por patente, interno, marca, empresa..."
-                class="w-full pl-9 pr-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/15 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon transition-all focus:border-[#2563EB]/50"
-                autocomplete="off">
+      <!-- ══ TIER 1 — 4 KPIs "norte": se leen en 1 segundo ══ -->
+      <section aria-label="Indicadores principales" class="rise" style="--i:0">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+
+          <!-- 1. Flota activa -->
+          <article class="kpi rise" style="--kpi-tone: var(--ac); --i:1">
+            <span class="kpi-shine" aria-hidden="true"></span>
+            <h2 class="kpi__label">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25"/></svg>
+              Flota activa
+            </h2>
+            <p class="kpi__value"><span id="kpi-flota-val">0</span></p>
+            <div class="kpi__foot">
+              <span class="kpi__hint" id="kpi-flota-hint">—</span>
+              <button onclick="showVehiculosModal()" class="btn btn-ghost btn-sm !min-h-0 !px-2 !py-0.5 !text-[var(--fs-micro)] uppercase tracking-wider">Ver <span aria-hidden="true">→</span></button>
+            </div>
+          </article>
+
+          <!-- 2. Vencidos (crítico) -->
+          <article class="kpi rise" style="--kpi-tone: var(--dan); --i:2">
+            <span class="kpi-shine" aria-hidden="true"></span>
+            <h2 class="kpi__label">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+              Vencidos hoy
+            </h2>
+            <p class="kpi__value" style="color: var(--dan-text)"><span id="kpi-vencidos-val">0</span></p>
+            <div class="kpi__foot">
+              <span class="kpi__hint" id="kpi-vencidos-hint">documentos vencidos</span>
+            </div>
+          </article>
+
+          <!-- 3. Vencen ≤30 días (con distribución real) -->
+          <article class="kpi rise" style="--kpi-tone: var(--warn); --i:3">
+            <span class="kpi-shine" aria-hidden="true"></span>
+            <h2 class="kpi__label">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Vencen en 30 días
+            </h2>
+            <p class="kpi__value" style="color: var(--warn-text)"><span id="kpi-proximas-val">0</span></p>
+            <svg class="kpi__spark" id="kpi-proximas-spark" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <div class="kpi__foot">
+              <span class="kpi__hint" id="kpi-proximas-hint">—</span>
+            </div>
+          </article>
+
+          <!-- 4. Documentación completa -->
+          <article class="kpi rise" style="--kpi-tone: var(--ok); --i:4">
+            <span class="kpi-shine" aria-hidden="true"></span>
+            <h2 class="kpi__label">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Documentación completa
+            </h2>
+            <p class="kpi__value" style="color: var(--ok-text)"><span id="kpi-docs-val">0</span><small>%</small></p>
+            <div class="meter mt-0.5" style="--meter-tone: var(--ok)">
+              <div class="meter__track"><div class="meter__fill" id="kpi-docs-meter" style="width:0%"></div></div>
+            </div>
+            <div class="kpi__foot">
+              <span class="kpi__hint" id="kpi-docs-hint">—</span>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ══ TIER 2 — Exceptions-first: lo que hay que resolver, arriba ══ -->
+      <section aria-label="Requiere atención" class="grid grid-cols-1 xl:grid-cols-3 gap-4 rise" style="--i:5">
+        <div class="card overflow-hidden xl:col-span-2">
+          <div class="section-head">
+            <h2 class="section-head__title">
+              <span class="dot dot--dan"></span>
+              Requiere atención
+            </h2>
+            <span class="badge badge-ac" id="att-count">0</span>
+          </div>
+          <div id="att-list" class="exc max-h-[420px] overflow-y-auto"></div>
+        </div>
+
+        <!-- Salud de flota -->
+        <div class="card p-5">
+          <h2 class="section-head__title mb-1">Salud de la flota</h2>
+          <p class="t-subtle text-xs mb-4">Según vencimientos de VTV, Seguro, Registro y DNI</p>
+          <div class="mb-4">
+            <div class="flex items-baseline justify-between mb-2">
+              <span class="text-sm font-semibold t-strong">Al día</span>
+              <span class="font-mono text-2xl font-bold t-strong"><span id="fh-ok">0</span><span class="text-sm t-subtle font-medium">/<span id="fh-total">0</span></span></span>
+            </div>
+            <div class="meter__track h-2">
+              <div class="meter__fill" id="fleet-health-fill" style="width:0%; background: var(--ok)"></div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2.5 text-sm">
+              <span class="dot dot--ok"></span>
+              <span class="t-muted flex-1">Sin pendientes</span>
+              <span class="font-mono font-bold t-ok" id="fh-ok-2">0</span>
+            </div>
+            <div class="flex items-center gap-2.5 text-sm">
+              <span class="dot dot--warn"></span>
+              <span class="t-muted flex-1">Vencen ≤30 días</span>
+              <span class="font-mono font-bold" style="color: var(--warn-text)" id="fh-warn">0</span>
+            </div>
+            <div class="flex items-center gap-2.5 text-sm">
+              <span class="dot dot--dan"></span>
+              <span class="t-muted flex-1">Vencidos</span>
+              <span class="font-mono font-bold" style="color: var(--dan-text)" id="fh-crit">0</span>
             </div>
           </div>
         </div>
-        <div id="dash-search-results" class="absolute left-0 right-0 mt-1 glass-card rounded-xl overflow-hidden z-50 hidden max-h-80 overflow-y-auto"></div>
-      </div>
+      </section>
 
-      <h2 class="text-xl font-bold title-page mt-6 mb-1">Alertas</h2>
+      <!-- ══ TIER 3 — Banda de soporte: detalle por tipo + actividad ══ -->
+      <section aria-label="Detalle por tipo de documento" class="rise" style="--i:6">
+        <div class="section-head">
+          <h2 class="section-head__title">Detalle por tipo de documento</h2>
+          <span class="t-subtle text-xs">Cuántos vencen en 30 días o menos</span>
+        </div>
+        <div class="alert-strip grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <% const alerts = [
+            { k:'vtv',       n:'VTV',       ico:'<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>', fn:'showVtvAlertModal()' },
+            { k:'seguro',    n:'Seguro',    ico:'<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>', fn:'showSeguroModal()' },
+            { k:'cedula',    n:'Cédula',    ico:'<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>', fn:'showCedulaModal()' },
+            { k:'matafuego', n:'Matafuego', ico:'<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/>', fn:'showMatafuegoModal()' },
+            { k:'registro',  n:'Registro',  ico:'<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M9 16.5v.75m3-3v3M15 12v5.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>', fn:'showRegistroModal()' },
+            { k:'dni',       n:'DNI',       ico:'<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>', fn:'showDniModal()' },
+            { k:'service',   n:'Service',   ico:'<path stroke-linecap="round" stroke-linejoin="round" d="M14.25 6.087c0-.355.186-.676.501-.959.221-.203.48-.423.755-.687a.75.75 0 111.06 1.06c-.33.33-.547.55-.687.755a1.515 1.515 0 01-.959.501c-.333.067-.667.1-1 .1s-.667-.033-1-.1zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>', fn:'showServiceModal()' }
+          ]; %>
+          <% alerts.forEach(a => { %>
+          <article class="alert-card" data-alert="<%= a.k %>" data-sev="none" onclick="<%= a.fn %>" tabindex="0" role="button" aria-label="Ver <%= a.n %> por vencer">
+            <span class="alert-card__flag" aria-hidden="true"></span>
+            <div class="alert-card__top">
+              <span class="alert-card__ico">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><%- a.ico %></svg>
+              </span>
+              <span class="alert-card__count" id="card-<%= a.k %>-proximos"><span class="skeleton skeleton-stat inline-block"></span></span>
+            </div>
+            <h3 class="alert-card__title"><%= a.n %></h3>
+            <p class="alert-card__meta" id="card-<%= a.k %>-docs"></p>
+          </article>
+          <% }); %>
+        </div>
+      </section>
 
-      <!-- TAB: VEHÍCULOS -->
-      <div id="tab-vehiculos" class="tab-content">
-        <!-- Alertas Vehículos -->
-        <p class="text-sm font-semibold text-[#8b9bb4] mt-4 mb-2 uppercase tracking-wider">Vehículos</p>
-        <div class="grid grid-cols-1 gap-4">
-          <div class="glass-card rounded-xl p-4 card-3d alert-3d flex flex-col justify-center cursor-pointer hover:border-[#2563EB]/30 transition" onclick="showVehiculosModal()">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[#8b9bb4] text-xs font-medium">Vehículos Activos</p>
-                <p class="text-3xl font-bold text-[#ffffff] mt-1" id="card-vehiculos"><span class="skeleton skeleton-stat inline-block"></span></p>
+      <section aria-label="Actividad" class="grid grid-cols-1 xl:grid-cols-12 gap-4 rise" style="--i:7">
+        <!-- Empresas: ranking con la proporción real de cada empresa -->
+        <div class="card p-4 xl:col-span-4 flex flex-col">
+          <header class="flex items-start justify-between gap-3 mb-2">
+            <div class="min-w-0">
+              <h2 class="section-head__title">Empresas</h2>
+              <p class="t-subtle text-xs mt-0.5">Vehículos por empresa</p>
+            </div>
+            <span class="badge badge-ac shrink-0" id="empresas-total">—</span>
+          </header>
+          <div id="empresas-list" class="emp-list"></div>
+          <footer class="emp-foot" id="empresas-foot"></footer>
+        </div>
+
+        <!-- Últimos services: el service más reciente de cada vehículo -->
+        <div class="card p-4 xl:col-span-8 flex flex-col">
+          <header class="flex items-start justify-between gap-3 mb-2">
+            <div class="min-w-0">
+              <h2 class="section-head__title">Últimos services</h2>
+              <p class="t-subtle text-xs mt-0.5">Service más reciente por vehículo</p>
+            </div>
+            <span class="badge badge-ac hidden shrink-0" id="latest-services-count"></span>
+          </header>
+          <div id="latest-services-list" class="svc-list"></div>
+        </div>
+      </section>
+
+      <!-- Modal -->
+      <div id="dash-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeDashModal()"></div>
+        <div class="relative min-h-full flex items-center justify-center p-4">
+          <div class="card w-full max-w-lg overflow-hidden shadow-2xl">
+            <div class="p-5 flex items-center gap-3 hairline">
+              <div id="dash-modal-icon" class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"></div>
+              <div class="flex-1 min-w-0">
+                <h3 id="dash-modal-title" class="text-lg font-display font-bold t-strong truncate"></h3>
+                <p id="dash-modal-subtitle" class="text-xs t-muted mt-0.5 truncate"></p>
               </div>
-              <div class="w-10 h-10 bg-[#2563EB]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
-              </div>
+              <button onclick="closeDashModal()" class="btn btn-ghost btn-sm !min-h-0 !p-2" aria-label="Cerrar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div id="dash-modal-body" class="px-5 py-4 max-h-80 overflow-y-auto space-y-2"></div>
+            <div id="dash-modal-footer" class="px-5 py-3 hairline flex justify-end">
+              <button onclick="closeDashModal()" class="btn btn-secondary btn-sm">Cerrar</button>
             </div>
           </div>
         </div>
-
-        <!-- Alertas Documentación del vehículo -->
-        <p class="text-sm font-semibold text-[#8b9bb4] mt-6 mb-2 uppercase tracking-wider">Documentación del vehículo</p>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="glass-card rounded-xl p-4 card-3d alert-3d flex flex-col justify-center cursor-pointer hover:border-[#F59E0B]/30 transition" onclick="showVtvAlertModal()">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[#8b9bb4] text-xs font-medium">VTV por vencer</p>
-                <p class="text-3xl font-bold text-[#ffffff] mt-1" id="card-vtv-proximas"><span class="skeleton skeleton-stat inline-block"></span></p>
-                <p class="text-xs text-[#4a5568] mt-1">≤30 días</p>
-                <p class="text-sm font-bold mt-1" id="card-vtv-docs"><span class="skeleton skeleton-stat inline-block" style="width:4rem"></span></p>
-              </div>
-              <div class="w-10 h-10 bg-[#F59E0B]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-              </div>
-            </div>
-          </div>
-          <div class="glass-card rounded-xl p-4 card-3d alert-3d flex flex-col justify-center cursor-pointer hover:border-[#2563EB]/30 transition" onclick="showSeguroModal()">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[#8b9bb4] text-xs font-medium">Seguro por vencer</p>
-                <p class="text-3xl font-bold text-[#ffffff] mt-1" id="card-seguro-proximos"><span class="skeleton skeleton-stat inline-block"></span></p>
-                <p class="text-xs text-[#4a5568] mt-1">≤30 días</p>
-                <p class="text-sm font-bold mt-1" id="card-seguro-docs"><span class="skeleton skeleton-stat inline-block" style="width:4rem"></span></p>
-              </div>
-              <div class="w-10 h-10 bg-[#2563EB]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-              </div>
-            </div>
-          </div>
-          <div class="glass-card rounded-xl p-4 card-3d alert-3d flex flex-col justify-center cursor-pointer hover:border-[#00E5FF]/30 transition" onclick="showCedulaModal()">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[#8b9bb4] text-xs font-medium">Cédula por vencer</p>
-                <p class="text-3xl font-bold text-[#ffffff] mt-1" id="card-cedula-proximas"><span class="skeleton skeleton-stat inline-block"></span></p>
-                <p class="text-xs text-[#4a5568] mt-1">solo con vto. impreso</p>
-                <p class="text-sm font-bold mt-1" id="card-cedula-docs"><span class="skeleton skeleton-stat inline-block" style="width:4rem"></span></p>
-              </div>
-              <div class="w-10 h-10 bg-[#00E5FF]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Alertas Seguridad y Mantenimiento -->
-        <p class="text-sm font-semibold text-[#8b9bb4] mt-6 mb-2 uppercase tracking-wider">Seguridad y Mantenimiento</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="glass-card rounded-xl p-4 card-3d alert-3d flex flex-col justify-center cursor-pointer hover:border-[#EF4444]/40 transition" onclick="showMatafuegoModal()">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[#8b9bb4] text-xs font-medium">Matafuego por vencer</p>
-                <p class="text-3xl font-bold text-[#ffffff] mt-1" id="card-matafuego-proximos"><span class="skeleton skeleton-stat inline-block"></span></p>
-                <p class="text-xs text-[#4a5568] mt-1">vto. ≤30 días</p>
-                <p class="text-sm font-bold mt-1" id="card-matafuego-docs"><span class="skeleton skeleton-stat inline-block" style="width:4rem"></span></p>
-              </div>
-              <div class="w-10 h-10 bg-[#EF4444]/15 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#EF4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-7.214 4.803a2 2 0 01-1.02-2.628c.2-.505.505-.81.72-.746.313.094.556.374.616.713.34.62.838.869 1.428.9.469-.047 1.016-.154 1.564-.55-.006.56.029 1.083.06 1.51a2 2 0 01-2.368 2.006zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              </div>
-            </div>
-          </div>
-          <div class="glass-card rounded-xl p-4 card-3d alert-3d flex flex-col justify-center cursor-pointer hover:border-[#EF4444]/30 transition" onclick="showServiceModal()">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[#8b9bb4] text-xs font-medium">Service por vencer</p>
-                <p class="text-3xl font-bold text-[#ffffff] mt-1" id="card-service-proximos"><span class="skeleton skeleton-stat inline-block"></span></p>
-                <p class="text-xs text-[#4a5568] mt-1">próx. km · ≤30 días</p>
-              </div>
-              <div class="w-10 h-10 bg-[#EF4444]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#EF4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Alertas Choferes -->
-        <p class="text-sm font-semibold text-[#8b9bb4] mt-6 mb-2 uppercase tracking-wider">Choferes</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="glass-card rounded-xl p-4 card-3d alert-3d flex flex-col justify-center cursor-pointer hover:border-[#EC4899]/30 transition" onclick="showRegistroModal()">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[#8b9bb4] text-xs font-medium">Registro por vencer</p>
-                <p class="text-3xl font-bold text-[#ffffff] mt-1" id="card-registro-proximos"><span class="skeleton skeleton-stat inline-block"></span></p>
-                <p class="text-xs text-[#4a5568] mt-1">≤30 días</p>
-              </div>
-              <div class="w-10 h-10 bg-[#EC4899]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#EC4899]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/></svg>
-              </div>
-            </div>
-          </div>
-          <div class="glass-card rounded-xl p-4 card-3d alert-3d flex flex-col justify-center cursor-pointer hover:border-[#F97316]/30 transition" onclick="showDniModal()">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[#8b9bb4] text-xs font-medium">DNI por vencer</p>
-                <p class="text-3xl font-bold text-[#ffffff] mt-1" id="card-dni-proximos"><span class="skeleton skeleton-stat inline-block"></span></p>
-                <p class="text-xs text-[#4a5568] mt-1">≤30 días</p>
-              </div>
-              <div class="w-10 h-10 bg-[#F97316]/10 rounded-lg flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#F97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/></svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Summary Cards Row 2: Empresas -->
-        <div class="glass-card rounded-xl p-5 card-3d alert-3d mt-4">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <p class="text-lg font-semibold text-[#ffffff]">Empresas</p>
-              <p class="text-[#4a5568] text-xs">Click en una empresa para ver sus vehículos</p>
-            </div>
-            <div class="w-10 h-10 bg-[#00E5FF]/10 rounded-lg flex items-center justify-center shrink-0">
-              <svg class="w-5 h-5 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-            </div>
-          </div>
-          <div id="empresas-list" class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
-            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
-            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
-            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
-          </div>
-        </div>
-
-        <!-- Fleet Health -->
-        <div class="glass-card rounded-xl p-5 card-3d alert-3d mt-4">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#00E5FF,#0891B2);">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <div>
-              <h3 class="text-lg font-bold text-[#ffffff]">Estado de la Flota</h3>
-              <p class="text-[#4a5568] text-xs">Documentación y vencimientos al día</p>
-            </div>
-          </div>
-          <div id="fleet-health-bar" class="mb-3">
-            <div class="h-3 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.06);">
-              <div id="fleet-health-fill" class="h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(90deg,#00E5FF,#0891B2);"></div>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="fleet-health-stats">
-            <div class="text-center p-2 rounded-lg" style="background:rgba(16,185,129,0.06);">
-              <p class="text-[#00E5FF] text-lg font-bold" id="fh-ok">—</p>
-              <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Al día</p>
-            </div>
-            <div class="text-center p-2 rounded-lg" style="background:rgba(249,115,22,0.06);">
-              <p class="text-[#F97316] text-lg font-bold" id="fh-warn">—</p>
-              <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Por vencer</p>
-            </div>
-            <div class="text-center p-2 rounded-lg" style="background:rgba(239,68,68,0.06);">
-              <p class="text-[#EF4444] text-lg font-bold" id="fh-crit">—</p>
-              <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Vencidos</p>
-            </div>
-            <div class="text-center p-2 rounded-lg" style="background:rgba(212,175,55,0.06);">
-              <p class="text-[#2563EB] text-lg font-bold" id="fh-total">—</p>
-              <p class="text-[#4a5568] text-[10px] uppercase tracking-wider">Total</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Últimos Services -->
-        <div class="glass-card rounded-2xl p-5 sm:p-6 mt-4 relative overflow-hidden card-3d alert-3d" style="border:1px solid rgba(212,175,55,0.22);">
-          <div class="pointer-events-none absolute -top-16 -right-16 w-52 h-52 rounded-full opacity-20" style="background:radial-gradient(circle,#2563EB,transparent 70%);filter:blur(30px);"></div>
-          <div class="absolute inset-x-0 top-0 h-px" style="background:linear-gradient(90deg,transparent,rgba(212,175,55,0.8),rgba(212,175,55,0.6),transparent);"></div>
-
-          <div class="flex items-center justify-between gap-3 mb-5">
-            <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#2563EB,#2563EB);box-shadow:0 8px 22px -6px rgba(212,175,55,0.55);">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-              </div>
-              <div>
-                <h3 class="text-lg font-bold text-[#ffffff]">Últimos Services</h3>
-                <p class="text-[#8b9bb4] text-xs">Actividad de mantenimiento reciente de la flota</p>
-              </div>
-            </div>
-            <span id="latest-services-count" class="hidden px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0" style="background:rgba(212,175,55,0.15);color:#2563EB;"></span>
-          </div>
-
-          <div id="latest-services-list" class="relative">
-            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
-            <div class="skeleton skeleton-row" style="height:3.5rem;border-radius:0.75rem"></div>
-          </div>
-        </div>
-
-        <!-- Dashboard Detail Modal (genérico) -->
-        <div id="dash-modal" class="fixed inset-0 z-50 hidden">
-          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeDashModal()"></div>
-          <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="glass-card rounded-2xl w-full max-w-md overflow-hidden" style="border:1px solid rgba(212,175,55,0.25);box-shadow:0 25px 60px -12px rgba(0,0,0,0.9),0 0 40px rgba(212,175,55,0.1);">
-              <div id="dash-modal-header" class="px-5 pt-5 pb-3 flex items-center gap-3" style="border-bottom:1px solid rgba(255,255,255,0.06);">
-                <div id="dash-modal-icon" class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"></div>
-                <div class="flex-1">
-                  <h3 id="dash-modal-title" class="text-lg font-bold text-[#ffffff]"></h3>
-                  <p id="dash-modal-subtitle" class="text-[11px] text-[#8b9bb4] mt-0.5"></p>
-                </div>
-                <button onclick="closeDashModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-[#4a5568] hover:text-[#ffffff] hover:bg-white/5 transition">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-              </div>
-              <div id="dash-modal-body" class="px-5 py-4 max-h-80 overflow-y-auto space-y-2"></div>
-              <div id="dash-modal-footer" class="px-5 py-3 border-t border-white/5 flex justify-end">
-                <button onclick="closeDashModal()" class="px-5 py-2 rounded-xl text-sm font-semibold transition" style="background:linear-gradient(135deg,#2563EB,#2563EB);color:#fff;">Cerrar</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
 
     </main>

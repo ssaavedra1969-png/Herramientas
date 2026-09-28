@@ -69,12 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-trompo-filter]').forEach(btn => {
     btn.addEventListener('click', () => {
       trompoFilter = btn.dataset.trompoFilter;
-      document.querySelectorAll('[data-trompo-filter]').forEach(b => {
-        b.classList.remove('bg-[#2563EB]/30', 'text-[#ffffff]');
-        b.classList.add('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#2563EB]/10');
-      });
-      btn.classList.add('bg-[#2563EB]/30', 'text-[#ffffff]');
-      btn.classList.remove('text-[#8b9bb4]', 'hover:text-[#ffffff]', 'hover:bg-[#2563EB]/10');
+      document.querySelectorAll('[data-trompo-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       applyFilters();
     });
   });
@@ -82,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('v-trompo-fields').classList.toggle('hidden', !e.target.checked);
   });
   setViewMode(viewMode, false);
+  initDensity();
 
   // Export modal: live preview on checkbox/input change (debounced)
   let previewTimeout;
@@ -107,19 +104,29 @@ function setViewMode(mode, save = true) {
   if (mode === 'card') {
     tableView?.classList.add('hidden');
     cardView?.classList.remove('hidden');
-    tableBtn?.classList.remove('bg-[#2563EB]/30', 'text-[#ffffff]');
-    tableBtn?.classList.add('text-[#8b9bb4]');
-    cardBtn?.classList.add('bg-[#2563EB]/30', 'text-[#ffffff]');
-    cardBtn?.classList.remove('text-[#8b9bb4]');
+    tableBtn?.classList.remove('active');
+    cardBtn?.classList.add('active');
   } else {
     tableView?.classList.remove('hidden');
     cardView?.classList.add('hidden');
-    tableBtn?.classList.add('bg-[#2563EB]/30', 'text-[#ffffff]');
-    tableBtn?.classList.remove('text-[#8b9bb4]');
-    cardBtn?.classList.remove('bg-[#2563EB]/30', 'text-[#ffffff]');
-    cardBtn?.classList.add('text-[#8b9bb4]');
+    tableBtn?.classList.add('active');
+    cardBtn?.classList.remove('active');
   }
   applyFilters();
+}
+
+function setDensity(mode) {
+  const m = mode === 'compact' ? 'compact' : 'comfortable';
+  document.body.setAttribute('data-density', m);
+  try { localStorage.setItem('falpat_density', m); } catch (e) {}
+  document.getElementById('density-compact')?.classList.toggle('active', m === 'compact');
+  document.getElementById('density-comfortable')?.classList.toggle('active', m === 'comfortable');
+}
+
+function initDensity() {
+  let saved = 'comfortable';
+  try { saved = localStorage.getItem('falpat_density') || 'comfortable'; } catch (e) {}
+  setDensity(saved);
 }
 
 function toggleFilters() {
@@ -165,7 +172,7 @@ function setupModalClose(modalId) {
 function initRealtimeListener() {
   const tbody = document.getElementById('vehiculos-table-body');
   const grid = document.getElementById('vehiculos-card-grid');
-  if (tbody) tbody.innerHTML = Array(5).fill('<tr><td colspan="10"><div class="skeleton skeleton-row"></div></td></tr>').join('');
+  if (tbody) tbody.innerHTML = Array(5).fill('<tr><td colspan="7"><div class="skeleton skeleton-row"></div></td></tr>').join('');
   if (grid) grid.innerHTML = Array(6).fill('<div><div class="skeleton skeleton-card"></div></div>').join('');
 
   db.collection('vehicles').orderBy('interno').onSnapshot((snapshot) => {
@@ -173,12 +180,27 @@ function initRealtimeListener() {
     patenteSet = new Set(allVehicles.map(v => (v.patente || '').toUpperCase()));
     populateFilterDropdowns();
     applyFilters();
+    pushVehiclesToCmdk();
   }, (error) => {
     console.error('Error loading vehicles:', error);
-    const colCount = isAdmin() ? 8 : 7;
     document.getElementById('vehiculos-table-body').innerHTML =
-      `<tr><td colspan="${colCount}" class="text-center py-8 text-red-500">Error al cargar vehículos</td></tr>`;
+      `<tr><td colspan="7" class="text-center py-8 text-red-500">Error al cargar vehículos</td></tr>`;
   });
+}
+
+/* Alimenta la command palette (Cmd/Ctrl+K) con la flota real, para que
+   "buscar patente" funcione aunque el usuario esté en otra pantalla. */
+function pushVehiclesToCmdk() {
+  if (typeof window.setCmdkVehicles !== 'function') return;
+  window.setCmdkVehicles(allVehicles.map(v => ({
+    id: v.id,
+    patente: v.patente || '',
+    interno: v.interno || v.numeroInterno || '',
+    marca: v.marca || '',
+    modelo: v.modelo || '',
+    empresa: v.empresa || v.centroTrabajo || '',
+    baja: v.estadoGeneral === 'Baja'
+  })));
 }
 
 function fmap(v) {
@@ -239,50 +261,102 @@ function renderVehicleTable(vehicles) {
   if (!tbody) return;
 
   const admin = isAdmin();
-  const colCount = admin ? 10 : 9;
+  const colCount = admin ? 7 : 6;
 
   if (vehicles.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-8 text-gray-400">No hay vehículos registrados</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${colCount}" class="text-center py-8 t-muted">No hay vehículos registrados</td></tr>`;
     return;
   }
+
+  const _esc = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const _d = raw => {
+    if (!raw) return null;
+    const t = raw.toDate ? raw.toDate() : new Date(raw);
+    if (isNaN(t)) return null;
+    return Math.ceil((t - new Date()) / 86400000);
+  };
 
   tbody.innerHTML = vehicles.map(v => {
     const mv = fmap(v);
     const checked = selectedIds.has(v.id) ? 'checked' : '';
-    const checkboxCell = admin ? `<td class="py-3 pr-3" onclick="event.stopPropagation()">
+    const checkboxCell = admin ? `<td class="pr-3" onclick="event.stopPropagation()">
       <input type="checkbox" class="row-checkbox accent-[#2563EB]" value="${v.id}" ${checked} onchange="toggleRow('${v.id}', this.checked)">
     </td>` : '';
-    const trompoBadge = mv.trompo
-      ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#2563EB]/20 text-[#2563EB]">Si<span class="w-1.5 h-1.5 rounded-full bg-[#2563EB]"></span></span>`
-      : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#2E3247] text-[#4a5568]">No<span class="w-1.5 h-1.5 rounded-full bg-[#4a5568]"></span></span>`;
-    const mf = mv.matafuego || {};
-    const mfEstado = mf.estado === 'Con Matafuego';
-    let mfDias = null;
-    if (mf.fechaVto) {
-      const mfVtoDate = mf.fechaVto.toDate ? mf.fechaVto.toDate() : new Date(mf.fechaVto);
-      mfDias = Math.ceil((mfVtoDate - new Date()) / (1000 * 60 * 60 * 24));
-    }
-    const mfVtoHtml = mfDias !== null
-      ? `<span class="text-[10px] font-medium ${mfDias < 0 ? 'text-red-400' : mfDias <= 30 ? 'text-yellow-400' : 'text-[#8b9bb4]'}">(${mfDias < 0 ? 'Vencido' : mfDias + 'd'})</span>`
+
+    /* --- Vehículo: interno + patente + marca/modelo + empresa/centro --- */
+    const trompoChip = mv.trompo
+      ? `<span class="exc__tag" style="background: var(--ac-soft); color: var(--ac);">Trompo</span>`
       : '';
-    const matafuegoCell = `
-      <div class="flex items-center gap-1.5 flex-wrap">
-        <span class="w-2 h-2 rounded-full ${mfEstado ? 'bg-[#00E5FF]' : 'bg-red-500'}"></span>
-        <span class="text-xs ${mfEstado ? 'text-[#00E5FF]' : 'text-red-300'}">${mfEstado ? 'Con' : 'Sin'}</span>
-        ${mfVtoHtml}
+    const unidad = [
+      mv.marca, mv.modelo
+    ].filter(Boolean).join(' ') || '—';
+    const vehCell = `
+      <div class="min-w-0">
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-[10px] t-subtle">${_esc(mv.interno || '')}</span>
+          <span class="font-mono font-bold text-sm t-strong tracking-wide">${_esc(mv.patente || '—')}</span>
+          ${trompoChip}
+        </div>
+        <p class="text-xs t-subtle truncate">${_esc(unidad)}</p>
       </div>`;
+
+    const tipoCell = `
+      <div class="min-w-0">
+        <p class="text-sm t-strong truncate">${_esc(mv.tipo || '—')}</p>
+        <p class="text-xs t-subtle truncate">${_esc(mv.subtipo || '—')}</p>
+      </div>`;
+
+    const empresaCell = `<span class="text-sm t-muted">${_esc(mv.empresa || mv.centroTrabajo || '—')}</span>`;
+
+    /* --- VTV: semáforo + días + barra de consumed de la ventana de 30d --- */
+    const vtvDays = _d(mv.vtv?.fechaVencimiento);
+    let vtvCell;
+    if (vtvDays === null) {
+      vtvCell = `<span class="text-xs t-subtle">Sin fecha</span>`;
+    } else {
+      const tone = vtvDays <= 0 ? 'dan' : vtvDays <= 7 ? 'dan' : vtvDays <= 30 ? 'warn' : 'ok';
+      const label = vtvDays <= 0 ? `Vencido ${Math.abs(vtvDays)}d` : `${vtvDays}d`;
+      const pct = vtvDays > 30 ? 100 : Math.max(4, Math.round(((30 - vtvDays) / 30) * 100));
+      vtvCell = `
+        <div class="flex items-center gap-2 min-w-[132px]">
+          <span class="dot dot--${tone}"></span>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold t-strong leading-tight">${label}</p>
+            <div class="meter__track mt-1"><div class="meter__fill" style="width:${pct}%; --meter-tone: var(--${tone})"></div></div>
+          </div>
+        </div>`;
+    }
+
+    /* --- Docs: matriz de 5 puntos (VTV · Seguro · Registro · DNI · Matafuego) --- */
+    const docs = [
+      { n: 'VTV', days: vtvDays },
+      { n: 'Seguro', days: _d(mv.seguro?.fechaVencimiento) },
+      { n: 'Registro', days: _d(mv.vencimientoRegistro) },
+      { n: 'DNI', days: _d(mv.vencimientoDNI) },
+      { n: 'Matafuego', days: _d(mv.matafuego?.fechaVto) }
+    ];
+    const docsOk = docs.filter(x => x.days !== null && x.days > 30).length;
+    const docsCell = `
+      <div class="flex items-center gap-1.5" title="${docsOk} de 5 al día — ${docs.map(x => x.n + ': ' + (x.days === null ? 'sin cargar' : x.days <= 0 ? 'vencido' : x.days + 'd')).join(' · ')}">
+        ${docs.map(x => {
+          if (x.days === null) return `<span class="w-2 h-2 rounded-full" style="background: transparent; box-shadow: inset 0 0 0 1.5px var(--bd-strong);"></span>`;
+          if (x.days <= 0) return `<span class="w-2 h-2 rounded-full" style="background: var(--dan);"></span>`;
+          if (x.days <= 30) return `<span class="w-2 h-2 rounded-full" style="background: var(--warn);"></span>`;
+          return `<span class="w-2 h-2 rounded-full" style="background: var(--ok);"></span>`;
+        }).join('')}
+        <span class="text-[10px] font-mono t-subtle ml-1">${docsOk}/5</span>
+      </div>`;
+
     return `
       <tr class="border-b border-white/5 hover:bg-[#2563EB]/10 cursor-pointer fade-row" onclick="rowClick('${v.id}', event)">
         ${checkboxCell}
-        <td class="py-3 pr-3">${mv.interno || '—'}</td>
-        <td class="py-3 pr-3 font-medium">${mv.patente || '—'}</td>
-        <td class="py-3 pr-3">${mv.marca || ''} ${mv.modelo || ''}</td>
-        <td class="py-3 pr-3">${mv.tipo || '—'}</td>
-        <td class="py-3 pr-3">${mv.subtipo || '—'}</td>
-        <td class="py-3 pr-3">${trompoBadge}</td>
-        <td class="py-3 pr-3">${matafuegoCell}</td>
-        <td class="py-3 pr-3 text-xs">${mv.centroTrabajo || '—'}</td>
-        <td class="py-3 no-print" onclick="event.stopPropagation()">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</td>
+        <td class="pr-3">${vehCell}</td>
+        <td class="pr-3">${tipoCell}</td>
+        <td class="pr-3">${empresaCell}</td>
+        <td class="pr-3">${vtvCell}</td>
+        <td class="pr-3">${docsCell}</td>
+        <td class="no-print" onclick="event.stopPropagation()"><div class="row-actions justify-end">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</div></td>
       </tr>`;
   }).join('');
 }

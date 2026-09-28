@@ -1,0 +1,55 @@
+<%
+const _page = typeof page !== 'undefined' ? page : '';
+const TITLES = {
+  dashboard: 'Dashboard', vehicles: 'Vehículos', service: 'Service',
+  centros: 'Centros de Trabajo', reports: 'Reportes', admin: 'Usuarios',
+  scan: 'Escáner QR', stickers: 'Stickers QR', fichas: 'Fichas Taller', carpeta: 'Carpeta Docs'
+};
+const _title = TITLES[_page] || 'Panel';
+const _isAdmin = currentUserData?.role === 'Admin';
+%>
+
+<header class="topbar">
+  <!-- Móvil: abre el menú lateral -->
+  <button id="mobile-menu-btn" class="lg:hidden btn btn-ghost btn-sm !min-h-0 !px-2 flex-shrink-0" aria-label="Abrir menú">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+  </button>
+
+  <!-- Migas de pan -->
+  <div class="crumbs hidden sm:flex flex-shrink-0">
+    <span>Falpat</span>
+    <span class="crumbs__sep">/</span>
+    <span class="crumbs__current"><%= _title %></span>
+  </div>
+
+  <!-- Buscador global: parece un campo, se abre con Cmd+K -->
+  <button data-cmdk-open class="search-trigger mx-auto sm:mx-0 sm:ml-6">
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+    <span class="truncate">Buscar patente, ir a…</span>
+    <span class="search-trigger__kbd"><span class="kbd">⌘</span><span class="kbd">K</span></span>
+  </button>
+
+  <!-- Acciones rápidas -->
+  <div class="flex items-center gap-1.5 flex-shrink-0">
+    <% if (_page !== 'vehicles' && _isAdmin) { %>
+    <a href="/vehicles" class="btn btn-secondary btn-sm hidden md:inline-flex" title="Nuevo vehículo">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+      Vehículo
+    </a>
+    <% } %>
+    <% if (_page !== 'service' && _isAdmin) { %>
+    <a href="/service" class="btn btn-primary btn-sm" title="Registrar service">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17l-5.658 5.658a2 2 0 01-2.83 0l-1.586-1.586a2 2 0 010-2.83l5.658-5.658m7.5-3.365a2.25 2.25 0 103.935 2.535 8.72 8.72 0 003.935-2.535m0 0l-3.935-2.535a8.72 8.72 0 00-3.935-2.535"/></svg>
+      <span class="hidden sm:inline">Service</span>
+    </a>
+    <% } %>
+  </div>
+
+  <%# Fecha y hora: último elemento del topbar, o sea a la derecha de todo %>
+  <div class="topbar-clock" id="topbar-clock" role="group" aria-label="Fecha y hora actual">
+    <span class="clock__date" data-clock-date>&mdash;</span>
+    <span class="clock__time">
+      <span data-clock-hh>00</span><span class="clock__sep">:</span><span data-clock-mm>00</span><span class="clock__sep">:</span><span class="clock__time-ss" data-clock-ss>00</span>
+    </span>
+  </div>
+</header>

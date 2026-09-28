@@ -1,137 +1,120 @@
 <%- include('partials/head') %>
 <div class="flex h-screen overflow-hidden">
   <%- include('partials/sidebar', { page: 'vehicles' }) %>
-  <div class="flex-1 flex flex-col overflow-hidden">
-    <div class="lg:hidden header-glass text-[#ffffff] p-3 flex items-center justify-between">
-      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#2563EB]/10">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
-      <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
-      <span class="w-8 h-8 bg-gradient-to-br from-[#2563EB] to-[#2563EB] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
-    </div>
+  <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+    <%- include('partials/topbar', { page: 'vehicles' }) %>
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
       <!-- Header: Título + Contador + Acciones -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-4">
-        <div class="flex items-center gap-2">
-          <h1 class="text-xl sm:text-2xl font-bold title-page">Vehículos</h1>
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/20">
-            <span id="total-vehicles">0</span>
-          </span>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div class="flex items-center gap-3">
+          <h1 class="title-page">Vehículos</h1>
+          <span class="badge badge-ac"><span id="total-vehicles">0</span></span>
         </div>
-        <div class="flex gap-1.5 sm:gap-2 flex-wrap">
-          <a href="/vehicle/scan" class="btn-secondary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
+        <div class="flex gap-2 flex-wrap">
+          <a href="/vehicle/scan" class="btn btn-secondary btn-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
-            <span class="sm:inline">Escáner</span>
+            <span>Escáner</span>
           </a>
-          <button onclick="openExportModal()" class="btn-secondary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
+          <button onclick="openExportModal()" class="btn btn-secondary btn-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span class="sm:inline">Exportar</span>
+            <span>Exportar</span>
           </button>
           <% if (currentUserData?.role === 'Admin') { %>
           <div class="relative" id="import-dropdown">
-            <button onclick="toggleImportMenu()" class="btn-primary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
+            <button onclick="toggleImportMenu()" class="btn btn-secondary btn-sm">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
-              <span class="hidden sm:inline">Importar</span>
+              <span>Importar</span>
             </button>
-            <div id="import-menu" class="hidden absolute right-0 mt-2 w-48 glass-card rounded-lg shadow-xl border border-[#2563EB]/10 z-10">
-              <button onclick="openCsvImport()" class="w-full text-left px-4 py-3 text-sm text-[#ffffff] hover:bg-[#2563EB]/10 flex items-center gap-2 rounded-lg">
-                <svg class="w-4 h-4 text-[#8b9bb4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Desde CSV/Excel
+            <div id="import-menu" class="hidden absolute right-0 mt-2 w-48 card z-10">
+              <button onclick="openCsvImport()" class="w-full text-left px-4 py-3 text-sm t-strong hover:bg-[#2563EB]/10 flex items-center gap-2">
+                <svg class="w-4 h-4 t-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Desde CSV/Excel
               </button>
             </div>
           </div>
-          <button onclick="openVehicleModal()" class="btn-primary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Nuevo
+          <button onclick="openVehicleModal()" class="btn btn-primary btn-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Nuevo
           </button>
           <% } %>
         </div>
       </div>
-
       <!-- Search + Controls Bar -->
-      <div class="glass-card rounded-xl overflow-hidden mb-4">
-        <div class="flex items-center gap-2 p-2 sm:p-3 search-controls">
-          <!-- Search input -->
+      <div class="card overflow-hidden mb-4">
+        <div class="flex items-center gap-2 p-3 search-controls">
           <div class="relative flex-1 min-w-0">
-            <svg class="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="search-vehiculo" placeholder="Buscar..." class="w-full pl-8 sm:pl-9 pr-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/15 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon transition-all focus:border-[#2563EB]/50">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 t-subtle pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="search-vehiculo" placeholder="Buscar por patente, interno, marca, empresa..." class="input !pl-10">
           </div>
-          <!-- Filter toggle -->
-          <button id="filter-toggle-btn" onclick="toggleFilters()" class="px-2 sm:px-3 py-2 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 rounded-lg transition-colors flex items-center gap-1 border border-transparent hover:border-[#2563EB]/20 shrink-0">
+          <button id="filter-toggle-btn" onclick="toggleFilters()" class="btn btn-ghost btn-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-            <span class="hidden sm:inline">Filtros</span>
-            <span id="active-filters-count" class="hidden px-1.5 py-0.5 bg-[#2563EB]/30 text-[#2563EB] rounded-full text-[10px] font-bold leading-none"></span>
+            <span>Filtros</span>
+            <span id="active-filters-count" class="badge badge-ac hidden leading-none"></span>
           </button>
-          <!-- Divider -->
-          <div class="w-px h-5 bg-[#2563EB]/10 shrink-0"></div>
-          <!-- View toggle -->
-          <div class="flex rounded-lg overflow-hidden border border-[#2563EB]/15 bg-[#0a0e17]/40 shrink-0">
-            <button id="view-table-btn" onclick="setViewMode('table')" class="px-2 py-1.5 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors flex items-center gap-1">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M3 6h18M3 18h18"/></svg>
-              <span class="hidden sm:inline">Tabla</span>
+          <div class="w-px h-6 bg-[#2563EB]/10 shrink-0"></div>
+          <div class="seg shrink-0" role="group" aria-label="Densidad de la tabla">
+            <button id="density-comfortable" onclick="setDensity('comfortable')" class="seg__btn" title="Filas cómodas" aria-label="Filas cómodas">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"/></svg>
             </button>
-            <button id="view-card-btn" onclick="setViewMode('card')" class="px-2 py-1.5 text-xs font-medium text-[#ffffff] bg-[#2563EB]/30 transition-colors flex items-center gap-1">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-              <span class="hidden sm:inline">Cards</span>
+            <button id="density-compact" onclick="setDensity('compact')" class="seg__btn" title="Filas compactas" aria-label="Filas compactas">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M4 5h16M4 9.5h16M4 14h16M4 18.5h16"/></svg>
             </button>
           </div>
-          <!-- Counter -->
-          <span class="text-xs text-[#8b9bb4] whitespace-nowrap"><span id="filter-count">0</span> vehículo(s)</span>
+          <div class="seg shrink-0">
+            <button id="view-table-btn" onclick="setViewMode('table')" class="seg__btn">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M3 6h18M3 18h18"/></svg>
+              <span>Tabla</span>
+            </button>
+            <button id="view-card-btn" onclick="setViewMode('card')" class="seg__btn active">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+              <span>Cards</span>
+            </button>
+          </div>
+          <span class="text-sm t-muted whitespace-nowrap"><span id="filter-count">0</span> vehículo(s)</span>
         </div>
 
         <!-- Collapsible Filter Panel -->
-        <div id="filter-panel" class="hidden border-t border-[#2563EB]/10 bg-[#0a0e17]/20">
-          <div class="p-3 space-y-2">
-            <!-- Row 1: Dropdowns -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-              <div class="flex flex-col gap-0.5">
-                <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Marca</label>
-                <select id="filter-marca" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
-                  <option value="" class="bg-[#0a0e17]">Todas</option>
-                </select>
+        <div id="filter-panel" class="hidden hairline">
+          <div class="p-4 space-y-3">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div>
+                <label for="filter-marca">Marca</label>
+                <select id="filter-marca" class="input !min-h-0 !py-1.5 text-sm"><option value="">Todas</option></select>
               </div>
-              <div class="flex flex-col gap-0.5">
-                <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Tipo</label>
-                <select id="filter-tipo" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
-                  <option value="" class="bg-[#0a0e17]">Todos</option>
-                </select>
+              <div>
+                <label for="filter-tipo">Tipo</label>
+                <select id="filter-tipo" class="input !min-h-0 !py-1.5 text-sm"><option value="">Todos</option></select>
               </div>
-              <div class="flex flex-col gap-0.5">
-                <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Sub Tipo</label>
-                <select id="filter-subtipo" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
-                  <option value="" class="bg-[#0a0e17]">Todos</option>
-                </select>
+              <div>
+                <label for="filter-subtipo">Sub Tipo</label>
+                <select id="filter-subtipo" class="input !min-h-0 !py-1.5 text-sm"><option value="">Todos</option></select>
               </div>
-              <div class="flex flex-col gap-0.5">
-                <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Centro</label>
-                <select id="filter-centro" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
-                  <option value="" class="bg-[#0a0e17]">Todos</option>
-                </select>
+              <div>
+                <label for="filter-centro">Centro</label>
+                <select id="filter-centro" class="input !min-h-0 !py-1.5 text-sm"><option value="">Todos</option></select>
               </div>
-              <div class="flex flex-col gap-0.5">
-                <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Empresa</label>
-                <select id="filter-empresa" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
-                  <option value="" class="bg-[#0a0e17]">Todas</option>
-                </select>
+              <div>
+                <label for="filter-empresa">Empresa</label>
+                <select id="filter-empresa" class="input !min-h-0 !py-1.5 text-sm"><option value="">Todas</option></select>
               </div>
-              <div class="flex flex-col gap-0.5">
-                <label class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Estado</label>
-                <select id="filter-estado" class="px-2 py-1.5 bg-[#0a0e17]/60 border border-[#2563EB]/15 rounded-lg text-xs text-[#ffffff] input-neon cursor-pointer">
-                  <option value="" class="bg-[#0a0e17]">Todos</option>
-                  <option value="Activo" class="bg-[#0a0e17]">Activo</option>
-                  <option value="Baja" class="bg-[#0a0e17]">Baja</option>
+              <div>
+                <label for="filter-estado">Estado</label>
+                <select id="filter-estado" class="input !min-h-0 !py-1.5 text-sm">
+                  <option value="">Todos</option>
+                  <option value="Activo">Activo</option>
+                  <option value="Baja">Baja</option>
                 </select>
               </div>
             </div>
-            <!-- Row 2: Trompo + Limpiar -->
-            <div class="flex items-center justify-between pt-1 border-t border-[#2563EB]/5">
-              <div class="flex items-center gap-2">
-                <span class="text-[9px] font-medium text-[#8b9bb4] uppercase tracking-wider">Trompo</span>
-                <div class="flex rounded-md overflow-hidden border border-[#2563EB]/15 bg-[#0a0e17]/40">
-                  <button data-trompo-filter="all" class="px-3 py-1 text-xs font-medium text-[#ffffff] bg-[#2563EB]/30 transition-colors">Todos</button>
-                  <button data-trompo-filter="yes" class="px-3 py-1 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">Si</button>
-                  <button data-trompo-filter="no" class="px-3 py-1 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">No</button>
+            <div class="flex items-center justify-between pt-3 hairline">
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-semibold t-muted">Trompo</span>
+                <div class="seg">
+                  <button data-trompo-filter="all" class="seg__btn active">Todos</button>
+                  <button data-trompo-filter="yes" class="seg__btn">Si</button>
+                  <button data-trompo-filter="no" class="seg__btn">No</button>
                 </div>
               </div>
-              <button onclick="resetFilters()" class="px-2.5 py-1 text-xs text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors rounded-lg flex items-center gap-1 border border-transparent hover:border-[#2563EB]/20">
+              <button onclick="resetFilters()" class="btn btn-ghost btn-sm">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 Limpiar filtros
               </button>
@@ -139,38 +122,34 @@
           </div>
         </div>
         <% if (currentUserData?.role === 'Admin') { %>
-        <div id="bulk-bar" class="hidden flex items-center justify-between px-4 py-2 bg-[#2563EB]/10 border-b border-[#2563EB]/20 text-sm">
-          <span class="text-[#8b9bb4]"><span id="bulk-count">0</span> seleccionado(s)</span>
-          <button onclick="deleteSelectedVehicles()" class="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition text-sm font-medium">🗑️ Eliminar seleccionados</button>
+        <div id="bulk-bar" class="hidden flex items-center justify-between px-4 py-2 hairline">
+          <span class="text-sm t-muted"><span id="bulk-count">0</span> seleccionado(s)</span>
+          <button onclick="deleteSelectedVehicles()" class="btn btn-danger btn-sm">Eliminar seleccionados</button>
         </div>
         <% } %>
-        <div class="table-container p-4 hidden" id="view-table">
-          <table class="w-full text-sm">
+        <div class="table-container p-2 hidden" id="view-table">
+          <table class="tbl">
             <thead>
-              <tr class="text-left text-[#8b9bb4] border-b border-[#2563EB]/10">
+              <tr>
                 <% if (currentUserData?.role === 'Admin') { %>
-                <th class="pb-3 font-medium w-10">
-                  <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" class="accent-[#2563EB]">
-                </th>
+                <th class="w-10"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" class="accent-[#2563EB]"></th>
                 <% } %>
-                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('interno')">Interno <span class="sort-arrow text-[#2563EB]" data-field="interno">▲</span></th>
-                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('patente')">Patente <span class="sort-arrow" data-field="patente"></span></th>
-                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('marca')">Marca / Modelo <span class="sort-arrow" data-field="marca"></span></th>
-                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('tipo')">Tipo <span class="sort-arrow" data-field="tipo"></span></th>
-                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('subtipo')">Sub Tipo <span class="sort-arrow" data-field="subtipo"></span></th>
-                <th class="pb-3 font-medium">Trompo</th>
-                <th class="pb-3 font-medium">Matafuego</th>
-                <th class="pb-3 font-medium cursor-pointer select-none hover:text-[#ffffff] transition-colors" onclick="sortBy('centroTrabajo')">Centro <span class="sort-arrow" data-field="centroTrabajo"></span></th>
-                <th class="pb-3 font-medium no-print">Acciones</th>
+                <th class="sortable" onclick="sortBy('interno')">Vehículo <span class="sort-arrow" data-field="interno">▲</span></th>
+                <th class="sortable" onclick="sortBy('tipo')">Tipo <span class="sort-arrow" data-field="tipo"></span></th>
+                <th class="sortable" onclick="sortBy('centroTrabajo')">Empresa <span class="sort-arrow" data-field="centroTrabajo"></span></th>
+                <th>VTV</th>
+                <th title="VTV · Seguro · Registro · DNI · Matafuego">Docs</th>
+                <th class="no-print"></th>
               </tr>
             </thead>
             <tbody id="vehiculos-table-body">
-              <tr><td colspan="<%= currentUserData?.role === 'Admin' ? 10 : 9 %>" class="text-center py-8 text-[#4a5568]">Cargando vehículos...</td></tr>
+              <tr><td colspan="<%= currentUserData?.role === 'Admin' ? 7 : 6 %>" class="text-center py-8 t-muted">Cargando vehículos...</td></tr>
             </tbody>
           </table>
+          <p class="px-3 py-2 text-[11px] t-subtle">La columna <strong>Docs</strong> muestra, en orden: VTV · Seguro · Registro · DNI · Matafuego. Punto relleno = vigente, hollow = vencido o sin cargar.</p>
         </div>
         <div id="view-card" class="p-4">
-          <div id="vehiculos-card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+          <div id="vehiculos-card-grid" class="grid-cards">
           </div>
         </div>
       </div>

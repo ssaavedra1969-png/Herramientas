@@ -19,6 +19,18 @@ const adminRoutes = require('./routes/admin');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+/* Version de assets para cache-busting (?v=... en head.ejs).
+   Se calcula con el mtime del tema: al guardar el CSS el valor cambia solo,
+   asi el navegador nunca sirve una version vieja de themes.css / clock.js. */
+app.locals.assetV = (() => {
+  try {
+    const f = path.join(__dirname, 'public', 'css', 'themes.css');
+    return String(Math.floor(fs.statSync(f).mtimeMs));
+  } catch (e) {
+    return 'dev';
+  }
+})();
+
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 const allowedOrigins = [

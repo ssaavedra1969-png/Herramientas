@@ -89,7 +89,7 @@ function showVtvAlertModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencida' : d + ' días'}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
+      <div class="flex items-center gap-3 text-[10px] text-[#8b9bb4] ml-[42px]">
         <span>Vence: ${dateStr}</span>
         ${vtvResult ? `<span class="text-[#4a5568]">·</span><span>${vtvResult}</span>` : ''}
         ${vtvCentro ? `<span class="text-[#4a5568]">·</span><span>${vtvCentro}</span>` : ''}
@@ -138,7 +138,7 @@ function showSeguroModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencido' : d + ' días'}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
+      <div class="flex items-center gap-3 text-[10px] text-[#8b9bb4] ml-[42px]">
         <span>Vence: ${dateStr}</span>
         ${compania ? `<span class="text-[#4a5568]">·</span><span>${compania}</span>` : ''}
         ${poliza ? `<span class="text-[#4a5568]">·</span><span>Póliza: ${poliza}</span>` : ''}
@@ -185,7 +185,7 @@ function showCedulaModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencida' : d + ' días'}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
+      <div class="flex items-center gap-3 text-[10px] text-[#8b9bb4] ml-[42px]">
         <span>Vence: ${dateStr}</span>
         <span class="text-[#4a5568]">·</span><span>Cédula</span>
       </div>
@@ -231,7 +231,7 @@ function showMatafuegoModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencido' : d + ' días'}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
+      <div class="flex items-center gap-3 text-[10px] text-[#8b9bb4] ml-[42px]">
         <span>${estado}</span>
         ${ctrlStr ? `<span class="text-[#4a5568]">·</span><span>Ctrl: ${ctrlStr}</span>` : ''}
       </div>
@@ -278,7 +278,7 @@ function showRegistroModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencido' : d + ' días'}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
+      <div class="flex items-center gap-3 text-[10px] text-[#8b9bb4] ml-[42px]">
         <span>Vence: ${dateStr}</span>
         ${registro ? `<span class="text-[#4a5568]">·</span><span>Reg: ${registro}</span>` : ''}
         ${chofer ? `<span class="text-[#4a5568]">·</span><span>${chofer}</span>` : ''}
@@ -326,7 +326,7 @@ function showDniModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${isCritical ? 'Vencido' : d + ' días'}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
+      <div class="flex items-center gap-3 text-[10px] text-[#8b9bb4] ml-[42px]">
         <span>Vence: ${dateStr}</span>
         ${dni ? `<span class="text-[#4a5568]">·</span><span>DNI: ${dni}</span>` : ''}
         ${chofer ? `<span class="text-[#4a5568]">·</span><span>${chofer}</span>` : ''}
@@ -395,7 +395,7 @@ function showServiceModal() {
           <p class="text-xs font-bold mt-1" style="color:${textColor};">${detail}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-[11px] text-[#8b9bb4] ml-[42px]">
+      <div class="flex items-center gap-3 text-[10px] text-[#8b9bb4] ml-[42px]">
         <span>Próx.: ${proxStr}</span>
         ${tipo ? `<span class="text-[#4a5568]">·</span><span>${tipo}</span>` : ''}
       </div>
@@ -423,33 +423,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initRealtimeListeners();
   initDashSearch();
-  initDashClock();
   initLatestServices();
 });
-
-function initDashClock() {
-  const dateEl = document.getElementById('dash-date');
-  if (!dateEl) return;
-
-  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-
-  function pad(n) { return String(n).padStart(2, '0'); }
-
-  function tick() {
-    const now = new Date();
-    const hhEl = document.getElementById('flip-hh');
-    const mmEl = document.getElementById('flip-mm');
-    const ssEl = document.getElementById('flip-ss');
-    if (hhEl) hhEl.textContent = pad(now.getHours());
-    if (mmEl) mmEl.textContent = pad(now.getMinutes());
-    if (ssEl) ssEl.textContent = pad(now.getSeconds());
-    dateEl.textContent = days[now.getDay()] + ' ' + now.getDate() + ' de ' + months[now.getMonth()] + ' ' + now.getFullYear();
-  }
-
-  tick();
-  setInterval(tick, 1000);
-}
 
 function initDashSearch() {
   const input = document.getElementById('dash-search');
@@ -496,20 +471,6 @@ function initDashSearch() {
   document.addEventListener('click', e => {
     if (!input.contains(e.target) && !results.contains(e.target)) results.classList.add('hidden');
   });
-}
-
-function switchTab(name) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-  document.getElementById('tab-' + name)?.classList.remove('hidden');
-  document.querySelectorAll('[id^="tab-btn-"]').forEach(btn => {
-    btn.classList.remove('tab-btn-active', 'text-[#2563EB]', 'border-b-2', 'border-[#2563EB]');
-    btn.classList.add('text-[#8b9bb4]');
-  });
-  const activeBtn = document.getElementById('tab-btn-' + name);
-  if (activeBtn) {
-    activeBtn.classList.add('tab-btn-active', 'text-[#2563EB]', 'border-b-2', 'border-[#2563EB]');
-    activeBtn.classList.remove('text-[#8b9bb4]');
-  }
 }
 
 let svcLoadTimer = null;
@@ -573,30 +534,26 @@ function renderLatestServices(items) {
     const fechaStr = lastSvc?.fechaISO ? new Date(lastSvc.fechaISO).toLocaleDateString('es-AR') : '—';
     const last = i === items.length - 1;
     return `
-    <div class="svc-item relative pl-6" style="animation-delay:${i * 70}ms;">
-      <div class="absolute left-[7px] top-3 bottom-0 w-px" style="background:linear-gradient(180deg,rgba(212,175,55,0.45),rgba(212,175,55,0.15)${last ? ',transparent' : ''});"></div>
-      <div class="absolute left-0 top-3.5 w-[15px] h-[15px] rounded-full" style="background:linear-gradient(135deg,#2563EB,#2563EB);box-shadow:0 0 12px rgba(212,175,55,0.8),0 0 0 3px rgba(212,175,55,0.12);border:2px solid #0a0e17;"></div>
-      <div class="rounded-2xl transition-all duration-200 hover:bg-white/[0.04] hover:translate-x-1" style="border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);">
-        <div class="flex items-center gap-3 p-3.5 cursor-pointer select-none" onclick="toggleSvc(this)">
-          <div class="w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0" style="background:linear-gradient(135deg,rgba(212,175,55,0.3),rgba(212,175,55,0.18));color:#C4B5FD;border:1px solid rgba(212,175,55,0.35);">${(veh.interno || '?').substring(0,4)}</div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <p class="text-[#ffffff] font-bold text-[13px] tracking-wide">${veh.patente || '—'}</p>
-              <span class="px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider" style="background:rgba(139,92,246,0.18);color:#C4B5FD;">${total} service${total !== 1 ? 's' : ''}</span>
-            </div>
-            <p class="text-[#4a5568] text-[10px] mt-0.5 truncate">${veh.empresa || 'Sin empresa'}</p>
+    <div class="timeline__item svc-item" style="animation-delay:${i * 70}ms">
+      ${last ? '' : '<div class="timeline__line"></div>'}
+      <div class="timeline__dot"></div>
+      <div class="timeline__head" onclick="toggleSvc(this)">
+        <span class="timeline__ico">${(veh.interno || '?').substring(0,4)}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="patente">${veh.patente || '—'}</span>
+            <span class="badge badge-ac">${total} service${total !== 1 ? 's' : ''}</span>
           </div>
-          <div class="text-right shrink-0">
-            <p class="text-[10px] font-bold" style="color:#2563EB;">${ago}</p>
-            <p class="text-[9px] text-[#4a5568] mt-0.5">${fechaStr}</p>
-          </div>
-          <div class="svc-chevron w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200" style="background:rgba(212,175,55,0.12);color:#2563EB;">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-          </div>
+          <p class="t-subtle text-xs mt-1 truncate">${veh.empresa || 'Sin empresa'}</p>
         </div>
-        <div class="svc-body hidden">
-          ${vehicleServicesHtml(veh)}
+        <div class="text-right shrink-0">
+          <p class="text-sm font-bold t-ac">${ago}</p>
+          <p class="t-subtle text-xs mt-0.5">${fechaStr}</p>
         </div>
+        <span class="timeline__chev"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg></span>
+      </div>
+      <div class="svc-body hidden">
+        ${vehicleServicesHtml(veh)}
       </div>
     </div>`;
   }).join('');
@@ -608,24 +565,24 @@ function vehicleServicesHtml(veh) {
   const servicios = veh.servicios || [];
 
   const rows = servicios.map(s => `
-    <div class="flex items-center justify-between gap-3 py-2">
+    <div class="svc-row">
       <div class="flex-1 min-w-0">
-        <p class="text-[#ffffff] text-[11px] font-semibold truncate" title="${s.tipo || ''}">${s.tipo || '—'}</p>
-        ${s.proveedor ? `<p class="text-[#4a5568] text-[9px]">${s.proveedor}</p>` : ''}
+        <p class="t-strong text-sm font-semibold truncate" title="${s.tipo || ''}">${s.tipo || '—'}</p>
+        ${s.proveedor ? `<p class="t-subtle text-xs">${s.proveedor}</p>` : ''}
       </div>
       <div class="text-right shrink-0">
-        <p class="text-[#ffffff] text-[11px]">${fmtDate(s.fechaISO)}</p>
-        <p class="text-[#4a5568] text-[9px]">${s.km != null ? fmtKm(s.km) : ''}</p>
+        <p class="t-strong text-sm">${fmtDate(s.fechaISO)}</p>
+        <p class="t-subtle text-xs">${s.km != null ? fmtKm(s.km) : ''}</p>
       </div>
     </div>`).join('');
 
   return `
-    <div class="mx-3.5 mb-3 p-3 rounded-xl" style="border:1px dashed rgba(212,175,55,0.25);background:rgba(212,175,55,0.05);">
-      <p class="text-[#8b9bb4] text-[9px] uppercase tracking-wider mb-1">Services realizados (${servicios.length})</p>
-      <div class="divide-y divide-white/5">${rows}</div>
-      <div class="flex justify-end mt-2 pt-2" style="border-top:1px solid rgba(255,255,255,0.06);">
-        <button onclick="event.stopPropagation();window.location.href='/vehicle/${veh.vehiculoId}'" class="px-3.5 py-1 rounded-lg text-[11px] font-bold text-white transition hover:opacity-90 hover:scale-[1.02] active:scale-95" style="background:linear-gradient(135deg,#2563EB,#2563EB);box-shadow:0 4px 14px -4px rgba(212,175,55,0.6);">
-          Ver vehículo completo →
+    <div class="mt-3">
+      <p class="t-subtle text-xs font-bold uppercase tracking-wider mb-1">Services realizados (${servicios.length})</p>
+      <div>${rows}</div>
+      <div class="flex justify-end mt-3 pt-3 hairline">
+        <button onclick="event.stopPropagation();window.location.href='/vehicle/${veh.vehiculoId}'" class="btn btn-primary btn-sm">
+          Ver vehículo completo
         </button>
       </div>
     </div>`;
@@ -634,25 +591,20 @@ function vehicleServicesHtml(veh) {
 function toggleSvc(header) {
   const item = header.closest('.svc-item');
   const body = item.querySelector('.svc-body');
-  const chevron = item.querySelector('.svc-chevron');
   const wasOpen = item.classList.contains('open');
 
   document.querySelectorAll('#latest-services-list .svc-item.open').forEach(el => {
     if (el === item) return;
     el.classList.remove('open');
     el.querySelector('.svc-body')?.classList.add('hidden');
-    const c = el.querySelector('.svc-chevron');
-    if (c) c.style.transform = '';
   });
 
   if (wasOpen) {
     item.classList.remove('open');
     body.classList.add('hidden');
-    if (chevron) chevron.style.transform = '';
   } else {
     item.classList.add('open');
     body.classList.remove('hidden');
-    if (chevron) chevron.style.transform = 'rotate(180deg)';
   }
 }
 
@@ -704,12 +656,16 @@ function initRealtimeListeners() {
     allVehicles = all;
     const active = all.filter(d => d.estadoGeneral !== 'Baja').length;
 
-    const elVehiculos = document.getElementById('card-vehiculos');
-    const prevVehiculos = parseInt(elVehiculos.textContent) || 0;
-    animateValue(elVehiculos, prevVehiculos, active, 800);
+    const elFlota = document.getElementById('kpi-flota-val');
+    if (elFlota) {
+      const prevFlota = parseInt(elFlota.textContent) || 0;
+      animateValue(elFlota, prevFlota, active, 800);
+    }
+    setSev('vehiculos', active);
 
     let vtvCount = 0, seguroCount = 0, registroCount = 0, dniCount = 0, serviceCount = 0, matafuegoCount = 0, cedulaCount = 0;
     let vtvDoc = 0, seguroDoc = 0, matafuegoDoc = 0, cedulaDocPresentes = 0;
+    let registroDoc = 0, dniDoc = 0, serviceDoc = 0;
     all.forEach(v => {
       if (v.estadoGeneral === 'Baja') return;
       const vtvDays = daysUntil(v.vtv?.fechaVencimiento);
@@ -720,9 +676,12 @@ function initRealtimeListeners() {
       if (v.seguro?.fechaVencimiento) seguroDoc++;
       const regDays = daysUntil(v.vencimientoRegistro);
       if (regDays !== null && regDays <= 30) registroCount++;
+      if (v.vencimientoRegistro) registroDoc++;
       const dniDays = daysUntil(v.vencimientoDNI);
       if (dniDays !== null && dniDays <= 30) dniCount++;
+      if (v.vencimientoDNI) dniDoc++;
       if (serviceDue(v)) serviceCount++;
+      if (v.proximoServiceFecha) serviceDoc++;
       const matDays = daysUntil(v.matafuego?.fechaVto);
       if (matDays !== null && matDays <= 30) matafuegoCount++;
       if (v.matafuego?.fechaVto) matafuegoDoc++;
@@ -734,31 +693,40 @@ function initRealtimeListeners() {
     const elVtv = document.getElementById('card-vtv-proximas');
     const prevVtv = parseInt(elVtv.textContent) || 0;
     animateValue(elVtv, prevVtv, vtvCount, 800);
+    setSev('vtv', vtvCount);
     renderDocCount('card-vtv-docs', vtvDoc, active);
 
     const elSeg = document.getElementById('card-seguro-proximos');
     const prevSeg = parseInt(elSeg.textContent) || 0;
     animateValue(elSeg, prevSeg, seguroCount, 800);
+    setSev('seguro', seguroCount);
     renderDocCount('card-seguro-docs', seguroDoc, active);
 
     const elReg = document.getElementById('card-registro-proximos');
     const prevReg = parseInt(elReg.textContent) || 0;
     animateValue(elReg, prevReg, registroCount, 800);
+    setSev('registro', registroCount);
+    renderDocCount('card-registro-docs', registroDoc, active);
 
     const elDni = document.getElementById('card-dni-proximos');
     const prevDni = parseInt(elDni.textContent) || 0;
     animateValue(elDni, prevDni, dniCount, 800);
+    setSev('dni', dniCount);
+    renderDocCount('card-dni-docs', dniDoc, active);
 
     const elService = document.getElementById('card-service-proximos');
     if (elService) {
       const prevService = parseInt(elService.textContent) || 0;
       animateValue(elService, prevService, serviceCount, 800);
+      setSev('service', serviceCount);
     }
+    renderDocCount('card-service-docs', serviceDoc, active);
 
     const elMatafuego = document.getElementById('card-matafuego-proximos');
     if (elMatafuego) {
       const prevMat = parseInt(elMatafuego.textContent) || 0;
       animateValue(elMatafuego, prevMat, matafuegoCount, 800);
+      setSev('matafuego', matafuegoCount);
     }
     renderDocCount('card-matafuego-docs', matafuegoDoc, active);
 
@@ -766,8 +734,13 @@ function initRealtimeListeners() {
     if (elCedula) {
       const prevCedula = parseInt(elCedula.textContent) || 0;
       animateValue(elCedula, prevCedula, cedulaCount, 800);
+      setSev('cedula', cedulaCount);
     }
     if (cedulaPresentes) renderDocCount('card-cedula-docs', cedulaDocPresentes, active);
+
+    const expiries = collectExpiries(all);
+    renderHeroKpis(all, expiries);
+    renderAttention(all, expiries);
 
     renderEmpresas(all);
     renderFleetHealth(all);
@@ -777,33 +750,240 @@ function initRealtimeListeners() {
   });
 }
 
+/* ==========================================================================
+   MOTOR DE VENCIMIENTOS — una sola pasada alimenta los KPIs hero y la lista
+   de excepciones. Cada ítem es { v, k, label, days, km, date }.
+   ========================================================================== */
+const DOC_TYPES = [
+  { k: 'vtv',       label: 'VTV',       get: v => v.vtv?.fechaVencimiento },
+  { k: 'seguro',    label: 'Seguro',    get: v => v.seguro?.fechaVencimiento },
+  { k: 'cedula',    label: 'Cédula',    get: v => v.documentacion?.cedula?.fechaVencimiento },
+  { k: 'matafuego', label: 'Matafuego', get: v => v.matafuego?.fechaVto },
+  { k: 'registro',  label: 'Registro',  get: v => v.vencimientoRegistro },
+  { k: 'dni',       label: 'DNI',       get: v => v.vencimientoDNI }
+];
+
+// Orden de urgencia: menos días primero; los services por kilometraje se
+// ordenan por km restantes (ya vencidos o casi, primero).
+function urgencyOf(it) {
+  if (it.days !== null) return it.days;
+  if (it.km <= 0) return -1;
+  if (it.km <= 100) return 1;
+  return 3;
+}
+
+function collectExpiries(vehicles) {
+  const out = [];
+  vehicles.forEach(v => {
+    if (v.estadoGeneral === 'Baja') return;
+    DOC_TYPES.forEach(t => {
+      const date = t.get(v);
+      const days = daysUntil(date);
+      if (days !== null) out.push({ v, k: t.k, label: t.label, days, km: null, date });
+    });
+    // Service: por fecha o, si no hay, por kilometraje restante.
+    const sDays = daysUntil(v.proximoServiceFecha);
+    if (sDays !== null) out.push({ v, k: 'service', label: 'Service', days: sDays, km: null, date: v.proximoServiceFecha });
+    else if (v.proximoServiceKm != null && v.kilometraje != null) {
+      out.push({ v, k: 'service', label: 'Service', days: null, km: v.proximoServiceKm - v.kilometraje, date: null });
+    }
+  });
+  return out;
+}
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* ---------- TIER 1: 4 KPIs hero ---------- */
+function renderHeroKpis(vehicles, items) {
+  const active = vehicles.filter(v => v.estadoGeneral !== 'Baja');
+  const bajas = vehicles.length - active.length;
+
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  setText('kpi-flota-hint', bajas > 0 ? `${bajas} de baja` : `${active.length} en servicio`);
+
+  // Vencidos (crítico)
+  const vencidos = items.filter(it => (it.days !== null ? it.days <= 0 : it.km <= 0));
+  const vencidosVeh = new Set(vencidos.map(it => it.v.id)).size;
+  setText('kpi-vencidos-val', vencidos.length);
+  setText('kpi-vencidos-hint', vencidos.length === 0
+    ? 'Nada vencido'
+    : `en ${vencidosVeh} veh${vencidosVeh === 1 ? 'ículo' : 'ículos'}`);
+
+  // Vencen en 30 días + distribución real por ventana
+  const proximas = items.filter(it => it.days !== null && it.days > 0 && it.days <= 30);
+  const proxVeh = new Set(proximas.map(it => it.v.id)).size;
+  setText('kpi-proximas-val', proximas.length);
+  setText('kpi-proximas-hint', active.length > 0
+    ? `${proxVeh} veh · ${Math.round((proxVeh / active.length) * 100)}% de la flota`
+    : '—');
+  renderSparkline(proximas.map(it => it.days));
+
+  // Documentación completa: los 4 vencimientos críticos con fecha cargada
+  const criticos = active.filter(v =>
+    daysUntil(v.vtv?.fechaVencimiento) !== null &&
+    daysUntil(v.seguro?.fechaVencimiento) !== null &&
+    daysUntil(v.vencimientoRegistro) !== null &&
+    daysUntil(v.vencimientoDNI) !== null);
+  const pctDocs = active.length > 0 ? Math.round((criticos.length / active.length) * 100) : 0;
+  setText('kpi-docs-val', pctDocs);
+  setText('kpi-docs-hint', `${criticos.length} de ${active.length} con los 4 críticos`);
+  const meter = document.getElementById('kpi-docs-meter');
+  if (meter) meter.style.width = pctDocs + '%';
+}
+
+/* Sparkline = distribución REAL de vencimientos por ventana (no una tendencia inventada). */
+function renderSparkline(daysList) {
+  const svg = document.getElementById('kpi-proximas-spark');
+  if (!svg) return;
+  const buckets = [0, 0, 0, 0, 0]; // 0-5 · 6-10 · 11-20 · 21-30 · (resto, contexto)
+  daysList.forEach(d => {
+    if (d <= 5) buckets[0]++;
+    else if (d <= 10) buckets[1]++;
+    else if (d <= 20) buckets[2]++;
+    else if (d <= 30) buckets[3]++;
+    else buckets[4]++;
+  });
+  const max = Math.max(...buckets, 1);
+  const W = 100, H = 34, pad = 3;
+  const pts = buckets.map((n, i) => {
+    const x = pad + (i * (W - pad * 2)) / (buckets.length - 1);
+    const y = H - pad - (n / max) * (H - pad * 2);
+    return [x, y];
+  });
+  const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+  const area = `${line} L${pts[pts.length - 1][0].toFixed(1)} ${H} L${pts[0][0].toFixed(1)} ${H} Z`;
+  svg.innerHTML =
+    `<path class="fill" d="${area}"></path><path d="${line}"></path>` +
+    pts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="1.6" fill="var(--kpi-tone, var(--warn))"></circle>`).join('');
+  svg.setAttribute('title', 'Distribución de vencimientos: 0-5, 6-10, 11-20, 21-30 días');
+}
+
+/* ---------- TIER 2: excepciones priorizadas ---------- */
+function renderAttention(vehicles, items) {
+  const list = document.getElementById('att-list');
+  if (!list) return;
+  const countEl = document.getElementById('att-count');
+
+  const acc = items
+    .filter(it => (it.days !== null ? it.days <= 30 : it.km <= 500))
+    .sort((a, b) => urgencyOf(a) - urgencyOf(b));
+
+  if (countEl) countEl.textContent = acc.length;
+
+  if (acc.length === 0) {
+    list.innerHTML = `
+      <div class="flex flex-col items-center justify-center text-center py-12 px-4">
+        <span class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style="background: var(--ok-soft); color: var(--ok-text);">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </span>
+        <p class="text-sm font-semibold t-strong">Todo al día</p>
+        <p class="text-xs t-subtle mt-1">Ningún documento vencen en los próximos 30 días</p>
+      </div>`;
+    return;
+  }
+
+  const LIMIT = 40;
+  const shown = acc.slice(0, LIMIT);
+  const rows = shown.map(it => {
+    const v = it.v;
+    const overdue = it.days !== null ? it.days <= 0 : it.km <= 0;
+    const tone = overdue ? 'dan' : 'warn';
+    const tagClass = overdue ? 'exc__tag--dan' : 'exc__tag--warn';
+    const when = it.days !== null
+      ? (it.days <= 0 ? `Vencido hace ${Math.abs(it.days)} d` : `${it.days} d restantes`)
+      : (it.km <= 0 ? `Vencido hace ${Math.abs(it.km).toLocaleString('es-AR')} km` : `${it.km.toLocaleString('es-AR')} km restantes`);
+    const fecha = it.date ? formatDate(it.date) : '—';
+    // Barra: cuánto consumió de la ventana de 30 días (100% = vencido)
+    const pct = it.days !== null
+      ? Math.max(3, Math.min(100, Math.round(((30 - it.days) / 30) * 100)))
+      : Math.max(3, Math.min(100, Math.round(((500 - it.km) / 500) * 100)));
+    return `
+      <div class="exc__row" data-overdue="${overdue ? 1 : 0}" role="link" tabindex="0" onclick="window.location.href='/vehicle/${v.id}'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='/vehicle/${v.id}'}">
+        <span class="dot dot--${tone}"></span>
+        <div class="exc__main">
+          <p class="exc__title">${esc(v.patente || '—')} <span class="font-mono text-[10px] t-subtle font-normal">${esc(v.interno || '')}</span></p>
+          <p class="exc__sub">${esc(it.label)} · ${esc(fecha)}${v.empresa ? ' · ' + esc(v.empresa) : ''}</p>
+        </div>
+        <div class="meter" style="--meter-tone: var(--${tone})">
+          <div class="meter__track"><div class="meter__fill" style="width:${pct}%"></div></div>
+        </div>
+        <span class="exc__tag ${tagClass}">${esc(when)}</span>
+      </div>`;
+  }).join('');
+
+  const more = acc.length > LIMIT
+    ? `<div class="px-4 py-2.5 text-center text-xs t-subtle">y ${acc.length - LIMIT} vencimiento${acc.length - LIMIT === 1 ? '' : 's'} más</div>`
+    : '';
+
+  list.innerHTML = rows + more;
+}
+
 function renderEmpresas(vehicles) {
   const container = document.getElementById('empresas-list');
   if (!container) return;
 
-  const empresas = [...new Set(vehicles.map(v => v.empresa).filter(Boolean))].sort();
+  const totalBadge = document.getElementById('empresas-total');
+  const foot = document.getElementById('empresas-foot');
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-  if (empresas.length === 0) {
-    container.innerHTML = '<p class="col-span-full text-[#4a5568] text-sm text-center py-4">Sin empresas registradas</p>';
+  // Sólo los vehículos activos cuentan para el reparto de la flota
+  const activos = vehicles.filter(v => v.estadoGeneral !== 'Baja');
+  const conteo = new Map();
+  activos.forEach(v => {
+    const nombre = String(v.empresa || '').trim() || 'Sin empresa';
+    conteo.set(nombre, (conteo.get(nombre) || 0) + 1);
+  });
+
+  if (conteo.size === 0) {
+    container.innerHTML = `
+      <div class="empty-note">
+        <span class="empty-note__ico"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg></span>
+        <p class="empty-note__t">Sin empresas registradas</p>
+        <p class="empty-note__s">Asigná una empresa a un vehículo para verlo acá</p>
+      </div>`;
+    if (totalBadge) { totalBadge.textContent = '0'; totalBadge.classList.add('hidden'); }
+    if (foot) foot.innerHTML = '';
     return;
   }
 
-  container.innerHTML = empresas.map(e => {
-    const count = vehicles.filter(v => v.empresa === e && v.estadoGeneral !== 'Baja').length;
+  // Orden por cantidad: la barra es relativa a la empresa más grande
+  const filas = [...conteo.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'));
+  const max = filas[0][1];
+  const totalActivos = activos.length;
+  const LIMITE = 8;
+  const visibles = filas.slice(0, LIMITE);
+  const resto = filas.length - visibles.length;
+
+  container.innerHTML = visibles.map(([nombre, n], i) => {
+    const pct = Math.round((n / totalActivos) * 100);
+    const frac = n / max;
     return `
-      <div class="empresa-card rounded-xl p-3 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-[#00E5FF]/10 card-3d alert-3d" onclick="showEmpresaModal('${e.replace(/'/g, "\\'")}')">
-        <div class="flex items-center gap-2.5 mb-2">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#00E5FF,#0891B2);">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/></svg>
-          </div>
-          <span class="text-xs sm:text-sm text-[#ffffff] font-semibold truncate">${e}</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-[#00E5FF] font-bold">${count} vehículo${count !== 1 ? 's' : ''}</span>
-          <svg class="w-3.5 h-3.5 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </div>
-      </div>`;
-  }).join('');
+      <button type="button" class="emp-row" onclick="showEmpresaModal('${esc(nombre).replace(/'/g, "\\'")}')" title="${esc(nombre)} — ${n} vehículo${n !== 1 ? 's' : ''} (${pct}% de la flota)">
+        <span class="emp-row__bar"><i style="--w:${frac.toFixed(4)};animation-delay:${i * 45}ms"></i></span>
+        <span class="emp-row__rank">${i + 1}</span>
+        <span class="emp-row__name">${esc(nombre)}</span>
+        <span class="emp-row__n">${n}</span>
+        <span class="emp-row__pct">${pct}%</span>
+      </button>`;
+  }).join('') + (resto > 0
+    ? `<p class="emp-row emp-row--more">+ ${resto} empresa${resto !== 1 ? 's' : ''} más</p>`
+    : '');
+
+  if (totalBadge) {
+    totalBadge.textContent = filas.length + (filas.length !== 1 ? ' empresas' : ' empresa');
+    totalBadge.classList.remove('hidden');
+  }
+  if (foot) {
+    const bajaCount = vehicles.length - totalActivos;
+    foot.innerHTML = `
+      <span><b>${totalActivos}</b> vehículo${totalActivos !== 1 ? 's' : ''} activo${totalActivos !== 1 ? 's' : ''}</span>
+      <span>${bajaCount > 0 ? `<b>${bajaCount}</b> de baja` : 'sin bajas'}</span>`;
+  }
 }
 
 function showEmpresaModal(empresa) {
@@ -857,16 +1037,18 @@ function renderFleetHealth(vehicles) {
 
   const fill = document.getElementById('fleet-health-fill');
   if (fill) {
-    const color = pct >= 80 ? 'linear-gradient(90deg,#00E5FF,#0891B2)' : pct >= 50 ? 'linear-gradient(90deg,#F59E0B,#F97316)' : 'linear-gradient(90deg,#EF4444,#DC2626)';
+    const tone = pct >= 80 ? 'var(--ok)' : pct >= 50 ? 'var(--warn)' : 'var(--dan)';
     fill.style.width = pct + '%';
-    fill.style.background = color;
+    fill.style.background = tone;
   }
 
   const elOk = document.getElementById('fh-ok');
+  const elOk2 = document.getElementById('fh-ok-2');
   const elWarn = document.getElementById('fh-warn');
   const elCrit = document.getElementById('fh-crit');
   const elTotal = document.getElementById('fh-total');
   if (elOk) elOk.textContent = ok;
+  if (elOk2) elOk2.textContent = ok;
   if (elWarn) elWarn.textContent = warn;
   if (elCrit) elCrit.textContent = crit;
   if (elTotal) elTotal.textContent = total;
@@ -877,8 +1059,16 @@ function renderDocCount(elId, withDoc, total) {
   if (!el) return;
   const missing = total - withDoc;
   if (missing > 0) {
-    el.innerHTML = `<span style="color:#EF4444;font-weight:700">${withDoc} de ${total}</span> <span style="color:#EF4444;font-size:11px;font-weight:600">(${missing} sin cargar)</span>`;
+    el.innerHTML = `<span class="t-danger">${withDoc} de ${total}</span> <span class="t-danger text-xs font-semibold">(${missing} sin cargar)</span>`;
   } else {
-    el.innerHTML = `<span style="color:#22C55E;font-weight:700">${withDoc} de ${total}</span> <span style="color:#22C55E;font-size:11px;font-weight:600">✓</span>`;
+    el.innerHTML = `<span class="t-ok">${withDoc} de ${total}</span> <span class="t-ok text-xs font-semibold">✓ completo</span>`;
   }
+}
+
+/* Severidad visual de cada tarjeta de alerta segun la cantidad real.
+   0 = todo en regla (verde tenue) · 1-3 informativo · 4-9 atencion · 10+ urgente */
+function setSev(alert, n) {
+  const card = document.querySelector(`.alert-card[data-alert="${alert}"]`);
+  if (!card) return;
+  card.dataset.sev = n === 0 ? 'none' : n <= 3 ? 'info' : n <= 9 ? 'warn' : 'danger';
 }

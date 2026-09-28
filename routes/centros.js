@@ -124,12 +124,13 @@ router.put('/elementos/disponibles/:id', verifyToken, requireAdmin, async (req, 
   try {
     const { nombre, descripcion, marca, modelo, stock } = req.body;
     if (!nombre) return res.status(400).json({ error: 'nombre es obligatorio' });
+    const stockNum = parseInt(stock, 10);
     await db.collection('elementos_catalogo').doc(req.params.id).update({
       nombre,
       descripcion: descripcion || '',
       marca: marca || '',
       modelo: modelo || '',
-      stock: stock || 1,
+      stock: Number.isNaN(stockNum) ? 1 : stockNum,
       updatedAt: new Date()
     });
     res.json({ ok: true });
