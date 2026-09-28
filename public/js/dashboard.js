@@ -1,5 +1,5 @@
 let allVehicles = [];
-let cedulaPresentes = null;
+let docsPresentes = null;
 
 /* Escribe texto si el elemento existe. Auxiliar global: acá hay muchos ids
    opcionales y un `getElementById(...).textContent` sin guardar hace que todo
@@ -111,7 +111,7 @@ function showVtvAlertModal() {
       </div>
     </div>`;
   }).join('');
-  openDashModal('VTV por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#F59E0B,#F97316)', iconSvg, body);
+  openDashModal('VTV', resumenAlerts(alerts, a => { const d = daysUntil(a.vtv?.fechaVencimiento); return d !== null && d <= 0; }), 'linear-gradient(135deg,#F59E0B,#F97316)', iconSvg, body);
 }
 
 function showSeguroModal() {
@@ -161,7 +161,7 @@ function showSeguroModal() {
       </div>
     </div>`;
   }).join('');
-  openDashModal('Seguro por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#2563EB,#7C3AED)', iconSvg, body);
+  openDashModal('Seguro', resumenAlerts(alerts, a => { const d = daysUntil(a.seguro?.fechaVencimiento); return d !== null && d <= 0; }), 'linear-gradient(135deg,#2563EB,#7C3AED)', iconSvg, body);
 }
 
 function showCedulaModal() {
@@ -206,7 +206,7 @@ function showCedulaModal() {
       </div>
     </div>`;
   }).join('');
-  openDashModal('Cédula por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#00E5FF,#2563EB)', iconSvg, body);
+  openDashModal('Cédula', resumenAlerts(alerts, a => { const d = daysUntil(a.documentacion?.cedula?.fechaVencimiento); return d !== null && d <= 0; }), 'linear-gradient(135deg,#00E5FF,#2563EB)', iconSvg, body);
 }
 
 function showMatafuegoModal() {
@@ -252,7 +252,7 @@ function showMatafuegoModal() {
       </div>
     </div>`;
   }).join('');
-  openDashModal('Matafuego por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#EF4444,#2563EB)', iconSvg, body);
+  openDashModal('Matafuego', resumenAlerts(alerts, a => { const d = daysUntil(a.matafuego?.fechaVto); return d !== null && d <= 0; }), 'linear-gradient(135deg,#EF4444,#2563EB)', iconSvg, body);
 }
 
 function showRegistroModal() {
@@ -300,7 +300,7 @@ function showRegistroModal() {
       </div>
     </div>`;
   }).join('');
-  openDashModal('Registro por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#EC4899,#DB2777)', iconSvg, body);
+  openDashModal('Registro', resumenAlerts(alerts, a => { const d = daysUntil(a.vencimientoRegistro); return d !== null && d <= 0; }), 'linear-gradient(135deg,#EC4899,#DB2777)', iconSvg, body);
 }
 
 function showDniModal() {
@@ -348,7 +348,20 @@ function showDniModal() {
       </div>
     </div>`;
   }).join('');
-  openDashModal('DNI por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con vencimiento ≤30 días`, 'linear-gradient(135deg,#F97316,#EA580C)', iconSvg, body);
+  openDashModal('DNI', resumenAlerts(alerts, a => { const d = daysUntil(a.vencimientoDNI); return d !== null && d <= 0; }), 'linear-gradient(135deg,#F97316,#EA580C)', iconSvg, body);
+}
+
+/* El modal sí lista vencidos y por vencer juntos (cada fila ya se etiqueta
+   VENCIDA / PRÓXIMA), así que el subtítulo tiene que separarlos: si no pasa
+   lo mismo que en las tarjetas, donde el número grande excluye los vencidos y
+   al clickear veías más vehículos de los que marcaba. */
+function resumenAlerts(alerts, isOverdue) {
+  const venc = alerts.filter(isOverdue).length;
+  const prox = alerts.length - venc;
+  const partes = [];
+  if (venc) partes.push(`${venc} vencido${venc === 1 ? '' : 's'}`);
+  if (prox) partes.push(`${prox} por vencer`);
+  return partes.join(' · ') || 'Todo al día';
 }
 
 function serviceDue(v) {
@@ -416,7 +429,7 @@ function showServiceModal() {
       </div>
     </div>`;
   }).join('');
-  openDashModal('Service por vencer', `${alerts.length} vehículo${alerts.length > 1 ? 's' : ''} con service próximo`, 'linear-gradient(135deg,#EF4444,#DC2626)', iconSvg, body);
+  openDashModal('Service', resumenAlerts(alerts, a => (a.useKm ? a.remainKm <= 0 : a.days <= 0)), 'linear-gradient(135deg,#EF4444,#DC2626)', iconSvg, body);
 }
 
 function animateValue(el, start, end, duration, prefix, suffix) {
@@ -650,23 +663,35 @@ function initMobileMenu() {
   });
 }
 
-async function loadCedulaPresentes() {
-  if (cedulaPresentes) return cedulaPresentes;
+/* Qué documentación EXISTE, no qué vencimientos están cargados.
+   La fuente es la carpeta PATENTE/{patente}/ (una por camión) leída del repo,
+   más lo que se subió a Firestore. Los vencimientos son otra cosa: los carga
+   el usuario a mano en la ficha y pueden estar incompletos sin que eso sea un
+   error, así que no van mezclados en este conteo. */
+const DOC_EN_CARPETA = ['vtv', 'seguro', 'cedula', 'registro', 'dni'];
+
+async function loadDocsPresentes() {
+  if (docsPresentes) return docsPresentes;
   try {
     const headers = await getAuthHeaders();
     const res = await fetch('/api/vehicles/documentos/reporte', { headers });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    cedulaPresentes = new Set((data.rows || []).filter(r => r.docs?.cedula).map(r => String(r.patente || '').toUpperCase()));
+    const tipos = data.tipos && data.tipos.length ? data.tipos : DOC_EN_CARPETA;
+    docsPresentes = new Map(tipos.map(t => [t, new Set()]));
+    (data.rows || []).forEach(r => {
+      const patente = String(r.patente || '').toUpperCase();
+      tipos.forEach(t => { if (r.docs && r.docs[t]) docsPresentes.get(t).add(patente); });
+    });
   } catch (e) {
-    console.warn('Error cargando cédulas presentes:', e);
+    console.warn('Error cargando documentación presente:', e);
   }
-  return cedulaPresentes;
+  return docsPresentes;
 }
 
 function initRealtimeListeners() {
   db.collection('vehicles').orderBy('interno').onSnapshot(async (snapshot) => {
-    await loadCedulaPresentes();
+    await loadDocsPresentes();
     const all = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     allVehicles = all;
     const active = all.filter(d => d.estadoGeneral !== 'Baja').length;
@@ -678,34 +703,58 @@ function initRealtimeListeners() {
     }
     setSev('vehiculos', active);
 
-    let counts = { total: 0 };
-    let docs   = { total: 0 };
+    /* Dos cuentas separadas, no una sola con `days <= 30`: esa condición
+       metía en el mismo número lo que vence en los próximos 30 días con lo
+       que YA está vencido (VTV contaba 8 y solo 2 vencían de verdad). El
+       número grande de cada tarjeta es "vence en ≤30 días" — igual que el KPI
+       hero— y los vencidos van aparte, en su propia línea. */
+    let counts  = { total: 0 };   // vencen en 1..30 días
+    let expired = {};             // ya vencidos (días <= 0)
+    let docs   = {};              // documentación que existe (carpeta PATENTE)
     all.forEach(v => {
       if (v.estadoGeneral === 'Baja') return;
       counts.total++;
       DOC_TYPES.forEach(t => {
         const days = daysUntil(t.get(v));
-        if (days !== null && days <= 30) counts[t.k] = (counts[t.k] || 0) + 1;
+        if (days === null) return;
+        if (days <= 0) expired[t.k] = (expired[t.k] || 0) + 1;
+        else if (days <= 30) counts[t.k] = (counts[t.k] || 0) + 1;
       });
-      if (v.vtv?.fechaVencimiento)             docs.vtv       = (docs.vtv       || 0) + 1;
-      if (v.seguro?.fechaVencimiento)          docs.seguro    = (docs.seguro    || 0) + 1;
-      if (v.matafuego?.fechaVto)               docs.matafuego = (docs.matafuego || 0) + 1;
-      if (v.vencimientoRegistro)                docs.registro  = (docs.registro  || 0) + 1;
-      if (v.vencimientoDNI)                     docs.dni       = (docs.dni       || 0) + 1;
-      if (v.proximoServiceFecha)                docs.service   = (docs.service   || 0) + 1;
-      if (cedulaPresentes?.has(String(v.patente || '').toUpperCase()))
-        docs.cedula = (docs.cedula || 0) + 1;
+      // Documentos con archivo: lo que hay en PATENTE/{patente}/ o subido.
+      const patente = String(v.patente || '').toUpperCase();
+      DOC_EN_CARPETA.forEach(t => {
+        if (docsPresentes && docsPresentes.get(t) && docsPresentes.get(t).has(patente))
+          docs[t] = (docs[t] || 0) + 1;
+      });
+      // Matafuego y Service no son archivos de la carpeta: se miden por la
+      // fecha cargada, que es el único dato que hay de ellos.
+      if (v.matafuego?.fechaVto)      docs.matafuego = (docs.matafuego || 0) + 1;
+      if (v.proximoServiceFecha)      docs.service   = (docs.service   || 0) + 1;
     });
-    // Service no entra en DOC_TYPES: se mide por fecha o por km restantes.
-    const svcDue = all.filter(v => v.estadoGeneral !== 'Baja' && serviceDue(v)).length;
-    if (svcDue) counts.service = (counts.service || 0) + svcDue;
+    // Service no entra en DOC_TYPES: se mide por fecha o, si no hay, por km
+    // restantes (mismo corte de 30 días / 500 km, con la misma separación).
+    let svcProx = 0, svcVenc = 0;
+    all.forEach(v => {
+      if (v.estadoGeneral === 'Baja') return;
+      const d = daysUntil(v.proximoServiceFecha);
+      if (d !== null) {
+        if (d <= 0) svcVenc++; else if (d <= 30) svcProx++;
+        return;
+      }
+      if (v.proximoServiceKm != null && v.kilometraje != null) {
+        const restan = v.proximoServiceKm - v.kilometraje;
+        if (restan <= 0) svcVenc++; else if (restan <= 500) svcProx++;
+      }
+    });
+    if (svcProx) counts.service  = (counts.service  || 0) + svcProx;
+    if (svcVenc) expired.service = (expired.service || 0) + svcVenc;
 
     /* Todas las tarjetas se escriben con setCard, que guarda el elemento
        internamente. Antes cada una repetía `getElementById(...).textContent`
        sin guardar, así que un solo id mal escrito (o faltante) tiraba
        TypeError y mataba TODO lo que venía después: KPIs hero, empresas,
        salud de flota y services quedaban en 0 sin avisar. */
-    setCardCounts(counts, docs, active);
+    setCardCounts(counts, expired, docs, active);
 
     const expiries = collectExpiries(all);
     renderHeroKpis(all, expiries);
@@ -1023,12 +1072,15 @@ function renderFleetHealth(vehicles) {
   if (elTotal) elTotal.textContent = total;
 }
 
-function renderDocCount(elId, withDoc, total) {
+/* "N de 54" = cuántos tienen ese documento. `falta` cambia según de dónde
+   viene el dato: si es un archivo de PATENTE/ lo que falta es el archivo, si
+   es una fecha lo que falta es la carga. */
+function renderDocCount(elId, withDoc, total, falta) {
   const el = document.getElementById(elId);
   if (!el) return;
   const missing = total - withDoc;
   if (missing > 0) {
-    el.innerHTML = `<span class="t-danger">${withDoc} de ${total}</span> <span class="t-danger text-xs font-semibold">(${missing} sin cargar)</span>`;
+    el.innerHTML = `<span class="${withDoc > 0 ? 't-ok' : 't-danger'}">${withDoc} de ${total}</span> <span class="t-subtle text-xs font-semibold">(${missing} ${falta})</span>`;
   } else {
     el.innerHTML = `<span class="t-ok">${withDoc} de ${total}</span> <span class="t-ok text-xs font-semibold">✓ completo</span>`;
   }
@@ -1037,19 +1089,42 @@ function renderDocCount(elId, withDoc, total) {
 /* Escribe las 7 tarjetas de alerta en una sola pasada.
    Los ids salen del array `alerts` de dashboard.ejs:
      card-{k}-proximos   (el número grande)   -> OJO: "proximos", no "proximas"
+     card-{k}-vencidos   (los que ya vencieron, línea aparte)
      card-{k}-docs       (la línea de detalle)
-   Todo guardado: que falte un id no puede volver a cortar el render entero. */
+   El número grande cuenta SOLO lo que vence en los próximos 30 días, para que
+   sume lo mismo que el KPI hero. Los ya vencidos no se esconden: van en su
+   línea y mandan en la severidad. Todo guardado: que falte un id no puede
+   volver a cortar el render entero. */
 const ALERT_KEYS = ['vtv', 'seguro', 'cedula', 'matafuego', 'registro', 'dni', 'service'];
 
-function setCardCounts(counts, docs, active) {
+function setCardCounts(counts, expired, docs, active) {
   ALERT_KEYS.forEach(k => {
     const n = counts[k] || 0;
+    const venc = expired[k] || 0;
     const el = document.getElementById('card-' + k + '-proximos');
     if (el) animateValue(el, parseInt(el.textContent) || 0, n, 800);
-    setSev(k, n);
-    if (k === 'cedula' && !cedulaPresentes) return;
-    renderDocCount('card-' + k + '-docs', docs[k] || 0, active);
+    // La severidad mira el total: 0 por vencer con 6 vencidos es rojo, no verde.
+    setSev(k, n + venc);
+    setVencidos(k, venc);
+    if (DOC_EN_CARPETA.includes(k)) {
+      // Sin el reporte no se puede afirmar qué documentación hay: mejor línea
+      // vacía que un "0 de 54" inventado.
+      if (!docsPresentes) return;
+      renderDocCount('card-' + k + '-docs', docs[k] || 0, active, 'sin archivo');
+    } else {
+      renderDocCount('card-' + k + '-docs', docs[k] || 0, active, 'sin carga');
+    }
   });
+}
+
+/* Los vencidos van en su propia línea porque el número grande ya no los
+   incluye. Sin esto, VTV marcaba 8 y en realidad solo 2 vencían pronto: los
+   otros 6 estaban vencidos hacía semanas (y en algún caso años) que estaban vencidos. */
+function setVencidos(k, n) {
+  const el = document.getElementById('card-' + k + '-vencidos');
+  if (!el) return;
+  el.className = 'alert-card__sub' + (n > 0 ? ' t-danger' : '');
+  el.textContent = n > 0 ? `${n} vencido${n === 1 ? '' : 's'} (${n === 1 ? 'ya pasó' : 'ya pasaron'})` : '';
 }
 
 /* Severidad visual de cada tarjeta de alerta segun la cantidad real.

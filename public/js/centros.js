@@ -141,8 +141,14 @@ function renderCentros() {
         <td class="px-4 py-3 text-center">${c.asignados ?? 0}</td>
         <td class="px-4 py-3 text-xs text-[#4a5568]">${c.createdAt ? formatDate(c.createdAt) : '—'}</td>
         <td class="px-3 py-3 no-print" onclick="event.stopPropagation()">
-          ${c.estado === 'activa' ? `<button onclick="openAsignarModal('${c.id}')" class="text-[#2563EB] hover:text-[#60A5FA] text-xs mr-2" title="Asignar elemento">+</button>` : ''}
-          ${c.estado === 'activa' ? `<button onclick="openCerrarModal('${c.id}', '${esc(c.nombre)}')" class="text-[#F97316] hover:text-[#ea580c] text-xs" title="Cerrar obra">✕</button>` : ''}
+          ${isAdmin() ? `<button onclick="openAsignarModal('${c.id}')" class="text-[#2563EB] hover:text-[#60A5FA] text-xs mr-2" title="Asignar elemento">+</button>` : ''}
+          ${isAdmin() ? `<button onclick="openEditCentroModal('${c.id}')" class="text-[#8b9bb4] hover:text-[#ffffff] text-xs mr-2" title="Editar obra">
+            <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>` : ''}
+          ${isAdmin() && c.estado === 'activa' ? `<button onclick="openCerrarModal('${c.id}', '${esc(c.nombre)}')" class="text-[#F97316] hover:text-[#ea580c] text-xs mr-2" title="Cerrar obra">✕</button>` : ''}
+          ${isAdmin() ? `<button onclick="openDeleteCentroModal('${c.id}')" class="text-[#EF4444] hover:text-[#fca5a5] text-xs" title="Eliminar obra">
+            <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2.25 2.25 0 0116.138 21H7.862a2.25 2.25 0 01-2.245-2.077L4.75 7M9.5 7V4.75A.75.75 0 0110.25 4h3.5a.75.75 0 01.75.75V7M9.5 11v4m5-4v4"/></svg>
+          </button>` : ''}
         </td>
       </tr>`;
   }).join('');
@@ -272,9 +278,16 @@ async function openDetalleCentro(centroId) {
     }
 
     const actions = document.getElementById('dc-actions');
-    let html = `<button onclick="openAsignarModal('${centroId}')" class="px-3 py-1.5 text-xs rounded-lg bg-[#2563EB] text-white hover:bg-[#1d4ed8] transition-colors">+ Asignar Elemento</button>`;
-    if (centro.estado === 'activa') {
-      html += `<button onclick="openCerrarModal('${centroId}', '${esc(centro.nombre)}')" class="px-3 py-1.5 text-xs rounded-lg border border-[#F97316]/30 text-[#F97316] hover:bg-[#F97316]/10 transition-colors">Cerrar Obra</button>`;
+    let html = '';
+    if (isAdmin()) {
+      html += `<button onclick="closeDetalleCentro();openEditCentroModal('${centroId}')" class="px-3 py-1.5 text-xs rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] transition-colors">Editar</button>`;
+      if (centro.estado === 'activa') {
+        html += `<button onclick="openAsignarModal('${centroId}')" class="px-3 py-1.5 text-xs rounded-lg bg-[#2563EB] text-white hover:bg-[#1d4ed8] transition-colors">+ Asignar Elemento</button>`;
+        html += `<button onclick="openCerrarModal('${centroId}', '${esc(centro.nombre)}')" class="px-3 py-1.5 text-xs rounded-lg border border-[#F97316]/30 text-[#F97316] hover:bg-[#F97316]/10 transition-colors">Cerrar Obra</button>`;
+      }
+      html += `<button onclick="closeDetalleCentro();openDeleteCentroModal('${centroId}')" class="px-3 py-1.5 text-xs rounded-lg border border-[#EF4444]/30 text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors">Eliminar</button>`;
+    } else if (centro.estado === 'activa') {
+      html += `<button onclick="openAsignarModal('${centroId}')" class="px-3 py-1.5 text-xs rounded-lg bg-[#2563EB] text-white hover:bg-[#1d4ed8] transition-colors">+ Asignar Elemento</button>`;
     }
     html += `<button onclick="closeDetalleCentro()" class="px-3 py-1.5 text-xs rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] transition-colors">Cerrar</button>`;
     actions.innerHTML = html;
@@ -422,6 +435,88 @@ async function returnElement(centroId, elemId) {
     });
     if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
     showToast('Elemento devuelto');
+    await loadCentros();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* ── Modal Editar Centro ── */
+function openEditCentroModal(centroId) {
+  if (!isAdmin()) return;
+  const c = centrosData.find(x => x.id === centroId);
+  if (!c) return showToast('No se encontró la obra', 'error');
+  document.getElementById('ec-nombre').value = c.nombre || '';
+  document.getElementById('ec-ubicacion').value = c.ubicacion || '';
+  document.getElementById('ec-estado').value = c.estado || 'activa';
+  document.getElementById('ec-observaciones').value = c.observaciones || '';
+  document.getElementById('form-editar-centro').dataset.id = centroId;
+  showModal('modal-editar-centro');
+}
+function closeEditCentroModal() { hideModal('modal-editar-centro'); }
+
+async function saveCentroEdit(e) {
+  e.preventDefault();
+  const id = document.getElementById('form-editar-centro').dataset.id;
+  if (!id) return;
+  const nombre = document.getElementById('ec-nombre').value.trim();
+  if (!nombre) return showToast('El nombre es obligatorio', 'error');
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/centros/${id}`, {
+      method: 'PUT', headers,
+      body: JSON.stringify({
+        nombre,
+        ubicacion: document.getElementById('ec-ubicacion').value.trim(),
+        estado: document.getElementById('ec-estado').value,
+        observaciones: document.getElementById('ec-observaciones').value.trim()
+      })
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+    closeEditCentroModal();
+    showToast('Obra actualizada');
+    await loadCentros();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* ── Modal Eliminar Centro ── */
+/* Los conteos (asignados / totalElementos) solo vienen en el detalle, no en la
+   lista, asi que se pide el centro antes de abrir el modal: si no, el boton
+   quedaria habilitado para una obra con elementos sin devolver. */
+async function openDeleteCentroModal(centroId) {
+  if (!isAdmin()) return;
+  const c = centrosData.find(x => x.id === centroId);
+  if (!c) return showToast('No se encontró la obra', 'error');
+  let asignados = 0, total = 0;
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/centros/${centroId}`, { headers });
+    if (!res.ok) throw new Error('No se pudo leer la obra');
+    const d = await res.json();
+    asignados = d.asignados || 0;
+    total = d.totalElementos || 0;
+  } catch (e) { return showToast('No se pudo verificar la obra: ' + e.message, 'error'); }
+
+  document.getElementById('ed-nombre').textContent = c.nombre || 'la obra';
+  document.getElementById('ed-detalle').innerHTML = asignados > 0
+    ? `Tiene <strong class="text-[#EF4444]">${asignados} elemento(s) sin devolver</strong>: no se puede eliminar hasta que los devuelvas.`
+    : (total > 0
+      ? `Se borrará también el historial de ${total} elemento(s) devuelto(s).`
+      : 'No tiene elementos asignados.');
+  const btn = document.querySelector('#modal-eliminar-centro button[onclick="confirmDeleteCentro()"]');
+  if (btn) btn.disabled = asignados > 0;
+  document.getElementById('modal-eliminar-centro').dataset.centroId = centroId;
+  showModal('modal-eliminar-centro');
+}
+function closeDeleteCentroModal() { hideModal('modal-eliminar-centro'); }
+
+async function confirmDeleteCentro() {
+  const centroId = document.getElementById('modal-eliminar-centro').dataset.centroId;
+  if (!centroId) return;
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/centros/${centroId}`, { method: 'DELETE', headers });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+    closeDeleteCentroModal();
+    showToast('Obra eliminada');
     await loadCentros();
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }

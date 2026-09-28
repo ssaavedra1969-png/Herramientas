@@ -236,17 +236,69 @@ router.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
+const ESTADOS = ['activa', 'pausada', 'cerrada'];
+
 router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { estado, observaciones, ubicacion } = req.body;
+    const { nombre, estado, observaciones, ubicacion } = req.body;
     const update = { updatedAt: new Date() };
-    if (estado) update.estado = estado;
-    if (observaciones !== undefined) update.observaciones = observaciones;
-    if (ubicacion !== undefined) update.ubicacion = ubicacion;
+    if (nombre !== undefined) {
+      if (!nombre || !nombre.trim()) return res.status(400).json({ error: 'El nombre no puede quedar vacío' });
+      update.nombre = nombre.trim();
+    }
+    if (estado) {
+      if (!ESTADOS.includes(estado)) return res.status(400).json({ error: 'Estado inválido' });
+      update.estado = estado;
+    }
+    if (observaciones !== undefined) update.observaciones = String(observaciones).trim();
+    if (ubicacion !== undefined) update.ubicacion = String(ubicacion).trim();
     await db.collection('centros').doc(req.params.id).update(update);
     cacheTTL.delete(`centro-${req.params.id}`);
     cacheTTL.delete('centros-list');
     res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/* Borrar una obra es definitivo, así que se niega si todavía tiene elementos
+   asignados (sin fechaDevolucion): primero hay que devolverlos, así no se
+   pierde el registro de qué elemento estuvo en qué obra. Los ya devueltos se
+   borran junto con la obra, porque su historial ya no sirve para nada. */
+router.delete('/:id', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const centroRef = db.collection('centros').doc(req.params.id);
+    const doc = await centroRef.get();
+    if (!doc.exists) return res.status(404).json({ error: 'Centro no encontrado' });
+
+    // Se leen todos y se filtra en memoria en vez de usar
+    // where('fechaDevolucion','==',''): los elementos cargados antes de que
+    // existiera ese campo no tienen la clave, y con el query no aparecerían
+    // (la obra se dejaría borrar con un elemento sin devolver adentro).
+    const todos = await centroRef.collection('elementos').get();
+    const sinDevolver = todos.docs.filter(d => !d.data().fechaDevolucion);
+    if (sinDevolver.length) {
+      return res.status(409).json({
+        error: `La obra tiene ${sinDevolver.length} elemento(s) sin devolver. Devuelvelos antes de eliminarla.`
+      });
+    }
+
+    // La subcolección no se va sola con el doc padre: hay que borrarla a mano.
+    const subcol = centroRef.collection('elementos');
+    let borrados = 0;
+    for (;;) {
+      const lote = await subcol.limit(400).get();
+      if (lote.empty) break;
+      const batch = db.batch();
+      lote.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      borrados += lote.size;
+    }
+    await centroRef.delete();
+
+    cacheTTL.delete(`centro-${req.params.id}`);
+    cacheTTL.delete('centros-list');
+    res.json({ ok: true, elementosBorrados: borrados });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

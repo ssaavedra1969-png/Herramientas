@@ -1120,6 +1120,8 @@ tr:hover .row-actions, .row-actions:focus-within { opacity: 1; }
   margin-top: auto;
   padding-top: var(--sp-1);
 }
+/* La línea de vencidos solo ocupa lugar si hay vencidos */
+.alert-card__sub:empty { display: none; }
 .alert-card__flag {
   position: absolute;
   top: var(--sp-2);

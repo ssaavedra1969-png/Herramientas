@@ -12,6 +12,7 @@
     "dev:restore": "node scripts/restore-dev.js",
     "subir:docs": "node scripts/subir-documentos.js",
     "cargar:vencimientos": "node scripts/cargar-vencimientos.js",
+    "generar:control": "node scripts/generar-control-documentacion.js",
     "limpiar:service": "node scripts/limpiar-service-fields.js"
   },
   "dependencies": {

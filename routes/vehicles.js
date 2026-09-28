@@ -14,6 +14,9 @@ const DOC_MAX_UPLOAD = 700 * 1024;
 
 const TTL_PANEL_SERVICES = 120 * 1000;
 const TTL_REPORTE_DOCUMENTOS = 60 * 1000;
+// El árbol de PATENTE/ cambia muy poco (los PDFs se versionan por git), así
+// que se cachea aparte del reporte para no pegarle a la API de GitHub cada minuto.
+const TTL_PATENTE_ARBOL = 10 * 60 * 1000;
 const cacheTTL = new Map();
 
 function getCache(key, ttl) {
@@ -91,28 +94,50 @@ router.get('/documentos/reporte', verifyToken, async (req, res) => {
   try {
     const cacheado = getCache('reporte-documentos', TTL_REPORTE_DOCUMENTOS);
     if (cacheado) return res.json(cacheado);
+    /* La carpeta PATENTE/ NO está en el deploy de Vercel (.vercelignore), así
+       que el disco local siempre sale vacío en producción: el reporte decía
+       "0 de 54" para todos los tipos. La fuente real es el repo (GitHub), que
+       es donde se versionan los PDFs. Un request del árbol entero alcanza para
+       los 54 camiones y se cachea aparte, porque los documentos cambian poco. */
+    let arbol = getCache('patente-arbol', TTL_PATENTE_ARBOL);
+    if (arbol === null) {
+      arbol = await gh.listarPatenteGlobal().catch(() => null);
+      setCache('patente-arbol', arbol);
+    }
     const snap = await db.collection('vehicles').get();
-    const rows = snap.docs.map(d => {
+    const rows = [];
+    for (const d of snap.docs) {
       const v = d.data();
       const patente = (v.patente || '').toUpperCase();
-      const presentes = scanDocumentosCarpeta(patente);
+      const locales = scanDocumentosCarpeta(patente);
+      let remotas = null;
+      if (!arbol) {
+        // Sin token o árbol truncado: se le pregunta carpeta por carpeta.
+        remotas = await gh.listarCarpeta(patente).catch(() => null);
+      } else {
+        remotas = arbol.get(patente) || [];
+      }
       const subidos = v.docsAdjuntos || {};
       const docs = {};
-      DOC_TIPOS.forEach(t => { docs[t] = !!presentes[t] || !!subidos[t]; });
+      DOC_TIPOS.forEach(t => {
+        const enCarpeta = !!locales[t] ||
+          (remotas || []).some(nombre => gh.esDeTipo(nombre, t));
+        docs[t] = enCarpeta || !!subidos[t];
+      });
       const faltantes = DOC_TIPOS.filter(t => !docs[t]).length;
-      return {
+      rows.push({
         id: d.id,
-        patente: v.patente || '—',
-        marca: v.marca || '—',
-        modelo: v.modelo || '—',
-        marcaModelo: [v.marca, v.modelo].filter(Boolean).join(' ') || '—',
+        patente: v.patente || '-',
+        marca: v.marca || '-',
+        modelo: v.modelo || '-',
+        marcaModelo: [v.marca, v.modelo].filter(Boolean).join(' ') || '-',
         interno: v.interno || '',
         empresa: v.empresa || '',
         centroTrabajo: v.centroTrabajo || '',
         docs,
         faltantes
-      };
-    });
+      });
+    }
     rows.sort((a, b) => b.faltantes - a.faltantes || a.patente.localeCompare(b.patente));
     const payload = { rows, tipos: DOC_TIPOS };
     setCache('reporte-documentos', payload);
