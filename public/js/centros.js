@@ -4,6 +4,7 @@ let currentCentroId = null;
 let filterEstado = '';
 let filterSearch = '';
 let catalogoData = {};
+let sortState = { centros: { col: null, asc: true }, catalogo: { col: null, asc: true } };
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -60,8 +61,9 @@ function filterCatalogo(tipo) {
       <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.marca || '—')}</td>
       <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.modelo || '—')}</td>
       <td class="px-4 py-3 text-center">${e.stock ?? 0}</td>
-      <td class="px-3 py-3 no-print">
-        <button onclick="deleteCatalogoItem('${e.id}')" class="text-[#EF4444] hover:text-red-300 text-xs" title="Eliminar">✕</button>
+      <td class="px-3 py-3 no-print" onclick="event.stopPropagation()">
+        ${isAdmin() ? `<button onclick="openEditElementoModal('${e.id}')" title="Editar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>` : ''}
+        ${isAdmin() ? `<button onclick="deleteCatalogoItem('${e.id}')" title="Eliminar"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}
       </td>
     </tr>
   `).join('');
@@ -144,6 +146,38 @@ function renderCentros() {
         </td>
       </tr>`;
   }).join('');
+}
+
+function sortTable(table, col) {
+  const state = sortState[table];
+  if (state.col === col) {
+    state.asc = !state.asc;
+  } else {
+    state.col = col;
+    state.asc = true;
+  }
+  const dir = state.asc ? 1 : -1;
+  if (table === 'centros') {
+    centrosData.sort((a, b) => {
+      let va = a[col], vb = b[col];
+      if (col === 'createdAt') { va = va || ''; vb = vb || ''; }
+      if (typeof va === 'string') return va.localeCompare(vb) * dir;
+      return ((va || 0) - (vb || 0)) * dir;
+    });
+    renderCentros();
+  } else if (table === 'catalogo') {
+    const tipo = document.getElementById('catalogo-tipo').value;
+    const data = catalogoData[tipo] || [];
+    data.sort((a, b) => {
+      let va = a[col], vb = b[col];
+      if (typeof va === 'string') return va.localeCompare(vb) * dir;
+      return ((va || 0) - (vb || 0)) * dir;
+    });
+    filterCatalogo(tipo);
+  }
+  document.querySelectorAll(`th[onclick^="sortTable('${table}'"] .sort-ind`).forEach(el => el.textContent = '');
+  const th = document.querySelector(`th[onclick="sortTable('${table}','${col}')"] .sort-ind`);
+  if (th) th.textContent = state.asc ? '▲' : '▼';
 }
 
 function filterByEstado(estado) {
@@ -415,12 +449,51 @@ async function confirmCloseCentro() {
 }
 
 async function deleteCatalogoItem(id) {
+  if (!isAdmin()) return;
   if (!confirm('¿Eliminar este elemento del catálogo?')) return;
   try {
     const headers = await getAuthHeaders();
     const res = await fetch(`/api/centros/elementos/disponibles/${id}`, { method: 'DELETE', headers });
     if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
     showToast('Elemento eliminado');
+    loadCatalogo();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+function openEditElementoModal(id) {
+  if (!isAdmin()) return;
+  const tipo = document.getElementById('catalogo-tipo').value;
+  const item = (catalogoData[tipo] || []).find(e => e.id === id);
+  if (!item) return;
+  document.getElementById('ee-nombre').value = item.nombre || '';
+  document.getElementById('ee-marca').value = item.marca || '';
+  document.getElementById('ee-modelo').value = item.modelo || '';
+  document.getElementById('ee-stock').value = item.stock ?? 1;
+  document.getElementById('ee-desc').value = item.descripcion || '';
+  document.getElementById('form-edit-elemento').dataset.id = id;
+  showModal('modal-edit-elemento');
+}
+function closeEditElementoModal() { hideModal('modal-edit-elemento'); }
+
+async function editElemento(e) {
+  e.preventDefault();
+  const id = document.getElementById('form-edit-elemento').dataset.id;
+  if (!id) return;
+  const nombre = document.getElementById('ee-nombre').value.trim();
+  const marca = document.getElementById('ee-marca').value.trim();
+  const modelo = document.getElementById('ee-modelo').value.trim();
+  const stock = parseInt(document.getElementById('ee-stock').value) || 1;
+  const desc = document.getElementById('ee-desc').value.trim();
+  if (!nombre) return showToast('Completá el nombre', 'error');
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/centros/elementos/disponibles/${id}`, {
+      method: 'PUT', headers,
+      body: JSON.stringify({ nombre, descripcion: desc, marca, modelo, stock })
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+    closeEditElementoModal();
+    showToast('Elemento actualizado');
     loadCatalogo();
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }

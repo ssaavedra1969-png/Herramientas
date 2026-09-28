@@ -120,6 +120,24 @@ router.post('/elementos/disponibles', verifyToken, requireAdmin, async (req, res
   }
 });
 
+router.put('/elementos/disponibles/:id', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { nombre, descripcion, marca, modelo, stock } = req.body;
+    if (!nombre) return res.status(400).json({ error: 'nombre es obligatorio' });
+    await db.collection('elementos_catalogo').doc(req.params.id).update({
+      nombre,
+      descripcion: descripcion || '',
+      marca: marca || '',
+      modelo: modelo || '',
+      stock: stock || 1,
+      updatedAt: new Date()
+    });
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.delete('/elementos/disponibles/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     await db.collection('elementos_catalogo').doc(req.params.id).delete();
@@ -131,11 +149,26 @@ router.delete('/elementos/disponibles/:id', verifyToken, requireAdmin, async (re
 
 router.get('/catalogo', verifyToken, async (req, res) => {
   try {
-    const tipos = TIPOS_ELEMENTOS;
     const catalogo = {};
-    for (const tipo of tipos) {
-      const snap = await db.collection('elementos_catalogo').where('tipo', '==', tipo).get();
-      catalogo[tipo] = snap.docs.map(d => cleanTimestamps({ id: d.id, ...d.data() })).sort((a, b) => a.nombre.localeCompare(b.nombre));
+    for (const tipo of TIPOS_ELEMENTOS) {
+      if (tipo === 'vehiculo') {
+        const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
+        catalogo[tipo] = snap.docs.map(d => {
+          const v = d.data();
+          return cleanTimestamps({
+            id: d.id,
+            interno: v.interno || v.patente || '',
+            nombre: `${v.patente || v.interno || ''} — ${v.marca || ''} ${v.modelo || ''} ${v.anio || ''}`.trim(),
+            marca: v.marca || '',
+            modelo: v.modelo || '',
+            stock: 1,
+            tipo: 'vehiculo'
+          });
+        });
+      } else {
+        const snap = await db.collection('elementos_catalogo').where('tipo', '==', tipo).get();
+        catalogo[tipo] = snap.docs.map(d => cleanTimestamps({ id: d.id, ...d.data() })).sort((a, b) => a.nombre.localeCompare(b.nombre));
+      }
     }
     res.json(catalogo);
   } catch (error) {
