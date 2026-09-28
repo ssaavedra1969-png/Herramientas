@@ -156,7 +156,9 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 
 ## Registro de cambios recientes (para puesta al día de IA)
 
-Último commit: `af33acd` (todo pusheado, working tree limpio).
+Último commit: `970afba` (pusheado a `origin/main`, working tree limpio, **desplegado en producción** y verificado: `/css/themes.css`, `/js/clock.js`, `/js/theme.js`, `/js/command-palette.js` devuelven 200 con el contenido nuevo).
+
+- **Rediseño visual del shell (commit `970afba`)** — 4 temas, topbar con reloj, ranking de empresas y services. Ver detalle abajo en "Sistema de temas y shell".
 
 - **Carpeta de Documentación física (`carpeta-docs.ejs`)** — menú **Utilidades → Carpeta Docs** (admin, `target="_blank"`, ruta `GET /vehicles/carpeta-docs` en server.js): imprime **1 hoja (o varias) de índice maestro** (tabla con N°/interno/patente/marca-modelo/año/empresa/folio de los 52 vehículos de la flota, ordenados por interno, paginada en A4 a 20 filas la 1ra página y 26 el resto, con título en todas las hojas y pie "Página X de Y") + **1 carátula por vehículo** (A4 vertical). Cada carátula muestra: folio, interno + patente en grande, N° BET, tipo/subtipo, grilla de 4 datos (marca/modelo, año, chasis, motor; si el campo está vacío queda en blanco para completar a mano) y checklist de los 7 documentos a archivar en orden fijo (Título, Cédula, Seguro, VTV, Registro, DNI, Service) con fecha de vencimiento automática (desde `seguro.fechaVencimiento`, `vtv.fechaVencimiento`, `vencimientoRegistro`, `vencimientoDNI`, `proximoServiceFecha`), casilla "Adjuntado" y celda de folio interno; el número de página corre globalmente (índice + carátulas). Logo incrustado como data URI (`fp3d.png`, calculado en la ruta) para que figure siempre al imprimir. Uso: imprimir el índice y las carátulas, las carátulas en cartulina para separar cada vehículo en el bibliorato.
 
@@ -177,7 +179,62 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 - **Reports re-diseñado** (commit `436140f`): reporte de flota con filtros por cualquier campo, sección documentación, export Excel/PDF, endpoint `/api/admin/report/flota`.
 - **Docs**: se agregó el 6to documento obligatorio **DNI del chofer** (commit `4164361`): slot DNI en modal, vencimiento atado a `vencimientoDNI`, upload/lectura/eliminación de subidos, reportes/import/export con DNI.
 
+## Sistema de temas y shell (commit `970afba`)
+
+Todo el diseño vive en `public/css/themes.css` (~1.950 líneas), cargado como **último** stylesheet en `views/partials/head.ejs` para pisar a `styles.css` con los tokens.
+
+### 4 temas (`data-theme` en `<html>`)
+| Tema | Fondo | Carácter |
+|------|-------|----------|
+| `pro` (default) | noche índigo `#0a0b16` | acento eléctrico `#818cf8` |
+| `claro` | papel cálido `#d9d1c0` | **teñido, no blanco** — el usuario pidió explícitamente que no sea brillante |
+| `industrial` | grafito `#17140f` | ámbar `#fbbf24`, "sensorial flota" |
+| `auto` | sigue al sistema | claro apagado `#d5e0e2` / oscuro violeta |
+
+Los 4 se **reescribieron** para que sean visualmente distintos (antes eran casi el mismo azul oscuro). Tema claro lleva 6 superficies distintas, todas taupe, sin blanco puro.
+
+### Tokens derivados (en `:root`)
+`--ac-solid` / `--ac-solid-hover` (para que el texto de los botones no dependa del acento), `--grad-brand`, `--grad-brand-text`, `--grad-surface`, `--grad-hero`, `--grad-clock`.
+
+`--grad-clock` se construye con `color-mix(in srgb, var(--ac) 15%, var(--bg-raised))` → `var(--bg-overlay)`, así **se adapta solo a los 4 temas** en vez de tener un color fijo por tema que después se desincroniza.
+
+### Capa de normalización
+`themes.css` remapa **73 clases Tailwind estándar** por rol (fondos, textos, bordes). Antes de esto, `bg-white`, `text-gray-800`, etc. ignoraban los temas y rompían el claro. **Al agregar una clase de color nueva hay que pasarle por esta capa o dejarla en tokens.**
+
+### Reloj (`public/js/clock.js`)
+Fecha y hora en **formato vertical** (fecha arriba, hora abajo) en una caja de bordes redondeados con degradé. Dos montajes:
+- `.topbar-clock` → último hijo de `views/partials/topbar.ejs` (dashboard y vehículos), pegado al margen derecho con `margin-right: calc(var(--sp-5) * -1)`.
+- `.clock-float` → esquina superior derecha en las páginas **sin** topbar, oculto en móvil.
+
+**No mover el reloj a `position: absolute`**: se probó y tapó los botones de acción del topbar. Tiene que quedar como hijo flex normal al final de la barra.
+
+### Topbar (`views/partials/topbar.ejs`)
+Solo se incluye en `dashboard.ejs` y `vehicles.ejs`. Contiene: menú móvil, migas de pan, buscador global, acciones y reloj. Los botones de acción (Vehículo / Service) están condicionados por `_isAdmin` y por la página actual — **si el usuario no los ve, primero verificar el rol de la sesión, no el CSS.**
+
+### Cache-busting
+`server.js` calcula `app.locals.assetV` con el **mtime de `themes.css`**; `head.ejs` lo manda como `?v=<mtime>` en el CSS y los JS. Al guardar el CSS el valor cambia solo. Sin esto el navegador sigue sirviendo versiones viejas y hace perder tiempo.
+
+### Verificación
+Scripts temporales en `C:\Users\EFECTI~1\AppData\Local\Temp\opencode\`:
+- `contrast.js` — auditor WCAG de los 4 temas. Incluye un chequeo de la caja del reloj sobre el degradé. **0 fallas, 1 aviso informativo** (blanco sobre `--ac` de Pro, combinación que no usa ningún botón real: los botones usan `--ac-solid` y dan 5.4–8.6:1).
+- `check-dash.js` — 19 checks del dashboard (7 tarjetas, ranking, services, reloj).
+- `check-restore.js` — renderiza `head.ejs` + `topbar.ejs` y verifica que los botones sigan presentes. **Correrlo si se toca el topbar.**
+- `audit2.js` / `audit3.js` / `audit4.js` — inventarios de colores inline, arbitrarios y paleta Tailwind.
+
+Corrida rápida: `node --check` en cada JS modificado, llaves CSS balanceadas (447/447), EJS renderizado, y los 4 assets con HTTP 200 en local y en producción.
+
+### Pendiente de armonización
+- **118 colores inline** en las vistas siguen hardcodeados → migrar a tokens.
+- **3.185 clases Tailwind** de spacing/tipografía/radio sin override propio.
+- Auditar los CSS legacy: `theme-switcher.css`, `theme-modern.css`, `theme-premium.css`, `theme-sutil.css`, `styles.css`.
+- La command palette recibe la flota real solo en `/vehicles`.
+- Sin revisión visual autenticada de los 4 temas en desktop/móvil.
+
 ### Quirks importantes (no repetir errores)
+- **Pre-commit hook**: bloquea el commit si `HEAD != origin/main`, lo que incluye estar ADELANTADO (commits locales sin pushear). No es un error real: la alerta dice "DESACTUALIZADO" pero aplica también cuando quedaron commits sin pushear. Solución: `git push origin main` del commit pendiente ANTES de commitear de nuevo. Verificar con: `git rev-parse HEAD` vs `git rev-parse origin/main`.
+- **Deploy por `vercel --prod --yes` NO equivale a pushear git**: producción siempre quedó al día, pero origin quedó atrás (commit `a1176ec` estuvo solo en Vercel). Al cerrar sesión, chequear que `origin/main == HEAD`.
+- **Server local**: `node server.js` NO recarga en caliente cambios de server.js/rutas (solo vistas y estáticos). Tras tocar rutas: matar el proceso del puerto 3000 (`Get-NetTCPConnection -LocalPort 3000`) y relanzar `node server.js` (o `npm run dev` = `node --watch server.js`). Vistas `.ejs` y `public/` se ven al refrescar.
+- **`DEV_READ_ONLY=true` en `.env`**: en local TODAS las escrituras a Firestore están bloqueadas (usa la misma base que producción). Revisar antes de "probar" funciones de guardado.
 - **Pre-commit hook**: bloquea el commit si `HEAD != origin/main`, lo que incluye estar ADELANTADO (commits locales sin pushear). No es un error real: la alerta dice "DESACTUALIZADO" pero aplica también cuando quedaron commits sin pushear. Solución: `git push origin main` del commit pendiente ANTES de commitear de nuevo. Verificar con: `git rev-parse HEAD` vs `git rev-parse origin/main`.
 - **Deploy por `vercel --prod --yes` NO equivale a pushear git**: producción siempre quedó al día, pero origin quedó atrás (commit `a1176ec` estuvo solo en Vercel). Al cerrar sesión, chequear que `origin/main == HEAD`.
 - **Server local**: `node server.js` NO recarga en caliente cambios de server.js/rutas (solo vistas y estáticos). Tras tocar rutas: matar el proceso del puerto 3000 (`Get-NetTCPConnection -LocalPort 3000`) y relanzar `node server.js` (o `npm run dev` = `node --watch server.js`). Vistas `.ejs` y `public/` se ven al refrescar.
