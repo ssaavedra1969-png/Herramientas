@@ -88,7 +88,7 @@ async function getNextCatalogNumber(tipo) {
         const m = (d.data().interno || '').match(new RegExp(`^${prefijo}0*(\\d+)$`));
         if (m) { const n = parseInt(m[1], 10); if (n > max) max = n; }
       });
-      transaction.set(counterRef, { current: max });
+      transaction.set(counterRef, { current: max + 1 });
       return { number: max + 1, formatted: `${prefijo}${String(max + 1).padStart(3, '0')}` };
     }
     const next = (doc.data().current || 0) + 1;
