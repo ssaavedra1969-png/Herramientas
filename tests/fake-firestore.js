@@ -220,6 +220,9 @@ class CollectionRef {
         case '>=': return cur >= v;
         case '<=': return cur <= v;
         case 'array-contains': return Array.isArray(cur) && cur.includes(v);
+        case 'in': return Array.isArray(v) && v.includes(cur);
+        case 'not-in': return Array.isArray(v) && !v.includes(cur);
+        case 'array-contains-any': return Array.isArray(cur) && cur.some((x) => v.includes(x));
         default: throw new Error('operador no soportado en el fake: ' + op);
       }
     });

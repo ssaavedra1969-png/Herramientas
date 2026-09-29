@@ -134,6 +134,34 @@ const segunda  = await next();  // V056  <-- con el bug devolvía V055
 falla 5 de 16 checks, entre ellos la secuencia `V011,V011,V012,V013,V014`. Con el
 fix, 16/16.
 
+### El import masivo tenía sus propios agujeros (corregido)
+
+`executeCsvImport()` (`public/js/vehicles.js:1160`) tiene **su propia numeración**,
+separada del alta manual, así que no hereda las protecciones de
+`getNextVehicleNumber()`. Dos huecos:
+
+**1. Duplicados dentro del propio lote.** El chequeo de conflictos solo consultaba
+Firestore con un `where('interno','in',chunk)`. Un Excel con dos filas que ya
+traen `V055` escrito no colisionaba con nadie en la base (todavía no existía) y
+**las dos se guardaban con el mismo interno**. Ahora se detectan las repeticiones
+dentro del archivo y se aborta la importación con el detalle de las filas
+involucradas, con un mensaje distinto al de "ya existe en la base".
+
+**2. El fallo al actualizar el counter se tragaba.** Era un `catch (_) {}` vacío.
+Los vehículos ya se habían importado, pero el counter quedaba atrás, así que la
+**próxima alta manual derivaba del máximo real y reusaba un número ya
+asignado**. Ahora avisa, y explica el riesgo.
+
+Este segundo importaba justo para lo que mencionaba el usuario: cuando llegue un
+camión, si antes hubo un import fallido, ese reuse podía pegarle.
+
+Cubierto con `tests/import-vehiculos.test.js` (17 checks), misma técnica de
+extracción por texto. Al implementarlo aparecieron dos cosas del fake que
+faltaban: el operador `in` (usado por el chequeo de conflictos) y `doc().set()`.
+
+**Ambos fixes se validaron revirtiéndolos:** sin el chequeo de lote fallan 7 de 17
+checks; con el `catch` silencioso fallan 2. Con los fixes, 17/17.
+
 ### Los counters de la base: CONFIRMADO contra producción
 
 `scripts/inspeccionar-counters.js` (`npm run inspect:counters`, **solo lectura**).
@@ -177,7 +205,7 @@ cuando por fin se cree.
 Permite testear escrituras sin tocar producción. Ver `tests/README.md`.
 
 ```bash
-npm test        # 88 checks, ~4 s
+npm test        # 105 checks, ~4 s
 ```
 
 - `tests/fake-firestore.js` — Firestore falso en memoria (la API que usa el
@@ -191,7 +219,7 @@ npm test        # 88 checks, ~4 s
   `auth-client.js:270` (código cliente, se evalúa sin navegador).
 
 Scripts en `package.json`: `test`, `test:escrituras`, `test:negocio`,
-`test:numeracion`, `inspect:counters`.
+`test:numeracion`, `test:import`, `inspect:counters`.
 
 ### Qué quedó cubierto
 
@@ -230,14 +258,15 @@ creó ni modificó ningún doc.
 
 ## 5. Pendientes
 
-Resueltos en esta sesión: §2 (los dos off-by-one) y la confirmación de los
-counters. Queda lo siguiente.
+Resueltos en esta sesión: los dos off-by-one (§2), la confirmación de los
+counters, y los dos agujeros del import masivo. **No hace falta un camión para
+verificar la numeración:** la suite reproduce el estado real (54 vehículos, sin
+counter) y `npm run inspect:counters` simula la próxima alta. Queda lo siguiente.
 
 | # | Tema | Prioridad |
 |---|------|-----------|
 | 1 | Revisión visual de los 4 temas (pro/claro/industrial/auto) en desktop y móvil. El contrast checker pasa, pero eso no ve un botón mal alineado. | **Alta** |
-| 2 | Probar en la app real la alta de un vehículo, para confirmar que el `V-055` sale bien y que el counter se crea con 55. Con el fix debería ser correcto, pero la primera alta real es la que crea el doc. | **Alta** |
-| 3 | Limpiar las referencias residuales a `routes/maintenance.js` y a la colección `maintenance` en `documentacion/README.md` (el módulo no existe: fue fusionado con `services`). | Media |
-| 4 | `GET /api/vehicles/services/panel-mock` sin `verifyToken` (solo datos falsos, riesgo bajo). | Baja |
-| 5 | `/service` (server.js:132) chequea `currentUser` a mano en vez de usar `requireAuth`. | Baja |
-| 6 | Armonización visual pendiente: 118 colores inline, 3.185 clases Tailwind sin override, auditar los CSS legacy (`theme-switcher/modern/premium/sutil`, `styles.css`). | Baja |
+| 2 | Limpiar las referencias residuales a `routes/maintenance.js` y a la colección `maintenance` en `documentacion/README.md` (el módulo no existe: fue fusionado con `services`). | Media |
+| 3 | `GET /api/vehicles/services/panel-mock` sin `verifyToken` (solo datos falsos, riesgo bajo). | Baja |
+| 4 | `/service` (server.js:132) chequea `currentUser` a mano en vez de usar `requireAuth`. | Baja |
+| 5 | Armonización visual pendiente: 118 colores inline, 3.185 clases Tailwind sin override, auditar los CSS legacy (`theme-switcher/modern/premium/sutil`, `styles.css`). | Baja |

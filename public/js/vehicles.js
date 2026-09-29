@@ -1176,19 +1176,39 @@ async function executeCsvImport() {
     }
     internosUsar.push(interno);
   }
-  // Query existing vehicles that match any of our internos (batched for Firestore limit)
+  // Conflictos 1) contra los vehículos YA existentes en Firestore.
   const existentes = new Set();
   for (let i = 0; i < internosUsar.length; i += 30) {
     const chunk = internosUsar.slice(i, i + 30);
     const snap = await db.collection('vehicles').where('interno', 'in', chunk).get();
     snap.forEach(d => existentes.add(d.data().interno));
   }
+  // Conflictos 2) DENTRO del propio lote. Sin esto, un Excel con dos filas que
+  // ya traen "V055" escrito no colisiona con nadie en Firestore (todavía no
+  // existe) y las dos se guardan con el mismo interno.
+  const vistosEnLote = new Map();
+  const duplicados = new Map();
+  internosUsar.forEach((interno, idx) => {
+    if (vistosEnLote.has(interno)) {
+      if (!duplicados.has(interno)) duplicados.set(interno, [vistosEnLote.get(interno)]);
+      duplicados.get(interno).push(idx);
+    } else {
+      vistosEnLote.set(interno, idx);
+    }
+  });
+
   const conflictos = csvValidatedData
     .map((r, idx) => ({ interno: internosUsar[idx], idx }))
     .filter(({ interno }) => existentes.has(interno));
   if (conflictos.length) {
-    const lines = conflictos.map(c => `Fila ${c.idx + 2}: ${c.interno}`);
+    const lines = conflictos.map(c => `Ya existe en la base → Fila ${c.idx + 2}: ${c.interno}`);
     showToast(`Conflicto de números de interno:\n${lines.join('\n')}`, 'error');
+    return;
+  }
+  if (duplicados.size) {
+    const lines = [...duplicados.entries()]
+      .map(([interno, idxs]) => `Filas ${idxs.map(i => i + 2).join(', ')}: ${interno} (repetido en el mismo archivo)`);
+    showToast(`Número de interno repetido dentro del archivo:\n${lines.join('\n')}\n\nCorregí el Excel e importá de nuevo.`, 'error');
     return;
   }
 
@@ -1248,10 +1268,17 @@ async function executeCsvImport() {
     });
   }
   await batchImport(items, 'csv');
-  // Update counter to max number used
+  // Actualiza el counter al máximo realmente usado. Si esto falla NO se puede
+  // seguir en silencio: el counter queda atrás y la próxima alta manual deriva
+  // del máximo real de los internos, lo que reusa un número ya asignado.
   try {
     await db.collection('counters').doc('vehicles').set({ current: maxNum }, { merge: true });
-  } catch (_) {}
+  } catch (_) {
+    showToast(
+      `Se importaron los vehículos, pero NO se pudo actualizar el contador de internos (quedó en un valor anterior).\n` +
+      `El próximo alta manual podría repetir un número. Recargá la página y avisá si se repite.`,
+      'error', 12000);
+  }
   csvValidatedData = [];
   document.getElementById('btn-execute-csv').classList.add('hidden');
   document.getElementById('csv-import-preview').innerHTML = '';

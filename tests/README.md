@@ -5,10 +5,11 @@ falso en memoria. Sirven para probar POST/PUT/DELETE, validaciones, batches y
 transacciones, que con `DEV_READ_ONLY=true` no se pueden probar de otra forma.
 
 ```bash
-npm test              # las tres suites (88 checks, ~4 s)
+npm test              # las cuatro suites (105 checks, ~4 s)
 npm run test:escrituras
 npm run test:negocio
 npm run test:numeracion
+npm run test:import
 ```
 
 ## Por qué un `db` fake y no la base real
@@ -35,6 +36,7 @@ hace falta tocar `DEV_READ_ONLY` ni hacer backup.
 | `escrituras.test.js` | Auth, obras, elementos, vehículos (47 checks). |
 | `negocio.test.js` | Contador del catálogo, `recomputeServiceSummary`, `FieldValue.delete()` (25 checks). |
 | `vehiculos-numeracion.test.js` | Numeración de vehículos — **código cliente**, se evalúa sin navegador (16 checks). |
+| `import-vehiculos.test.js` | Import masivo de vehículos — **código cliente** (17 checks). |
 
 ## Testear código de `public/js/` (sin navegador)
 
@@ -52,8 +54,24 @@ const next = fn(fake.db);
 `db` entra como parámetro, así la función evaluada cierra sobre el fake. Sirve
 para cualquier función pura de `public/js/` que solo dependa de `db` y `Date`.
 
+**Ojo con los helpers del archivo original.** El snippet extraído no arrastra las
+funciones vecinas que la función principal usa (`parseTrompoRaw`, `toTimestamp`,
+el objeto global `firebase` en `executeCsvImport`). Si no las inyectás, el test
+falla con `X is not defined`, que parece un bug del código testeado pero es del
+harness. Se pasan como parámetros extra del `new Function`.
+
 Un `db` limpio se pide con `makeFake()` (no uses el `fake` de `helpers.js`, que
-viene sembrado y compartido con las otras suites).
+viene sembrado y compartido con las otras suites). Para interceptar una llamada
+concreta (por ejemplo el `set` del counter) se hace un `Object.create(db)` y se
+pisa `collection()`.
+
+### Lo que el fake NO emulaba (ya está, no volver a hacerlo)
+
+- **El operador `in`** (`.where('interno','in',chunk)`), que usa el chequeo de
+  conflictos del import masivo. Agregado junto con `not-in` y
+  `array-contains-any`.
+- **`collection(c).doc(id).set()`** anidado: el import escribe el counter con
+  `collection('counters').doc('vehicles').set(...)`, no con `collection().set()`.
 
 ## Un test de regresión tiene que FALLAR con el bug
 

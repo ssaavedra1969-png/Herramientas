@@ -149,17 +149,19 @@ function setSelectValue(id, val) {
   el.value = exists ? val : '';
 }
 
-function showToast(message, type = 'success') {
+function showToast(message, type = 'success', duration = 4000) {
   const colors = { success: 'text-[#00E5FF] bg-[#1e3a8a]/60 border-#00E5FF/30', error: 'text-red-400 bg-red-900/50 border-red-500/30', warning: 'text-yellow-400 bg-yellow-900/50 border-yellow-500/30', info: 'text-blue-400 bg-blue-900/50 border-blue-500/30' };
   const toast = document.createElement('div');
   toast.className = `fixed top-4 right-4 z-50 px-5 py-3 rounded-lg border backdrop-blur-sm shadow-2xl transition-all duration-300 animate-slide-up ${colors[type] || 'text-gray-300 bg-gray-800/50 border-gray-600/30'}`;
   toast.textContent = message;
   document.body.appendChild(toast);
+  // Los avisos que متو con newline necesitan más tiempo para poder leerlos.
+  const ms = Math.max(duration, String(message).includes('\n') ? 6000 : 0);
   setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transform = 'translateY(-10px)';
     setTimeout(() => toast.remove(), 300);
-  }, 4000);
+  }, ms);
 }
 
 function showLoading(show = true) {
