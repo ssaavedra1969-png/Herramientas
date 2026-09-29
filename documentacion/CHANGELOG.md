@@ -23,10 +23,18 @@ Detalle completo en **`Update_2026.09.29.md`**.
 - **No existen** `counters/vehicles` ni `counters/vehiculo`.
 - **No hay internos duplicados**: `elementos_catalogo` 11 docs (H001-H003, E001-E003, R001-R003, M001-M002) y `vehicles` 54 (V001-V054), sin repeticiones. Nada que limpiar.
 
+### Fix: el import masivo podía duplicar internos y perder el counter
+- `executeCsvImport()` (`public/js/vehicles.js:1160`) tiene **su propia numeración**, separada del alta manual, así que no hereda las protecciones de `getNextVehicleNumber()`. Dos huecos corregidos:
+  - **Duplicados dentro del propio lote:** el chequeo de conflictos solo consultaba Firestore con `where('interno','in',chunk)`. Un Excel con dos filas que ya traen `V055` no colisionaba con nadie (todavía no existía) y **las dos se guardaban con el mismo interno**. Ahora se aborta la importación, con un mensaje distinto al de "ya existe en la base".
+  - **El `catch (_) {}` silencioso:** los vehículos ya se habían importado, pero el counter quedaba atrás y la próxima alta manual derivaba del máximo real → **reusaba un número ya asignado**. Ahora avisa y explica el riesgo.
+- `showToast()` acepta una duración opcional (default 4000, así que las 108 llamadas existentes no cambian) y da 6 s a los avisos con salto de línea, que a 4 s no se leen.
+- Cubierto con `tests/import-vehiculos.test.js` (17 checks). **Ambos fixes validados revirtiéndolos**: sin el chequeo de lote fallan 7 de 17, con el `catch` silencioso fallan 2.
+- El fake necesitaba el operador `in` y `collection().doc().set()` anidado. Documentado en `tests/README.md`.
+
 ### Harness de tests contra un Firestore falso (nuevo)
 - `tests/fake-firestore.js` emula la API de Firestore que usa el proyecto; `tests/helpers.js` la inyecta en `require.cache` antes de montar `routes/*.js` y levanta un Express en un puerto efímero.
 - Permite testear **escrituras** sin tocar producción, esquivando el `DEV_READ_ONLY=true` (el `.env` local apunta a la misma base). No hay que bajar el read-only ni hacer backup.
-- 3 suites, 88 checks: `npm test`. Cubren auth/roles, alta y edición de obras, el **409 de borrar obra** (incluido el caso legacy sin `fechaDevolucion`), borrado en cascada por batches, `recomputeServiceSummary` (y su recálculo al borrar), `FieldValue.delete()` sobre `docsAdjuntos`, y las regresiones de los dos contadores.
+- 4 suites, 105 checks: `npm test`. Cubren auth/roles, alta y edición de obras, el **409 de borrar obra** (incluido el caso legacy sin `fechaDevolucion`), borrado en cascada por batches, `recomputeServiceSummary` (y su recálculo al borrar), `FieldValue.delete()` sobre `docsAdjuntos`, y las regresiones de los dos contadores.
 - Detalle y trampas del fake: `tests/README.md`.
 
 ### Auditoría general — sin hallazgos
@@ -34,11 +42,16 @@ Detalle completo en **`Update_2026.09.29.md`**.
 - 49 rutas backend vs 28 llamadas del frontend: **0 llamadas rotas**. Las 4 rutas sin guarda son legítimas (las 3 de login + `panel-mock`, que solo devuelve datos falsos).
 
 ### Commits
+- `b95bf61` fix(vehicles): el import masivo podia duplicar internos y perder el counter
+- `855aa7c` chore(scripts): simulacion de la proxima alta
+- `4d2bf14` fix(auth-client): mismo off-by-one en la numeracion de vehiculos
+- `a007c7e` tests: harness contra un Firestore falso + documentacion
 - `d98d8d8` fix(centros): contador del catalogo generaba un interno duplicado
 
 ### Deploys (Vercel, producción)
-- `d98d8d8` → deploy automático por push a `main`
-- Verificado: `/login`, `themes.css`, `auth-client.js`, `fp3d.png` → 200; `/api/vehicles` sin token → 401.
+- `b95bf61`, `855aa7c`, `4d2bf14` → deploy automático por push a `main`.
+- Verificado: `/login`, `themes.css`, `vehicles.js`, `auth-client.js`, `fp3d.png` → 200; `/api/vehicles` sin token → 401. Los 3 fixes confirmados **en el JS que sirve producción**, no solo en git.
+- **Producción nunca se escribió.** Lo único que se tocó la base fue una consulta de lectura (`npm run inspect:counters`). El servidor local quedó con `DEV_READ_ONLY=true` y todo su tráfico registrado como `Blocked`.
 - Alias: https://falpat-control-de-vehiculos.vercel.app
 
 ### Resguardo

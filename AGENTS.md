@@ -103,6 +103,7 @@ tests/
   escrituras.test.js         # Auth, roles, obras, elementos, vehículos → npm run test:escrituras
   negocio.test.js            # Contador del catálogo, recomputeServiceSummary, FieldValue.delete() → npm run test:negocio
   vehiculos-numeracion.test.js  # Numeración de vehículos (código cliente) → npm run test:numeracion
+  import-vehiculos.test.js   # Import masivo de vehículos (código cliente) → npm run test:import
   README.md                  # Cómo escribir tests + las trampas del fake
 PATENTE/
   {patente}/{tipo}.ext        # Documentos obligatorios versionados (fuente leída por la app en Vercel)
@@ -157,6 +158,7 @@ Catálogo de elementos no-vehículo: `nombre`, `interno` (con prefijo por tipo),
 ## Patrones importantes
 - **Bulk delete:** Los checkboxes se renderizan condicionalmente (`isAdmin()` en JS y `currentUserData?.role === 'Admin'` en EJS). `deleteMultipleWithBackup()` descarga backup JSON antes de eliminar.
 - **Auto-increment:** `getNextVehicleNumber()` — **es CLIENTE**, está en `public/js/auth-client.js:258` (no en `routes/`), usa transacción en `counters/vehicles` y genera `V-XXX`. **Tenía el mismo off-by-one que el del catálogo** (guardaba `{current: max}` y devolvía `max+1`, línea 270) → la segunda alta tras perder el counter repetía el `V-XXX`. **Corregido y cubierto por `npm run test:numeracion`** (16 checks, en `tests/vehiculos-numeracion.test.js`, que extrae la función del archivo por texto y la evalúa con `new Function` contra el db falso). El de `routes/centros.js` (`getNextCatalogNumber`) se corrigió en `d98d8d8`.
+- **El import masivo tiene numeración propia** (`executeCsvImport`, `vehicles.js:1160`) y **no hereda** las protecciones de `getNextVehicleNumber()`. Por eso tiene su propia suite: `npm run test:import` (17 checks, `tests/import-vehiculos.test.js`). Cualquier cambio acá necesita el mismo tratamiento que un counter.
 - **Real-time:** Todas las páginas usan `onSnapshot()` de Firestore, no hay recarga manual.
 - **Toast + modales:** `showToast()`, `showModal()`, `hideModal()` en auth-client.js.
 - **Filtros dinámicos:** `populateFilterDropdowns()` llena selects desde los datos reales de Firestore.
@@ -193,11 +195,21 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 
 ## Registro de cambios recientes (para puesta al día de IA)
 
-Último commit: **`d98d8d8`** (pusheado a `origin/main`, working tree limpio, **desplegado en producción** por integración Git). Trae un fix del contador del catálogo y el harness de tests.
+Último commit: **`b95bf61`** (pusheado a `origin/main`, working tree limpio, **desplegado y verificado en producción**). La sesión del 2026-09-29 cerró con 3 bugs de numeración corregidos, un harness de tests nuevo (105 checks) y una auditoría sin hallazgos.
 
-- **Fix del contador del catálogo (commit `d98d8d8`)** — `getNextCatalogNumber()` en `routes/centros.js` tenía dos ramas que no se coordinaban: la que **inicializa** el counter guardaba `{current: max}` pero devolvía `max+1`, y la que **incrementa** guarda y devuelve el mismo valor. La segunda alta de un tipo repetía el número del primero (`H008, H008, H009...`). Como el `interno` es la **identidad** del elemento del catálogo (es el `value` del `<option>` del select de asignación y la clave de `catMap[c.interno]` para resolver nombre/marca/modelo), un duplicado hacía dos elementos indistinguibles y el segundo pisaba al primero en la resolución. Fix de una línea: guardar `max + 1`. Alcance: solo `POST /api/centros/elementos/disponibles`; en producción la rama corregida ni se ejecuta porque el counter ya existe, así que no hay riesgo de regresión. **OJO: si el nombre real de los docs de `counters` difiere de `doc(tipo)`, el counter nunca se crea y el fix nunca corre** (ver `Update_2026.09.29.md` §2).
+**Los tres bugs de numeración de la sesión (todos el mismo patrón: un off-by-one al inicializar un counter):**
 
-- **Harness de tests contra un Firestore falso (`tests/`, nuevo)** — `npm test` = 88 checks en ~4 s, sin tocar producción. `tests/helpers.js` reemplaza `config/firebase.js` en `require.cache` **antes** de montar `routes/*.js`, así que las rutas se ejercitan tal cual están escritas. **Resuelve el problema de probar escrituras:** el `.env` local apunta a la base real y `DEV_READ_ONLY=true` bloquea todo con 403, así que antes no había forma de testear los forms de guardado sin escribir en producción. El harness **no** monta `middleware/dev-readonly.js` a propósito (queda sin efecto igual, porque el `db` es falso). Cubre auth/roles, alta y edición de obras, el **409 de borrar obra** (incluido el legacy sin `fechaDevolucion`), borrado en cascada, `recomputeServiceSummary` y su recálculo al borrar, `FieldValue.delete()` sobre `docsAdjuntos`, la regresión del contador del catálogo y la de vehículos. **Trampas del fake en `tests/README.md`** — no repetirlas: `clone()` debe preservar `Date`/`Timestamp`; `docRef.collection(sub)` necesita el subPath; `db.collection()` no `db.col()`; `_map()` debe crear la colección si no existe; hay que sembrar los `users` antes de testear porque `ensureFirstAdmin` convierte en Admin al primer usuario que se autentica.
+| # | Dónde | Síntoma |
+|---|-------|---------|
+| 1 | `routes/centros.js` → `getNextCatalogNumber()` | La 2ª alta de un tipo repetía el `interno` del catálogo (`H008, H008, H009...`) |
+| 2 | `public/js/auth-client.js:270` → `getNextVehicleNumber()` | La 2ª alta de un vehículo repetía el `V-XXX`. **Más grave:** `counters/vehicles` no existe, así que la numeración cae *siempre* en la rama rota |
+| 3 | `public/js/vehicles.js:1160` → `executeCsvImport()` | El import no detectaba internos repetidos **dentro del propio archivo**, y su `catch (_) {}` silencioso dejaba el counter atrás → la próxima alta manual reusaba un número |
+
+- **Counters: CONFIRMADO contra producción** con `npm run inspect:counters` (solo lectura). La doc histórica estaba mal: decía `cat-{prefijo}` y `vehicles-{tipo}`; **no existe ningún doc con esos nombres**. Los reales son `counters/{tipo}` — exactamente lo que busca el código. Los 4 del catálogo existen (current 3/3/3/2) y `counters/vehicles` NO existe. **No hay internos duplicados** en ninguna colección (11 elementos de catálogo, 54 vehículos V001-V054). **No hay nada que limpiar.**
+
+- **Import masivo corregido** (`executeCsvImport`) — ahora aborta si un interno se repite dentro del mismo Excel (mensaje distinto al de "ya existe en la base"), y si falla el `set` del counter avisa con el riesgo en vez de tragárselo. `showToast()` ganó un 3er parámetro opcional de duración (default 4000 → las 108 llamadas existentes no cambian; los avisos con `\n` duran 6 s).
+
+- **Harness de tests (`tests/`, nuevo)** — `npm test` = 105 checks en ~4 s, sin tocar producción. `tests/helpers.js` reemplaza `config/firebase.js` en `require.cache` **antes** de montar `routes/*.js`, así que las rutas se ejercitan tal cual están escritas. **Resuelve el problema de probar escrituras:** el `.env` local apunta a la base real y `DEV_READ_ONLY=true` bloquea todo con 403, así que antes no había forma de testear los forms de guardado sin escribir en producción. El harness **no** monta `middleware/dev-readonly.js` a propósito (queda sin efecto igual, porque el `db` es falso). Las 2 suites de cliente (`test:numeracion`, `test:import`) extraen la función del archivo por texto con regex y la evalúan con `new Function` contra el db falso. **Trampas del fake y del harness en `tests/README.md`** — no repetirlas.
 
 - **Auditoría 2026-09-29 — sin hallazgos** — `node --check` limpio en rutas, middleware, config, 14 JS de `public/js` y 8 scripts. Las 19 vistas EJS compilan: 0 includes rotos, 0 assets rotos, 0 tags desbalanceados. Los 63 archivos de `public/` responden 200. CSS balanceado (`themes.css` 448/448). Logs limpios, sin restos de debug. **49 rutas backend vs 28 llamadas del frontend → 0 llamadas rotas.** Las 4 rutas sin guarda son legítimas: las 3 de login + `vehicles/services/panel-mock` (solo datos falsos).
 
