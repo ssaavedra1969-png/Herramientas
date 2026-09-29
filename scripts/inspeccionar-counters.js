@@ -80,7 +80,32 @@ const TIPOS = Object.keys(PREFIJO);
   const conNum = vints.filter((v) => /^V\d+$/.test(v.interno)).map((v) => Number(v.interno.slice(1)));
   if (conNum.length) console.log('  max V = V' + String(Math.max(...conNum)).padStart(3, '0'));
 
-  console.log('\n=== 3. RESUMEN ===');
+  // Internos que el calculo del max NO ve: getNextVehicleNumber() solo mira los
+  // que matchean /^V0*(\d+)$/. Uno con formato raro no cuelga del contador, asi
+  // que no impide que el proximo numero se repita contra el.
+  const CANONICO = /^V\d{3}$/;
+  const irregulares = vints.filter((v) => v.interno && !CANONICO.test(v.interno));
+  console.log('\n  internos con formato NO canonico (V###): ' + (irregulares.length || 'ninguno'));
+  irregulares.forEach((v) => console.log('      "' + v.interno + '"  patente ' + v.patente + '   (docId ' + v.id + ')'));
+  if (irregulares.length) {
+    console.log('      ^ OJO: estos NO los ve el calculo del max, pero la app si los muestra.');
+    console.log('        Si alguno representa un numero YA usado, la proxima alta lo repetiria.');
+  }
+
+  console.log('\n=== 3. SIMULACION: que pasaria con la proxima alta ===');
+  const counterVeh = await db.collection('counters').doc('vehicles').get();
+  let simulado;
+  if (counterVeh.exists) {
+    const n = (counterVeh.data().current || 0) + 1;
+    simulado = 'V' + String(n).padStart(3, '0') + '  (rama incremento, counter=' + counterVeh.data().current + ')';
+  } else {
+    const max = conNum.length ? Math.max(...conNum) : 0;
+    simulado = 'V' + String(max + 1).padStart(3, '0') + '  (deriva del max, counter NO existe)';
+  }
+  console.log('  proximo interno: ' + simulado);
+  console.log('  ya lo usa alguien? ' + (vLista.includes(simulado.split(' ')[0]) ? 'SI -> COLISION' : 'no'));
+
+  console.log('\n=== 4. RESUMEN ===');
   const busca = snap.docs.map((d) => d.id);
   const esperados = [...TIPOS, 'vehicles'];
   const ok = esperados.filter((t) => busca.includes(t));
