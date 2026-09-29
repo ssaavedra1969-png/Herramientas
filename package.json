@@ -14,9 +14,11 @@
     "cargar:vencimientos": "node scripts/cargar-vencimientos.js",
     "generar:control": "node scripts/generar-control-documentacion.js",
     "limpiar:service": "node scripts/limpiar-service-fields.js",
-    "test": "npm run test:escrituras && npm run test:negocio",
+    "test": "npm run test:escrituras && npm run test:negocio && npm run test:numeracion",
     "test:escrituras": "node tests/escrituras.test.js",
-    "test:negocio": "node tests/negocio.test.js"
+    "test:negocio": "node tests/negocio.test.js",
+    "test:numeracion": "node tests/vehiculos-numeracion.test.js",
+    "inspect:counters": "node scripts/inspeccionar-counters.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.6",

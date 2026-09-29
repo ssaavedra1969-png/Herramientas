@@ -5,9 +5,10 @@ falso en memoria. Sirven para probar POST/PUT/DELETE, validaciones, batches y
 transacciones, que con `DEV_READ_ONLY=true` no se pueden probar de otra forma.
 
 ```bash
-npm test              # las dos suites (72 checks, ~4 s)
+npm test              # las tres suites (88 checks, ~4 s)
 npm run test:escrituras
 npm run test:negocio
+npm run test:numeracion
 ```
 
 ## Por qué un `db` fake y no la base real
@@ -33,6 +34,45 @@ hace falta tocar `DEV_READ_ONLY` ni hacer backup.
 | `helpers.js` | Inyecta el fake, monta las rutas en un Express de prueba en un puerto efímero, y expone `req()` + un reporter. |
 | `escrituras.test.js` | Auth, obras, elementos, vehículos (47 checks). |
 | `negocio.test.js` | Contador del catálogo, `recomputeServiceSummary`, `FieldValue.delete()` (25 checks). |
+| `vehiculos-numeracion.test.js` | Numeración de vehículos — **código cliente**, se evalúa sin navegador (16 checks). |
+
+## Testear código de `public/js/` (sin navegador)
+
+Las rutas viven en el servidor y se prueban por HTTP. Pero `public/js/*.js` se
+cargan por `<script>` (no son ESM), así que no se pueden `require`. La
+tecnica es **extraer la función del texto y evaluarla** con el db falso:
+
+```js
+const src = fs.readFileSync('public/js/auth-client.js', 'utf8');
+const m = src.match(/async function getNextVehicleNumber\(\)\s*\{[\s\S]*?\n\}/);
+const fn = new Function('db', m[0] + '\nreturn getNextVehicleNumber;');
+const next = fn(fake.db);
+```
+
+`db` entra como parámetro, así la función evaluada cierra sobre el fake. Sirve
+para cualquier función pura de `public/js/` que solo dependa de `db` y `Date`.
+
+Un `db` limpio se pide con `makeFake()` (no uses el `fake` de `helpers.js`, que
+viene sembrado y compartido con las otras suites).
+
+## Un test de regresión tiene que FALLAR con el bug
+
+Trampa fácil: un assert sobre el **valor devuelto** puede pasar con el bug y con
+el fix. En el off-by-one del contador, las dos ramas devolvían el mismo número
+la primera vez; lo que las delata es:
+
+1. el **valor persistido** (`{current: 54}` vs `{current: 55}`), y
+2. que la **segunda** llamada devuelva un número distinto.
+
+Antes de dar por buena una suite, **reintroducí el bug a propósito** y fijate
+que falla. Se hace así:
+
+```powershell
+Copy-Item public/js/auth-client.js $env:TEMP\ac.bak -Force
+# ... revertí la línea a mano ...
+node tests/vehiculos-numeracion.test.js   # tiene que fallar
+Copy-Item $env:TEMP\ac.bak public/js/auth-client.js -Force
+```
 
 ## API emulada
 

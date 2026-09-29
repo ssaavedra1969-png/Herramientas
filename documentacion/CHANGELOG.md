@@ -11,14 +11,22 @@ Detalle completo en **`Update_2026.09.29.md`**.
 - El `interno` es la identidad del elemento: es el `value` del select de asignación y la clave de `catMap[c.interno]`. Con duplicado, dos elementos eran indistinguibles y el segundo pisaba al primero en la resolución de nombre/marca/modelo.
 - Fix de una línea: guardar `max + 1`.
 - Alcance: solo `POST /api/centros/elementos/disponibles`. En producción la rama corregida ni se ejecuta (el counter ya existe), así que no hay riesgo de regresión.
-- **Pendiente:** la doc dice que los counters se llaman `cat-{prefijo}` pero el código busca `doc(tipo)`. Si en la base están con el nombre viejo, el counter nunca se crea y el fix no llega a correr. Confirmar.
 
-- **Mismo bug, sin corregir, en la numeración de vehículos:** `getNextVehicleNumber()` (`public/js/auth-client.js:270`, código **cliente**) tiene el off-by-one idéntico — guarda `{current: max}` y devuelve `max+1`, así que la segunda alta repite el `V-XXX`. Fix de una línea, pendiente. De paso confirma que el counter de vehículos se llama `counters/vehicles`.
+### Fix: el mismo off-by-one en la numeración de vehículos
+- `getNextVehicleNumber()` (`public/js/auth-client.js:270`, código **cliente**, no una ruta) tenía el bug idéntico: guardaba `{current: max}` y devolvía `max+1`, así que la segunda alta repetía el `V-XXX`. Corregido a `{current: max + 1}`.
+- **Este era más urgente que el del catálogo:** `counters/vehicles` no existe en la base, así que la numeración de vehículos cae *siempre* en la rama de derivar del máximo real — que es justo la que estaba rota. El primer día que se creara el doc, el segundo vehículo habría repetido el número.
+- Cubierto con `tests/vehiculos-numeracion.test.js` (16 checks). Al ser código cliente no se prueba por HTTP: la suite extrae la función del archivo por texto y la evalúa con `new Function` contra el db falso. **El test se validó reintroduciendo el bug a propósito** (falla 5 de 16, con la secuencia `V011,V011,V012,...`).
+
+### Confirmado contra producción: cómo se llaman los counters (solo lectura)
+- `npm run inspect:counters` (`scripts/inspeccionar-counters.js`, **no escribe nada**).
+- La doc histórica estaba mal: decía `cat-{prefijo}` y `vehicles-{tipo}`. **No existe ningún doc con esos nombres.** Existen `counters/{herramienta,equipo,ropa,material}` (current 3/3/3/2), que es exactamente lo que busca el código (`doc(tipo)`). **El fix del catálogo sí es efectivo.**
+- **No existen** `counters/vehicles` ni `counters/vehiculo`.
+- **No hay internos duplicados**: `elementos_catalogo` 11 docs (H001-H003, E001-E003, R001-R003, M001-M002) y `vehicles` 54 (V001-V054), sin repeticiones. Nada que limpiar.
 
 ### Harness de tests contra un Firestore falso (nuevo)
 - `tests/fake-firestore.js` emula la API de Firestore que usa el proyecto; `tests/helpers.js` la inyecta en `require.cache` antes de montar `routes/*.js` y levanta un Express en un puerto efímero.
 - Permite testear **escrituras** sin tocar producción, esquivando el `DEV_READ_ONLY=true` (el `.env` local apunta a la misma base). No hay que bajar el read-only ni hacer backup.
-- 2 suites, 72 checks: `npm test`. Cubren auth/roles, alta y edición de obras, el **409 de borrar obra** (incluido el caso legacy sin `fechaDevolucion`), borrado en cascada por batches, `recomputeServiceSummary` (y su recálculo al borrar), `FieldValue.delete()` sobre `docsAdjuntos`, y la regresión del contador.
+- 3 suites, 88 checks: `npm test`. Cubren auth/roles, alta y edición de obras, el **409 de borrar obra** (incluido el caso legacy sin `fechaDevolucion`), borrado en cascada por batches, `recomputeServiceSummary` (y su recálculo al borrar), `FieldValue.delete()` sobre `docsAdjuntos`, y las regresiones de los dos contadores.
 - Detalle y trampas del fake: `tests/README.md`.
 
 ### Auditoría general — sin hallazgos

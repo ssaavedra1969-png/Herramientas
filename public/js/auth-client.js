@@ -267,7 +267,7 @@ async function getNextVehicleNumber() {
           const m = (d.data().interno || '').match(/^V0*(\d+)$/);
           if (m) { const n = parseInt(m[1], 10); if (n > max) max = n; }
         });
-        transaction.set(counterRef, { current: max });
+        transaction.set(counterRef, { current: max + 1 });
         return { number: max + 1, formatted: `V${String(max + 1).padStart(3, '0')}` };
       }
       const next = (doc.data().current || 0) + 1;

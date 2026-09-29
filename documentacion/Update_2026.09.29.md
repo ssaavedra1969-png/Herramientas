@@ -88,39 +88,87 @@ elemento nuevo del catálogo). No toca vehículos, obras, documentos ni reportes
 Y como la rama corregida solo corre cuando el counter **no existe**, en
 producción (donde ya existe) ni se ejecuta: riesgo cero de regresión.
 
-### ⚠️ El MISMO bug existe en la numeración de vehículos — NO corregido
+### El MISMO bug estaba en la numeración de vehículos — CORREGIDO
 
 `getNextVehicleNumber()` en **`public/js/auth-client.js:258`** (ojo: es código
-**cliente**, no una ruta) tiene el patrón idéntico, línea 270:
+**cliente**, no una ruta) tenía el patrón idéntico, línea 270:
 
 ```js
-// auth-client.js:270
+// auth-client.js:270 — ANTES
 transaction.set(counterRef, { current: max });      // guarda max
 return { number: max + 1, formatted: `V${...}` };    // pero devuelve max+1   <-- mismo bug
 ```
 
-Efecto: la segunda alta de un vehículo **repite el `V-XXX`** si el doc
-`counters/vehicles` no existe. Mismo alcance del error: un solo duplicado, y
-solo la primera vez que se crea el counter.
+Efecto: la segunda alta de un vehículo **repetía el `V-XXX`**. Es el mismo bug
+del catálogo, y el mismo alcance: **un solo duplicado**, y solo la primera vez
+que se crea el doc `counters/vehicles`.
 
-**No se corrigió** en esta sesión: está fuera del alcance que se pidió y es
-código cliente, que el harness de tests no cubre (las rutas se ejercitan en el
-servidor). El fix es la misma línea: guardar `max + 1`.
+**Corregido** a `transaction.set(counterRef, { current: max + 1 })`, en la misma
+línea y con el mismo criterio que `d98d8d8`.
 
-De paso, este snippet **confirma que el counter de vehículos se llama
-`counters/vehicles`** (no `vehicles-{tipo}` como decía la doc histórica), lo
-que refuerza que hay que ir a revisar los nombres reales en Firestore.
+#### Por qué el de vehículos era más urgente que el del catálogo
 
-### ⚠️ Pendiente que puede dejar el fix sin efecto
+El del catálogo ya estaba neutralizado en producción (los 4 counters existen, así
+que la rama rota no corre). Este **no**: `counters/vehicles` **no existe**, así
+que la numeración de vehículos cae *siempre* en la rama de derivar del máximo
+real, y esa rama es justo la que estaba rota. El día que se creara el doc —o
+sea, en la primera alta — el segundo vehículo habría repetido el `V-XXX`.
 
-La documentación dice que los counters del catálogo se llaman **`cat-{prefijo}`**,
-pero el código busca `db.collection('counters').doc(tipo)` → `counters/herramienta`.
-Si en la base están con el nombre viejo, `doc.exists` siempre da `false`, el
-counter nunca se crea, la rama corregida nunca corre — y tampoco había
-duplicado, porque siempre derivaba del máximo real de los datos.
+#### Cubierto con una suite propia
 
-**Hay que confirmar cómo se llaman los docs en producción.** Si hay discrepancia,
-o se renombran los docs o se corrige el `doc(tipo)`.
+`tests/vehiculos-numeracion.test.js` (16 checks, `npm run test:numeracion`).
+Como es código cliente, no se puede probar por HTTP: la suite **extrae la
+función del archivo por texto** con regex y la evalúa con `new Function`
+inyectándole el db falso, así que corre el código real tal cual está escrito.
+
+El assert que importa no es el número devuelto (las dos ramas devuelven lo mismo
+la primera vez) sino el **valor persistido** y la **segunda** llamada:
+
+```js
+const primera  = await next();  // V055
+// el counter debe quedar en 55, no en 54
+const segunda  = await next();  // V056  <-- con el bug devolvía V055
+```
+
+**El test se validó reintroduciendo el bug a propósito:** con `{ current: max }`
+falla 5 de 16 checks, entre ellos la secuencia `V011,V011,V012,V013,V014`. Con el
+fix, 16/16.
+
+### Los counters de la base: CONFIRMADO contra producción
+
+`scripts/inspeccionar-counters.js` (`npm run inspect:counters`, **solo lectura**).
+Resultado:
+
+| Doc | `current` | Estado |
+|-----|-----------|--------|
+| `counters/herramienta` | 3 | existe |
+| `counters/equipo` | 3 | existe |
+| `counters/ropa` | 3 | existe |
+| `counters/material` | 2 | existe |
+| `counters/vehiculo` | — | **no existe** |
+| `counters/vehicles` | — | **no existe** |
+
+**La documentación histórica estaba equivocada.** Decía `cat-{prefijo}` y
+`vehicles-{tipo}`; **no existe ningún doc con esos nombres**. El código busca
+`doc(tipo)` y **acierta** en los 4 tipos del catálogo.
+
+Consecuencias:
+
+1. **El fix `d98d8d8` sí es efectivo** para los 4 tipos del catálogo: los docs
+   existen, `doc.exists` da `true` y corre la rama de incremento (la correcta).
+   La preocupación de esta sesión era infundada, pero verificarla era necesario.
+2. **Nunca hubo duplicados**, ni en el catálogo ni en vehículos: `elementos_catalogo`
+   tiene 11 docs (H001-H003, E001-E003, R001-R003, M001-M002) y `vehicles` 54
+   (V001-V054), **sin internos repetidos** en ninguna de las dos. No hay nada
+   que limpiar.
+3. **Los 2 counters de vehículo no existen**, y por eso el bug de
+   `auth-client.js:270` llevaba tiempo latente sin consecuencias: la rama rota
+   solo se dispara una vez creado el doc. Corregido igualmente, justamente para
+   que la primera y la segunda alta den números distintos.
+
+**No se creó ningún doc.** Se dejó la base sin tocar: el script es de solo
+lectura y el fix hace que la rama de creación ya guarde el valor correcto
+cuando por fin se cree.
 
 ---
 
@@ -129,7 +177,7 @@ o se renombran los docs o se corrige el `doc(tipo)`.
 Permite testear escrituras sin tocar producción. Ver `tests/README.md`.
 
 ```bash
-npm test        # 72 checks, ~4 s
+npm test        # 88 checks, ~4 s
 ```
 
 - `tests/fake-firestore.js` — Firestore falso en memoria (la API que usa el
@@ -139,8 +187,11 @@ npm test        # 72 checks, ~4 s
   `routes/*.js`, y levanta un Express en un puerto efímero.
 - `tests/escrituras.test.js` — 47 checks.
 - `tests/negocio.test.js` — 25 checks, incluye la regresión del contador.
+- `tests/vehiculos-numeracion.test.js` — 16 checks, la regresión de
+  `auth-client.js:270` (código cliente, se evalúa sin navegador).
 
-Se suman scripts `test`, `test:escrituras`, `test:negocio` al `package.json`.
+Scripts en `package.json`: `test`, `test:escrituras`, `test:negocio`,
+`test:numeracion`, `inspect:counters`.
 
 ### Qué quedó cubierto
 
@@ -156,28 +207,37 @@ Se suman scripts `test`, `test:escrituras`, `test:negocio` al `package.json`.
 - **`FieldValue.delete()`:** borra `docsAdjuntos.seguro` sin tocar
   `docsAdjuntos.vtv` (valida la nota de no pasar `undefined` en `update()`).
 - **Roles:** Usuario no crea ni borra nada.
+- **Numeración de vehículos:** regresión del off-by-one de `auth-client.js:270`,
+  derivación del máximo con internos desordenados, formatos raros
+  (`V-01`, `X001`, vacío), counter ya existente, `current` ausente, y secuencia
+  de 5 altas sin duplicados.
 
 ---
 
 ## 4. Deploy
 
-Pusheado a `origin/main` (`d98d8d8`), desplegado por integración Git a
-https://falpat-control-de-vehiculos.vercel.app. Verificado: `/login`,
-`themes.css`, `auth-client.js`, `fp3d.png` → 200; `/api/vehicles` sin token → 401.
+Pusheado a `origin/main` (`d98d8d8`, el fix del catálogo), desplegado por
+integración Git a https://falpat-control-de-vehiculos.vercel.app. Verificado:
+`/login`, `themes.css`, `auth-client.js`, `fp3d.png` → 200; `/api/vehicles` sin
+token → 401.
 
 **Producción nunca se escribió.** El servidor local quedó con
-`DEV_READ_ONLY=true` y todo su tráfico registrado como `Blocked`.
+`DEV_READ_ONLY=true` y todo su tráfico registrado como `Blocked`. La única
+consulta a la base fue de lectura (`npm run inspect:counters`, §2), y no se
+creó ni modificó ningún doc.
 
 ---
 
 ## 5. Pendientes
 
+Resueltos en esta sesión: §2 (los dos off-by-one) y la confirmación de los
+counters. Queda lo siguiente.
+
 | # | Tema | Prioridad |
 |---|------|-----------|
-| 1 | Confirmar el nombre real de los docs de `counters` (§2). Si no coinciden, el fix no llega a ejecutarse. | **Alta** |
-| 2 | Corregir el mismo off-by-one en `getNextVehicleNumber()` (`public/js/auth-client.js:270`) — repite el `V-XXX` de vehículos. Mismo fix de una línea. | **Alta** |
-| 3 | Revisión visual de los 4 temas (pro/claro/industrial/auto) en desktop y móvil. El contrast checker pasa, pero eso no ve un botón mal alineado. | **Alta** |
-| 4 | Limpiar `AGENTS.md` y `documentacion/README.md`: documentan `routes/maintenance.js`, `views/maintenance.ejs`, `public/js/maintenance.js` y la colección `maintenance`, que **no existen** (fueron reemplazados por "services" dentro de vehículos). | Media |
-| 5 | `GET /api/vehicles/services/panel-mock` sin `verifyToken` (solo datos falsos, riesgo bajo). | Baja |
-| 6 | `/service` (server.js:132) chequea `currentUser` a mano en vez de usar `requireAuth`. | Baja |
-| 7 | Armonización visual pendiente: 118 colores inline, 3.185 clases Tailwind sin override, auditar los CSS legacy (`theme-switcher/modern/premium/sutil`, `styles.css`). | Baja |
+| 1 | Revisión visual de los 4 temas (pro/claro/industrial/auto) en desktop y móvil. El contrast checker pasa, pero eso no ve un botón mal alineado. | **Alta** |
+| 2 | Probar en la app real la alta de un vehículo, para confirmar que el `V-055` sale bien y que el counter se crea con 55. Con el fix debería ser correcto, pero la primera alta real es la que crea el doc. | **Alta** |
+| 3 | Limpiar las referencias residuales a `routes/maintenance.js` y a la colección `maintenance` en `documentacion/README.md` (el módulo no existe: fue fusionado con `services`). | Media |
+| 4 | `GET /api/vehicles/services/panel-mock` sin `verifyToken` (solo datos falsos, riesgo bajo). | Baja |
+| 5 | `/service` (server.js:132) chequea `currentUser` a mano en vez de usar `requireAuth`. | Baja |
+| 6 | Armonización visual pendiente: 118 colores inline, 3.185 clases Tailwind sin override, auditar los CSS legacy (`theme-switcher/modern/premium/sutil`, `styles.css`). | Baja |

@@ -96,11 +96,13 @@ scripts/
   subir-documentos.js        # Sube la carpeta PATENTE/ a producción (pull+add+commit+push) → npm run subir:docs
   cargar-vencimientos.js     # Vencimientos desde Excel de PATENTE/Vtos/ → npm run cargar:vencimientos
   generar-control-documentacion.js  # Genera CONTROL_FALTANTES / CONTROL_VENCIDOS en PATENTE/Reportes/ → npm run generar:control
+  inspeccionar-counters.js    # SOLO LECTURA: cómo se llaman los docs de counters y si hay internos duplicados → npm run inspect:counters
 tests/
   fake-firestore.js          # Firestore falso en memoria (permite testear escrituras sin producción)
   helpers.js                 # Lo inyecta en require.cache + monta routes/*.js + reporter
   escrituras.test.js         # Auth, roles, obras, elementos, vehículos → npm run test:escrituras
   negocio.test.js            # Contador del catálogo, recomputeServiceSummary, FieldValue.delete() → npm run test:negocio
+  vehiculos-numeracion.test.js  # Numeración de vehículos (código cliente) → npm run test:numeracion
   README.md                  # Cómo escribir tests + las trampas del fake
 PATENTE/
   {patente}/{tipo}.ext        # Documentos obligatorios versionados (fuente leída por la app en Vercel)
@@ -116,14 +118,27 @@ Subcolecciones: `combustible` (fecha, litros, importe, tipo, km, proveedor), `re
 > **No existe la colección `maintenance` ni `routes/maintenance.js`.** Se
 > fusionó con services: los mantenimientos viven en `vehicles/{id}/services` y
 > se listan vía `GET /api/vehicles/:id/services` y `/api/vehicles/services/panel`.
-> Esta doc mentioning `routes/maintenance.js` está desactualizada.
+> Las referencias a `routes/maintenance.js` que quedan en esta doc y en
+> `documentacion/README.md` son un residuo a limpiar.
 
 ### `users`
 Campos clave: role (Admin|Usuario), displayName, email
 
 ### `counters`
-Doc con campo `current` para auto-increment. OJO: hay **varios docs**, no uno solo. El código busca **`counters/{tipo}`** — o sea `herramienta`, `equipo`, `ropa`, `material`, `vehiculo` (`TIPOS_PREFIJO` en `routes/centros.js` mapea a los prefijos `V/H/E/R/M`).
-**DISCREPANCIA ABIERTA:** esta docHistorically decía `vehicles-{tipo}` y `cat-{prefijo}`, pero el código busca `doc(tipo)`. **Hay que confirmar en Firestore cómo se llaman realmente** (ver `Update_2026.09.29.md` §2): si el nombre real difiere, `doc.exists` siempre da `false`, el counter nunca se crea y el fix `d98d8d8` nunca llega a ejecutarse.
+Doc con campo `current` para auto-increment. Hay **varios docs**, no uno solo. **VERIFICADO contra producción el 2026-09-29 con `npm run inspect:counters` (solo lectura):**
+
+| Doc | `current` | Quién lo usa |
+|-----|-----------|--------------|
+| `counters/herramienta` | 3 | `getNextCatalogNumber()` → prefijo `H` |
+| `counters/equipo` | 3 | ídem, prefijo `E` |
+| `counters/ropa` | 3 | ídem, prefijo `R` |
+| `counters/material` | 2 | ídem, prefijo `M` |
+| `counters/vehiculo` | **NO EXISTE** | solo si se agrega un elemento de tipo vehículo al catálogo |
+| `counters/vehicles` | **NO EXISTE** | `getNextVehicleNumber()` (cliente) |
+
+**La doc histórica estaba mal:** decía `vehicles-{tipo}` y `cat-{prefijo}`. **No existe ningún doc con esos nombres.** El código busca `doc(tipo)` y **acierta**: los 4 counters del catálogo existen, así que la rama de incremento es la que corre y el fix `d98d8d8` sí es efectivo.
+
+**Los 2 counters de vehículo NO existen**, y es el dato importante: la numeración de vehículos **siempre** cae en la rama "derivar del máximo de los internos reales". Por eso nunca hubo duplicados (y por eso el bug llevaba tiempo latente). Pero apenas se cree el doc, a la segunda alta se disparaba — por eso el fix de `auth-client.js:270` era urgente, no cosmético.
 
 ### `centros` (Centros de Trabajo / Obras)
 Doc de catálogo por obra: `nombre`, `estado` (`activa`|`pausada`|`cerrada`), `ubicacion`, `observaciones`, `createdAt`, `updatedAt`.
@@ -141,7 +156,7 @@ Catálogo de elementos no-vehículo: `nombre`, `interno` (con prefijo por tipo),
 
 ## Patrones importantes
 - **Bulk delete:** Los checkboxes se renderizan condicionalmente (`isAdmin()` en JS y `currentUserData?.role === 'Admin'` en EJS). `deleteMultipleWithBackup()` descarga backup JSON antes de eliminar.
-- **Auto-increment:** `getNextVehicleNumber()` — **OJO, es CLIENTE**, está en `public/js/auth-client.js:258` (no en `routes/`), usa transacción en `counters/vehicles` y genera `V-XXX`. **Tiene el mismo off-by-one que el del catálogo** (guarda `{current: max}` y devuelve `max+1`, línea 270) → la segunda alta tras perder el counter repite el `V-XXX`. **No corregido, pendiente.** El de `routes/centros.js` (`getNextCatalogNumber`) sí se corrigió en `d98d8d8`.
+- **Auto-increment:** `getNextVehicleNumber()` — **es CLIENTE**, está en `public/js/auth-client.js:258` (no en `routes/`), usa transacción en `counters/vehicles` y genera `V-XXX`. **Tenía el mismo off-by-one que el del catálogo** (guardaba `{current: max}` y devolvía `max+1`, línea 270) → la segunda alta tras perder el counter repetía el `V-XXX`. **Corregido y cubierto por `npm run test:numeracion`** (16 checks, en `tests/vehiculos-numeracion.test.js`, que extrae la función del archivo por texto y la evalúa con `new Function` contra el db falso). El de `routes/centros.js` (`getNextCatalogNumber`) se corrigió en `d98d8d8`.
 - **Real-time:** Todas las páginas usan `onSnapshot()` de Firestore, no hay recarga manual.
 - **Toast + modales:** `showToast()`, `showModal()`, `hideModal()` en auth-client.js.
 - **Filtros dinámicos:** `populateFilterDropdowns()` llena selects desde los datos reales de Firestore.
@@ -182,11 +197,11 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 
 - **Fix del contador del catálogo (commit `d98d8d8`)** — `getNextCatalogNumber()` en `routes/centros.js` tenía dos ramas que no se coordinaban: la que **inicializa** el counter guardaba `{current: max}` pero devolvía `max+1`, y la que **incrementa** guarda y devuelve el mismo valor. La segunda alta de un tipo repetía el número del primero (`H008, H008, H009...`). Como el `interno` es la **identidad** del elemento del catálogo (es el `value` del `<option>` del select de asignación y la clave de `catMap[c.interno]` para resolver nombre/marca/modelo), un duplicado hacía dos elementos indistinguibles y el segundo pisaba al primero en la resolución. Fix de una línea: guardar `max + 1`. Alcance: solo `POST /api/centros/elementos/disponibles`; en producción la rama corregida ni se ejecuta porque el counter ya existe, así que no hay riesgo de regresión. **OJO: si el nombre real de los docs de `counters` difiere de `doc(tipo)`, el counter nunca se crea y el fix nunca corre** (ver `Update_2026.09.29.md` §2).
 
-- **Harness de tests contra un Firestore falso (`tests/`, nuevo)** — `npm test` = 72 checks en ~4 s, sin tocar producción. `tests/helpers.js` reemplaza `config/firebase.js` en `require.cache` **antes** de montar `routes/*.js`, así que las rutas se ejercitan tal cual están escritas. **Resuelve el problema de probar escrituras:** el `.env` local apunta a la base real y `DEV_READ_ONLY=true` bloquea todo con 403, así que antes no había forma de testear los forms de guardado sin escribir en producción. El harness **no** monta `middleware/dev-readonly.js` a propósito (queda sin efecto igual, porque el `db` es falso). Cubre auth/roles, alta y edición de obras, el **409 de borrar obra** (incluido el legacy sin `fechaDevolucion`), borrado en cascada, `recomputeServiceSummary` y su recálculo al borrar, `FieldValue.delete()` sobre `docsAdjuntos`, y la regresión del contador. **Trampas del fake en `tests/README.md`** — no repetirlas: `clone()` debe preservar `Date`/`Timestamp`; `docRef.collection(sub)` necesita el subPath; `db.collection()` no `db.col()`; `_map()` debe crear la colección si no existe; hay que sembrar los `users` antes de testear porque `ensureFirstAdmin` convierte en Admin al primer usuario que se autentica.
+- **Harness de tests contra un Firestore falso (`tests/`, nuevo)** — `npm test` = 88 checks en ~4 s, sin tocar producción. `tests/helpers.js` reemplaza `config/firebase.js` en `require.cache` **antes** de montar `routes/*.js`, así que las rutas se ejercitan tal cual están escritas. **Resuelve el problema de probar escrituras:** el `.env` local apunta a la base real y `DEV_READ_ONLY=true` bloquea todo con 403, así que antes no había forma de testear los forms de guardado sin escribir en producción. El harness **no** monta `middleware/dev-readonly.js` a propósito (queda sin efecto igual, porque el `db` es falso). Cubre auth/roles, alta y edición de obras, el **409 de borrar obra** (incluido el legacy sin `fechaDevolucion`), borrado en cascada, `recomputeServiceSummary` y su recálculo al borrar, `FieldValue.delete()` sobre `docsAdjuntos`, la regresión del contador del catálogo y la de vehículos. **Trampas del fake en `tests/README.md`** — no repetirlas: `clone()` debe preservar `Date`/`Timestamp`; `docRef.collection(sub)` necesita el subPath; `db.collection()` no `db.col()`; `_map()` debe crear la colección si no existe; hay que sembrar los `users` antes de testear porque `ensureFirstAdmin` convierte en Admin al primer usuario que se autentica.
 
 - **Auditoría 2026-09-29 — sin hallazgos** — `node --check` limpio en rutas, middleware, config, 14 JS de `public/js` y 8 scripts. Las 19 vistas EJS compilan: 0 includes rotos, 0 assets rotos, 0 tags desbalanceados. Los 63 archivos de `public/` responden 200. CSS balanceado (`themes.css` 448/448). Logs limpios, sin restos de debug. **49 rutas backend vs 28 llamadas del frontend → 0 llamadas rotas.** Las 4 rutas sin guarda son legítimas: las 3 de login + `vehicles/services/panel-mock` (solo datos falsos).
 
-- **Pendiente abierto:** confirmar el nombre real de los docs de `counters`; revisión visual de los 4 temas (el punto más ciego — el contrast checker pasa pero no ve un botón mal alineado); limpiar las referencias a `maintenance` (módulo que ya no existe, ver arriba); `panel-mock` sin auth y `/service` sin `requireAdmin`.
+- **Pendiente abierto:** revisión visual de los 4 temas (el punto más ciego — el contrast checker pasa pero no ve un botón mal alineado); limpiar las referencias a `maintenance` (módulo que ya no existe, ver arriba); `panel-mock` sin auth y `/service` sin `requireAdmin`.
 
 - **Vencimientos del dashboard (commit `0ecb9a8`)** — cada tipo de documento se cuenta dos veces en `public/js/dashboard.js`: `vencidos` (fecha pasada) y `proximos` (1 a 30 días). **El número grande de la tarjeta cuenta solo los que están por vencer** (es la lista de trabajo) y los vencidos van aparte con su cantidad. Estado real de la flota: 28 por vencer / 25 vencidos (VTV 2+6, Seguro 26+10, Cédula 0+6, Registro 0+2, DNI 0+1). La documentación sale de la **carpeta `PATENTE/{patente}/`**, no del mapa `documentacion`; el archivo subido desde la web tiene prioridad. Service sigue por fecha y por km. Detalle: `documentacion/Update_2026.09.28.md`.
 
@@ -275,7 +290,9 @@ Corrida rápida: `node --check` en cada JS modificado, llaves CSS balanceadas (4
 - **`DEV_READ_ONLY=true` en `.env`**: en local TODAS las escrituras a Firestore están bloqueadas (usa la misma base que producción). Revisar antes de "probar" funciones de guardado. **Para probar escrituras usar `npm test`** (harness con Firestore falso), NO bajar el read-only: escribiría en la base real.
 - **La guarda read-only es un MIDDLEWARE montado en `server.js` (`app.use('/api/', devReadOnly)`), NO un bloqueo a nivel Firestore.** Un test/harness que monte `routes/x.js` en su propio Express **se saltea la guarda y escribe en la base de producción**. Para probar endpoints de escritura: (a) montar también `middleware/dev-readonly.js` en el harness, o (b) fakear `config/firebase.js` en `require.cache` con un `db` falso y ejercitar la ruta real (así se prueban batches, 409 y validaciones sin riesgo). Con el fake hay que emular a mano los `where`, los lotes (un `commit` borra SOLO los refs del lote) y `doc.exists`.
 - **Un commit por sesión si usás el pre-commit hook**: el hook bloquea cuando `HEAD != origin/main`, así que para commitear un segundo cambio en la misma sesión hay que pushear el primero.
-- **Probar contra un fake también destapa bugs reales**: en la sesión del 2026-09-28 el fake de centros encontró que el `PUT` no recortaba `ubicacion`/`observaciones` (el `POST` sí) y que la tabla de obras no tenía guardas `isAdmin()` (la página es `requireAuth`, no admin-only). En la del 2026-09-29 encontró el off-by-one del contador (§2 del registro) — y de paso, que **el mismo bug está sin corregir en `public/js/auth-client.js:270`** (numeración de vehículos, código cliente, fuera del alcance del harness).
+- **Probar contra un fake también destapa bugs reales**: en la sesión del 2026-09-28 el fake de centros encontró que el `PUT` no recortaba `ubicacion`/`observaciones` (el `POST` sí) y que la tabla de obras no tenía guardas `isAdmin()` (la página es `requireAuth`, no admin-only). En la del 2026-09-29 encontró el off-by-one del contador (§2 del registro) — y de paso, que **el mismo bug estaba sin corregir en `public/js/auth-client.js:270`** (numeración de vehículos, código cliente, fuera del alcance del harness).
+- **El código cliente se puede testear sin navegador:** `getNextVehicleNumber()` es un archivo que se carga por `<script>` (no ESM), así que se **extrae del texto** con regex y se evalúa con `new Function('db', src + 'return fn;')` inyectándole el db falso. Es la técnica de `tests/vehiculos-numeracion.test.js`. Sirve para cualquier función pura de `public/js/` que solo dependa de `db` y de `Date`. **Ojo: las dos ramas del off-by-one (`set current: max` vs `max+1`) solo se distinguen con un assert sobre el valor persistido**, no con el valor devuelto: las dos devuelven el mismo número la primera vez. El assert clave es que la **segunda** llamada dé un número distinto.
+- **`npm run inspect:counters` es SOLO LECTURA** (no escribe en Firestore). Sirve para verificar contra producción cómo se llaman los docs de `counters` y si hay internos duplicados. Re-correrlo si alguien suspects que los counters quedaron desincronizados.
 - **La guarda read-only es un MIDDLEWARE montado en `server.js` (`app.use('/api/', devReadOnly)`), NO un bloqueo a nivel Firestore.** Un test/harness que monte `routes/x.js` en su propio Express **se saltea la guarda y escribe en la base de producción**. Para probar endpoints de escritura: (a) montar también `middleware/dev-readonly.js` en el harness, o (b) fakear `config/firebase.js` en `require.cache` con un `db` falso y ejercitar la ruta real (así se prueban batches, 409 y validaciones sin riesgo). Con el fake hay que emular a mano los `where`, los lotes (un `commit` borra SOLO los refs del lote) y `doc.exists`.
 - **Un commit por sesión si usás el pre-commit hook**: el hook bloquea cuando `HEAD != origin/main`, así que para commitear un segundo cambio en la misma sesión hay que pushear el primero.
 - **Probar contra un fake también destapa bugs reales**: en la sesión del 2026-09-28 el fake de centros encontró que el `PUT` no recortaba `ubicacion`/`observaciones` (el `POST` sí) y que la tabla de obras no tenía guardas `isAdmin()` (la página es `requireAuth`, no admin-only).
