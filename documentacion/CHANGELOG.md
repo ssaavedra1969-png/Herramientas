@@ -1,6 +1,40 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-09-28.
+Cambios registrados por sesión. Última actualización: 2026-09-29.
+
+## 2026-09-29 — Auditoría del proyecto, fix del contador del catálogo y harness de tests
+
+Detalle completo en **`Update_2026.09.29.md`**.
+
+### Fix: el contador del catálogo generaba un `interno` duplicado (commit `d98d8d8`)
+- `getNextCatalogNumber()` (`routes/centros.js`): la rama que **inicializa** el counter guardaba `{current: max}` pero devolvía `max+1`, mientras que la rama que **incrementa** guarda y devuelve el mismo valor. La segunda alta de un tipo repetía el número del primer elemento (`H008, H008, H009...`).
+- El `interno` es la identidad del elemento: es el `value` del select de asignación y la clave de `catMap[c.interno]`. Con duplicado, dos elementos eran indistinguibles y el segundo pisaba al primero en la resolución de nombre/marca/modelo.
+- Fix de una línea: guardar `max + 1`.
+- Alcance: solo `POST /api/centros/elementos/disponibles`. En producción la rama corregida ni se ejecuta (el counter ya existe), así que no hay riesgo de regresión.
+- **Pendiente:** la doc dice que los counters se llaman `cat-{prefijo}` pero el código busca `doc(tipo)`. Si en la base están con el nombre viejo, el counter nunca se crea y el fix no llega a correr. Confirmar.
+
+- **Mismo bug, sin corregir, en la numeración de vehículos:** `getNextVehicleNumber()` (`public/js/auth-client.js:270`, código **cliente**) tiene el off-by-one idéntico — guarda `{current: max}` y devuelve `max+1`, así que la segunda alta repite el `V-XXX`. Fix de una línea, pendiente. De paso confirma que el counter de vehículos se llama `counters/vehicles`.
+
+### Harness de tests contra un Firestore falso (nuevo)
+- `tests/fake-firestore.js` emula la API de Firestore que usa el proyecto; `tests/helpers.js` la inyecta en `require.cache` antes de montar `routes/*.js` y levanta un Express en un puerto efímero.
+- Permite testear **escrituras** sin tocar producción, esquivando el `DEV_READ_ONLY=true` (el `.env` local apunta a la misma base). No hay que bajar el read-only ni hacer backup.
+- 2 suites, 72 checks: `npm test`. Cubren auth/roles, alta y edición de obras, el **409 de borrar obra** (incluido el caso legacy sin `fechaDevolucion`), borrado en cascada por batches, `recomputeServiceSummary` (y su recálculo al borrar), `FieldValue.delete()` sobre `docsAdjuntos`, y la regresión del contador.
+- Detalle y trampas del fake: `tests/README.md`.
+
+### Auditoría general — sin hallazgos
+- `node --check` limpio en rutas, middleware, config, 14 JS de `public/js` y 8 scripts. Las 19 vistas EJS compilan sin includes ni assets rotos. Los 63 archivos de `public/` responden 200. CSS balanceado. Logs limpios.
+- 49 rutas backend vs 28 llamadas del frontend: **0 llamadas rotas**. Las 4 rutas sin guarda son legítimas (las 3 de login + `panel-mock`, que solo devuelve datos falsos).
+
+### Commits
+- `d98d8d8` fix(centros): contador del catalogo generaba un interno duplicado
+
+### Deploys (Vercel, producción)
+- `d98d8d8` → deploy automático por push a `main`
+- Verificado: `/login`, `themes.css`, `auth-client.js`, `fp3d.png` → 200; `/api/vehicles` sin token → 401.
+- Alias: https://falpat-control-de-vehiculos.vercel.app
+
+### Resguardo
+- **Producción nunca se escribió.** Toda la verificación de escrituras corrió contra el Firestore falso. El servidor local quedó con `DEV_READ_ONLY=true` y todo su tráfico registrado como `Blocked`. No se requirió backup de datos.
 
 ## 2026-09-28 — Vencimientos del dashboard, Excel de control de documentación y editar/eliminar Obras
 

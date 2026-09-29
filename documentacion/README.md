@@ -38,8 +38,7 @@
 | `middleware/auth.js` | `verifyToken`, `requireAdmin`, `loadUser` (define `res.locals.*` y `res.locals.mockMode`), `requireAuth`, `requireAdminPage`, `_baseVars`. |
 | `routes/auth.js` | Login/sesión Firebase Auth + cookies. |
 | `routes/vehicles.js` | CRUD vehículos, subcolecciones combustible/repuestos, **panel services** (`/services/panel`, `/services/panel-mock`), documentos (`/documentos/*`), **reporte global de documentación** (`/api/vehicles/documentos/reporte`, lee todo `PATENTE/`), import/export. |
-| `routes/centros.js` | Centros de Trabajo / Obras: catálogo, crear, **editar (PUT: nombre/ubicación/estado/observaciones)**, **eliminar (DELETE: borra subcolección `elementos` + doc, con 409 si quedan elementos sin devolver)**, asignar/devolver elementos. |
-| `routes/maintenance.js` | CRUD mantenimientos. |
+| `routes/centros.js` | Centros de Trabajo / Obras: catálogo de elementos + contadores, crear, **editar (PUT: nombre/ubicación/estado/observaciones)**, **eliminar (DELETE: borra subcolección `elementos` + doc, con 409 si quedan elementos sin devolver)**, asignar/devolver elementos, `collectionGroup('elementos')` para la pestaña Elementos. |
 | `routes/admin.js` | Dashboard stats, reportes, export Excel, backup, `latest-services`. |
 | `lib/github-docs.js` | Lectura de la carpeta `PATENTE/` vía API de GitHub: `listarPatenteGlobal()` (todo el árbol en 1 request), `cambiosDesde()`, `esDeTipo()`. |
 | `scripts/subir-documentos.js` | Sube `PATENTE/` a producción (pull+add+commit+push, solo esa carpeta). → `npm run subir:docs` |
@@ -49,7 +48,7 @@
 ### Frontend (EJS + JS cliente)
 | Archivo | Contenido |
 |---------|-----------|
-| `views/*.ejs` | Páginas: `dashboard`, `vehicles`, `vehicle-detail`, `maintenance`, `reports`, `admin`, `service`, `login`, `vehicle-qr-public`, `carpeta-docs`, `fichas-taller-bulk`. |
+| `views/*.ejs` | Páginas: `dashboard`, `vehicles`, `vehicle-detail`, `reports`, `admin`, `centros`, `service`, `login`, `scanner`, `vehicle-qr-public`, `carpeta-docs`, `qr-sticker`, `qr-stickers-bulk`, `fichas-taller-bulk`. **No existe `maintenance.ejs`** (ver nota abajo). |
 | `views/partials/head.ejs` | `<head>` con SDKs CDN (Tailwind, Firebase, Chart.js, SweetAlert2, PapaParse, XLSX). |
 | `views/partials/sidebar.ejs` | Menú lateral + menú móvil + `mobile-menu.ejs`. |
 | `views/partials/footer.ejs` | Firebase init + carga de `auth-client.js` y demás scripts del footer. |
@@ -57,13 +56,28 @@
 | `public/js/dashboard.js` | Dashboard: clock, search, modales alertas, fleet health, empresas, alertas VTV/choferes, últimos services. |
 | `public/js/vehicles.js` | CRUD vehículos, bulk delete, filtros, import CSV/Excel. |
 | `public/js/vehicle-detail.js` | Combustible + repuestos CRUD. |
-| `public/js/maintenance.js` | CRUD mantenimientos. |
 | `public/js/service.js` | Página Service: tabla sortable, filtros, vencimientos. **Usa `serviceDaysUntil()`** (no colisiona con auth-client). |
 | `public/js/reports.js` | Reportes financieros. |
 | `public/js/admin.js` | Roles de usuario. |
 | `public/js/centros.js` | Obras: tabla con filtros, pestaña Catálogo, asignar/devolver, editar y eliminar. |
 | `public/js/theme-engine.js` | ThemeEngine v3 (3 temas visuales animados). |
 | `public/css/theme-*.css` | Variables de temas del ThemeEngine. |
+
+### Tests
+| Ruta | Contenido |
+|------|-----------|
+| `tests/fake-firestore.js` | Firestore falso en memoria (la API que usa el proyecto). Permite testear escrituras sin tocar producción. |
+| `tests/helpers.js` | Inyecta el fake en `require.cache` antes de montar `routes/*.js` + reporter. |
+| `tests/escrituras.test.js` | Auth, roles, obras, elementos, vehículos (47 checks). → `npm run test:escrituras` |
+| `tests/negocio.test.js` | Contador del catálogo, `recomputeServiceSummary`, `FieldValue.delete()` (25 checks). → `npm run test:negocio` |
+| `tests/README.md` | Cómo escribir tests nuevos + **las trampas del fake ya pisadas**. |
+
+> **Nota — el módulo `maintenance` ya no existe.** Se documentaba
+> `routes/maintenance.js`, `views/maintenance.ejs`, `public/js/maintenance.js` y
+> la colección Firestore `maintenance`, pero **ninguno está en el repo**: los
+> mantenimientos se fusionaron con los services y viven en
+> `vehicles/{id}/services`. Las referencias quedaron en `AGENTS.md` y en las
+> tablas de arriba (se marked ✗ donde se pudo); pendiente terminar la limpieza.
 
 ### Documentación vehicular
 | Ruta | Contenido |
@@ -84,10 +98,9 @@
 | `vehicles` | Vehículos (patente, interno, marca, vtv, seguro, documentacion, docsAdjuntos, ...). |
 | `vehicles/{id}/combustible` | Cargas de combustible. |
 | `vehicles/{id}/repuestos` | Repuestos usados. |
-| `vehicles/{id}/services` | **Services realizados** (fecha, tipo, km, intervaloKm, proximoKm, proximoFecha, costo, proveedor). |
-| `maintenance` | Mantenimientos (Mecánico/Legal). |
+| `vehicles/{id}/services` | **Services / mantenimientos** (fecha, tipo, km, intervaloKm, proximoKm, proximoFecha, costo, proveedor). Reemplaza a la vieja colección `maintenance`. |
 | `users` | Usuarios (role Admin/Usuario, displayName, email). |
-| `counters` | `current` para auto-increment de números internos (`V-XXXXX`, y `cat-{prefijo}` para el catálogo de elementos). |
+| `counters` | `current` para auto-increment de números internos. OJO: hay **varios docs**, no uno solo — el código busca `counters/{tipo}` (`herramienta`, `equipo`, `ropa`, `material`, `vehiculo`) para el catálogo de elementos, con prefijo `V/H/E/R/M`. **Discrepancia sin resolver:** la doc histórica habla de `cat-{prefijo}`; hay que confirmar en la base cuál es el nombre real (ver `Update_2026.09.29.md` §2). |
 | `centros` | Obras del Centro de Trabajo + subcolección `elementos/` (asignaciones, con `fechaDevolucion` "" = pendiente). |
 | `elementos_catalogo` | Catálogo de elementos no-vehículo (herramientas, ropa, equipos, materiales) que se asignan a las obras. |
 | `config` | Config global: `carpetaDocs.ultimaGeneracion`, etc. |
@@ -141,3 +154,4 @@ Si el push falla: `git pull origin main` y repetir.
 - **Pre-commit hook** bloquea el commit si `HEAD != origin/main` (también si quedaron commits sin pushear). Solución: hacer `git push` del commit pendiente antes de commitear de nuevo.
 - **Backups** van a `backups/` (en `.gitignore`, no se suben).
 - **Índices Firestore:** los `collectionGroup` con `orderBy` exigen índice compuesto manual. Preferir traer sin orden y ordenar en memoria.
+- **Para probar escrituras:** `npm test` (ver `tests/README.md`). Monta las rutas reales contra un Firestore falso, así que no hay que bajar `DEV_READ_ONLY` ni arriesgar la base de producción.
