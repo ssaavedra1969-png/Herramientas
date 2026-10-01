@@ -60,7 +60,7 @@
 | `public/js/vehicles.js` | CRUD vehículos, bulk delete, filtros, import CSV/Excel. |
 | `public/js/vehicle-detail.js` | Combustible + repuestos CRUD. |
 | `public/js/service.js` | Página Service: tabla sortable, filtros, vencimientos. **Usa `serviceDaysUntil()`** (no colisiona con auth-client). |
-| `public/js/reports.js` | Reportes financieros. |
+| `public/js/reports.js` | Página Reportes: **3 cards apiladas** - `Flota` (tabla de la flota con columnas visibles), `Documentacion` (checklist por vehículo) y `Vencimientos` (nuevo). Ver "Reportes / Vencimientos" más abajo. |
 | `public/js/admin.js` | Roles de usuario. |
 | `public/js/centros.js` | Obras: tabla con filtros, pestaña Catálogo, asignar/devolver, editar y eliminar. |
 | `public/js/theme.js` | Selector de tema persistente (**4 temas**: `pro`, `claro`, `industrial`, `auto`). El color de la barra del navegador se lee del CSS, no hardcodeado. |
@@ -151,10 +151,37 @@ Si el push falla: `git pull origin main` y repetir.
 |-------------|--------------|
 | Optimizador de adjuntos | Proyecto aparte `C:\AI\Antigravity\FALPAT srl\Optimizaciones` → `iniciar.bat` → http://localhost:8642. No toca Firebase, solo `PATENTE/`. |
 
+### Reportes / Vencimientos
+Página `GET /reports` (**solo Admin**, `requireAdminPage`). Son **3 cards apiladas**, no tabs: `Flota`, `Documentación` y `Vencimientos` (`#sec-vencimientos`).
+
+Todo sale de un único endpoint: `GET /api/admin/report/flota` → `routes/admin.js`, que por vehículo devuelve los campos base (`patente`, `interno`, `tipo`, `centroTrabajo`, `chofer`, `empresa`, `estado*`, ...) y, por cada uno de los **8 tipos** (`vtv`, `seguro`, `service`, `matafuego`, `dni`, `registro`, `cedula`, `titulo`), un par `<tipo>Fecha` / `<tipo>Dias` (`dias` negativo = vencido). Para cédula suma `cedulaNoVence`.
+
+| Pieza | Dónde |
+|-------|-------|
+| Resolver fechas | `routes/admin.js` → `fechaYMD()`, `diasHastaYMD()`, `fechaDocVenc(v, tipo)`, `docNoVence(v, tipo)`, `resumenService(v)`, `CAMPOS_TOP` |
+| Filtros + tabla + export | `public/js/reports.js` → `VENC_TIPOS`, `vencFiltrada()`, `renderVenc()`, `sortVencBy()`, `filasVencExport()`, `vencColsExport()`, `exportVencExcel()`, `exportVencPDF()`, `printVenc()`, `limpiarFiltrosVenc()` |
+| Card + CSS de impresión | `views/reports.ejs` → `#sec-vencimientos`, clase `body.printing-venc` |
+
+**Filtros** (se combinan): ventana (15/30/60/90/180/365 días), documento, estado (`todos` / `vencidos` / `proximos` / `15`), empresa, centro de trabajo, tipo de vehículo y búsqueda de texto.
+
+**Reglas de la tabla:**
+- Solo entran vehículos con **al menos un documento dentro de la ventana**; los días negativos (ya vencidos) también entran.
+- El filtro por documento restringe a ese tipo; `Todos` considera los 8.
+- `estado=15` = tiene **algún** documento entre 0 y 15 días, aunque tenga otro vencido (si tiene algo vencido hay que ir igual).
+- Orden: cualquier columna es clicable. Las de documento (`v:vtv`, ...) ordenan por los días de ese documento; los vehículos que **no** tienen ese documento se van al final (en ascendente) con `99999`. La columna `urgencia` es el mínimo de días de todos los documentos.
+- Stats: **Vehículos**, **Vencidos**, **≤ 15 días**, **Docs a vencer** (suma de documentos, no de vehículos: un vehículo con VTV y Seguro a la vez cuenta 2).
+
+**Impresión:** `printVenc()` pone `body.printing-venc`, que oculta el resto de la página (sidebar, las otras 2 cards, botones) y fuerza `@page { size: A4 landscape }`; se limpia en `afterprint`. Exporta a **Excel** (XLSX) y **PDF** (jsPDF landscape, 23 columnas: 6 base + fecha/días por tipo + urgencia).
+
+> **Ojo:** la página es `requireAdminPage` pero el ítem "Reportes" del menú se muestra a usuarios básicos. O se oculta el ítem o se habilita el acceso; hoy el endpoint responde 403 a un Usuario.
+
 ---
 
 ## 5. Consejos para la IA / Quirks aprendidos
 
+- **Las fechas de documento viven en 3 esquemas distintos y conviven.** En `vehicles` una misma fecha puede estar en (a) el mapa legacy `vtv.fechaVencimiento` / `seguro.fechaVencimiento` / `matafuego.fechaVto`, (b) un campo plano de vehículo (`proximoServiceFecha`), o (c) el mapa moderno `documentacion.<tipo>.fechaVencimiento`. `routes/admin.js` resuelve con `fechaDocVenc(v, tipo)` y el orden es **legacy -> plano -> moderno**; `docNoVence(v, tipo)` interpreta `documentacion.<tipo>.noVence === true`. **No leer un solo esquema:** hoy hay 54 vehículos y ninguno tiene fecha en los 8 tipos a la vez (VTV 39, Seguro 37, Service 13, Matafuego 2, DNI 5, Registro 3, Cédula 6+Título 0).
+- **Service no es un documento, es derivado.** `fechaDocVenc` no lo cubre: el endpoint usa `proximoServiceFecha` (13 vehículos) con fallback al `proximoFecha` más cercano dentro de `serviceSummary` (18 vehículos). Ojo con los `proximoFecha: null` de `serviceSummary`: significan "sin próxima fecha calculada", no "vence hoy".
+- **`documentacion.<tipo>.noVence`** marca documentos que no caducan (caso típico: cédulas). Un `noVence: true` con `fechaVencimiento` presente NO cuenta como `noVence`: manda la fecha.
 - **Colisión de helpers globales:** `auth-client.js` (cargado en el footer) define helpers globales como `daysUntil()`. Cualquier página JS que cargue antes y defina el mismo nombre es **pisada**. Usar nombres específicos del módulo (ej: `serviceDaysUntil`) para datos serializados del API (`{_seconds}`).
 - **Timestamps del API** llegan al cliente como `{"_seconds":..., "_nanoseconds":0}`; los del SDK web tienen `.toDate()`. `toMs()` en service.js maneja ambos.
 - **Server local no recarga en caliente** cambios de `server.js`/rutas (solo vistas y estáticos). Tras tocar rutas: matar proceso del puerto 3000 y relanzar.

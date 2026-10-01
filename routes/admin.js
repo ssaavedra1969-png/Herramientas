@@ -447,6 +447,52 @@ function diasHastaYMD(ymd) {
   return Math.round((vto - h) / 86400000);
 }
 
+// En Firestore conviven tres esquemas para la misma fecha de vencimiento:
+//   legacy anidado : v.vtv.fechaVencimiento, v.seguro.fechaVencimiento, v.matafuego.fechaVto
+//   campo top-level: v.vencimientoDNI, v.vencimientoRegistro, v.vencimientoTitulo, v.vencimientoVTV
+//   moderno generico: v.documentacion.<tipo>.fechaVencimiento
+// Por eso hay que leer los tres: si solo se mira uno, el reporte muestra "sin fecha"
+// para vehiculos que si la tienen cargada. Mismo criterio que getDocVencimiento()
+// en public/js/vehicle-detail.js.
+const CAMPOS_TOP = { vtv: 'vencimientoVTV', seguro: 'vencimientoSeguro', registro: 'vencimientoRegistro', dni: 'vencimientoDNI', titulo: 'vencimientoTitulo', cedula: 'vencimientoCedula' };
+
+function fechaDocVenc(v, tipo) {
+  const doc = (v.documentacion && v.documentacion[tipo]) || null;
+  const legacy = (tipo === 'vtv' || tipo === 'seguro' || tipo === 'matafuego') ? (v[tipo] || null) : null;
+  const top = CAMPOS_TOP[tipo] ? v[CAMPOS_TOP[tipo]] : null;
+  const cand =
+    (legacy && (legacy.fechaVencimiento || legacy.fechaVto)) ||
+    top ||
+    (doc && doc.fechaVencimiento) ||
+    null;
+  return fechaYMD(cand);
+}
+
+// documentacion.<tipo>.noVence === true => el documento no caduca (caso tipico: cedulas)
+function docNoVence(v, tipo) {
+  const doc = (v.documentacion && v.documentacion[tipo]) || null;
+  return !!(doc && doc.noVence === true && !doc.fechaVencimiento);
+}
+
+// Service no es un documento: es derivado. proximoServiceFecha es el campo que
+// usa el resto de la app, y como fallback el proximoFecha mas cercano entre los
+// tipos de serviceSummary (que hay mas datos que en el campo de vehiculo:
+// 18 vehiculos contra 13).
+function resumenService(v) {
+  const s = v.serviceSummary;
+  if (!s || typeof s !== 'object') return { fecha: null, km: '' };
+  let fecha = null, km = '';
+  Object.keys(s).forEach(t => {
+    const e = s[t] || {};
+    const f = fechaYMD(e.proximoFecha);
+    if (f && (fecha === null || f < fecha)) {
+      fecha = f;
+      km = (e.proximoKm === null || e.proximoKm === undefined || e.proximoKm === '') ? '' : e.proximoKm;
+    }
+  });
+  return { fecha, km };
+}
+
 router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
   try {
     const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
@@ -458,10 +504,18 @@ router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
       const docs = {};
       DOC_TIPOS_R.forEach(t => { docs[t] = !!presentes[t] || !!subidos[t]; });
       const faltantes = DOC_TIPOS_R.filter(t => !docs[t]).length;
-      const vtvFecha = fechaYMD(v.vtv && v.vtv.fechaVencimiento ? v.vtv.fechaVencimiento : null);
-      const seguroFecha = fechaYMD(v.seguro && v.seguro.fechaVencimiento ? v.seguro.fechaVencimiento : null);
-      const registroFecha = fechaYMD(v.vencimientoRegistro);
-      const dniFecha = fechaYMD(v.vencimientoDNI);
+      // Los 8 tipos que vencen. service es derivado (proximoServiceFecha).
+      const vtvFecha      = fechaDocVenc(v, 'vtv');
+      const seguroFecha   = fechaDocVenc(v, 'seguro');
+      const registroFecha = fechaDocVenc(v, 'registro');
+      const dniFecha      = fechaDocVenc(v, 'dni');
+      const tituloFecha   = fechaDocVenc(v, 'titulo');
+      const cedulaFecha   = fechaDocVenc(v, 'cedula');
+      const cedulaNoVence = docNoVence(v, 'cedula');
+      const matafuegoFecha = fechaDocVenc(v, 'matafuego');
+      const serviceFecha  = fechaYMD(v.proximoServiceFecha) || resumenService(v).fecha;
+      const serviceKmRaw = (v.proximoServiceKm === null || v.proximoServiceKm === undefined || v.proximoServiceKm === '') ? resumenService(v).km : v.proximoServiceKm;
+      const serviceKm = serviceKmRaw;
       return {
         id: d.id,
         interno: v.interno || '',
@@ -497,6 +551,16 @@ router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
         registroDias: diasHastaYMD(registroFecha),
         dniFecha,
         dniDias: diasHastaYMD(dniFecha),
+        tituloFecha,
+        tituloDias: diasHastaYMD(tituloFecha),
+        cedulaFecha,
+        cedulaDias: diasHastaYMD(cedulaFecha),
+        cedulaNoVence,
+        matafuegoFecha,
+        matafuegoDias: diasHastaYMD(matafuegoFecha),
+        serviceFecha,
+        serviceDias: diasHastaYMD(serviceFecha),
+        serviceKm,
         docs,
         faltantes
       };

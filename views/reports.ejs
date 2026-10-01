@@ -40,6 +40,33 @@
   .filtro-chip .x { cursor: pointer; color: #fca5a5; font-weight: 800; margin-left: 2px; }
   .filtro-chip .x:hover { color: #ef4444; }
   .col-legend { display: inline-flex; align-items: center; justify-content: center; gap: 2px; }
+
+  /* ===== IMPRESIÓN DE VENCIMIENTOS =====
+     Al imprimir solo sale la sección Vencimientos: sin sidebar, sin menús,
+     sin los botones ni los selects de filtros, y la tabla sin scroll para
+     que entre completa en varias páginas. Se activa con body.printing-venc. */
+  @page { size: landscape; margin: 10mm; }
+  body.printing-venc { background: #fff !important; }
+  body.printing-venc aside,
+  body.printing-venc #mobile-menu,
+  body.printing-venc #mobile-menu-btn { display: none !important; }
+  body.printing-venc main { overflow: visible !important; padding: 0 !important; }
+  body.printing-venc .rpt-card:not(#sec-vencimientos) { display: none !important; }
+  body.printing-venc #sec-vencimientos { border: none !important; background: #fff !important; box-shadow: none !important; padding: 0 !important; border-radius: 0 !important; }
+  body.printing-venc #sec-vencimientos .rpt-glow::after { display: none !important; }
+  body.printing-venc #sec-vencimientos h2 { color: #000 !important; }
+  body.printing-venc #sec-vencimientos p { color: #444 !important; }
+  body.printing-venc #sec-vencimientos .rpt-filters,
+  body.printing-venc #sec-vencimientos .rpt-stat,
+  body.printing-venc #sec-vencimientos .rpt-btn { display: none !important; }
+  body.printing-venc #sec-vencimientos .overflow-x-auto { overflow: visible !important; max-height: none !important; border: none !important; }
+  body.printing-venc .rpt-table th { background: #e5e7eb !important; color: #000 !important; position: static !important; border-bottom: 1px solid #999 !important; }
+  body.printing-venc .rpt-table td { color: #000 !important; border-bottom: 1px solid #ddd !important; }
+  body.printing-venc .rpt-table tr { page-break-inside: avoid; }
+  body.printing-venc .text-red-400 { color: #b91c1c !important; }
+  body.printing-venc .text-yellow-400 { color: #b45309 !important; }
+  body.printing-venc .text-teal-300 { color: #0f766e !important; }
+  body.printing-venc .text-\[\#8b9bb4\] { color: #666 !important; }
 </style>
 <div class="flex h-screen overflow-hidden">
   <%- include('partials/sidebar', { page: 'reports' }) %>
@@ -218,6 +245,100 @@
             <tbody id="doc-table"></tbody>
           </table>
           <div id="doc-vacio" class="hidden text-center py-10 text-[#4a5568] text-sm">Sin resultados para los filtros aplicados</div>
+        </div>
+      </div>
+
+      <!-- ============ SECCIÓN VENCIMIENTOS ============ -->
+      <div class="rpt-card rpt-glow" id="sec-vencimientos">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div class="flex items-center gap-3">
+            <div class="rpt-ico rpt-ico-gold">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <h2 class="text-lg font-extrabold title-page">Vencimientos</h2>
+              <p class="text-[#6b7280] text-xs">Qué está por vencer o ya venció: VTV, Seguro, Service, Matafuego, DNI, Registro, Cédula y Título</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="exportVencExcel()" class="rpt-btn">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Excel
+            </button>
+            <button onclick="exportVencPDF()" class="rpt-btn" style="border-color:rgba(239,68,68,0.3);color:#fca5a5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              PDF
+            </button>
+            <button onclick="printVenc()" class="rpt-btn rpt-btn-gold">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z"/></svg>
+              Imprimir
+            </button>
+          </div>
+        </div>
+
+        <div class="rpt-filters mb-3">
+          <div class="flex flex-wrap items-end gap-2 flex-1">
+            <div class="flex flex-col">
+              <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Buscar</label>
+              <input type="text" id="vc-buscar" class="rpt-input" style="min-width:150px" placeholder="Patente, interno…" oninput="setVencSearch(this.value)">
+            </div>
+            <div class="flex flex-col">
+              <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Vence en</label>
+              <select id="vc-ventana" class="rpt-input rpt-input-sm" onchange="setVencVentana(this.value)">
+                <option value="7">7 días</option>
+                <option value="15">15 días</option>
+                <option value="30" selected>30 días</option>
+                <option value="60">60 días</option>
+                <option value="90">90 días</option>
+                <option value="180">180 días</option>
+                <option value="365">1 año</option>
+                <option value="99999">Sin límite</option>
+              </select>
+            </div>
+            <div class="flex flex-col">
+              <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Documento</label>
+              <select id="vc-doc" class="rpt-input rpt-input-sm" onchange="setVencDoc(this.value)"></select>
+            </div>
+            <div class="flex flex-col">
+              <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Estado</label>
+              <select id="vc-estado" class="rpt-input rpt-input-sm" onchange="setVencEstado(this.value)">
+                <option value="todos">Todos</option>
+                <option value="vencidos">Ya vencidos</option>
+                <option value="proximos">Por vencer</option>
+                <option value="15">Vencen en 15 días</option>
+              </select>
+            </div>
+            <div class="flex flex-col">
+              <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Empresa</label>
+              <select id="vc-empresa" class="rpt-input rpt-input-sm" onchange="setVencEmpresa(this.value)"></select>
+            </div>
+            <div class="flex flex-col">
+              <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Centro de trabajo</label>
+              <select id="vc-centro" class="rpt-input rpt-input-sm" onchange="setVencCentro(this.value)"></select>
+            </div>
+            <div class="flex flex-col">
+              <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Tipo</label>
+              <select id="vc-tipo" class="rpt-input rpt-input-sm" onchange="setVencTipo(this.value)"></select>
+            </div>
+            <div class="flex flex-col justify-end">
+              <button onclick="limpiarFiltrosVenc()" class="rpt-btn"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>Limpiar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider font-medium">Vehículos</p><p class="text-xl font-bold text-[#f3f4f6] mt-1" id="vc-total">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider font-medium">Vencidos</p><p class="text-xl font-bold text-red-400 mt-1" id="vc-vencidos">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider font-medium">≤ 15 días</p><p class="text-xl font-bold text-yellow-400 mt-1" id="vc-15">-</p></div>
+          <div class="rpt-stat"><p class="text-[#6b7280] text-[11px] uppercase tracking-wider font-medium">Docs a vencer</p><p class="text-xl font-bold text-[#2563EB] mt-1" id="vc-docs">-</p></div>
+        </div>
+
+        <div class="overflow-x-auto max-h-[520px] overflow-y-auto rounded-lg" style="border:1px solid rgba(255,255,255,0.06)">
+          <table class="rpt-table">
+            <thead id="vc-thead"></thead>
+            <tbody id="vc-table"></tbody>
+          </table>
+          <div id="vc-vacio" class="hidden text-center py-10 text-[#4a5568] text-sm">Sin vencimientos para los filtros aplicados</div>
         </div>
       </div>
 
