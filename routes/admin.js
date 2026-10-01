@@ -5,6 +5,7 @@ const fs = require('fs');
 const { db, admin } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { toDate } = require('../lib/utils');
+const gh = require('../lib/github-docs');
 
 router.get('/users', verifyToken, requireAdmin, async (req, res) => {
   try {
@@ -411,6 +412,20 @@ const DOC_TIPOS_R = ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
 const DOC_EXT_PRIORIDAD_R = ['pdf', 'jpg', 'jpeg', 'png'];
 const DOCS_DIR_R = path.join(process.cwd(), 'PATENTE');
 
+// Caché del árbol de PATENTE/ en el repo. Es 1 request para los 54 camiones.
+const TTL_ARBOL_R = 10 * 60 * 1000;
+let cacheArbolR = { t: 0, valor: undefined };
+
+async function arbolPatenteR() {
+  const ahora = Date.now();
+  if (cacheArbolR.valor !== undefined && ahora - cacheArbolR.t < TTL_ARBOL_R) return cacheArbolR.valor;
+  const valor = await gh.listarPatenteGlobal().catch(() => null);
+  cacheArbolR = { t: ahora, valor };
+  return valor;
+}
+
+function invalidarArbolPatenteR() { cacheArbolR = { t: 0, valor: undefined }; }
+
 function scanDocumentosReporte(patente) {
   const presentes = {};
   try {
@@ -429,6 +444,28 @@ function scanDocumentosReporte(patente) {
     }
   } catch (e) { /* FS readonly en Vercel: sólo afecta a la carpeta local */ }
   return presentes;
+}
+
+/* La carpeta PATENTE/ NO está en el deploy de Vercel (.vercelignore la excluye), así
+   que el scan del disco local SIEMPRE sale vacío en producción y el reporte marcaba
+   "faltan documentos" en los 54 camiones. La fuente real es el repo (GitHub), que es
+   donde se versionan los PDFs: un request del árbol completo alcanza para todos. */
+async function docsDePatenteR(patente, arbol) {
+  const locales = scanDocumentosReporte(patente);
+  let remotos = [];
+  if (arbol) {
+    remotos = arbol.get(patente) || [];
+  } else {
+    // Sin token o árbol truncado: se le pregunta carpeta por carpeta.
+    remotos = await gh.listarCarpeta(patente).catch(() => []);
+  }
+  const out = {};
+  DOC_TIPOS_R.forEach(t => {
+    const local = !!locales[t];
+    const remoto = (remotos || []).some(n => gh.esDeTipo(n, t));
+    out[t] = local || remoto;
+  });
+  return out;
 }
 
 function fechaYMD(val) {
@@ -495,15 +532,24 @@ function resumenService(v) {
 
 router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
   try {
+    const arbol = await arbolPatenteR();
     const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
-    const vehicles = snap.docs.map(d => {
+    const preliminares = snap.docs.map(d => {
       const v = d.data();
       const patente = (v.patente || '').toUpperCase();
-      const presentes = scanDocumentosReporte(patente);
-      const subidos = v.docsAdjuntos || {};
-      const docs = {};
-      DOC_TIPOS_R.forEach(t => { docs[t] = !!presentes[t] || !!subidos[t]; });
-      const faltantes = DOC_TIPOS_R.filter(t => !docs[t]).length;
+      return { doc: d, v, patente };
+    });
+    for (const p of preliminares) {
+      p.docs = await docsDePatenteR(p.patente, arbol);
+      const subidos = p.v.docsAdjuntos || {};
+      DOC_TIPOS_R.forEach(t => { p.docs[t] = p.docs[t] || !!subidos[t]; });
+      p.faltantes = DOC_TIPOS_R.filter(t => !p.docs[t]).length;
+    }
+    const vehicles = preliminares.map(p => {
+      const v = p.v;
+      const patente = p.patente;
+      const docs = p.docs;
+      const faltantes = p.faltantes;
       // Los 8 tipos que vencen. service es derivado (proximoServiceFecha).
       const vtvFecha      = fechaDocVenc(v, 'vtv');
       const seguroFecha   = fechaDocVenc(v, 'seguro');
@@ -517,7 +563,7 @@ router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
       const serviceKmRaw = (v.proximoServiceKm === null || v.proximoServiceKm === undefined || v.proximoServiceKm === '') ? resumenService(v).km : v.proximoServiceKm;
       const serviceKm = serviceKmRaw;
       return {
-        id: d.id,
+        id: p.doc.id,
         interno: v.interno || '',
         patente: v.patente || '—',
         marca: v.marca || '',

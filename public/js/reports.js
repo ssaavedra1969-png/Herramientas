@@ -59,7 +59,7 @@ let docFilters = { term: '', falta: '', estado: 'todos', empresa: '', centro: ''
 let docSortKey = 'faltantes';
 let docSortDir = 'desc';
 let vencFilters = { term: '', ventana: 30, doc: '', estado: 'todos', empresa: '', centro: '', tipo: '' };
-let vencSortKey = 'urgencia';
+let vencSortKey = 'fecha';
 let vencSortDir = 'asc';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -85,10 +85,45 @@ async function cargarFlota() {
     llenarPanelColumnas();
     cambiarCampoFiltro();
     renderTodo();
+    actualizarChipsSecciones();
   } catch (e) {
     console.error('Error cargando reportes:', e);
     showToast('Error al cargar reportes: ' + e.message, 'error');
   }
+}
+
+/* Las 3 secciones de Reportes arrancan contraídas: se ve la página entera de un
+   vistazo y se abre la que interesa. El chip del encabezado resume cuántos hay. */
+function toggleSeccion(id) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  const colapses = card.classList.toggle('collapsed');
+  const btn = card.querySelector('.rpt-toggle');
+  if (btn) btn.setAttribute('aria-expanded', colapses ? 'false' : 'true');
+  const chip = document.getElementById('chip-' + id.replace('sec-', ''));
+  if (chip) chip.classList.toggle('rpt-chip-alerta', colapses && chip.dataset.alerta === '1');
+}
+
+function actualizarChipsSecciones() {
+  const flotas = fleet.length;
+  const vencs = vencFiltrada().length;
+  const vencidos = vencFiltrada().filter(r => r.dias < 0).length;
+  const docsIncompletos = fleet.filter(v => (v.faltantes || 0) > 0).length;
+
+  const poner = (id, txt, alerta) => {
+    const el = document.getElementById('chip-' + id);
+    if (!el) return;
+    el.textContent = txt;
+    el.dataset.alerta = alerta ? '1' : '0';
+    el.classList.toggle('rpt-chip-alerta', !!alerta);
+  };
+  poner('flota', flotas + (flotas === 1 ? ' vehículo' : ' vehículos'), false);
+  poner('documentacion', docsIncompletos
+    ? docsIncompletos + ' con faltantes'
+    : 'todos completos', docsIncompletos > 0);
+  poner('vencimientos', vencidos
+    ? vencs + ' en ventana · ' + vencidos + ' vencidos'
+    : vencs + ' en ventana', vencidos > 0);
 }
 
 function campoObjeto(key) { return FIELDS.find(f => f.key === key); }
@@ -317,6 +352,7 @@ function renderTodo() {
   renderFlota();
   renderDoc();
   renderVenc();
+  actualizarChipsSecciones();
 }
 
 function renderFlota() {
@@ -589,6 +625,10 @@ function exportDocPDF() {
    tres esquemas de Firestore (legacy anidado, campo top-level y
    documentacion.<tipo>) y devuelve <tipo>Fecha en YYYY-MM-DD mas <tipo>Dias.
    service es derivado de proximServiceFecha y no tiene esquema legacy. */
+/* Solo los documentos que TIENEN fecha de vencimiento. El título va aparte: no
+   vence nunca (el PDF dice que "da cuenta de la situación registral a la fecha de su
+   último asiento"), así que su control es "¿está o no está?", y eso vive en la
+   sección Documentación, no acá. */
 const VENC_TIPOS = [
   { k: 'vtv',       label: 'VTV' },
   { k: 'seguro',    label: 'Seguro' },
@@ -596,19 +636,34 @@ const VENC_TIPOS = [
   { k: 'matafuego', label: 'Matafuego' },
   { k: 'dni',       label: 'DNI' },
   { k: 'registro',  label: 'Registro' },
-  { k: 'cedula',    label: 'Cedula' },
-  { k: 'titulo',    label: 'Titulo' }
+  { k: 'cedula',    label: 'Cedula' }
 ];
+
+
+const normTxt = s => String(s == null ? '' : s).trim().toLowerCase();
+
+// La flota tiene valores que solo difieren en mayusculas/espacios (ej. "mixer" y "Mixer",
+// 22 y 1 vehiculo). Sin agruparlos el dropdown los separa y el filtro deja fuera a uno.
+function valoresUnicosVenc(campo) {
+  const m = new Map();
+  fleet.forEach(v => {
+    const orig = v[campo];
+    if (!orig) return;
+    const k = normTxt(orig);
+    if (!m.has(k)) m.set(k, orig);
+  });
+  return [...m.values()].sort((a, b) => String(a).localeCompare(String(b), 'es'));
+}
 
 function llenarSelectsVenc() {
   const d = document.getElementById('vc-doc');
   d.innerHTML = '<option value="">Todos</option>' + VENC_TIPOS.map(t => `<option value="${t.k}">${t.label}</option>`).join('');
   const emp = document.getElementById('vc-empresa');
-  emp.innerHTML = '<option value="">Todas</option>' + valoresUnicos('empresa').map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  emp.innerHTML = '<option value="">Todas</option>' + valoresUnicosVenc('empresa').map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
   const cen = document.getElementById('vc-centro');
-  cen.innerHTML = '<option value="">Todos</option>' + valoresUnicos('centroTrabajo').map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  cen.innerHTML = '<option value="">Todos</option>' + valoresUnicosVenc('centroTrabajo').map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
   const tip = document.getElementById('vc-tipo');
-  tip.innerHTML = '<option value="">Todos</option>' + valoresUnicos('tipo').map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  tip.innerHTML = '<option value="">Todos</option>' + valoresUnicosVenc('tipo').map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
 }
 
 function setVencSearch(v) { vencFilters.term = v.trim().toLowerCase(); renderVenc(); }
@@ -648,43 +703,33 @@ function vencFiltrada() {
       const hay = [v.patente, v.interno, v.marca, v.modelo, v.chofer, v.empresa, v.centroTrabajo].join(' ').toLowerCase();
       if (!hay.includes(vencFilters.term)) return;
     }
-    if (vencFilters.empresa && v.empresa !== vencFilters.empresa) return;
-    if (vencFilters.centro && v.centroTrabajo !== vencFilters.centro) return;
-    if (vencFilters.tipo && v.tipo !== vencFilters.tipo) return;
+    if (vencFilters.empresa && normTxt(v.empresa) !== normTxt(vencFilters.empresa)) return;
+    if (vencFilters.centro && normTxt(v.centroTrabajo) !== normTxt(vencFilters.centro)) return;
+    if (vencFilters.tipo && normTxt(v.tipo) !== normTxt(vencFilters.tipo)) return;
 
+
+    // si se eligio un documento, el reporte es SOLO de ese documento
     const todos = vencimientosDe(v);
-    // docs dentro de la ventana (y con fecha real)
-    let dentro = todos.filter(d => d.dias !== null && d.dias <= win);
-    // si se filtro por un documento, solo cuenta ese
-    const Relevant = vencFilters.doc ? dentro.filter(d => d.k === vencFilters.doc) : dentro;
-    if (!Relevant.length) return;
+    const scope = vencFilters.doc ? todos.filter(d => d.k === vencFilters.doc) : todos;
+    const conFecha = scope.filter(d => d.dias !== null);
+    if (!conFecha.length) return;
 
-    const hayVencido = todos.some(d => d.dias !== null && d.dias < 0);
-    const hay15 = todos.some(d => d.dias !== null && d.dias >= 0 && d.dias <= 15);
-    if (vencFilters.estado === 'vencidos' && !hayVencido) return;
-    if (vencFilters.estado === 'proximos' && hayVencido) return;
-    if (vencFilters.estado === '15' && !hay15) return;
+    // una fila por vehiculo: la fecha que se muestra es la mas urgente del scope
+    let doc = conFecha[0];
+    conFecha.forEach(d => { if (d.dias < doc.dias) doc = d; });
+    if (doc.dias > win) return;
 
-    // urgencia = el dia mas bajo entre los docs con fecha
-    const dias = todos.filter(d => d.dias !== null).map(d => d.dias);
-    out.push({
-      v, todos, dentro: Relevant, vencidos: hayVencido, p15: hay15,
-      urgencia: dias.length ? Math.min.apply(null, dias) : 99999,
-      totalDocs: Relevant.length
-    });
+    // los filtros de estado, el stat y el color se refieren todos a esa misma fecha
+    if (vencFilters.estado === 'vencidos' && doc.dias >= 0) return;
+    if (vencFilters.estado === 'proximos' && doc.dias < 0) return;
+    if (vencFilters.estado === '15' && (doc.dias < 0 || doc.dias > 15)) return;
+
+    out.push({ v, doc, dias: doc.dias, totalDocs: conFecha.filter(d => d.dias <= win).length });
   });
-  const fb = campoObjeto(vencSortKey === 'urgencia' ? 'interno' : vencSortKey);
+  const fb = campoObjeto(vencSortKey);
   out.sort((a, b) => {
     let va, vb;
-    if (vencSortKey === 'urgencia') { va = a.urgencia; vb = b.urgencia; }
-    else if (vencSortKey.indexOf('v:') === 0) {
-      // las columnas de documento se ordenan por los dias de ese documento
-      const k = vencSortKey.slice(2);
-      const da = a.todos.find(d => d.k === k);
-      const db = b.todos.find(d => d.k === k);
-      va = da && da.dias !== null ? da.dias : 99999;
-      vb = db && db.dias !== null ? db.dias : 99999;
-    }
+    if (vencSortKey === 'fecha') { va = a.dias; vb = b.dias; }
     else { va = orderVal(a.v, vencSortKey, fb); vb = orderVal(b.v, vencSortKey, fb); }
     if (va < vb) return vencSortDir === 'asc' ? -1 : 1;
     if (va > vb) return vencSortDir === 'asc' ? 1 : -1;
@@ -696,32 +741,28 @@ function vencFiltrada() {
 
 function sortVencBy(key) {
   if (vencSortKey === key) vencSortDir = vencSortDir === 'asc' ? 'desc' : 'asc';
-  else { vencSortKey = key; vencSortDir = key === 'urgencia' ? 'asc' : 'asc'; }
+  else { vencSortKey = key; vencSortDir = 'asc'; }
   renderVenc();
 }
 
-function vencCelda(d) {
-  if (d.noVence) return '<span class="text-teal-300 text-[11px] font-semibold">No vence</span>';
-  if (d.dias === null) return '<span class="text-[#4a5568]">—</span>';
-  const cls = d.dias < 0 ? 'text-red-400 font-bold' : d.dias <= 15 ? 'text-yellow-400 font-bold' : d.dias <= 30 ? 'text-amber-400 font-bold' : 'text-[#8b9bb4]';
-  const dd = String(d.dias);
-  return `<span class="${cls}">${dd} d</span>`;
-}
-
-function vencCeldaFecha(d) {
-  if (d.noVence) return '<span class="text-teal-300 text-[11px]">—</span>';
-  if (!d.fecha) return '<span class="text-[#4a5568]">—</span>';
-  const cls = d.dias === null ? 'text-[#4a5568]' : d.dias < 0 ? 'text-red-400' : d.dias <= 15 ? 'text-yellow-400' : d.dias <= 30 ? 'text-amber-400' : 'text-[#8b9bb4]';
-  return `<span class="${cls}">${d.fecha.split('-').reverse().join('/')}</span>`;
+// Fecha de vencimiento + dias + de que documento es, en una sola celda
+function celdaVenc(r) {
+  const d = r.doc;
+  const cls = d.dias < 0 ? 'text-red-400' : d.dias <= 15 ? 'text-yellow-400' : d.dias <= 30 ? 'text-amber-400' : 'text-[#8b9bb4]';
+  const fecha = d.fecha ? d.fecha.split('-').reverse().join('/') : '—';
+  const dd = d.dias < 0 ? Math.abs(d.dias) + ' d vencido' : d.dias + ' d';
+  return `<span class="${cls} font-medium">${esc(fecha)}</span>` +
+    `<span class="text-[11px] ${cls}"> · ${esc(dd)}</span>` +
+    `<span class="block text-[10px] text-[#8b9bb4]">${esc(d.label)}</span>`;
 }
 
 function renderVenc() {
   const cols = [
-    { key: 'patente', label: 'Patente' }, { key: 'interno', label: 'Interno' },
-    { key: 'tipo', label: 'Tipo' }, { key: 'centroTrabajo', label: 'Centro' },
-    { key: 'chofer', label: 'Chofer' }
-  ].concat(VENC_TIPOS.map(t => ({ key: 'v:' + t.k, label: t.label, titulo: t.label + ' (fecha / días)' })));
-  cols.push({ key: 'urgencia', label: 'Más urgente', titulo: 'Días para el vencimiento más próximo (o ya vencido)' });
+    { key: 'patente', label: 'Patente' },
+    { key: 'interno', label: 'Interno' },
+    { key: 'tipo', label: 'Tipo' },
+    { key: 'fecha', label: 'Vencimiento', titulo: 'Fecha del documento elegido en el filtro, o la más próxima si está en "Todos"' }
+  ];
 
   const arrow = k => (vencSortKey === k ? (vencSortDir === 'asc' ? '▲' : '▼') : '');
   document.getElementById('vc-thead').innerHTML = '<tr>' + cols.map(c =>
@@ -736,30 +777,16 @@ function renderVenc() {
     vacio.classList.remove('hidden');
   } else {
     vacio.classList.add('hidden');
-    tbody.innerHTML = rows.map(r => {
-      const cells = VENC_TIPOS.map(t => {
-        const d = r.todos.find(x => x.k === t.k);
-        return `<td class="text-center">${vencCeldaFecha(d)}<br><span class="text-[10px]">${vencCelda(d)}</span></td>`;
-      }).join('');
-      const urg = r.urgencia === 99999
-        ? '<span class="text-[#4a5568]">sin fecha</span>'
-        : `<span class="${r.urgencia < 0 ? 'text-red-400 font-bold' : r.urgencia <= 15 ? 'text-yellow-400 font-bold' : 'text-[#8b9bb4]'}">${r.urgencia < 0 ? Math.abs(r.urgencia) + ' d (vencido)' : r.urgencia + ' d'}</span>`;
-      return `<tr>
+    tbody.innerHTML = rows.map(r => `<tr>
         <td class="text-[#ffffff] font-medium">${esc(r.v.patente)}</td>
         <td class="text-center">${esc(r.v.interno || '—')}</td>
         <td>${esc(r.v.tipo || '—')}</td>
-        <td>${esc(r.v.centroTrabajo || '—')}</td>
-        <td>${esc(r.v.chofer || '—')}</td>
-        ${cells}
-        <td class="text-center">${urg}</td>
-      </tr>`;
-    }).join('');
+        <td>${celdaVenc(r)}</td>
+      </tr>`).join('');
   }
 
-  // alineado con los filtros: un vehiculo puede contar en ambos si tiene algo
-  // vencido y ademas otro documento que vence dentro de 15 dias
-  const vencidos = rows.filter(r => r.vencidos).length;
-  const p15 = rows.filter(r => r.p15).length;
+  const vencidos = rows.filter(r => r.dias < 0).length;
+  const p15 = rows.filter(r => r.dias >= 0 && r.dias <= 15).length;
   const docs = rows.reduce((s, r) => s + r.totalDocs, 0);
   document.getElementById('vc-total').textContent = rows.length;
   document.getElementById('vc-vencidos').textContent = vencidos;
@@ -770,29 +797,22 @@ function renderVenc() {
 
 /* ---- export vencimientos ---- */
 function filasVencExport() {
-  return vencFiltrada().map(r => {
-    const out = {
-      Patente: r.v.patente || '', Interno: r.v.interno || '', Tipo: r.v.tipo || '',
-      Centro: r.v.centroTrabajo || '', Empresa: r.v.empresa || '', Chofer: r.v.chofer || ''
-    };
-    VENC_TIPOS.forEach(t => {
-      const d = r.todos.find(x => x.k === t.k);
-      out[t.label + ' fecha'] = d.noVence ? 'No vence' : (d.fecha ? d.fecha.split('-').reverse().join('/') : '');
-      out[t.label + ' dias'] = d.noVence ? '' : (d.dias === null ? '' : d.dias);
-    });
-    out['Más urgente (dias)'] = r.urgencia === 99999 ? '' : r.urgencia;
-    return out;
-  });
+  return vencFiltrada().map(r => ({
+    Patente: r.v.patente || '',
+    Interno: r.v.interno || '',
+    Tipo: r.v.tipo || '',
+    'Fecha vencimiento': r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
+    Documento: r.doc.label,
+    Dias: r.dias
+  }));
 }
 
 function vencColsExport() {
-  const base = ['Patente', 'Interno', 'Tipo', 'Centro', 'Empresa', 'Chofer'];
-  VENC_TIPOS.forEach(t => base.push(t.label + ' fecha', t.label + ' dias'));
-  base.push('Más urgente (dias)');
-  return base;
+  return ['Patente', 'Interno', 'Tipo', 'Fecha vencimiento', 'Documento', 'Dias'];
 }
 
 function exportVencExcel() {
+
   const rows = filasVencExport();
   const ws = XLSX.utils.json_to_sheet(rows);
   const wsCols = vencColsExport().map(c => ({ wch: Math.max(9, c.length + 2) }));
@@ -805,34 +825,45 @@ function exportVencExcel() {
 
 function exportVencPDF() {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('l', 'mm', 'a4');
+  const doc = new jsPDF('p', 'mm', 'a4');
   doc.setFontSize(18); doc.setTextColor(212, 175, 55);
   doc.text('Grupo Falpat SRL', 14, 15);
   doc.setFontSize(12); doc.setTextColor(142, 148, 168);
   doc.text('Vencimientos — documentos por vencer o vencidos', 14, 23);
   doc.setFontSize(9);
   const win = vencFilters.ventana >= 99999 ? 'sin límite' : vencFilters.ventana + ' días';
-  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}   |   Ventana: ${win}`, 14, 29);
-  const rows = vencFiltrada();
-  const head = [vencColsExport()];
-  const body = filasVencExport().map(r => vencColsExport().map(c => String(r[c] === null || r[c] === undefined ? '' : r[c])));
+  const docSel = vencFilters.doc ? (VENC_TIPOS.find(t => t.k === vencFilters.doc) || {}).label : 'Todos';
+  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}   |   Ventana: ${win}   |   Documento: ${docSel}`, 14, 29);
+  const cols = vencColsExport();
+  const body = filasVencExport().map(r => cols.map(c => String(r[c] === null || r[c] === undefined ? '' : r[c])));
   doc.autoTable({
-    startY: 34, head, body,
+    startY: 34, head: [cols], body,
     theme: 'grid',
-    headStyles: { fillColor: [212, 175, 55], fontSize: 6 },
-    bodyStyles: { fontSize: 5.5 },
-    columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 14 }, 2: { cellWidth: 16 }, 3: { cellWidth: 20 }, 4: { cellWidth: 26 }, 5: { cellWidth: 34 } }
+    headStyles: { fillColor: [212, 175, 55], fontSize: 9 },
+    bodyStyles: { fontSize: 9 },
+    columnStyles: { 0: { cellWidth: 28 }, 1: { cellWidth: 20 }, 2: { cellWidth: 32 }, 3: { cellWidth: 32 }, 4: { cellWidth: 28 }, 5: { cellWidth: 16 } }
   });
+  const yPie = Math.min((doc.lastAutoTable ? doc.lastAutoTable.finalY : 270) + 10, 288);
   doc.setFontSize(7); doc.setTextColor(92, 99, 120);
-  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', 148, 200, { align: 'center' });
+  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', 105, yPie, { align: 'center' });
   doc.save(`vencimientos-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
 }
 
 function printVenc() {
+  // la sección puede estar contraída: al imprimir tiene que salir igual
+  const card = document.getElementById('sec-vencimientos');
+  const veniaColapsada = card && card.classList.contains('collapsed');
+  if (veniaColapsada) card.classList.remove('collapsed');
+
   document.body.classList.add('printing-venc');
-  const limpio = () => { document.body.classList.remove('printing-venc'); window.removeEventListener('afterprint', limpio); };
+  const limpio = () => {
+    document.body.classList.remove('printing-venc');
+    if (veniaColapsada && card) card.classList.add('collapsed');
+    window.removeEventListener('afterprint', limpio);
+  };
   window.addEventListener('afterprint', limpio);
   window.print();
   setTimeout(limpio, 1000);
 }
+

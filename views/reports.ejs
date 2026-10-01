@@ -7,6 +7,20 @@
   .rpt-card { background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 1.5rem; box-shadow: 0 16px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07); position: relative; overflow: hidden; transition: border-color 0.3s; }
   .rpt-card:hover { border-color: rgba(255,255,255,0.15); }
   .rpt-glow::after { content: ''; position: absolute; top: -50px; right: -50px; width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%); pointer-events: none; }
+
+  /* ===== SECCIONES PLEGABLES =====
+     Las 3 secciones de Reportes arrancan contraídas para ver la página de un
+     vistazo. El encabezado es el botón: se abre y se cierra con un click. */
+  .rpt-card.collapsed > .rpt-body { display: none; }
+  .rpt-card.collapsed { padding-bottom: 1rem; }
+  .rpt-toggle { display: flex; align-items: center; gap: 0.75rem; flex: 1 1 auto; cursor: pointer; text-align: left; background: none; border: 0; padding: 0; color: inherit; font: inherit; }
+  .rpt-toggle:hover h2 { color: #d4af37; }
+  .rpt-toggle:focus-visible { outline: 2px solid rgba(212,175,55,0.6); outline-offset: 4px; border-radius: 8px; }
+  .rpt-caret { width: 1.25rem; height: 1.25rem; color: #8b9bb4; flex-shrink: 0; transition: transform 0.25s ease; }
+  .rpt-card.collapsed .rpt-caret { transform: rotate(-90deg); }
+  .rpt-hint { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+  .rpt-chip { font-size: 0.7rem; padding: 0.15rem 0.55rem; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e0; white-space: nowrap; }
+  .rpt-chip-alerta { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.35); color: #fca5a5; }
   .rpt-hdr { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
   .rpt-ico { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .rpt-ico-gold { background: linear-gradient(135deg, #2563EB, #1D4ED8); box-shadow: 0 8px 20px rgba(212,175,55,0.25); }
@@ -44,8 +58,11 @@
   /* ===== IMPRESIÓN DE VENCIMIENTOS =====
      Al imprimir solo sale la sección Vencimientos: sin sidebar, sin menús,
      sin los botones ni los selects de filtros, y la tabla sin scroll para
-     que entre completa en varias páginas. Se activa con body.printing-venc. */
-  @page { size: landscape; margin: 10mm; }
+     que entre completa en varias páginas. Se activa con body.printing-venc.
+     Vertical: la tabla tiene 4 columnas (patente, interno, tipo, vencimiento). */
+  @media print {
+    @page { size: portrait; margin: 12mm; }
+  }
   body.printing-venc { background: #fff !important; }
   body.printing-venc aside,
   body.printing-venc #mobile-menu,
@@ -59,6 +76,8 @@
   body.printing-venc #sec-vencimientos .rpt-filters,
   body.printing-venc #sec-vencimientos .rpt-stat,
   body.printing-venc #sec-vencimientos .rpt-btn { display: none !important; }
+  /* aunque esté contraída, al imprimir tiene que salir la tabla */
+  body.printing-venc #sec-vencimientos > .rpt-body { display: block !important; }
   body.printing-venc #sec-vencimientos .overflow-x-auto { overflow: visible !important; max-height: none !important; border: none !important; }
   body.printing-venc .rpt-table th { background: #e5e7eb !important; color: #000 !important; position: static !important; border-bottom: 1px solid #999 !important; }
   body.printing-venc .rpt-table td { color: #000 !important; border-bottom: 1px solid #ddd !important; }
@@ -92,9 +111,10 @@
       </div>
 
       <!-- ============ SECCIÓN FLOTA ============ -->
-      <div class="rpt-card rpt-glow mb-5">
+      <div class="rpt-card rpt-glow mb-5 collapsed" id="sec-flota">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div class="flex items-center gap-3">
+          <button type="button" class="rpt-toggle" onclick="toggleSeccion('sec-flota')" aria-expanded="false" aria-controls="body-flota">
+            <svg class="rpt-caret" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             <div class="rpt-ico rpt-ico-green">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a2 2 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
             </div>
@@ -102,7 +122,8 @@
               <h2 class="text-lg font-extrabold title-page">Reporte de Flota</h2>
               <p class="text-[#6b7280] text-xs">Filtrá por cualquier campo (tipo → mixer, Nº BET, trompo, vencimientos…)</p>
             </div>
-          </div>
+            <span class="rpt-hint"><span class="rpt-chip" id="chip-flota">cargando…</span></span>
+          </button>
           <div class="flex flex-wrap items-center gap-1.5">
             <button onclick="guardarColumnas()" class="rpt-btn rpt-btn-gold" title="Elegir columnas de la tabla">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
@@ -119,6 +140,7 @@
           </div>
         </div>
 
+        <div class="rpt-body" id="body-flota">
         <div class="rpt-filters mb-3">
           <div class="flex flex-wrap items-end gap-2 flex-1">
             <div class="flex flex-col">
@@ -172,22 +194,26 @@
           </table>
           <div id="fv-vacio" class="hidden text-center py-10 text-[#4a5568] text-sm">Sin resultados para los filtros aplicados</div>
         </div>
+        </div>
       </div>
 
       <!-- ============ SECCIÓN DOCUMENTACIÓN ============ -->
-      <div class="rpt-card rpt-glow" id="sec-documentacion">
+      <div class="rpt-card rpt-glow collapsed" id="sec-documentacion">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div class="flex items-center gap-3">
+          <button type="button" class="rpt-toggle" onclick="toggleSeccion('sec-documentacion')" aria-expanded="false" aria-controls="body-documentacion">
+            <svg class="rpt-caret" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             <div class="rpt-ico rpt-ico-purple">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V19a1 1 0 01-2 2z"/></svg>
             </div>
             <div>
               <h2 class="text-lg font-extrabold title-page">Documentación</h2>
               <p class="text-[#6b7280] text-xs">Estado de Título, Cédula, Seguro, Registro, VTV y DNI por vehículo</p>
             </div>
-          </div>
+            <span class="rpt-hint"><span class="rpt-chip" id="chip-documentacion">cargando…</span></span>
+          </button>
           <div class="flex flex-wrap items-center gap-1.5">
             <button onclick="exportDocExcel()" class="rpt-btn">
+
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Excel
             </button>
@@ -198,6 +224,7 @@
           </div>
         </div>
 
+        <div class="rpt-body" id="body-documentacion">
         <div class="rpt-filters mb-3">
           <div class="flex flex-wrap items-end gap-2 flex-1">
             <div class="flex flex-col">
@@ -246,20 +273,23 @@
           </table>
           <div id="doc-vacio" class="hidden text-center py-10 text-[#4a5568] text-sm">Sin resultados para los filtros aplicados</div>
         </div>
+        </div>
       </div>
 
       <!-- ============ SECCIÓN VENCIMIENTOS ============ -->
-      <div class="rpt-card rpt-glow" id="sec-vencimientos">
+      <div class="rpt-card rpt-glow collapsed" id="sec-vencimientos">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div class="flex items-center gap-3">
+          <button type="button" class="rpt-toggle" onclick="toggleSeccion('sec-vencimientos')" aria-expanded="false" aria-controls="body-vencimientos">
+            <svg class="rpt-caret" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             <div class="rpt-ico rpt-ico-gold">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
               <h2 class="text-lg font-extrabold title-page">Vencimientos</h2>
-              <p class="text-[#6b7280] text-xs">Qué está por vencer o ya venció: VTV, Seguro, Service, Matafuego, DNI, Registro, Cédula y Título</p>
+              <p class="text-[#6b7280] text-xs">Qué está por vencer o ya venció: VTV, Seguro, Service, Matafuego, DNI, Registro y Cédula</p>
             </div>
-          </div>
+            <span class="rpt-hint"><span class="rpt-chip" id="chip-vencimientos">cargando…</span></span>
+          </button>
           <div class="flex flex-wrap items-center gap-1.5">
             <button onclick="exportVencExcel()" class="rpt-btn">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -276,6 +306,7 @@
           </div>
         </div>
 
+        <div class="rpt-body" id="body-vencimientos">
         <div class="rpt-filters mb-3">
           <div class="flex flex-wrap items-end gap-2 flex-1">
             <div class="flex flex-col">
@@ -339,6 +370,7 @@
             <tbody id="vc-table"></tbody>
           </table>
           <div id="vc-vacio" class="hidden text-center py-10 text-[#4a5568] text-sm">Sin vencimientos para los filtros aplicados</div>
+        </div>
         </div>
       </div>
 
