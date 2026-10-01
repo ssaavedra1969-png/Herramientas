@@ -159,19 +159,23 @@ Todo sale de un único endpoint: `GET /api/admin/report/flota` → `routes/admin
 | Pieza | Dónde |
 |-------|-------|
 | Resolver fechas | `routes/admin.js` → `fechaYMD()`, `diasHastaYMD()`, `fechaDocVenc(v, tipo)`, `docNoVence(v, tipo)`, `resumenService(v)`, `CAMPOS_TOP` |
-| Filtros + tabla + export | `public/js/reports.js` → `VENC_TIPOS`, `vencFiltrada()`, `renderVenc()`, `sortVencBy()`, `filasVencExport()`, `vencColsExport()`, `exportVencExcel()`, `exportVencPDF()`, `printVenc()`, `limpiarFiltrosVenc()` |
+| Filtros + tabla + export | `public/js/reports.js` → `VENC_TIPOS`, `normTxt()`, `valoresUnicosVenc()`, `vencFiltrada()`, `celdaVenc()`, `renderVenc()`, `sortVencBy()`, `filasVencExport()`, `vencColsExport()`, `exportVencExcel()`, `exportVencPDF()`, `printVenc()`, `limpiarFiltrosVenc()` |
 | Card + CSS de impresión | `views/reports.ejs` → `#sec-vencimientos`, clase `body.printing-venc` |
 
 **Filtros** (se combinan): ventana (15/30/60/90/180/365 días), documento, estado (`todos` / `vencidos` / `proximos` / `15`), empresa, centro de trabajo, tipo de vehículo y búsqueda de texto.
 
-**Reglas de la tabla:**
+**Reglas de la tabla (una fila por vehículo, 4 columnas):**
+- La tabla muestra solo **Patente, Interno, Tipo** y **Vencimiento**. `Tipo` es el **tipo de vehículo** (`mixer`, `Camion`, ...), no un documento.
 - Solo entran vehículos con **al menos un documento dentro de la ventana**; los días negativos (ya vencidos) también entran.
-- El filtro por documento restringe a ese tipo; `Todos` considera los 8.
-- `estado=15` = tiene **algún** documento entre 0 y 15 días, aunque tenga otro vencido (si tiene algo vencido hay que ir igual).
-- Orden: cualquier columna es clicable. Las de documento (`v:vtv`, ...) ordenan por los días de ese documento; los vehículos que **no** tienen ese documento se van al final (en ascendente) con `99999`. La columna `urgencia` es el mínimo de días de todos los documentos.
-- Stats: **Vehículos**, **Vencidos**, **≤ 15 días**, **Docs a vencer** (suma de documentos, no de vehículos: un vehículo con VTV y Seguro a la vez cuenta 2).
+- Un vehículo aparece **una sola vez**, aunque tenga varios documentos en la ventana. No se repite una fila por documento.
+- Con un documento seleccionado en el filtro, la celda muestra la fecha de **ese** documento. Con `Todos`, muestra el **más urgente** (menor `dias`) de los 8.
+- Dentro de la celda **Vencimiento** se lee, en chico, el nombre del documento y los días; es texto de la misma celda, no una columna aparte.
+- Los filtros de **estado** y las **stats** se calculan sobre **la misma fecha mostrada**. Ej.: filtrando `Seguro` + `≤ 15 días`, un vehículo cuyo VTV está vencido pero cuyo seguro vence en 5 días **entra**, porque lo que se mira es el seguro.
+- Orden: cualquier columna es clicable. Por defecto **Vencimiento ascendente** (lo más vencido primero), que es lo que se busca al revisar vencimientos.
+- Stats: **Vehículos**, **Vencidos**, **≤ 15 días**, **Docs a vencer**. Con el filtro de documento activo, **Docs a vencer** pasa a contar los documentos de ese tipo.
+- **Normalización de los filtros de texto:** `empresa`, `centroTrabajo` y `tipo` se comparan con `normTxt()` (minúsculas + `trim`). La flota tiene `"mixer"` (22 vehículos) y `"Mixer"` (1) como valores distintos; sin normalizar el dropdown los separa en dos opciones y elegir una deja fuera a los de la otra.
 
-**Impresión:** `printVenc()` pone `body.printing-venc`, que oculta el resto de la página (sidebar, las otras 2 cards, botones) y fuerza `@page { size: A4 landscape }`; se limpia en `afterprint`. Exporta a **Excel** (XLSX) y **PDF** (jsPDF landscape, 23 columnas: 6 base + fecha/días por tipo + urgencia).
+**Impresión:** `printVenc()` pone `body.printing-venc`, que oculta el resto de la página (sidebar, las otras 2 cards, botones y los filtros) y fuerza `@page { size: portrait; margin: 12mm }` desde adentro de `@media print`; se limpia en `afterprint`. Exporta a **Excel** (XLSX) y **PDF** (jsPDF portrait) con 6 columnas: las 4 de la tabla más **Documento** y **Días**, para que al filtrar por un tipo el archivo siga siendo legible.
 
 > **Ojo:** la página es `requireAdminPage` pero el ítem "Reportes" del menú se muestra a usuarios básicos. O se oculta el ítem o se habilita el acceso; hoy el endpoint responde 403 a un Usuario.
 

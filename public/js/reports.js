@@ -1,6 +1,23 @@
 const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
 const DOC_LABELS = { titulo: 'Título', cedula: 'Cédula', seguro: 'Seguro', registro: 'Registro', vtv: 'VTV', dni: 'DNI' };
 
+// Carga el logo como base64 una vez y lo reutiliza
+let _logoB64 = null;
+async function getLogoBase64() {
+  if (_logoB64) return _logoB64;
+  try {
+    const resp = await fetch('/images/fp3d.png');
+    if (!resp.ok) return null;
+    const blob = await resp.blob();
+    _logoB64 = await new Promise(r => {
+      const reader = new FileReader();
+      reader.onloadend = () => r(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch { return null; }
+  return _logoB64;
+}
+
 const FIELDS = [
   { key: 'patente', label: 'Patente', type: 'text' },
   { key: 'interno', label: 'Interno', type: 'text' },
@@ -551,27 +568,39 @@ function exportFleetExcel() {
   showToast('Excel exportado correctamente');
 }
 
-function exportFleetPDF() {
+async function exportFleetPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('l', 'mm', 'a4');
+  const logo = await getLogoBase64();
+  const w = 297, m = 12, y0 = 36;
+  // encabezado con logo
+  if (logo) doc.addImage(logo, 'PNG', m, 8, 14, 14);
+  const tx = logo ? m + 18 : m;
+  doc.setDrawColor(209, 213, 219); doc.setLineWidth(0.5);
+  doc.line(m, y0 - 2, w - m, y0 - 2);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(17, 24, 39);
+  doc.text('Grupo Falpat SRL', tx, 16);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(107, 114, 128);
+  doc.text('Reporte de Flota — vehículos filtrados', tx, 22);
+  doc.setFontSize(7.5); doc.setTextColor(156, 163, 175);
+  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}`, tx, 27);
   const visible = columnasVisibles();
-  doc.setFontSize(18); doc.setTextColor(212, 175, 55);
-  doc.text('Grupo Falpat SRL', 14, 15);
-  doc.setFontSize(12); doc.setTextColor(142, 148, 168);
-  doc.text('Reporte de Flota — vehículos filtrados', 14, 23);
-  doc.setFontSize(9);
-  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}`, 14, 29);
   const body = flotaFiltrada().map(v => visible.map(f => valorExport(v, f)));
   doc.autoTable({
-    startY: 34,
+    startY: y0,
     head: [visible.map(f => f.label)],
     body,
     theme: 'grid',
-    headStyles: { fillColor: [212, 175, 55], fontSize: 6 },
-    bodyStyles: { fontSize: 5.5 }
+    tableWidth: w - 2 * m,
+    styles: { fontSize: 5.5, cellPadding: 1.5 },
+    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 6 },
+    bodyStyles: { textColor: [17, 24, 39] },
+    alternateRowStyles: { fillColor: [249, 250, 251] },
+    margin: { left: m, right: m }
   });
-  doc.setFontSize(7); doc.setTextColor(92, 99, 120);
-  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', 148, 200, { align: 'center' });
+  const yPie = (doc.lastAutoTable ? doc.lastAutoTable.finalY : y0 + 200) + 8;
+  doc.setFontSize(6.5); doc.setTextColor(156, 163, 175);
+  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', w / 2, yPie, { align: 'center' });
   doc.save(`reporte-flota-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
 }
@@ -595,28 +624,38 @@ function exportDocExcel() {
   showToast('Excel exportado correctamente');
 }
 
-function exportDocPDF() {
+async function exportDocPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('l', 'mm', 'a4');
-  doc.setFontSize(18); doc.setTextColor(212, 175, 55);
-  doc.text('Grupo Falpat SRL', 14, 15);
-  doc.setFontSize(12); doc.setTextColor(142, 148, 168);
-  doc.text('Documentación — estado por vehículo', 14, 23);
-  doc.setFontSize(9);
-  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}`, 14, 29);
-  const rows = filasDocExport();
-  const head = [['Patente', 'Marca/Modelo', 'Centro', 'Empresa', ...DOC_TIPOS.map(t => DOC_LABELS[t]), 'Faltan']];
-  const body = rows.map(r => [r.Patente, r['Marca/Modelo'], r.Centro, r.Empresa, ...DOC_TIPOS.map(t => r[DOC_LABELS[t]]), String(r.Faltan)]);
+  const logo = await getLogoBase64();
+  const w = 297, m = 12, y0 = 36;
+  if (logo) doc.addImage(logo, 'PNG', m, 8, 14, 14);
+  const tx = logo ? m + 18 : m;
+  doc.setDrawColor(209, 213, 219); doc.setLineWidth(0.5);
+  doc.line(m, y0 - 2, w - m, y0 - 2);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(17, 24, 39);
+  doc.text('Grupo Falpat SRL', tx, 16);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(107, 114, 128);
+  doc.text('Documentación — estado por vehículo', tx, 22);
+  doc.setFontSize(7.5); doc.setTextColor(156, 163, 175);
+  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}`, tx, 27);
+  const rows = docFiltrada();
+  const head = ['Patente', 'Marca/Modelo', 'Centro', 'Empresa', ...DOC_TIPOS.map(t => DOC_LABELS[t]), 'Faltan'];
+  const body = rows.map(r => [r.patente || '', [r.marca, r.modelo].filter(Boolean).join(' ') || '', r.centroTrabajo || '', r.empresa || '', ...DOC_TIPOS.map(t => r.docs && r.docs[t] ? 'Sí' : 'Falta'), String(r.faltantes)]);
   doc.autoTable({
-    startY: 34,
-    head, body,
+    startY: y0,
+    head: [head], body,
     theme: 'grid',
-    headStyles: { fillColor: [212, 175, 55], fontSize: 7 },
-    bodyStyles: { fontSize: 6 },
-    columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 40 }, 2: { cellWidth: 28 }, 3: { cellWidth: 30 } }
+    tableWidth: w - 2 * m,
+    styles: { fontSize: 5.5, cellPadding: 1.5 },
+    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 6 },
+    bodyStyles: { textColor: [17, 24, 39] },
+    alternateRowStyles: { fillColor: [249, 250, 251] },
+    margin: { left: m, right: m }
   });
-  doc.setFontSize(7); doc.setTextColor(92, 99, 120);
-  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', 148, 200, { align: 'center' });
+  const yPie = (doc.lastAutoTable ? doc.lastAutoTable.finalY : y0 + 200) + 8;
+  doc.setFontSize(6.5); doc.setTextColor(156, 163, 175);
+  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', w / 2, yPie, { align: 'center' });
   doc.save(`documentacion-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
 }
@@ -823,29 +862,40 @@ function exportVencExcel() {
   showToast('Excel exportado correctamente');
 }
 
-function exportVencPDF() {
+async function exportVencPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
-  doc.setFontSize(18); doc.setTextColor(212, 175, 55);
-  doc.text('Grupo Falpat SRL', 14, 15);
-  doc.setFontSize(12); doc.setTextColor(142, 148, 168);
-  doc.text('Vencimientos — documentos por vencer o vencidos', 14, 23);
-  doc.setFontSize(9);
+  const logo = await getLogoBase64();
+  const w = 210, m = 12, y0 = 36;
+  if (logo) doc.addImage(logo, 'PNG', m, 8, 14, 14);
+  const tx = logo ? m + 18 : m;
+  doc.setDrawColor(209, 213, 219); doc.setLineWidth(0.5);
+  doc.line(m, y0 - 2, w - m, y0 - 2);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(17, 24, 39);
+  doc.text('Grupo Falpat SRL', tx, 16);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(107, 114, 128);
+  doc.text('Vencimientos — documentos por vencer o vencidos', tx, 22);
+  doc.setFontSize(7.5); doc.setTextColor(156, 163, 175);
   const win = vencFilters.ventana >= 99999 ? 'sin límite' : vencFilters.ventana + ' días';
   const docSel = vencFilters.doc ? (VENC_TIPOS.find(t => t.k === vencFilters.doc) || {}).label : 'Todos';
-  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}   |   Ventana: ${win}   |   Documento: ${docSel}`, 14, 29);
+  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}   |   Ventana: ${win}   |   Documento: ${docSel}`, tx, 27);
   const cols = vencColsExport();
   const body = filasVencExport().map(r => cols.map(c => String(r[c] === null || r[c] === undefined ? '' : r[c])));
   doc.autoTable({
-    startY: 34, head: [cols], body,
+    startY: y0,
+    head: [cols],
+    body,
     theme: 'grid',
-    headStyles: { fillColor: [212, 175, 55], fontSize: 9 },
-    bodyStyles: { fontSize: 9 },
-    columnStyles: { 0: { cellWidth: 28 }, 1: { cellWidth: 20 }, 2: { cellWidth: 32 }, 3: { cellWidth: 32 }, 4: { cellWidth: 28 }, 5: { cellWidth: 16 } }
+    tableWidth: w - 2 * m,
+    styles: { fontSize: 7, cellPadding: 1.5 },
+    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7.5 },
+    bodyStyles: { textColor: [17, 24, 39] },
+    alternateRowStyles: { fillColor: [249, 250, 251] },
+    margin: { left: m, right: m }
   });
-  const yPie = Math.min((doc.lastAutoTable ? doc.lastAutoTable.finalY : 270) + 10, 288);
-  doc.setFontSize(7); doc.setTextColor(92, 99, 120);
-  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', 105, yPie, { align: 'center' });
+  const yPie = (doc.lastAutoTable ? doc.lastAutoTable.finalY : y0 + 250) + 8;
+  doc.setFontSize(6.5); doc.setTextColor(156, 163, 175);
+  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', w / 2, yPie, { align: 'center' });
   doc.save(`vencimientos-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
 }
