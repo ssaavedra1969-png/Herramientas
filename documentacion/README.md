@@ -44,13 +44,16 @@
 | `scripts/subir-documentos.js` | Sube `PATENTE/` a producción (pull+add+commit+push, solo esa carpeta). → `npm run subir:docs` |
 | `scripts/cargar-vencimientos.js` | Carga masiva de vencimientos desde Excel de `PATENTE/Vtos/`. → `npm run cargar:vencimientos` |
 | `scripts/generar-control-documentacion.js` | Genera `CONTROL_FALTANTES_*.xlsx` y `CONTROL_VENCIDOS_*.xlsx` en `PATENTE/Reportes/`. → `npm run generar:control` |
+| `scripts/generar-control-matafuego.js` | Genera `CONTROL_MATAFUEGO_MIXERS_*.xlsx` y `CONTROL_MATAFUEGO_RESTO_*.xlsx` en `PATENTE/Reportes/`: los vehículos **sin matafuego**, separados en mezcladoras y resto, con patente, interno, estado, vencimiento y qué documentación falta. Opcionales: `--patente=XXX`, `--incluir-baja`. → `npm run generar:matafuego` |
 
 ### Frontend (EJS + JS cliente)
 | Archivo | Contenido |
 |---------|-----------|
 | `views/*.ejs` | Páginas: `dashboard`, `vehicles`, `vehicle-detail`, `reports`, `admin`, `centros`, `service`, `login`, `scanner`, `vehicle-qr-public`, `carpeta-docs`, `qr-sticker`, `qr-stickers-bulk`, `fichas-taller-bulk`. **No existe `maintenance.ejs`** (ver nota abajo). |
 | `views/partials/head.ejs` | `<head>` con SDKs CDN (Tailwind, Firebase, Chart.js, SweetAlert2, PapaParse, XLSX). |
-| `views/partials/sidebar.ejs` | Menú lateral + menú móvil + `mobile-menu.ejs`. |
+| `views/partials/sidebar.ejs` | Menú lateral de desktop (rail colapsable, secciones `Operación`/`Análisis`/`Utilidades`/`Administración`). |
+| `views/partials/mobile-menu.ejs` | Menú móvil (drawer). Debe tener **los mismos destinos que el desktop**: `/centros` y `Carpeta Docs` se agregaron el 2026-10-01, faltaban. |
+| `views/partials/topbar.ejs` | Barra superior: migas, buscador global, acciones y reloj. **Solo en dashboard y vehículos**; el resto de las páginas usa `.clock-float`. |
 | `views/partials/footer.ejs` | Firebase init + carga de `auth-client.js` y demás scripts del footer. |
 | `public/js/auth-client.js` | Helpers globales: `isAdmin()`, `getAuthHeaders()`, `deleteWithBackup()`, **`daysUntil()`** (genérico), `showToast()`, `showModal()`, etc. |
 | `public/js/dashboard.js` | Dashboard: clock, search, modales alertas, fleet health, empresas, alertas VTV/choferes, últimos services. |
@@ -60,8 +63,12 @@
 | `public/js/reports.js` | Reportes financieros. |
 | `public/js/admin.js` | Roles de usuario. |
 | `public/js/centros.js` | Obras: tabla con filtros, pestaña Catálogo, asignar/devolver, editar y eliminar. |
-| `public/js/theme-engine.js` | ThemeEngine v3 (3 temas visuales animados). |
-| `public/css/theme-*.css` | Variables de temas del ThemeEngine. |
+| `public/js/theme.js` | Selector de tema persistente (**4 temas**: `pro`, `claro`, `industrial`, `auto`). El color de la barra del navegador se lee del CSS, no hardcodeado. |
+| `public/js/clock.js` | Reloj global: monta en `.topbar-clock` si hay topbar, o en `.clock-float` si la página no tiene barra. |
+| `public/js/command-palette.js` | Paleta de navegación con `Cmd+K` / `Ctrl+K`. Registra `NAV` (todos) y `ADMIN_NAV` (solo Admin, se resuelve leyendo `window.__SERVER_USER_DATA` **al renderizar**, porque el script carga con `defer` antes del footer). |
+| `public/css/themes.css` | **El sistema de diseño actual** (~1.950 líneas): tokens, 4 temas, y remapeo de ~73 clases Tailwind. Se carga como último stylesheet para pisar a `styles.css`. Cache-busting con `?v=<mtime>` vía `app.locals.assetV`. |
+| `public/js/theme-engine.js` | ⚠️ **Legacy, NO se carga.** themes v1/v2. Reemplazado por `theme.js` + `themes.css`. |
+| `public/css/theme-*.css` | ⚠️ **Legacy, NO se cargan** (`theme-switcher`, `theme-modern`, `theme-premium`, `theme-sutil`). Nada los incluye; `head.ejs` solo carga `styles.css` + `themes.css`. |
 
 ### Tests
 | Ruta | Contenido |

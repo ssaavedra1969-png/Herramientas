@@ -235,12 +235,12 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
   - Toggles en la barra de la herramienta: **Solo Novedades** (usa la fecha guardada) / **Ver Todo** (`?desde=all`). Sin fecha guardada aún, todo se considera novedad.
   - `DEV_READ_ONLY=true` (local) bloquea el botón "Marcar impresos hoy" (solo funciona en producción/Vercel).
 
-- **Herramienta "Optimizaciones" integrada al menú** (commit `9a623eb`): menú **Utilidades → Optimizar Adjuntos** abre el optimizador local (`OPTIMIZADOR_URL`, default `http://localhost:8642`, inyectada en `middleware/auth.js`). `.gitignore` ahora excluye `**/_originales/`. Ver sección "Optimizaciones — herramienta de adjuntos (FUERA del repo)".
+- **Herramienta "Optimizaciones" — SACADA DEL MENÚ** (commit `fec5469`, 2026-10-01). Antes había una entrada **Utilidades → Optimizar Adjuntos** (`OPTIMIZADOR_URL`, default `http://localhost:8642`) agregada en `9a623eb`; se quitó porque quedó como app local separada (`Optimizaciones\iniciar.bat`). **Ya no existe ni el link ni la variable `OPTIMIZADOR_URL`** — se abre a mano desde el `.bat`. No reintroducirla sin avisar.
 - **Docs**: AE192RO vtv optimizado (3,1 MB → 1,14 MB, -63%) y PCS413 cedula estandarizada (commit `af33acd`).
 
 - **Página pública del QR del vehículo (`vehicle-qr-public.ejs`)** — vista móvil que abre quien escanea el QR pegado al camión (ruta `GET /vehicle/:id/qr` en server.js, **pública, sin auth**). Se rediseñó para el usuario común: header con logo Falpat (`/images/fp3d.png` reemplazó al icono de camioncito), sección **Vencimientos** (VTV, Seguro, Service, Matafuego con días restantes/estado de color, se pasa el array `vencimientos` desde el server), y sección **Documentos del vehículo** al final (solo Cédula, Seguro y VTV, solo lectura, enlaces a `/documentos/{patente}/{archivo}`). El server calcula los vencimientos y escanea la carpeta `PATENTE/` (helper `scanDocsCarpeta(patente)` local en server.js, docs del folder = públicos; los subidos manualmente NO se muestran acá porque requieren auth).
 - **Ficha interna móvil (`vehicle-detail.ejs` + `public/js/vehicle-detail.js`)** — agregado hero mobile con logo Falpat + chips de vencimientos (VTV/Seguro/Service) y sección "Documentos del vehículo" al final solo en mobile (`md:hidden`). Desktop sin cambios.
-- **Menú "Utilidades"** desplegable (sidebar + menú móvil): agrupa Escáner QR, Stickers QR y Fichas Taller; scanner marca `?pagina=scan`.
+- **Menú "Utilidades"** — desktop (commit `970afba`): **ya NO es desplegable**, es un encabezado de sección estático con los links sueltos. Solo el menú móvil (`mobile-menu.ejs`) lo mantiene colapsable. Agrupa Escáner QR + (solo Admin) Stickers QR, Fichas Taller y Carpeta Docs; scanner marca `?pagina=scan`. **Regla: el menú móvil debe tener los mismos destinos que el desktop** — en 2026-10-01 se le agregaron `/centros` y `Carpeta Docs`, que faltaban.
 - **Reports re-diseñado** (commit `436140f`): reporte de flota con filtros por cualquier campo, sección documentación, export Excel/PDF, endpoint `/api/admin/report/flota`.
 - **Docs**: se agregó el 6to documento obligatorio **DNI del chofer** (commit `4164361`): slot DNI en modal, vencimiento atado a `vencimientoDNI`, upload/lectura/eliminación de subidos, reportes/import/export con DNI.
 
@@ -337,7 +337,7 @@ Herramienta: **`npm run cargar:vencimientos`** → `scripts/cargar-vencimientos.
 
 Proyecto aparte en `C:\AI\Antigravity\FALPAT srl\Optimizaciones` (no es parte del repo Herramientas). Convierte PDFs/fotos de `PATENTE/` en un **PDF A4 estandarizado y liviano** con marca de agua en banda diagonal **"Propiedad de Grupo Falpat SRL"**. 100% local (Python + Flask + PyMuPDF + Pillow), **no** toca Firebase ni se despliega en Vercel. Solo escribe archivos en la carpeta `PATENTE/`.
 
-- **Arranque:** `Optimizaciones\iniciar.bat` → `http://localhost:8642`. Menú del sistema: **Utilidades → Optimizar Adjuntos** (URL en `OPTIMIZADOR_URL`, default `http://localhost:8642`; inyectada en `middleware/auth.js`).
+- **Arranque:** `Optimizaciones\iniciar.bat` → `http://localhost:8642`. Menú del sistema: la app se abre a mano con `Optimizaciones\iniciar.bat`. **Ya no hay entrada en el menú** (se quitó en `fec5469`).
 - **Batch:** `python cli.py` (en `Optimizaciones`) re-procesa toda `PATENTE/`; mueve los originales a `PATENTE/{patente}/_originales/` (excluido de git en `.gitignore`).
 - **Reglas internas:**
   - PDF fuente → se rasteriza ~150 dpi y re-encodea a JPEG (comprime escaneos: ej. AE192RO vtv 3,1 MB → 1,1 MB, -63%).

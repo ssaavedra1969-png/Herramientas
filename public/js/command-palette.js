@@ -15,7 +15,23 @@
     { g: 'Operación', label: 'Centros de Trabajo', href: '/centros', icon: 'M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21' },
     { g: 'Análisis', label: 'Reportes', href: '/reports', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625z' },
     { g: 'Utilidades', label: 'Escáner QR', href: '/vehicle/scan', icon: 'M3.75 7.5V6a2.25 2.25 0 012.25-2.25h1.5m9 0h1.5a2.25 2.25 0 012.25 2.25v1.5m0 9v1.5a2.25 2.25 0 01-2.25 2.25h-1.5m-9 0h-1.5A2.25 2.25 0 013 19.5V18m0-9.75h3v3H3v-3zm15 0h3v3h-3v-3zm-15 9h3v3H3v-3zm15 0h3v3h-3v-3z' },
+];
+
+  /* Solo para Admin. Se agregan aparte porque este script se carga con `defer`
+     (en head.ejs) y corre ANTES del script inline del footer que define
+     window.__SERVER_USER_DATA: hay que leerlo al renderizar, no al cargar. */
+  const ADMIN_NAV = [
+    { g: 'Utilidades', label: 'Stickers QR', href: '/vehicles/qr-stickers-bulk', icon: 'M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.513 1.96 3 3 0 001.1 3.696 3 3 0 001.1 1.128m0 0a3 3 0 105.78 1.128 2.25 2.25 0 002.513 1.96 3 3 0 00-1.1-3.696 3 3 0 00-1.1-1.128m0 0a3 3 0 10-5.78-1.128 2.25 2.25 0 00-2.513-1.96 3 3 0 00-1.1 3.696 3 3 0 001.1 1.128' },
+    { g: 'Utilidades', label: 'Fichas Taller', href: '/vehicles/fichas-taller-bulk', icon: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z' },
+    { g: 'Utilidades', label: 'Carpeta Docs', href: '/vehicles/carpeta-docs', icon: 'M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z' },
+    { g: 'Administración', label: 'Usuarios', href: '/admin', icon: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' }
   ];
+
+  function navVisible() {
+    const u = window.__SERVER_USER_DATA;
+    return u && u.role === 'Admin' ? NAV.concat(ADMIN_NAV) : NAV;
+  }
+
 
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -79,7 +95,7 @@
     }
 
     // 2) Navegación
-    NAV.forEach((n) => {
+    navVisible().forEach((n) => {
       if (!query || norm(n.label).includes(query)) {
         results.push({ g: n.g, label: n.label, href: n.href, icon: n.icon });
       }

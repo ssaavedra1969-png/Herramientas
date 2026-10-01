@@ -3,7 +3,6 @@ const currentPage = typeof page !== 'undefined' ? page : '';
 const isAdmin = currentUserData?.role === 'Admin';
 const userName = currentUserData?.displayName || currentUser?.email?.split('@')[0] || 'Usuario';
 const userInitial = userName.charAt(0).toUpperCase();
-const utilOpen = ['scan', 'stickers', 'fichas', 'carpeta'].includes(currentPage);
 %>
 
 <aside id="sidebar" class="sidebar hidden lg:flex">
@@ -96,13 +95,6 @@ const utilOpen = ['scan', 'stickers', 'fichas', 'carpeta'].includes(currentPage)
     var next = document.body.getAttribute('data-nav') === 'collapsed' ? 'expanded' : 'collapsed';
     document.body.setAttribute('data-nav', next);
     try { localStorage.setItem('falpat_nav', next); } catch (e) {}
-  };
-  window.toggleNavGroup = window.toggleNavGroup || function (btn) {
-    var w = btn.closest('.nav-group-wrap');
-    var g = w && w.querySelector('.nav-group');
-    if (g) g.classList.toggle('hidden');
-    var ch = w && w.querySelector('.chevron');
-    if (ch) ch.classList.toggle('rotate-180');
   };
   // Restaura la preferencia de colapso antes del primer pintado
   try {
