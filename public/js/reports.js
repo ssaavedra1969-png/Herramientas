@@ -879,18 +879,29 @@ async function exportVencPDF() {
   const win = vencFilters.ventana >= 99999 ? 'sin límite' : vencFilters.ventana + ' días';
   const docSel = vencFilters.doc ? (VENC_TIPOS.find(t => t.k === vencFilters.doc) || {}).label : 'Todos';
   doc.text(`Generado: ${new Date().toLocaleString('es-AR')}   |   Ventana: ${win}   |   Documento: ${docSel}`, tx, 27);
-  const cols = vencColsExport();
-  const body = filasVencExport().map(r => cols.map(c => String(r[c] === null || r[c] === undefined ? '' : r[c])));
+  const colsPDF = ['Patente', 'Interno', 'Tipo', 'Fecha vencimiento', 'Dias'];
+  const filas = vencFiltrada().map(r => {
+    const dias = r.dias;
+    return {
+      Patente: r.v.patente || '',
+      Interno: r.v.interno || '',
+      Tipo: r.v.tipo || '',
+      'Fecha vencimiento': r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
+      Dias: dias < 0 ? Math.abs(dias) + ' Dias Vencidos' : dias + ' Dias a Vencer'
+    };
+  });
+  const body = filas.map(r => colsPDF.map(c => String(r[c] === null || r[c] === undefined ? '' : r[c])));
   doc.autoTable({
     startY: y0,
-    head: [cols],
+    head: [colsPDF],
     body,
     theme: 'grid',
     tableWidth: w - 2 * m,
-    styles: { fontSize: 7, cellPadding: 1.5 },
-    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7.5 },
+    styles: { fontSize: 7, cellPadding: 1.5, lineWidth: 0.35, lineColor: [209, 213, 219] },
+    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
     bodyStyles: { textColor: [17, 24, 39] },
     alternateRowStyles: { fillColor: [249, 250, 251] },
+    columnStyles: { 'Dias': { fontSize: 9, fontStyle: 'bold' } },
     margin: { left: m, right: m }
   });
   const yPie = (doc.lastAutoTable ? doc.lastAutoTable.finalY : y0 + 250) + 8;
