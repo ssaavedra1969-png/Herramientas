@@ -18,7 +18,7 @@
 | **`CHANGELOG.md`** | Historial de cambios por sesión (features, fixes, commits, deploys, rescates). | Revisar qué se hizo en el pasado. |
 | **`MS_BASE.md`** | Análisis de una **posible migración de Firestore → Microsoft SQL Server** (pros/contras). Es un documento de decisión, NO está implementado. | Evaluar futuro de la infraestructura. |
 | **`RESUMEN-SESION-*.md`** | Resúmenes detallados de sesiones puntuales (diagnósticos, bugs, decisiones). Patrón: `RESUMEN-SESION-YYYY-MM-DD.md`. | Puesta al día de qué pasó en una sesión concreta. |
-| **`Update_YYYY.MM.DD.md`** | Detalle técnico de una sesión de trabajo: qué se cambió, por qué, cómo se verificó y qué quedó pendiente. Patrón: `Update_YYYY.MM.DD.md` (ej: `Update_2026.09.28.md` = vencimientos del dashboard + Excel de control + editar/eliminar Obras; `Update_2026.09.27.md` = alta de Centros de Trabajo). | Entender el por qué de un cambio antes de tocarlo. |
+| **`Update_YYYY.MM.DD.md`** | Detalle técnico de una sesión de trabajo: qué se cambió, por qué, cómo se verificó y qué quedó pendiente. Patrón: `Update_YYYY.MM.DD.md` (ej: `Update_2026.09.28.md` = vencimientos del dashboard + Excel de control + editar/eliminar Obras; `Update_2026.09.27.md` = alta de Centros de Trabajo; `Update_2026.10.02.md` = columna Empresa + título con los filtros + impresión "pizarra" en Reportes). | Entender el por qué de un cambio antes de tocarlo. |
 | **`TAREAS_PENDIENTES/`** | Backlog priorizado de tareas en archivos `.md` independientes. Índice: `00-INDICE.md` (P0 bugs → P1 seguridad → P2 refactor → P3 cosmético). | Saber qué tareas quedaron pendientes. |
 | **`rollback/`** | Guías de rollback de optimizaciones (ej: `OPTIMIZACION-LECTURAS-ROLLBACK.md`). | Revertir un lote de cambios sin perder trabajo posterior. |
 
@@ -39,12 +39,14 @@
 | `routes/auth.js` | Login/sesión Firebase Auth + cookies. |
 | `routes/vehicles.js` | CRUD vehículos, subcolecciones combustible/repuestos, **panel services** (`/services/panel`, `/services/panel-mock`), documentos (`/documentos/*`), **reporte global de documentación** (`/api/vehicles/documentos/reporte`, lee todo `PATENTE/`), import/export. |
 | `routes/centros.js` | Centros de Trabajo / Obras: catálogo de elementos + contadores, crear, **editar (PUT: nombre/ubicación/estado/observaciones)**, **eliminar (DELETE: borra subcolección `elementos` + doc, con 409 si quedan elementos sin devolver)**, asignar/devolver elementos, `collectionGroup('elementos')` para la pestaña Elementos. |
-| `routes/admin.js` | Dashboard stats, reportes, export Excel, backup, `latest-services`. |
+| `routes/admin.js` | Dashboard stats, reportes, export Excel, backup, `latest-services`. `GET /report/flota` alimenta las 3 cards de `/reports`: resuelve las fechas de documento (`fechaDocVenc`, legacy → plano → `documentacion.<tipo>`) y lee la lista de PDFs de `PATENTE/` **desde GitHub** (`arbolPatenteR()` con caché de 10 min), porque la carpeta no está en el deploy de Vercel. |
 | `lib/github-docs.js` | Lectura de la carpeta `PATENTE/` vía API de GitHub: `listarPatenteGlobal()` (todo el árbol en 1 request), `cambiosDesde()`, `esDeTipo()`. |
 | `scripts/subir-documentos.js` | Sube `PATENTE/` a producción (pull+add+commit+push, solo esa carpeta). → `npm run subir:docs` |
 | `scripts/cargar-vencimientos.js` | Carga masiva de vencimientos desde Excel de `PATENTE/Vtos/`. → `npm run cargar:vencimientos` |
 | `scripts/generar-control-documentacion.js` | Genera `CONTROL_FALTANTES_*.xlsx` y `CONTROL_VENCIDOS_*.xlsx` en `PATENTE/Reportes/`. → `npm run generar:control` |
 | `scripts/generar-control-matafuego.js` | Genera `CONTROL_MATAFUEGO_MIXERS_*.xlsx` y `CONTROL_MATAFUEGO_RESTO_*.xlsx` en `PATENTE/Reportes/`: los vehículos **sin matafuego**, separados en mezcladoras y resto, con patente, interno, estado, vencimiento y qué documentación falta. Opcionales: `--patente=XXX`, `--incluir-baja`. → `npm run generar:matafuego` |
+| `scripts/marcar-cedulas-no-vence.js` | Marca `documentacion.cedula.noVence = true` en los vehículos con cédula en `PATENTE/` y **sin** fecha de vencimiento (nunca pisa una fecha existente). **Sin alias npm:** `node scripts/marcar-cedulas-no-vence.js [--apply]` (sin `--apply` es dry-run). |
+| `scripts/inspeccionar-counters.js` | **Solo lectura.** Cómo se llaman los docs de `counters` y si hay internos duplicados. → `npm run inspect:counters` |
 
 ### Frontend (EJS + JS cliente)
 | Archivo | Contenido |
@@ -107,7 +109,7 @@
 | `vehicles/{id}/repuestos` | Repuestos usados. |
 | `vehicles/{id}/services` | **Services / mantenimientos** (fecha, tipo, km, intervaloKm, proximoKm, proximoFecha, costo, proveedor). Reemplaza a la vieja colección `maintenance`. |
 | `users` | Usuarios (role Admin/Usuario, displayName, email). |
-| `counters` | `current` para auto-increment de números internos. OJO: hay **varios docs**, no uno solo — el código busca `counters/{tipo}` (`herramienta`, `equipo`, `ropa`, `material`, `vehiculo`) para el catálogo de elementos, con prefijo `V/H/E/R/M`. **Discrepancia sin resolver:** la doc histórica habla de `cat-{prefijo}`; hay que confirmar en la base cuál es el nombre real (ver `Update_2026.09.29.md` §2). |
+| `counters` | `current` para auto-increment de números internos. OJO: hay **varios docs**, no uno solo — el código busca `counters/{tipo}` (`herramienta`, `equipo`, `ropa`, `material`, `vehiculo`) para el catálogo de elementos, con prefijo `V/H/E/R/M`, y `counters/vehicles` para la numeración de vehículos. **Resuelto el 2026-09-29 contra producción** con `npm run inspect:counters`: existen los 4 del catálogo (current 3/3/3/2) y **NO existen** `counters/vehicles` ni `counters/vehiculo` (por eso la numeración de vehículos siempre deriva del máximo real). **No hay internos duplicados** (11 elementos de catálogo, **57 vehículos V001-V057**, census re-verificado el 2026-10-02). Ver `Update_2026.09.29.md` §2. |
 | `centros` | Obras del Centro de Trabajo + subcolección `elementos/` (asignaciones, con `fechaDevolucion` "" = pendiente). |
 | `elementos_catalogo` | Catálogo de elementos no-vehículo (herramientas, ropa, equipos, materiales) que se asignan a las obras. |
 | `config` | Config global: `carpetaDocs.ultimaGeneracion`, etc. |
@@ -152,30 +154,39 @@ Si el push falla: `git pull origin main` y repetir.
 | Optimizador de adjuntos | Proyecto aparte `C:\AI\Antigravity\FALPAT srl\Optimizaciones` → `iniciar.bat` → http://localhost:8642. No toca Firebase, solo `PATENTE/`. |
 
 ### Reportes / Vencimientos
-Página `GET /reports` (**solo Admin**, `requireAdminPage`). Son **3 cards apiladas**, no tabs: `Flota`, `Documentación` y `Vencimientos` (`#sec-vencimientos`).
+Página `GET /reports` (**solo Admin**, `requireAdminPage`). Son **3 cards apiladas**, no tabs: `Flota`, `Documentación` y `Vencimientos` (`#sec-vencimientos`). Las 3 **arrancan contraídas** (`.rpt-card.collapsed > .rpt-body { display:none }`) y cada encabezado lleva un **chip de resumen** (`#chip-flota`, `#chip-documentacion`, `#chip-vencimientos`) con el conteo, para ver la página de un vistazo.
 
 Todo sale de un único endpoint: `GET /api/admin/report/flota` → `routes/admin.js`, que por vehículo devuelve los campos base (`patente`, `interno`, `tipo`, `centroTrabajo`, `chofer`, `empresa`, `estado*`, ...) y, por cada uno de los **8 tipos** (`vtv`, `seguro`, `service`, `matafuego`, `dni`, `registro`, `cedula`, `titulo`), un par `<tipo>Fecha` / `<tipo>Dias` (`dias` negativo = vencido). Para cédula suma `cedulaNoVence`.
 
+> **Ojo:** el backend sigue devolviendo `tituloFecha`/`tituloDias`, pero **`VENC_TIPOS` (la vista) tiene 7 y NO el Título**: el título no vence nunca (el PDF dice que "da cuenta de la situación registral a la fecha de su último asiento"), así que su control es "¿está o no está?" y vive en la card Documentación (`DOC_TIPOS`).
+
+**De dónde salen los documentos (fix `2da46a4`):** la card Documentación **NO puede** escanear `PATENTE/` en el disco porque esa carpeta **no está en el deploy de Vercel** (`.vercelignore` la excluye): el scan local salía vacío y marcaba "faltan documentos" en los 54 camiones (la flota ya iba por 57). La fuente real es el repo vía `lib/github-docs.js` → `listarPatenteGlobal()` (1 request `git/trees/main?recursive=1`), cacheado **10 minutos** en `routes/admin.js` (`arbolPatenteR()` / `invalidarArbolPatenteR()`). Si el árbol viene `truncated` o el fetch falla (falta `GITHUB_TOKEN`), cae al modo de a uno (`gh.listarCarpeta(patente)`). El scan local **se mantiene** y se une con `||`: en local gana el disco.
+
 | Pieza | Dónde |
 |-------|-------|
-| Resolver fechas | `routes/admin.js` → `fechaYMD()`, `diasHastaYMD()`, `fechaDocVenc(v, tipo)`, `docNoVence(v, tipo)`, `resumenService(v)`, `CAMPOS_TOP` |
-| Filtros + tabla + export | `public/js/reports.js` → `VENC_TIPOS`, `normTxt()`, `valoresUnicosVenc()`, `vencFiltrada()`, `celdaVenc()`, `renderVenc()`, `sortVencBy()`, `filasVencExport()`, `vencColsExport()`, `exportVencExcel()`, `exportVencPDF()`, `printVenc()`, `limpiarFiltrosVenc()` |
-| Card + CSS de impresión | `views/reports.ejs` → `#sec-vencimientos`, clase `body.printing-venc` |
+| Resolver fechas | `routes/admin.js` → `fechaYMD()`, `diasHastaYMD()`, `fechaDocVenc(v, tipo)`, `docNoVence(v, tipo)`, `resumenService(v)`, `CAMPOS_TOP`, `arbolPatenteR()`, `docsDePatenteR()` |
+| Filtros + tabla + export | `public/js/reports.js` → `VENC_TIPOS`, `normTxt()`, `valoresUnicosVenc()`, `vencFiltrada()`, `celdaVenc()`, `renderVenc()`, `sortVencBy()`, `resumenFiltroVenc()`, `filasVencExport()`, `vencColsExport()`, `exportVencExcel()`, `exportVencPDF()`, `printVenc()`, `limpiarFiltrosVenc()` |
+| Card + CSS de impresión | `views/reports.ejs` → `#sec-vencimientos`, `#vc-subtitulo`, `td.col-empresa`, clase `body.printing-venc` |
 
 **Filtros** (se combinan): ventana (15/30/60/90/180/365 días), documento, estado (`todos` / `vencidos` / `proximos` / `15`), empresa, centro de trabajo, tipo de vehículo y búsqueda de texto.
 
-**Reglas de la tabla (una fila por vehículo, 4 columnas):**
-- La tabla muestra solo **Patente, Interno, Tipo** y **Vencimiento**. `Tipo` es el **tipo de vehículo** (`mixer`, `Camion`, ...), no un documento.
+**Reglas de la tabla (una fila por vehículo, 5 columnas):**
+- La tabla muestra solo **Patente, Interno, Tipo, Empresa y Vencimiento**. `Tipo` es el **tipo de vehículo** (`mixer`, `Camion`, ...), no un documento.
 - Solo entran vehículos con **al menos un documento dentro de la ventana**; los días negativos (ya vencidos) también entran.
 - Un vehículo aparece **una sola vez**, aunque tenga varios documentos en la ventana. No se repite una fila por documento.
-- Con un documento seleccionado en el filtro, la celda muestra la fecha de **ese** documento. Con `Todos`, muestra el **más urgente** (menor `dias`) de los 8.
+- Con un documento seleccionado en el filtro, la celda muestra la fecha de **ese** documento. Con `Todos`, muestra el **más urgente** (menor `dias`) de los 7.
 - Dentro de la celda **Vencimiento** se lee, en chico, el nombre del documento y los días; es texto de la misma celda, no una columna aparte.
+- **Empresa** con `max-width:200px` + ellipsis en pantalla (el valor completo va en el `title`), **sin recorte al imprimir** (en la pizarra tiene que leerse entero).
 - Los filtros de **estado** y las **stats** se calculan sobre **la misma fecha mostrada**. Ej.: filtrando `Seguro` + `≤ 15 días`, un vehículo cuyo VTV está vencido pero cuyo seguro vence en 5 días **entra**, porque lo que se mira es el seguro.
 - Orden: cualquier columna es clicable. Por defecto **Vencimiento ascendente** (lo más vencido primero), que es lo que se busca al revisar vencimientos.
 - Stats: **Vehículos**, **Vencidos**, **≤ 15 días**, **Docs a vencer**. Con el filtro de documento activo, **Docs a vencer** pasa a contar los documentos de ese tipo.
 - **Normalización de los filtros de texto:** `empresa`, `centroTrabajo` y `tipo` se comparan con `normTxt()` (minúsculas + `trim`). La flota tiene `"mixer"` (22 vehículos) y `"Mixer"` (1) como valores distintos; sin normalizar el dropdown los separa en dos opciones y elegir una deja fuera a los de la otra.
 
-**Impresión:** `printVenc()` pone `body.printing-venc`, que oculta el resto de la página (sidebar, las otras 2 cards, botones y los filtros) y fuerza `@page { size: portrait; margin: 12mm }` desde adentro de `@media print`; se limpia en `afterprint`. Exporta a **Excel** (XLSX) y **PDF** (jsPDF portrait) con 6 columnas: las 4 de la tabla más **Documento** y **Días**, para que al filtrar por un tipo el archivo siga siendo legible.
+**El título dice QUÉ se está imprimiendo (fix `f04c43e`):** `resumenFiltroVenc()` arma una línea con `VENC_ESTADOS` tipo `Seguro · Por vencer · hasta 30 días · empresa: X · centro: Y · tipo: mixer · búsqueda: "..."` y se inyecta en dos lugares: `#vc-subtitulo` (bajo el título en pantalla) y el **título del PDF** (con `splitTextToSize`, que corre la línea y recalcula el `startY` de la tabla). `renderVenc()` la refresca en cada render, así que siempre refleja los filtros vivos. Sin esto, un PDF colgado en la pizarra con "Vencimientos" a secas no dice si es el reporte completo o el filtrado por Seguro.
+
+**Impresión:** `printVenc()` pone `body.printing-venc`, que oculta el resto de la página (sidebar, las otras 2 cards, botones y los filtros) y fuerza `@page { size: portrait; margin: 12mm }` desde adentro de `@media print`; se limpia en `afterprint`. El CSS está calibrado para **pizarra**: header de tabla negro con letras blancas 10pt, celdas 11pt con bordes 0.5pt, `white-space: normal`, oculta la descripción web (`.rpt-desc`), saca la flecha de orden y sube las dos líneas chicas de la celda de vencimiento a 9.5/9pt.
+
+**Exports:** los 3 PDF (Flota, Documentación, Vencimientos) llevan el logo `fp3d.png` incrustado (`getLogoBase64()`, cacheado en `_logoB64`) y usan `autoTable`. Vencimientos exporta a **Excel** con **7 columnas** (Patente, Interno, Tipo, Empresa, Fecha vencimiento, Documento, Dias — `Empresa` con `wch:24`) y a **PDF** (jsPDF portrait) con **6** (Patente, Interno, Tipo, Empresa, Fecha venc., Dias: **el nombre del documento ya no sale como columna, la celda de la web lo lleva**), con `columnStyles` de anchos fijos y letra 9.5–10pt. Los días en el PDF salen como `N Dias Vencidos` / `N Dias a Vencer`.
 
 > **Ojo:** la página es `requireAdminPage` pero el ítem "Reportes" del menú se muestra a usuarios básicos. O se oculta el ítem o se habilita el acceso; hoy el endpoint responde 403 a un Usuario.
 
@@ -183,8 +194,8 @@ Todo sale de un único endpoint: `GET /api/admin/report/flota` → `routes/admin
 
 ## 5. Consejos para la IA / Quirks aprendidos
 
-- **Las fechas de documento viven en 3 esquemas distintos y conviven.** En `vehicles` una misma fecha puede estar en (a) el mapa legacy `vtv.fechaVencimiento` / `seguro.fechaVencimiento` / `matafuego.fechaVto`, (b) un campo plano de vehículo (`proximoServiceFecha`), o (c) el mapa moderno `documentacion.<tipo>.fechaVencimiento`. `routes/admin.js` resuelve con `fechaDocVenc(v, tipo)` y el orden es **legacy -> plano -> moderno**; `docNoVence(v, tipo)` interpreta `documentacion.<tipo>.noVence === true`. **No leer un solo esquema:** hoy hay 54 vehículos y ninguno tiene fecha en los 8 tipos a la vez (VTV 39, Seguro 37, Service 13, Matafuego 2, DNI 5, Registro 3, Cédula 6+Título 0).
-- **Service no es un documento, es derivado.** `fechaDocVenc` no lo cubre: el endpoint usa `proximoServiceFecha` (13 vehículos) con fallback al `proximoFecha` más cercano dentro de `serviceSummary` (18 vehículos). Ojo con los `proximoFecha: null` de `serviceSummary`: significan "sin próxima fecha calculada", no "vence hoy".
+- **Las fechas de documento viven en 3 esquemas distintos y conviven.** En `vehicles` una misma fecha puede estar en (a) el mapa legacy `vtv.fechaVencimiento` / `seguro.fechaVencimiento` / `matafuego.fechaVto`, (b) un campo plano de vehículo (`proximoServiceFecha`), o (c) el mapa moderno `documentacion.<tipo>.fechaVencimiento`. `routes/admin.js` resuelve con `fechaDocVenc(v, tipo)` y el orden es **legacy -> plano -> moderno**; `docNoVence(v, tipo)` interpreta `documentacion.<tipo>.noVence === true`. **No leer un solo esquema:** hoy hay **57 vehículos** y ninguno tiene fecha en los 8 tipos a la vez (VTV 39, Seguro 37, Service 13, Matafuego 2, **DNI 6**, Registro 3, Cédula 6+Título 0). Census re-verificado contra producción el 2026-10-02.
+- **Service no es un documento, es derivado.** `fechaDocVenc` no lo cubre: el endpoint usa `proximoServiceFecha` (13 vehículos) con fallback al `proximoFecha` más cercano dentro de `serviceSummary`. **Hoy el fallback no aporta ningún vehículo**: los 13 de `proximoServiceFecha` son exactamente los mismos 13 de `serviceSummary` (V008, V010, V014-V016, V018, V023, V024, V027, V030, V032, V034, V049), re-verificado el 2026-10-02. El código se queda (es una red de seguridad gratis) pero no esperes que sume vehículos. Ojo con los `proximoFecha: null` de `serviceSummary`: significan "sin próxima fecha calculada", no "vence hoy".
 - **`documentacion.<tipo>.noVence`** marca documentos que no caducan (caso típico: cédulas). Un `noVence: true` con `fechaVencimiento` presente NO cuenta como `noVence`: manda la fecha.
 - **Colisión de helpers globales:** `auth-client.js` (cargado en el footer) define helpers globales como `daysUntil()`. Cualquier página JS que cargue antes y defina el mismo nombre es **pisada**. Usar nombres específicos del módulo (ej: `serviceDaysUntil`) para datos serializados del API (`{_seconds}`).
 - **Timestamps del API** llegan al cliente como `{"_seconds":..., "_nanoseconds":0}`; los del SDK web tienen `.toDate()`. `toMs()` en service.js maneja ambos.

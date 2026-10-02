@@ -1,6 +1,89 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-09-29.
+Cambios registrados por sesión. Última actualización: 2026-10-02.
+
+## 2026-10-02 — Reportes: columna Empresa, título con los filtros e impresión "pizarra"
+
+Detalle completo en **`Update_2026.10.02.md`**. Commit: **`f04c43e`**. En la misma
+sesión: 10 PDF nuevos en `PATENTE/` y documentación puesta al día.
+
+### Columna Empresa en Vencimientos
+- La tabla de la card **Vencimientos** pasó de 4 a **5 columnas**: `Patente | Interno | Tipo | Empresa | Vencimiento`. `renderVenc()` suma el `<th>` clickeable (orden por `orderVal(a.v,'empresa')`, que funciona porque `empresa` sí es un campo del vehículo) y el `<td class="col-empresa" title="valor completo">`.
+- Los nombres de empresa son largos y estiraban la tabla: en pantalla `td.col-empresa` lleva `max-width:200px` + ellipsis, con el valor entero en el `title`.
+
+### El título del reporte dice QUÉ se imprimió
+- `resumenFiltroVenc()` + `VENC_ESTADOS` arman una línea con los filtros puestos: `Todos los documentos · Por vencer · hasta 30 días · empresa: X · centro: Y · tipo: mixer · búsqueda: "..."`.
+- Se inyecta en dos lugares: `#vc-subtitulo` (nuevo `<p>` bajo el título, con la clase `.rpt-desc` en la descripción vieja para poder esconderla al imprimir) y el **título del PDF**. En el PDF usa `splitTextToSize` para que la línea corra si es larga, y recalcula el `startY` de `autoTable` a partir de las líneas que salió.
+- `renderVenc()` la refresca en cada render → refleja los filtros en vivo, no queda desactualizada al cambiar un select.
+
+### Impresión calibrada para pizarra
+- El destino real de este reporte es una pizarra: los grises claros y las letras chicas no se leen a distancia. En `body.printing-venc`:
+  - header de tabla **negro `#111827` con letras blancas 10pt** y borde 0.7pt (antes era gris claro `#e5e7eb` con texto negro);
+  - celdas **11pt**, bordes 0.5pt, `white-space: normal`;
+  - `td.col-empresa` **anula el recorte** (`max-width:none`, `overflow:visible`, `text-overflow:clip`): en la pizarra el nombre tiene que leerse entero;
+  - las dos líneas chicas de la celda de vencimiento (`.text-[11px]` / `.text-[10px]`) suben a **9.5pt / 9pt** y en negrita;
+  - se oculta la descripción web (`.rpt-desc`), la flecha de orden (`.sort-arrow`) y el `hover` de fila;
+  - `#vc-subtitulo` (los filtros) queda en 12pt negrita: es la línea que identifica el reporte impreso;
+  - los textos grises `#8b9bb4` pasan a negro (antes bajaban a `#666`, que no se leía).
+
+### Exports
+- **Excel** con 7 columnas (agrega **Empresa**, con `wch:24`, y `Fecha vencimiento` con `wch:16`); se sigue exportando **Documento** porque en Excel la celda de vencimiento no viaja con formato.
+- **PDF** con 6 columnas y `columnStyles` de anchos fijos: Patente 25 (negrita), Interno 19 (centrado), Tipo 28, Empresa 46, Fecha venc. 28, Dias 40 (negrita 10pt). Letra 9.5–10pt y bordes más gruesos.
+- El PDF ya **no saca la columna Documento** (`efd5f71`): el nombre del documento lo lleva la celda en la web, y en la pizarra suma una columna que no aporta.
+
+### Documentación nueva en `PATENTE/` (10 PDF)
+- Nuevos: `AE344VR/dni.pdf`, `AE344VR/registro.pdf`, `AE449YW/dni.pdf`, `AE449YW/registro.pdf`, `AG148TK/dni.pdf`, `AG148TK/registro.pdf`, `AG719US/dni.pdf`, `AG976PE/dni.pdf`, `AG976PE/registro.pdf`.
+- Optimizado: `AG148TK/cedula.pdf` (146 KB, 1 página). Borrado el duplicado `AG148TK/cedula1.pdf`.
+- **Validados antes de commitear** con `pdf-lib`: los 10 abren (header `%PDF-`, `%%EOF` presente) y el conteo de páginas es correcto — 1 salvo `AE344VR/dni.pdf`, `AE344VR/registro.pdf`, `AE449YW/dni.pdf`, `AE449YW/registro.pdf`, `AG148TK/dni.pdf` y `AG976PE/dni.pdf`, que son de 2 páginas (DNI y Registro suelen traer anverso y reverso).
+- Efecto en el control: Registro con archivo **11 → 13**, DNI **10 → 12**, faltantes totales **160 → 156**.
+
+### La flota son 57 vehículos (no 54) — census re-verificado
+- Re-verificado contra producción (**solo lectura**, sin escrituras): **57 vehículos, todos en servicio**, internos `V001`..`V057` **sin repetidos**.
+- Census de fechas de documento: VTV 39, Seguro 37, Service 13, Matafuego 2, **DNI 6** (antes figuraba 5), Registro 3, Cédula 6 (+29 con `noVence`), Título 0.
+- **Corrección importante sobre Service:** el fallback de `resumenService()` **hoy no aporta ningún vehículo**. Los 13 con `proximoServiceFecha` son **exactamente los mismos 13** con fecha en `serviceSummary` (V008, V010, V014-V016, V018, V023, V024, V027, V030, V032, V034, V049). El "13 → 18 vehículos" que se midió el 2026-10-01 era de otra fecha de corte. El código queda como está (es una red de seguridad gratis) pero **no esperes que hoy sume vehículos**: si se toca `resumenService()`, lo que hay que probar es que no haga perder fechas.
+- Se actualizaron las referencias a "54 vehículos" en `AGENTS.md`, `documentacion/README.md` y `TAREAS_PENDIENTES/00-INDICE.md`. Las entradas históricas del CHANGELOG se dejan con el número que tenían al momento.
+
+### Excel de control regenerado
+- `npm run generar:control` → `CONTROL_FALTANTES_2026-10-02.xlsx` (**156 documentos faltantes**) y `CONTROL_VENCIDOS_2026-10-02.xlsx` (**25 vencidos**: Cédula 6, VTV 6, Seguro 10, Registro 2, DNI 1).
+- `npm run generar:matafuego` → `CONTROL_MATAFUEGO_MIXERS_2026-10-02.xlsx` (**21 filas**) y `CONTROL_MATAFUEGO_RESTO_2026-10-02.xlsx` (**34 filas**). Solo 2 de 57 tienen matafuego cargado (31 sin dato, 24 marcados "Sin Matafuego").
+- Con archivo en disco: Título 43, Seguro 43, Cédula 35, VTV 40, Registro 13, DNI 12. Quedan **4 carpetas vacías** (`AD221FP`, `AH232ME`, `DML84`, `LFI597`): no se versionan porque git ignora las carpetas vacías.
+- Los `.xlsx` **no van a git** (`.gitignore:5`), como siempre: en otra PC hay que correr los dos comandos.
+
+## 2026-10-01 — Reportes: Vencimientos, fix de documentación y exportación
+
+Commits: **`d52ec39`**, **`a80a6fc`**, **`10cc58a`**, **`7ed4240`**, **`2da46a4`**, **`0c1c5f0`**, **`efd5f71`**.
+
+### Nueva sección "Vencimientos" (`d52ec39`)
+- `GET /reports` (solo Admin) suma una 3ra card `#sec-vencimientos` a las 2 que ya había. Son **3 cards apiladas, no tabs**, alimentadas por el mismo `GET /api/admin/report/flota`.
+- 7 filtros combinables (ventana 15-365 días, documento, estado, empresa, centro, tipo, texto), export Excel/PDF e impresión con `printVenc()`.
+- Backend: `fechaDocVenc()` / `docNoVence()` resuelven las fechas que conviven en **3 esquemas** (legacy anidado → campo plano → `documentacion.<tipo>`). Contra Firestore real (54 vehículos): **0 fechas sin detectar** en los 8 tipos.
+- **Service no aparecía nunca:** es derivado, no un documento, así que `fechaDocVenc` no lo cubre. Usa `proximoServiceFecha` con fallback al `proximoFecha` más cercano de `serviceSummary` (13 → **18 vehículos** con fecha).
+- Tres bugs más de paso: el orden por columnas de documento no ordenaba nada (`orderVal` buscaba la propiedad `"v:vtv"`, que no existe, así que todas las filas empataban); el stat "Sin fecha cargada" era **0 fijo** (la fila se descartaba antes de poder contarse) → se eliminó la card; y `id="vc-docs"` estaba duplicado en dos stats.
+- Verificado: 105/105 tests, `reports.ejs` renderiza, el server arranca.
+
+### Fix: la documentación salía toda faltante (`2da46a4`)
+- `GET /api/admin/report/flota` escaneaba `PATENTE/` en el **disco local**, pero `PATENTE/` **no está en el deploy de Vercel** (`.vercelignore` la excluye; pesa 160 MB), así que en producción el scan salía vacío y la card marcaba "faltan documentos" en los **54 camiones**.
+- Ahora la fuente real es el **repo**: `lib/github-docs.js` → `listarPatenteGlobal()` (1 request de `git/trees/main?recursive=1` para toda la carpeta) con caché de **10 minutos** (`arbolPatenteR()` / `invalidarArbolPatenteR()`). Si el árbol viene `truncated` o falla (falta `GITHUB_TOKEN`), cae al modo de a uno (`gh.listarCarpeta`). El scan local **se mantiene** y se une con `||`: en local gana el disco.
+- Además: las **3 cards arrancan contraídas** y cada encabezado lleva un **chip de resumen** (`#chip-flota`, `#chip-documentacion`, `#chip-vencimientos`).
+- El **Título sale de `VENC_TIPOS`**: no vence nunca ("da cuenta de la situación registral a la fecha de su último asiento"), así que su control es "¿está o no está?" y vive en la card Documentación.
+
+### Exportadores PDF (`0c1c5f0`, `efd5f71`)
+- Los 3 PDF llevan el **logo `fp3d.png` incrustado** (`getLogoBase64()`, cacheado en `_logoB64`) y usan `autoTable`.
+- Días formateados como `N Dias Vencidos` / `N Dias a Vencer` en vez del número pelado; letra más grande.
+
+### Cédulas que no vencen (`a80a6fc`)
+- `scripts/marcar-cedulas-no-vence.js` marca `documentacion.cedula = { noVence: true }` en los vehículos con cédula en `PATENTE/` y **sin** fecha. **Nunca pisa una `fechaVencimiento` existente**; el update va por ruta punteada, así que no toca seguro ni VTV.
+- Dry-run por default, `--apply` para escribir. **Sin alias npm** (se corre con `node`). Aplicado a **21 vehículos** (29 marcados en total); las 6 con fecha real quedaron como estaban.
+
+### Menú móvil y Cmd+K (`10cc58a`)
+- `mobile-menu.ejs`: agrega `/centros` y **Carpeta Docs**, que faltaban. Queda con los mismos destinos que el desktop (10 para Admin, 6 para Usuario). El grupo Utilidades también se abre en `/carpeta`.
+- `sidebar.ejs`: saca `utilOpen` y `toggleNavGroup`, sin uso desde que Utilidades dejó de ser desplegable en desktop (`970afba`).
+- `command-palette.js`: agrega `ADMIN_NAV` (Stickers QR, Fichas Taller, Carpeta Docs, Usuarios), resuelto **al renderizar** porque el script carga con `defer` antes del script inline del footer que define `__SERVER_USER_DATA`.
+- Nuevo `scripts/generar-control-matafuego.js` → `npm run generar:matafuego`: `CONTROL_MATAFUEGO_MIXERS_*.xlsx` y `CONTROL_MATAFUEGO_RESTO_*.xlsx` en `PATENTE/Reportes/` (los vehículos **sin** matafuego, separados en mezcladoras y resto).
+
+### Documentos (`7ed4240`)
+- Optimizadas `AF804RU/cedula.pdf` y `AG276BQ/cedula.pdf`; nuevos adjuntos: `AF804RU/dni.pdf`, `AF804RU/registro.pdf`, `AG719US/registro.pdf`, `AH052ZE/dni.pdf` (2 páginas: el DNI venía escaneado en dos imágenes y se unificó) y `AH052ZE/registro.pdf`. Borrado el duplicado `AF804RU/cedula1.pdf`.
+- Todos los archivos quedaron como `<tipo>.pdf`, que es lo que matchea `DOC_TIPOS` en `lib/github-docs.js` y en `scanDocsCarpeta()` de `server.js`.
 
 ## 2026-09-29 — Auditoría del proyecto, fix del contador del catálogo y harness de tests
 

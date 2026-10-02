@@ -14,6 +14,15 @@
   ```
 - Cada instructivo P0 incluye esta misma sección al final.
 
+## PENDIENTES DE LA SESIÓN 2026-10-02 (ver `../Update_2026.10.02.md`)
+
+| # | Qué falta | Por qué |
+|---|-----------|---------|
+| 1 | **Imprimir el reporte de Vencimientos en una hoja real** y mirarlo a distancia. | El CSS se calibró para pizarra (negro/blanco, 11pt, bordes gruesos), pero **verificar el papel es lo único que no se puede hacer desde el código**. Hay que probar también el caso de la empresa larga, que es el que parte el título del PDF en 2 líneas y recalcula el `startY` de la tabla. |
+| 2 | **Revisar la card Documentación contra GitHub en producción.** | El fix de `2da46a4` cambió la fuente de verdad de los PDFs (de disco a API de GitHub) y **la caché dura 10 minutos**: si se sube un documento, el reporte puede seguir mostrando "falta" hasta que expire. Probar que `GITHUB_TOKEN` está configurado en Vercel; sin token cae al modo de a uno y son 57 requests por cache miss. |
+| 3 | **Cargar en la web las fechas de vencimiento de los DNI y Registro nuevos.** | El 2026-10-02 se commitearon 10 PDF nuevos en `PATENTE/`: `AE344VR/{dni,registro}.pdf`, `AE449YW/{dni,registro}.pdf`, `AG148TK/{dni,registro}.pdf` + `cedula.pdf` optimizada (se borró el duplicado `cedula1.pdf`), `AG719US/dni.pdf`, `AG976PE/{dni,registro}.pdf`. Con eso la documentación en disco pasó de Registro 11 → **13** y de DNI 10 → **12**, y los faltantes bajaron de 160 a **156**. Pero **el archivo no carga la fecha**: el reporte de Vencimientos sigue sin verlos hasta que la fecha se cargue a mano en la ficha del vehículo (`vencimientoDNI` / `documentacion.<tipo>.fechaVencimiento`). |
+| 4 | **Correr `npm run generar:control` y `npm run generar:matafuego` en la otra PC.** | Los `.xlsx` de `PATENTE/Reportes/` están ignorados por git: no viajan al repo. |
+
 ## PENDIENTES DE LA SESIÓN 2026-09-28 (ver `../Update_2026.09.28.md`)
 
 | # | Qué falta | Por qué |
