@@ -126,6 +126,7 @@ async function main() {
       faltantes.push({
         patente,
         interno: v.interno || '',
+        chofer: v.chofer || '',
         tipo: ETIQUETA[tipo],
         vencimiento: fecha ? fmtFecha(fecha) : 'SIN CARGA',
         nota: notas.join(' · ')
@@ -150,6 +151,7 @@ async function main() {
       vencidos.push({
         patente,
         interno: v.interno || '',
+        chofer: v.chofer || '',
         tipo: ETIQUETA[tipo],
         vencimiento: fmtFecha(raw),
         dias: -dias,
@@ -172,6 +174,7 @@ async function main() {
     columnas: [
       { header: 'Patente', key: 'patente', width: 12 },
       { header: 'Interno', key: 'interno', width: 10 },
+      { header: 'Chofer', key: 'chofer', width: 22 },
       { header: 'Tipo documento', key: 'tipo', width: 16 },
       { header: 'Vencimiento', key: 'vencimiento', width: 15 },
       { header: 'Nota', key: 'nota', width: 72 }
@@ -186,10 +189,11 @@ async function main() {
     columnas: [
       { header: 'Patente', key: 'patente', width: 12 },
       { header: 'Interno', key: 'interno', width: 10 },
+      { header: 'Chofer', key: 'chofer', width: 22 },
       { header: 'Tipo documento', key: 'tipo', width: 16 },
       { header: 'Vencimiento', key: 'vencimiento', width: 15 },
       { header: 'Dias vencida', key: 'dias', width: 13 },
-      { header: 'Empresa', key: 'empresa', width: 22 },
+      { header: 'Empresa', key: 'empresa', width: 26 },
       { header: 'Nota', key: 'nota', width: 60 }
     ],
     filas: vencidos,

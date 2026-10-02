@@ -102,13 +102,6 @@ function faltantesDe(v, patente, git) {
   return faltan;
 }
 
-function notaDe(patente, faltan, git) {
-  const n = [];
-  if (!fs.existsSync(path.join(PATENTE_DIR, patente))) n.push(`No existe la carpeta PATENTE/${patente}/`);
-  if (git === null) n.push('Sin GITHUB_TOKEN: no se comparo con el repo');
-  return n.join(' · ');
-}
-
 async function main() {
   if (!fs.existsSync(SALIDA)) fs.mkdirSync(SALIDA, { recursive: true });
 
@@ -138,17 +131,15 @@ async function main() {
     filas.push({
       patente,
       interno: v.interno || '',
+      chofer: v.chofer || '',
       tipo: v.tipo || '',
-      subtipo: v.subtipo || '',
       centro: v.centroTrabajo || '',
-      empresa: v.empresa || '',
       estadoMatafuego: mf.estado,
       // sin matafuego cargado no hay vencimiento: queda para completar a mano
       venceMatafuego: mf.vto ? fmtFecha(mf.vto) : 'SIN CARGAR',
-      controlMatafuego: mf.control ? fmtFecha(mf.control) : '',
+      empresa: v.empresa || '',
       faltan: faltan.length,
-      faltantes: faltan.length ? faltan.join(', ') : 'Documentacion completa',
-      nota: notaDe(patente, faltan, git)
+      faltantes: faltan.length ? faltan.join(', ') : 'Documentacion completa'
     });
   });
 
@@ -160,19 +151,21 @@ async function main() {
   const p2 = n => String(n).padStart(2, '0');
   const sello = `${hoy.getFullYear()}-${p2(hoy.getMonth() + 1)}-${p2(hoy.getDate())}`;
 
+  /* Solo las columnas que se usan para salir a buscar los papeles: patente para
+     ubicar la carpeta, chofer para llamar a quien corresponde, tipo/centro para
+     agrupar, el estado y el vencimiento del matafuego, y qué documentación falta.
+     NO van Subtipo, "Control matafuego", el contador "Faltantes" (redundante con
+     la lista de nombres) ni "Nota". */
   const columnas = [
-    { header: 'Patente', key: 'patente', width: 12 },
+    { header: 'Patente', key: 'patente', width: 11 },
     { header: 'Interno', key: 'interno', width: 10 },
-    { header: 'Tipo', key: 'tipo', width: 17 },
-    { header: 'Subtipo', key: 'subtipo', width: 14 },
-    { header: 'Centro', key: 'centro', width: 12 },
+    { header: 'Chofer', key: 'chofer', width: 22 },
+    { header: 'Tipo', key: 'tipo', width: 18 },
+    { header: 'Centro', key: 'centro', width: 14 },
     { header: 'Estado matafuego', key: 'estadoMatafuego', width: 17 },
-    { header: 'Vence matafuego', key: 'venceMatafuego', width: 16 },
-    { header: 'Control matafuego', key: 'controlMatafuego', width: 16 },
-    { header: 'Faltantes', key: 'faltan', width: 10 },
-    { header: 'Documentacion faltante', key: 'faltantes', width: 46 },
-    { header: 'Empresa', key: 'empresa', width: 26 },
-    { header: 'Nota', key: 'nota', width: 44 }
+    { header: 'Vence matafuego', key: 'venceMatafuego', width: 17 },
+    { header: 'Documentacion faltante', key: 'faltantes', width: 38 },
+    { header: 'Empresa', key: 'empresa', width: 28 }
   ];
 
   const f1 = await escribir({
@@ -193,11 +186,14 @@ async function main() {
   });
 
   const sinDato = filas.filter(f => f.estadoMatafuego === 'Sin dato').length;
+  const sinCarpeta = filas.filter(f => !fs.existsSync(path.join(PATENTE_DIR, f.patente))).map(f => f.patente);
   console.log(`\n${autos.length} vehiculos en servicio${soloPatente ? ' (patente ' + soloPatente + ')' : ''}${incluirBaja ? ' + bajas' : ''}`);
   console.log(`  Con matafuego cargado : ${conMatafuego.length}`);
   console.log(`  Sin matafuego        : ${filas.length}  (sin dato: ${sinDato} · marcados "Sin Matafuego": ${filas.length - sinDato})`);
   console.log(`    - Mixers           : ${filasMixer.length}`);
   console.log(`    - Resto            : ${filasResto.length}`);
+  if (git === null) console.log('\n  !! Sin GITHUB_TOKEN: no se comparo con el repo, puede marcar como faltante un PDF que ya esta en git');
+  if (sinCarpeta.length) console.log(`  Sin carpeta en PATENTE/: ${sinCarpeta.join(', ')}`);
 
   const porTipo = {};
   TIPOS.forEach(t => {
