@@ -49,6 +49,8 @@
   .rpt-table th .sort-arrow { color: #2563EB; font-size: 0.6rem; margin-left: 3px; }
   .rpt-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); color: #d1d5db; font-size: 0.82rem; white-space: nowrap; }
   .rpt-table tr:hover td { background: rgba(255,255,255,0.03); }
+  /* los nombres de empresa son largos: que no estiren la tabla (el title tiene el valor completo) */
+  .rpt-table td.col-empresa { max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
   .rpt-badge { font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 10px; }
   .filtro-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.25); color: #2563EB; font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
   .filtro-chip .x { cursor: pointer; color: #fca5a5; font-weight: 800; margin-left: 2px; }
@@ -59,7 +61,10 @@
      Al imprimir solo sale la sección Vencimientos: sin sidebar, sin menús,
      sin los botones ni los selects de filtros, y la tabla sin scroll para
      que entre completa en varias páginas. Se activa con body.printing-venc.
-     Vertical: la tabla tiene 4 columnas (patente, interno, tipo, vencimiento). */
+     Vertical: la tabla tiene 5 columnas (patente, interno, tipo, empresa, vencimiento).
+     Va con mucho contraste (negro sobre blanco, bordes gruesos, letra grande)
+     porque el destino real es una pizarra: los grises claros y las letras
+     chicas no se leen a distancia. */
   @media print {
     @page { size: portrait; margin: 12mm; }
   }
@@ -71,21 +76,31 @@
   body.printing-venc .rpt-card:not(#sec-vencimientos) { display: none !important; }
   body.printing-venc #sec-vencimientos { border: none !important; background: #fff !important; box-shadow: none !important; padding: 0 !important; border-radius: 0 !important; }
   body.printing-venc #sec-vencimientos .rpt-glow::after { display: none !important; }
-  body.printing-venc #sec-vencimientos h2 { color: #000 !important; }
-  body.printing-venc #sec-vencimientos p { color: #444 !important; }
+  /* la descripción larga de la web no aporta en la pizarra: el título va con los filtros */
+  body.printing-venc #sec-vencimientos .rpt-desc { display: none !important; }
+  body.printing-venc #sec-vencimientos h2 { color: #000 !important; font-size: 20pt !important; }
+  body.printing-venc #sec-vencimientos #vc-subtitulo { color: #000 !important; font-size: 12pt !important; font-weight: 800 !important; margin-bottom: 6pt !important; }
+  body.printing-venc #sec-vencimientos p { color: #000 !important; }
   body.printing-venc #sec-vencimientos .rpt-filters,
   body.printing-venc #sec-vencimientos .rpt-stat,
   body.printing-venc #sec-vencimientos .rpt-btn { display: none !important; }
   /* aunque esté contraída, al imprimir tiene que salir la tabla */
   body.printing-venc #sec-vencimientos > .rpt-body { display: block !important; }
   body.printing-venc #sec-vencimientos .overflow-x-auto { overflow: visible !important; max-height: none !important; border: none !important; }
-  body.printing-venc .rpt-table th { background: #e5e7eb !important; color: #000 !important; position: static !important; border-bottom: 1px solid #999 !important; }
-  body.printing-venc .rpt-table td { color: #000 !important; border-bottom: 1px solid #ddd !important; }
+  body.printing-venc .rpt-table th { background: #111827 !important; color: #fff !important; font-size: 10pt !important; font-weight: 800 !important; letter-spacing: 0.02em !important; padding: 6pt 5pt !important; position: static !important; border: 0.7pt solid #000 !important; }
+  body.printing-venc .rpt-table td { color: #000 !important; font-size: 11pt !important; padding: 5pt !important; border: 0.5pt solid #000 !important; white-space: normal !important; }
+  /* en la pizarra el nombre de la empresa tiene que leerse entero: sin recorte */
+  body.printing-venc .rpt-table td.col-empresa { max-width: none !important; overflow: visible !important; text-overflow: clip !important; }
   body.printing-venc .rpt-table tr { page-break-inside: avoid; }
+  /* las dos líneas chicas de la celda de vencimiento (días y tipo de documento) */
+  body.printing-venc #sec-vencimientos .text-\[11px\] { font-size: 9.5pt !important; font-weight: 700 !important; }
+  body.printing-venc #sec-vencimientos .text-\[10px\] { font-size: 9pt !important; font-weight: 700 !important; }
+  body.printing-venc .rpt-table th .sort-arrow { display: none !important; }
+  body.printing-venc .rpt-table tr:hover td { background: none !important; }
   body.printing-venc .text-red-400 { color: #b91c1c !important; }
   body.printing-venc .text-yellow-400 { color: #b45309 !important; }
   body.printing-venc .text-teal-300 { color: #0f766e !important; }
-  body.printing-venc .text-\[\#8b9bb4\] { color: #666 !important; }
+  body.printing-venc .text-\[\#8b9bb4\] { color: #000 !important; }
 </style>
 <div class="flex h-screen overflow-hidden">
   <%- include('partials/sidebar', { page: 'reports' }) %>
@@ -286,7 +301,8 @@
             </div>
             <div>
               <h2 class="text-lg font-extrabold title-page">Vencimientos</h2>
-              <p class="text-[#6b7280] text-xs">Qué está por vencer o ya venció: VTV, Seguro, Service, Matafuego, DNI, Registro y Cédula</p>
+              <p class="rpt-desc text-[#6b7280] text-xs">Qué está por vencer o ya venció: VTV, Seguro, Service, Matafuego, DNI, Registro y Cédula</p>
+              <p class="text-[#6b7280] text-xs font-semibold mt-0.5" id="vc-subtitulo">&nbsp;</p>
             </div>
             <span class="rpt-hint"><span class="rpt-chip" id="chip-vencimientos">cargando…</span></span>
           </button>

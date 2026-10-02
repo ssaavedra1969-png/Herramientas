@@ -795,11 +795,34 @@ function celdaVenc(r) {
     `<span class="block text-[10px] text-[#8b9bb4]">${esc(d.label)}</span>`;
 }
 
+const VENC_ESTADOS = {
+  todos: 'Vencidos y por vencer',
+  vencidos: 'Ya vencidos',
+  proximos: 'Por vencer',
+  '15': 'Vencen en 15 días'
+};
+
+/* El título tiene que decir QUÉ se está mostrando. Un PDF impreso en la pizarra
+   con "Vencimientos" a secas no dice si es el reporte completo o el filtrado por
+   Seguro, así que el título se arma con los filtros que están puestos. */
+function resumenFiltroVenc() {
+  const p = [];
+  p.push(vencFilters.doc ? (VENC_TIPOS.find(t => t.k === vencFilters.doc) || {}).label : 'Todos los documentos');
+  p.push(VENC_ESTADOS[vencFilters.estado] || VENC_ESTADOS.todos);
+  p.push(vencFilters.ventana >= 99999 ? 'sin límite de fecha' : 'hasta ' + vencFilters.ventana + ' días');
+  if (vencFilters.empresa) p.push('empresa: ' + vencFilters.empresa);
+  if (vencFilters.centro) p.push('centro: ' + vencFilters.centro);
+  if (vencFilters.tipo) p.push('tipo: ' + vencFilters.tipo);
+  if (vencFilters.term) p.push('búsqueda: "' + vencFilters.term + '"');
+  return p.join(' · ');
+}
+
 function renderVenc() {
   const cols = [
     { key: 'patente', label: 'Patente' },
     { key: 'interno', label: 'Interno' },
     { key: 'tipo', label: 'Tipo' },
+    { key: 'empresa', label: 'Empresa' },
     { key: 'fecha', label: 'Vencimiento', titulo: 'Fecha del documento elegido en el filtro, o la más próxima si está en "Todos"' }
   ];
 
@@ -820,6 +843,7 @@ function renderVenc() {
         <td class="text-[#ffffff] font-medium">${esc(r.v.patente)}</td>
         <td class="text-center">${esc(r.v.interno || '—')}</td>
         <td>${esc(r.v.tipo || '—')}</td>
+        <td class="col-empresa" title="${esc(r.v.empresa || '')}">${esc(r.v.empresa || '—')}</td>
         <td>${celdaVenc(r)}</td>
       </tr>`).join('');
   }
@@ -831,6 +855,8 @@ function renderVenc() {
   document.getElementById('vc-vencidos').textContent = vencidos;
   document.getElementById('vc-15').textContent = p15;
   document.getElementById('vc-docs').textContent = docs;
+  const sub = document.getElementById('vc-subtitulo');
+  if (sub) sub.textContent = resumenFiltroVenc();
 }
 
 
@@ -840,6 +866,7 @@ function filasVencExport() {
     Patente: r.v.patente || '',
     Interno: r.v.interno || '',
     Tipo: r.v.tipo || '',
+    Empresa: r.v.empresa || '',
     'Fecha vencimiento': r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
     Documento: r.doc.label,
     Dias: r.dias
@@ -847,14 +874,15 @@ function filasVencExport() {
 }
 
 function vencColsExport() {
-  return ['Patente', 'Interno', 'Tipo', 'Fecha vencimiento', 'Documento', 'Dias'];
+  return ['Patente', 'Interno', 'Tipo', 'Empresa', 'Fecha vencimiento', 'Documento', 'Dias'];
 }
 
 function exportVencExcel() {
 
   const rows = filasVencExport();
   const ws = XLSX.utils.json_to_sheet(rows);
-  const wsCols = vencColsExport().map(c => ({ wch: Math.max(9, c.length + 2) }));
+  const anchos = { Empresa: 24, 'Fecha vencimiento': 16 };
+  const wsCols = vencColsExport().map(c => ({ wch: anchos[c] || Math.max(9, c.length + 2) }));
   ws['!cols'] = wsCols;
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Vencimientos');
@@ -866,46 +894,60 @@ async function exportVencPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
   const logo = await getLogoBase64();
-  const w = 210, m = 12, y0 = 36;
+  const w = 210, m = 12;
+  const rowsFiltradas = vencFiltrada();
+
   if (logo) doc.addImage(logo, 'PNG', m, 8, 14, 14);
   const tx = logo ? m + 18 : m;
-  doc.setDrawColor(209, 213, 219); doc.setLineWidth(0.5);
-  doc.line(m, y0 - 2, w - m, y0 - 2);
+
   doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(17, 24, 39);
   doc.text('Grupo Falpat SRL', tx, 16);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(107, 114, 128);
-  doc.text('Vencimientos — documentos por vencer o vencidos', tx, 22);
-  doc.setFontSize(7.5); doc.setTextColor(156, 163, 175);
-  const win = vencFilters.ventana >= 99999 ? 'sin límite' : vencFilters.ventana + ' días';
-  const docSel = vencFilters.doc ? (VENC_TIPOS.find(t => t.k === vencFilters.doc) || {}).label : 'Todos';
-  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}   |   Ventana: ${win}   |   Documento: ${docSel}`, tx, 27);
-  const colsPDF = ['Patente', 'Interno', 'Tipo', 'Fecha vencimiento', 'Dias'];
-  const filas = vencFiltrada().map(r => {
-    const dias = r.dias;
-    return {
-      Patente: r.v.patente || '',
-      Interno: r.v.interno || '',
-      Tipo: r.v.tipo || '',
-      'Fecha vencimiento': r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
-      Dias: dias < 0 ? Math.abs(dias) + ' Dias Vencidos' : dias + ' Dias a Vencer'
-    };
-  });
-  const body = filas.map(r => colsPDF.map(c => String(r[c] === null || r[c] === undefined ? '' : r[c])));
+
+  // El título lleva los filtros puestos: en la pizarra tiene que verse qué reporte es.
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(17, 24, 39);
+  const lineas = doc.splitTextToSize('Vencimientos — ' + resumenFiltroVenc(), w - m - tx);
+  let y = 22;
+  lineas.forEach(l => { doc.text(l, tx, y); y += 4.4; });
+
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(55, 65, 81);
+  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}   |   ${rowsFiltradas.length} vehículos`, tx, y);
+  y += 3;
+
+  doc.setDrawColor(17, 24, 39); doc.setLineWidth(0.8);
+  doc.line(m, y, w - m, y);
+  const y0 = y + 6;
+
+  const colsPDF = ['Patente', 'Interno', 'Tipo', 'Empresa', 'Fecha venc.', 'Dias'];
+  const body = rowsFiltradas.map(r => [
+    r.v.patente || '',
+    r.v.interno || '',
+    r.v.tipo || '',
+    r.v.empresa || '',
+    r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
+    r.dias < 0 ? Math.abs(r.dias) + ' Dias Vencidos' : r.dias + ' Dias a Vencer'
+  ]);
   doc.autoTable({
     startY: y0,
     head: [colsPDF],
     body,
     theme: 'grid',
     tableWidth: w - 2 * m,
-    styles: { fontSize: 7, cellPadding: 1.5, lineWidth: 0.35, lineColor: [209, 213, 219] },
-    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-    bodyStyles: { textColor: [17, 24, 39] },
-    alternateRowStyles: { fillColor: [249, 250, 251] },
-    columnStyles: { 'Dias': { fontSize: 9, fontStyle: 'bold' } },
+    styles: { fontSize: 9.5, cellPadding: 2, lineWidth: 0.5, lineColor: [31, 41, 55] },
+    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10, halign: 'left' },
+    bodyStyles: { textColor: [0, 0, 0] },
+    alternateRowStyles: { fillColor: [241, 245, 249] },
+    columnStyles: {
+      'Patente': { cellWidth: 25, fontStyle: 'bold' },
+      'Interno': { cellWidth: 19, halign: 'center' },
+      'Tipo': { cellWidth: 28 },
+      'Empresa': { cellWidth: 46 },
+      'Fecha venc.': { cellWidth: 28 },
+      'Dias': { cellWidth: 40, fontSize: 10, fontStyle: 'bold' }
+    },
     margin: { left: m, right: m }
   });
   const yPie = (doc.lastAutoTable ? doc.lastAutoTable.finalY : y0 + 250) + 8;
-  doc.setFontSize(6.5); doc.setTextColor(156, 163, 175);
+  doc.setFontSize(7.5); doc.setTextColor(55, 65, 81);
   doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', w / 2, yPie, { align: 'center' });
   doc.save(`vencimientos-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
