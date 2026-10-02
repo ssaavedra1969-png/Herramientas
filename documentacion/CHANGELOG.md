@@ -1,6 +1,35 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-10-02.
+Cambios registrados por sesión. Última actualización: 2026-10-02 (tarde).
+
+## 2026-10-02 (tarde) — Columna Chofer en los Excel de control + vencimientos faltantes + auditoría de PDF
+
+Detalle completo en **`Update_2026.10.02_tarde.md`**. Commits: **`288cd38`**
+(generadores + doc), **`b38c4b3`**, **`bf465f2`**, **`7138138`** (los 3 últimos
+son solo `PATENTE/`). **Ningún cambio de código de la app.**
+
+### Columna Chofer en los 4 Excel de control
+- El usuario editó a mano sus Excel de referencia: se usan **exactamente esas columnas, más `Chofer`**.
+- El campo es **`chofer`**, no `conductorHabitual`: census contra Firestore da `chofer` en **23 de 57** vehículos y `conductorHabitual` en **1** (resto viejo, no usar). Por eso la columna sale vacía en muchos renglones: el dato no está cargado, **no es un bug**.
+- `scripts/generar-control-documentacion.js`: `chofer: v.chofer || ''` + `<th>` en las hojas de faltantes (156 filas) y vencidos (25 filas).
+- `scripts/generar-control-matafuego.js`: idem en `CONTROL_MATAFUEGO_MIXERS_` (20 filas) y `_RESTO` (34 filas).
+
+### Vencimientos que faltaban en Firestore
+- Auditoría de `PATENTE/Vtos/CONTROL_VENCIMIENTOS_2026-09-07.xlsx` contra Firestore con un **diff de solo lectura**: 90 campos idénticos, **4 faltantes**, 0 diferentes, 0 conflictos. `AG889XV` no existe en Firestore (solo tiene PDF).
+- Los 4 se cargaron con `npm run cargar:vencimientos --patente=…` uno por uno, **sin overwrite**:
+  - `AD718OH` VTV `21/02/2026`
+  - `AD957RY` Seguro `07/10/2026`
+  - `AE192RO` Seguro `07/10/2026`
+  - `AE192RO` VTV `15/04/2027`
+- Re-verificado: **94/94 campos idénticos, 0 faltantes, 0 diferencias, 0 conflictos.** Ninguna fecha previa se pisó.
+
+### PDF: auditoría de peso, sin tocar nada
+- 193 PDF en `PATENTE/`. Los >3 MB son **16** y ocupan **56,1 MB de 163,1 MB** (34%).
+- **Decisión del usuario: los PDF quedan como están.** Solo se reporta lo que pesa mucho, para que la app de Optimizaciones sea opcional y no obligatoria.
+- `PATENTE/Reportes/RESCANEAR_2026-10-02.xlsx` generado (ignorado por git). **`AH052ZE` (tapa 39 KB) queda accepted tal cual.**
+
+### Truco aprendido
+- `npm run cargar:vencimientos` sin `--patente` reporta como "a cargar" **todos** los ítems del Excel, incluso los que ya están idénticos (49 vehículos), porque el script no compara contra Firestore: solo escribe. **Para auditar hay que hacer el diff con un script aparte**, no confiar en el dry-run.
 
 ## 2026-10-02 — Reportes: columna Empresa, título con los filtros e impresión "pizarra"
 

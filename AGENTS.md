@@ -115,7 +115,9 @@ PATENTE/
 ## Firestore Collections
 
 ### `vehicles`
-Campos clave: patente, interno, tipo, subtipo, marca, modelo, año, chasis, numeroMotor, capacidadCarga, kilometraje, horometro, estadoGeneral, vtv (map), seguro (map), proximoServiceKm, proximoServiceFecha, centroTrabajo, conductorHabitual, empresa, observaciones, fotoURL, multas[], documentos[]
+Campos clave: patente, interno, tipo, subtipo, marca, modelo, año, chasis, numeroMotor, capacidadCarga, kilometraje, horometro, estadoGeneral, vtv (map), seguro (map), proximoServiceKm, proximoServiceFecha, centroTrabajo, **chofer**, empresa, observaciones, fotoURL, multas[], documentos[]
+
+> **El campo del chofer es `chofer`, NO `conductorHabitual`.** Census del 2026-10-02: `chofer` está en **23 de 57** vehículos, `conductorHabitual` en **1** (resto viejo de una versión anterior). Todo el código lee `v.chofer || v.conductorHabitual || ''` (`routes/admin.js:402,586`, `public/js/dashboard.js:280,328`), así que al escribir usá siempre `chofer`. Si la columna Chofer de un Excel sale vacía, es que el vehículo no tiene el dato cargado: **no es un bug.**
 Subcolecciones: `combustible` (fecha, litros, importe, tipo, km, proveedor), `repuestos` (fecha, pieza, costo, proveedor, tipo), **`services`** (fecha, tipo, km, intervaloKm, proximoKm, proximoFecha, costo, proveedor)
 
 > **No existe la colección `maintenance` ni `routes/maintenance.js`.** Se
@@ -197,7 +199,7 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 
 ## Registro de cambios recientes (para puesta al día de IA)
 
-Último commit: **`f04c43e`** ("feat(reportes): columna Empresa, título con los filtros e impresión más legible", 2026-10-02). **El registro de abajo está en orden temático, no cronológico**: arranca por la sesión del 2026-09-29 (numeración + harness de tests) y después sigue con las del 2026-10-01 y 10-02, que fueron todas de **Reportes**. Detalle de las dos últimas: `documentacion/Update_2026.10.02.md`.
+Último commit: **`7138138`** ("Docs: Vehículo AH052ZE", 2026-10-02 tarde). Antes de este hubo `bf465f2`, `b38c4b3` y `288cd38`. **El registro de abajo está en orden temático, no cronológico**: arranca por la sesión del 2026-09-29 (numeración + harness de tests) y después sigue con las del 2026-10-01 y 10-02, que fueron todas de **Reportes**. Detalle de las tres últimas: `documentacion/Update_2026.10.02.md` (Reportes) y `documentacion/Update_2026.10.02_tarde.md` (documentación de la flota).
 
 **Los tres bugs de numeración de la sesión (todos el mismo patrón: un off-by-one al inicializar un counter):**
 
@@ -251,6 +253,12 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
   - `DEV_READ_ONLY=true` (local) bloquea el botón "Marcar impresos hoy" (solo funciona en producción/Vercel).
 
 - **Herramienta "Optimizaciones" — SACADA DEL MENÚ** (commit `fec5469`, 2026-10-01). Antes había una entrada **Utilidades → Optimizar Adjuntos** (`OPTIMIZADOR_URL`, default `http://localhost:8642`) agregada en `9a623eb`; se quitó porque quedó como app local separada (`Optimizaciones\iniciar.bat`). **Ya no existe ni el link ni la variable `OPTIMIZADOR_URL`** — se abre a mano desde el `.bat`. No reintroducirla sin avisar.
+- **Sesión 2026-10-02 tarde (documentación de la flota, `documentacion/Update_2026.10.02_tarde.md`)** — cuatro cosas, **ningún cambio de código de app** (los commits `b38c4b3`, `bf465f2` y `7138138` son solo `PATENTE/`):
+  - **Columna `Chofer` en los 4 Excel de control**, con las columnas exactas que pidió el usuario. En `generar-control-documentacion.js` (156 + 25 filas) y `generar-control-matafuego.js` (20 mixers + 34 resto). El campo es `chofer` (ver la nota en la sección de `vehicles`).
+  - **Los 4 vencimientos que faltaban, cargados sin pisar nada.** `npm run cargar:vencimientos` **NO es una herramienta de auditoría**: su dry-run reporta como "a cargar" los ítems del Excel que ya son idénticos en Firestore (49 vehículos), porque solo escribe, no compara. Para saber qué falta de verdad hay que diffear con un script aparte de solo lectura. Resultado: 90 campos idénticos / **4 faltantes** / 0 conflictos → cargados con `--patente=` uno por uno (`AD718OH` VTV `21/02/2026`, `AD957RY` Seguro `07/10/2026`, `AE192RO` Seguro `07/10/2026` + VTV `15/04/2027`) → re-verificado **94/94 idénticos, 0 diferencias**. `AG889XV` tiene PDF pero no existe en Firestore.
+  - **Auditoría de peso de los PDF: 193 archivos, 16 >3 MB (56,1 de 163,1 MB = 34%).** **El usuario decidió NO optimizar: los PDF quedan como están** y la app de `Optimizaciones/` queda como algo opcional. El Excel con los candidatos está en `PATENTE/Reportes/RESCANEAR_2026-10-02.xlsx` (ignorado por git).
+  - La app solo reconoce nombres estrictos `PATENTE/{patente}/{tipo}.{pdf|jpg|jpeg|png}`: un archivo con nombre descriptivo largo **no aparece en ningún reporte**. No renombrar los PDF sin actualizar los readers.
+
 - **Docs**: AE192RO vtv optimizado (3,1 MB → 1,14 MB, -63%) y PCS413 cedula estandarizada (commit `af33acd`).
 
 - **Página pública del QR del vehículo (`vehicle-qr-public.ejs`)** — vista móvil que abre quien escanea el QR pegado al camión (ruta `GET /vehicle/:id/qr` en server.js, **pública, sin auth**). Se rediseñó para el usuario común: header con logo Falpat (`/images/fp3d.png` reemplazó al icono de camioncito), sección **Vencimientos** (VTV, Seguro, Service, Matafuego con días restantes/estado de color, se pasa el array `vencimientos` desde el server), y sección **Documentos del vehículo** al final (solo Cédula, Seguro y VTV, solo lectura, enlaces a `/documentos/{patente}/{archivo}`). El server calcula los vencimientos y escanea la carpeta `PATENTE/` (helper `scanDocsCarpeta(patente)` local en server.js, docs del folder = públicos; los subidos manualmente NO se muestran acá porque requieren auth).
