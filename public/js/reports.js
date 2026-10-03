@@ -18,6 +18,63 @@ async function getLogoBase64() {
   return _logoB64;
 }
 
+/* ================= ESTILO COMÚN DE LOS 3 PDF =================
+   Los tres informes se imprimen en la pizarra: letra grande, filas con línea y
+   header negro con letras blancas. Antes el de Flota y el de Documentación
+  maelaban 5.5pt sin bordes, que de lejos no se leía nada. */
+const PDF_TABLA = {
+  theme: 'grid',
+  styles: { fontSize: 9, cellPadding: 2, lineWidth: 0.5, lineColor: [31, 41, 55] },
+  headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9.5, halign: 'left' },
+  bodyStyles: { textColor: [0, 0, 0] },
+  alternateRowStyles: { fillColor: [241, 245, 249] },
+  margin: { left: 12, right: 12, bottom: 16 }
+};
+
+// Arma logo + título + subtítulo (que puede partirse en varias líneas) + fecha,
+// y devuelve el Y donde arranca la tabla.
+function encabezadoInforme(doc, logo, titulo, subtitulo, extra) {
+  const w = doc.internal.pageSize.getWidth(), m = 12;
+  const tx = logo ? m + 18 : m;
+  if (logo) doc.addImage(logo, 'PNG', m, 8, 14, 14);
+  doc.setTextColor(17, 24, 39);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
+  doc.text(titulo, tx, 16);
+  let y = 22;
+  if (subtitulo) {
+    doc.setFontSize(9);
+    doc.splitTextToSize(subtitulo, w - m - tx).forEach(l => { doc.text(l, tx, y); y += 4.4; });
+  }
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(55, 65, 81);
+  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}${extra ? '   |   ' + extra : ''}`, tx, y);
+  y += 3;
+  doc.setDrawColor(17, 24, 39); doc.setLineWidth(0.8);
+  doc.line(m, y, w - m, y);
+  return y + 6;
+}
+
+// Pie en todas las páginas (no solo en la última): se pasa como didDrawPage.
+function pieEnCadaPagina(doc) {
+  return function () {
+    const p = doc.internal.pageSize;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(55, 65, 81);
+    doc.text('Grupo Falpat SRL — Sistema de Control Vehicular — Página ' + doc.internal.getNumberOfPages(),
+      p.getWidth() / 2, p.getHeight() - 7, { align: 'center' });
+  };
+}
+
+/* Ancho por columna para la Flota, que el usuario arma a whim (checkbox de
+   columnas): las de texto largo se llevan más mm y el resto se reparte parejo,
+   para que no quede una columna de 2mm al lado de una de 60. */
+const PDF_ANCHO_COL = { chofer: 26, empresa: 30, centroTrabajo: 28, marca: 20, modelo: 20, estadoGeneral: 24, chasis: 26, numeroMotor: 24, subtipo: 20, patente: 20, interno: 13, nroBet: 15, tipo: 15, trompo: 12, anio: 10, kilometraje: 16, horometro: 16 };
+function anchosColumnasPDF(campos, labels, total) {
+  const suma = campos.reduce((s, k) => s + (PDF_ANCHO_COL[k] || 14), 0);
+  const f = total / suma;
+  const out = {};
+  campos.forEach((k, i) => { out[labels[i]] = (PDF_ANCHO_COL[k] || 14) * f; });
+  return out;
+}
+
 const FIELDS = [
   { key: 'patente', label: 'Patente', type: 'text' },
   { key: 'interno', label: 'Interno', type: 'text' },
@@ -75,7 +132,9 @@ let sortDir = 'asc';
 let docFilters = { term: '', falta: '', estado: 'todos', empresa: '', centro: '' };
 let docSortKey = 'faltantes';
 let docSortDir = 'desc';
-let vencFilters = { term: '', ventana: 30, doc: '', estado: 'todos', empresa: '', centro: '', tipo: '' };
+// docs y empresas son ARRAYS: se pueden elegir varios a la vez desde los
+// checklists desplegables. Array vacio = "Todos".
+let vencFilters = { term: '', ventana: 30, docs: [], estado: 'todos', empresas: [], centro: '', tipo: '', agrupar: true };
 let vencSortKey = 'fecha';
 let vencSortDir = 'asc';
 
@@ -572,35 +631,20 @@ async function exportFleetPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('l', 'mm', 'a4');
   const logo = await getLogoBase64();
-  const w = 297, m = 12, y0 = 36;
-  // encabezado con logo
-  if (logo) doc.addImage(logo, 'PNG', m, 8, 14, 14);
-  const tx = logo ? m + 18 : m;
-  doc.setDrawColor(209, 213, 219); doc.setLineWidth(0.5);
-  doc.line(m, y0 - 2, w - m, y0 - 2);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(17, 24, 39);
-  doc.text('Grupo Falpat SRL', tx, 16);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(107, 114, 128);
-  doc.text('Reporte de Flota — vehículos filtrados', tx, 22);
-  doc.setFontSize(7.5); doc.setTextColor(156, 163, 175);
-  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}`, tx, 27);
+  const w = 297, m = 12;
+  const filas = flotaFiltrada();
+  const y0 = encabezadoInforme(doc, logo, 'Grupo Falpat SRL', 'Reporte de Flota — vehículos filtrados',
+    filas.length + (filas.length === 1 ? ' vehículo' : ' vehículos'));
   const visible = columnasVisibles();
-  const body = flotaFiltrada().map(v => visible.map(f => valorExport(v, f)));
-  doc.autoTable({
+  const body = filas.map(v => visible.map(f => valorExport(v, f)));
+  doc.autoTable(Object.assign({}, PDF_TABLA, {
     startY: y0,
     head: [visible.map(f => f.label)],
     body,
-    theme: 'grid',
     tableWidth: w - 2 * m,
-    styles: { fontSize: 5.5, cellPadding: 1.5 },
-    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 6 },
-    bodyStyles: { textColor: [17, 24, 39] },
-    alternateRowStyles: { fillColor: [249, 250, 251] },
-    margin: { left: m, right: m }
-  });
-  const yPie = (doc.lastAutoTable ? doc.lastAutoTable.finalY : y0 + 200) + 8;
-  doc.setFontSize(6.5); doc.setTextColor(156, 163, 175);
-  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', w / 2, yPie, { align: 'center' });
+    columnStyles: anchosColumnasPDF(visible.map(f => f.key), visible.map(f => f.label), w - 2 * m),
+    didDrawPage: pieEnCadaPagina(doc)
+  }));
   doc.save(`reporte-flota-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
 }
@@ -628,34 +672,24 @@ async function exportDocPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('l', 'mm', 'a4');
   const logo = await getLogoBase64();
-  const w = 297, m = 12, y0 = 36;
-  if (logo) doc.addImage(logo, 'PNG', m, 8, 14, 14);
-  const tx = logo ? m + 18 : m;
-  doc.setDrawColor(209, 213, 219); doc.setLineWidth(0.5);
-  doc.line(m, y0 - 2, w - m, y0 - 2);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(17, 24, 39);
-  doc.text('Grupo Falpat SRL', tx, 16);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(107, 114, 128);
-  doc.text('Documentación — estado por vehículo', tx, 22);
-  doc.setFontSize(7.5); doc.setTextColor(156, 163, 175);
-  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}`, tx, 27);
+  const w = 297, m = 12;
   const rows = docFiltrada();
-  const head = ['Patente', 'Marca/Modelo', 'Centro', 'Empresa', ...DOC_TIPOS.map(t => DOC_LABELS[t]), 'Faltan'];
+  const y0 = encabezadoInforme(doc, logo, 'Grupo Falpat SRL', 'Documentación — estado por vehículo',
+    rows.length + (rows.length === 1 ? ' vehículo' : ' vehículos'));
+  const labels = [...DOC_TIPOS.map(t => DOC_LABELS[t]), 'Faltan'];
+  const head = ['Patente', 'Marca/Modelo', 'Centro', 'Empresa', ...labels];
   const body = rows.map(r => [r.patente || '', [r.marca, r.modelo].filter(Boolean).join(' ') || '', r.centroTrabajo || '', r.empresa || '', ...DOC_TIPOS.map(t => r.docs && r.docs[t] ? 'Sí' : 'Falta'), String(r.faltantes)]);
-  doc.autoTable({
+  // las 6 columnas de documento son cortitas ("Sí"/"Falta"): el ancho se lo
+  // dejan a Marca/Modelo, Centro y Empresa, que son los que tienen texto largo
+  const anchos = { Patente: 26, 'Marca/Modelo': 52, Centro: 32, Empresa: 44, Faltan: 16 };
+  labels.forEach(l => { anchos[l] = 13; });
+  doc.autoTable(Object.assign({}, PDF_TABLA, {
     startY: y0,
     head: [head], body,
-    theme: 'grid',
     tableWidth: w - 2 * m,
-    styles: { fontSize: 5.5, cellPadding: 1.5 },
-    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 6 },
-    bodyStyles: { textColor: [17, 24, 39] },
-    alternateRowStyles: { fillColor: [249, 250, 251] },
-    margin: { left: m, right: m }
-  });
-  const yPie = (doc.lastAutoTable ? doc.lastAutoTable.finalY : y0 + 200) + 8;
-  doc.setFontSize(6.5); doc.setTextColor(156, 163, 175);
-  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', w / 2, yPie, { align: 'center' });
+    columnStyles: anchos,
+    didDrawPage: pieEnCadaPagina(doc)
+  }));
   doc.save(`documentacion-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
 }
@@ -695,31 +729,104 @@ function valoresUnicosVenc(campo) {
 }
 
 function llenarSelectsVenc() {
-  const d = document.getElementById('vc-doc');
-  d.innerHTML = '<option value="">Todos</option>' + VENC_TIPOS.map(t => `<option value="${t.k}">${t.label}</option>`).join('');
-  const emp = document.getElementById('vc-empresa');
-  emp.innerHTML = '<option value="">Todas</option>' + valoresUnicosVenc('empresa').map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
   const cen = document.getElementById('vc-centro');
   cen.innerHTML = '<option value="">Todos</option>' + valoresUnicosVenc('centroTrabajo').map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
   const tip = document.getElementById('vc-tipo');
   tip.innerHTML = '<option value="">Todos</option>' + valoresUnicosVenc('tipo').map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+
+  // Los 2 filtros multiples (documento y empresa) son checklists desplegables.
+  llenarMultiVenc('doc', 'Todos', VENC_TIPOS.map(t => ({ v: t.k, label: t.label })), vencFilters.docs);
+  llenarMultiVenc('emp', 'Todas', valoresUnicosVenc('empresa').map(v => ({ v, label: v })), vencFilters.empresas);
 }
+
+function llenarMultiVenc(id, todos, opciones, sel) {
+  const panel = document.getElementById('vc-' + id + '-panel');
+  if (!panel) return;
+  panel.innerHTML =
+    itemMultiHtml(todos, todos, sel.length === 0, true) +
+    '<div class="vc-multi-sep"></div>' +
+    opciones.map(o => itemMultiHtml(o.v, o.label, sel.includes(o.v))).join('');
+  // onchange (y no addEventListener) porque esta función se vuelve a llamar al
+  // limpiar filtros: asignar reemplaza el handler en vez de acumularlo
+  panel.onchange = ev => {
+    const inp = ev.target.closest('input[data-opt]');
+    if (!inp) return;
+    if (inp.dataset.todos === '1') {
+      vencFilters[id === 'doc' ? 'docs' : 'empresas'] = inp.checked ? [] : opciones.map(o => o.v);
+    } else {
+      setMultiVenc(id, inp.dataset.opt, inp.checked);
+    }
+    alCambiarFiltroVenc();
+  };
+}
+
+// Un renglón del checklist. El valor viaja en data-opt (nunca interpolado en un
+// onclick) para que una empresa con comilla o & no rompa el HTML.
+function itemMultiHtml(valor, label, marcado, esTodos) {
+  return '<label class="vc-multi-item"><input type="checkbox" data-opt="' + esc(valor) + '"' +
+    (esTodos ? ' data-todos="1"' : '') + (marcado ? ' checked' : '') +
+    '><span>' + esc(label) + '</span></label>';
+}
+
+function setMultiVenc(id, valor, marcado) {
+  const arr = id === 'doc' ? vencFilters.docs : vencFilters.empresas;
+  if (marcado) { if (!arr.includes(valor)) arr.push(valor); }
+  else for (let i = arr.length - 1; i >= 0; i--) if (arr[i] === valor) arr.splice(i, 1);
+}
+
+// El boton muestra "Todos", lo unico elegido, o "N documentos" / "N empresas".
+function actualizarLabelsMulti() {
+  const dl = document.getElementById('vc-doc-label');
+  if (dl) dl.textContent = vencFilters.docs.length === 0 ? 'Todos'
+    : vencFilters.docs.length === 1 ? (VENC_TIPOS.find(t => t.k === vencFilters.docs[0]) || {}).label
+    : vencFilters.docs.length + ' documentos';
+  const el = document.getElementById('vc-empresa-label');
+  if (el) el.textContent = vencFilters.empresas.length === 0 ? 'Todas'
+    : vencFilters.empresas.length === 1 ? vencFilters.empresas[0]
+    : vencFilters.empresas.length + ' empresas';
+}
+
+function alCambiarFiltroVenc() { actualizarLabelsMulti(); renderVenc(); }
+
+function toggleMultiVenc(id) {
+  const panel = document.getElementById('vc-' + id + '-panel');
+  if (!panel) return;
+  const abrir = panel.classList.contains('hidden');
+  document.querySelectorAll('.vc-multi-panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.vc-multi-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  if (abrir) {
+    panel.classList.remove('hidden');
+    const btn = panel.closest('.vc-multi')?.querySelector('.vc-multi-btn');
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+  }
+}
+
+function setVencAgrupar(v) { vencFilters.agrupar = !!v; renderVenc(); }
+
+// Click fuera cierra los checklists. El panel es hijo de .vc-multi, asi que un
+// click adentro no lo cierra.
+document.addEventListener('click', ev => {
+  if (ev.target.closest('.vc-multi')) return;
+  document.querySelectorAll('.vc-multi-panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.vc-multi-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+});
 
 function setVencSearch(v) { vencFilters.term = v.trim().toLowerCase(); renderVenc(); }
 function setVencVentana(v) { vencFilters.ventana = parseInt(v, 10) || 30; renderVenc(); }
-function setVencDoc(v) { vencFilters.doc = v; renderVenc(); }
 function setVencEstado(v) { vencFilters.estado = v; renderVenc(); }
-function setVencEmpresa(v) { vencFilters.empresa = v; renderVenc(); }
 function setVencCentro(v) { vencFilters.centro = v; renderVenc(); }
 function setVencTipo(v) { vencFilters.tipo = v; renderVenc(); }
 
 function limpiarFiltrosVenc() {
-  vencFilters = { term: '', ventana: 30, doc: '', estado: 'todos', empresa: '', centro: '', tipo: '' };
-  ['vc-buscar', 'vc-doc', 'vc-estado', 'vc-empresa', 'vc-centro', 'vc-tipo'].forEach(id => {
+  vencFilters = { term: '', ventana: 30, docs: [], estado: 'todos', empresas: [], centro: '', tipo: '', agrupar: true };
+  ['vc-buscar', 'vc-estado', 'vc-centro', 'vc-tipo'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = el.id === 'vc-estado' ? 'todos' : '';
   });
   document.getElementById('vc-ventana').value = '30';
+  const ag = document.getElementById('vc-agrupar');
+  if (ag) ag.checked = true;
+  llenarSelectsVenc();
   renderVenc();
 }
 
@@ -737,46 +844,109 @@ function vencimientosDe(v) {
 function vencFiltrada() {
   const win = vencFilters.ventana;
   const out = [];
+  // Con 2 o mas documentos elegidos sale una fila por vehiculo Y documento (una
+  // fila repetida si el camion tiene que renovar varias cosas). Con uno, o con
+  // "Todos", cada vehiculo aparece una sola vez con lo mas urgente: es la lista
+  // de trabajo.
+  const porDoc = vencFilters.docs.length > 1;
+  const selEmp = vencFilters.empresas.map(normTxt);
+
   fleet.forEach(v => {
     if (vencFilters.term) {
       const hay = [v.patente, v.interno, v.marca, v.modelo, v.chofer, v.empresa, v.centroTrabajo].join(' ').toLowerCase();
       if (!hay.includes(vencFilters.term)) return;
     }
-    if (vencFilters.empresa && normTxt(v.empresa) !== normTxt(vencFilters.empresa)) return;
+    if (selEmp.length && !selEmp.includes(normTxt(v.empresa))) return;
     if (vencFilters.centro && normTxt(v.centroTrabajo) !== normTxt(vencFilters.centro)) return;
     if (vencFilters.tipo && normTxt(v.tipo) !== normTxt(vencFilters.tipo)) return;
 
-
-    // si se eligio un documento, el reporte es SOLO de ese documento
     const todos = vencimientosDe(v);
-    const scope = vencFilters.doc ? todos.filter(d => d.k === vencFilters.doc) : todos;
+    const scope = vencFilters.docs.length ? todos.filter(d => vencFilters.docs.includes(d.k)) : todos;
     const conFecha = scope.filter(d => d.dias !== null);
     if (!conFecha.length) return;
+    const enWin = conFecha.filter(d => d.dias <= win);
+    if (!enWin.length) return;
+
+    if (porDoc) {
+      // una fila por documento: cada uno con su estado y su color
+      enWin.forEach(d => {
+        if (!pasaEstadoVenc(d.dias)) return;
+        out.push({ v, doc: d, dias: d.dias, totalDocs: 1 });
+      });
+      return;
+    }
 
     // una fila por vehiculo: la fecha que se muestra es la mas urgente del scope
-    let doc = conFecha[0];
-    conFecha.forEach(d => { if (d.dias < doc.dias) doc = d; });
-    if (doc.dias > win) return;
-
-    // los filtros de estado, el stat y el color se refieren todos a esa misma fecha
-    if (vencFilters.estado === 'vencidos' && doc.dias >= 0) return;
-    if (vencFilters.estado === 'proximos' && doc.dias < 0) return;
-    if (vencFilters.estado === '15' && (doc.dias < 0 || doc.dias > 15)) return;
-
-    out.push({ v, doc, dias: doc.dias, totalDocs: conFecha.filter(d => d.dias <= win).length });
-  });
-  const fb = campoObjeto(vencSortKey);
-  out.sort((a, b) => {
-    let va, vb;
-    if (vencSortKey === 'fecha') { va = a.dias; vb = b.dias; }
-    else { va = orderVal(a.v, vencSortKey, fb); vb = orderVal(b.v, vencSortKey, fb); }
-    if (va < vb) return vencSortDir === 'asc' ? -1 : 1;
-    if (va > vb) return vencSortDir === 'asc' ? 1 : -1;
-    return 0;
+    let doc = enWin[0];
+    enWin.forEach(d => { if (d.dias < doc.dias) doc = d; });
+    if (!pasaEstadoVenc(doc.dias)) return;
+    out.push({ v, doc, dias: doc.dias, totalDocs: enWin.length });
   });
   return out;
 }
 
+// Los 3 filtros de estado se aplican sobre la MISMA fecha que se muestra.
+function pasaEstadoVenc(dias) {
+  if (vencFilters.estado === 'vencidos' && dias >= 0) return false;
+  if (vencFilters.estado === 'proximos' && dias < 0) return false;
+  if (vencFilters.estado === '15' && (dias < 0 || dias > 15)) return false;
+  return true;
+}
+
+function valorVenc(r, key, fb) {
+  return key === 'fecha' ? r.dias : orderVal(r.v, key, fb);
+}
+
+/* Un solo informe: las empresas ordenadas por su vencimiento más próximo (la
+   más urgente arriba) y, DENTRO de cada empresa, los camiones ordenados por
+   patente, que es como se lee una lista de vehículos. Si se clickea una
+   columna, esa columna manda adentro del grupo. Sin agrupar, manda la columna
+   activa como siempre. */
+function datosVenc() {
+  const out = vencFiltrada();
+  const dir = vencSortDir === 'asc' ? 1 : -1;
+  // adentro del grupo el orden por defecto es por patente; recién clickeando
+  // "Vencimiento" se vuelve a ordenar por fecha
+  const keyFila = (vencFilters.agrupar && vencSortKey === 'fecha') ? 'patente' : vencSortKey;
+  const fb = campoObjeto(keyFila);
+  const cmpFila = (a, b) => {
+    const va = valorVenc(a, keyFila, fb), vb = valorVenc(b, keyFila, fb);
+    if (va < vb) return -dir;
+    if (va > vb) return dir;
+    return 0;
+  };
+  out.sort(cmpFila);
+  if (!vencFilters.agrupar) return { grupos: null, filas: out };
+
+  const mapa = new Map();
+  out.forEach(r => {
+    const k = normTxt(r.v.empresa);
+    if (!mapa.has(k)) mapa.set(k, { key: k, nombre: r.v.empresa || 'Sin empresa', filas: [] });
+    mapa.get(k).filas.push(r);
+  });
+  const grupos = [...mapa.values()];
+  grupos.forEach(g => {
+    g.filas.sort(cmpFila);
+    g.minDias = Math.min.apply(null, g.filas.map(r => r.dias));
+    g.vehiculos = new Set(g.filas.map(r => r.v.patente)).size;
+    g.vencidos = g.filas.filter(r => r.dias < 0).length;
+  });
+  // el orden de las empresas lo decide la columna activa (por defecto la fecha:
+  // la más urgente arriba)
+  const fbG = campoObjeto(vencSortKey);
+  grupos.sort((a, b) => {
+    if (vencSortKey === 'fecha') return (a.minDias - b.minDias) * dir;
+    const va = valorVenc(a.filas[0], vencSortKey, fbG), vb = valorVenc(b.filas[0], vencSortKey, fbG);
+    if (va < vb) return -dir;
+    if (va > vb) return dir;
+    return 0;
+  });
+  // "filas" sale YA en el orden final (empresa por empresa) y no en el sort
+  // global: el Excel no tiene filas de encabezado de empresa, así que si no
+  // viniera aplanado en este orden el archivo no coincidía con la pantalla.
+  // Los stats no dependen del orden y el PDF usa "grupos" cuando agrupa.
+  return { grupos, filas: grupos.reduce((acc, g) => acc.concat(g.filas), []) };
+}
 
 function sortVencBy(key) {
   if (vencSortKey === key) vencSortDir = vencSortDir === 'asc' ? 'desc' : 'asc';
@@ -807,51 +977,80 @@ const VENC_ESTADOS = {
    Seguro, así que el título se arma con los filtros que están puestos. */
 function resumenFiltroVenc() {
   const p = [];
-  p.push(vencFilters.doc ? (VENC_TIPOS.find(t => t.k === vencFilters.doc) || {}).label : 'Todos los documentos');
+  const n = vencFilters.docs.length;
+  p.push(n === 0 ? 'Todos los documentos'
+    : n === 1 ? (VENC_TIPOS.find(t => t.k === vencFilters.docs[0]) || {}).label
+    : vencFilters.docs.map(k => (VENC_TIPOS.find(t => t.k === k) || {}).label).join(' + '));
   p.push(VENC_ESTADOS[vencFilters.estado] || VENC_ESTADOS.todos);
   p.push(vencFilters.ventana >= 99999 ? 'sin límite de fecha' : 'hasta ' + vencFilters.ventana + ' días');
-  if (vencFilters.empresa) p.push('empresa: ' + vencFilters.empresa);
+  if (vencFilters.empresas.length === 1) p.push('empresa: ' + vencFilters.empresas[0]);
+  else if (vencFilters.empresas.length > 1) p.push(vencFilters.empresas.length + ' empresas');
+  if (vencFilters.agrupar) p.push('agrupado por empresa');
   if (vencFilters.centro) p.push('centro: ' + vencFilters.centro);
   if (vencFilters.tipo) p.push('tipo: ' + vencFilters.tipo);
   if (vencFilters.term) p.push('búsqueda: "' + vencFilters.term + '"');
   return p.join(' · ');
 }
 
+// Encabezado de grupo: empresa, cuántos vehículos y documentos mete, y cuántos
+// ya están vencidos (lo primero que se mira en la pizarra).
+function filaGrupoVenc(g) {
+  const meta = [g.vehiculos + (g.vehiculos === 1 ? ' vehículo' : ' vehículos'),
+                g.filas.length + (g.filas.length === 1 ? ' documento' : ' documentos')];
+  if (g.vencidos) meta.push(g.vencidos + (g.vencidos === 1 ? ' vencido' : ' vencidos'));
+  return '<tr class="vc-grp"><td colspan="5"><span class="vc-grp-nombre">' + esc(g.nombre) +
+    '</span><span class="vc-grp-count"> — ' + esc(meta.join(' · ')) + '</span></td></tr>';
+}
+
+function filaVenc(r) {
+  return '<tr>' +
+    '<td class="text-[#ffffff] font-medium">' + esc(r.v.patente) + '</td>' +
+    '<td class="text-center">' + esc(r.v.interno || '—') + '</td>' +
+    '<td>' + esc(r.v.tipo || '—') + '</td>' +
+    '<td class="col-empresa" title="' + esc(r.v.empresa || '') + '">' + esc(r.v.empresa || '—') + '</td>' +
+    '<td>' + celdaVenc(r) + '</td>' +
+    '</tr>';
+}
+
 function renderVenc() {
+  const multiDoc = vencFilters.docs.length > 1;
   const cols = [
     { key: 'patente', label: 'Patente' },
     { key: 'interno', label: 'Interno' },
     { key: 'tipo', label: 'Tipo' },
     { key: 'empresa', label: 'Empresa' },
-    { key: 'fecha', label: 'Vencimiento', titulo: 'Fecha del documento elegido en el filtro, o la más próxima si está en "Todos"' }
+    { key: 'fecha', label: 'Vencimiento', titulo: multiDoc ? 'Con 2 o más documentos sale una fila por documento' : 'Fecha del documento elegido en el filtro, o la más próxima si está en "Todos". Con el agrupado prendido ordena las empresas' }
   ];
 
-  const arrow = k => (vencSortKey === k ? (vencSortDir === 'asc' ? '▲' : '▼') : '');
+  // con el agrupado prendido el default ordena por patente adentro del grupo:
+  // la flecha va en Patente, no en Vencimiento (que ordena las empresas)
+  const colActiva = (vencFilters.agrupar && vencSortKey === 'fecha') ? 'patente' : vencSortKey;
+  const arrow = k => (colActiva === k ? (vencSortDir === 'asc' ? '▲' : '▼') : '');
   document.getElementById('vc-thead').innerHTML = '<tr>' + cols.map(c =>
     `<th onclick="sortVencBy('${c.key}')"${c.titulo ? ` title="${esc(c.titulo)}"` : ''}>${esc(c.label)} <span class="sort-arrow">${arrow(c.key)}</span></th>`
   ).join('') + '</tr>';
 
-  const rows = vencFiltrada();
+  const { grupos, filas } = datosVenc();
   const tbody = document.getElementById('vc-table');
   const vacio = document.getElementById('vc-vacio');
-  if (!rows.length) {
+  if (!filas.length) {
     tbody.innerHTML = '';
     vacio.classList.remove('hidden');
   } else {
     vacio.classList.add('hidden');
-    tbody.innerHTML = rows.map(r => `<tr>
-        <td class="text-[#ffffff] font-medium">${esc(r.v.patente)}</td>
-        <td class="text-center">${esc(r.v.interno || '—')}</td>
-        <td>${esc(r.v.tipo || '—')}</td>
-        <td class="col-empresa" title="${esc(r.v.empresa || '')}">${esc(r.v.empresa || '—')}</td>
-        <td>${celdaVenc(r)}</td>
-      </tr>`).join('');
+    tbody.innerHTML = grupos
+      ? grupos.map(g => filaGrupoVenc(g) + g.filas.map(filaVenc).join('')).join('')
+      : filas.map(filaVenc).join('');
   }
 
-  const vencidos = rows.filter(r => r.dias < 0).length;
-  const p15 = rows.filter(r => r.dias >= 0 && r.dias <= 15).length;
-  const docs = rows.reduce((s, r) => s + r.totalDocs, 0);
-  document.getElementById('vc-total').textContent = rows.length;
+  const vencidos = filas.filter(r => r.dias < 0).length;
+  const p15 = filas.filter(r => r.dias >= 0 && r.dias <= 15).length;
+  const docs = filas.reduce((s, r) => s + r.totalDocs, 0);
+  // con 2+ documentos un vehículo sale varias veces: el stat cuenta los
+  // vehículos distintos, no las filas
+  document.getElementById('vc-total').textContent = grupos
+    ? grupos.reduce((s, g) => s + g.vehiculos, 0)
+    : new Set(filas.map(r => r.v.patente)).size;
   document.getElementById('vc-vencidos').textContent = vencidos;
   document.getElementById('vc-15').textContent = p15;
   document.getElementById('vc-docs').textContent = docs;
@@ -862,7 +1061,10 @@ function renderVenc() {
 
 /* ---- export vencimientos ---- */
 function filasVencExport() {
-  return vencFiltrada().map(r => ({
+  // mismo orden que en pantalla: empresas de la más urgente a la menos, y
+  // adentro los camiones por patente (datosVenc() ya devuelve las filas en ese
+  // orden). El Excel no lleva fila de encabezado de empresa.
+  return datosVenc().filas.map(r => ({
     Patente: r.v.patente || '',
     Interno: r.v.interno || '',
     Tipo: r.v.tipo || '',
@@ -895,60 +1097,61 @@ async function exportVencPDF() {
   const doc = new jsPDF('p', 'mm', 'a4');
   const logo = await getLogoBase64();
   const w = 210, m = 12;
-  const rowsFiltradas = vencFiltrada();
+  const { grupos, filas } = datosVenc();
+  const nVeh = grupos ? grupos.reduce((s, g) => s + g.vehiculos, 0) : new Set(filas.map(r => r.v.patente)).size;
+  // El subtítulo lleva los filtros puestos: en la pizarra tiene que verse qué reporte es.
+  const y0 = encabezadoInforme(doc, logo, 'Grupo Falpat SRL', 'Vencimientos — ' + resumenFiltroVenc(),
+    nVeh + (nVeh === 1 ? ' vehículo' : ' vehículos'));
 
-  if (logo) doc.addImage(logo, 'PNG', m, 8, 14, 14);
-  const tx = logo ? m + 18 : m;
-
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(17, 24, 39);
-  doc.text('Grupo Falpat SRL', tx, 16);
-
-  // El título lleva los filtros puestos: en la pizarra tiene que verse qué reporte es.
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(17, 24, 39);
-  const lineas = doc.splitTextToSize('Vencimientos — ' + resumenFiltroVenc(), w - m - tx);
-  let y = 22;
-  lineas.forEach(l => { doc.text(l, tx, y); y += 4.4; });
-
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(55, 65, 81);
-  doc.text(`Generado: ${new Date().toLocaleString('es-AR')}   |   ${rowsFiltradas.length} vehículos`, tx, y);
-  y += 3;
-
-  doc.setDrawColor(17, 24, 39); doc.setLineWidth(0.8);
-  doc.line(m, y, w - m, y);
-  const y0 = y + 6;
-
-  const colsPDF = ['Patente', 'Interno', 'Tipo', 'Empresa', 'Fecha venc.', 'Dias'];
-  const body = rowsFiltradas.map(r => [
-    r.v.patente || '',
-    r.v.interno || '',
-    r.v.tipo || '',
-    r.v.empresa || '',
-    r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
-    r.dias < 0 ? Math.abs(r.dias) + ' Dias Vencidos' : r.dias + ' Dias a Vencer'
-  ]);
-  doc.autoTable({
+  // Con 2+ documentos el mismo camión sale varias filas: sin la columna Documento
+  // el PDF no dice qué hay que renovar.
+  const multiDoc = vencFilters.docs.length > 1;
+  const colsPDF = multiDoc
+    ? ['Patente', 'Interno', 'Tipo', 'Empresa', 'Documento', 'Fecha venc.', 'Dias']
+    : ['Patente', 'Interno', 'Tipo', 'Empresa', 'Fecha venc.', 'Dias'];
+  const celda = r => {
+    const c = [r.v.patente || '', r.v.interno || '', r.v.tipo || '', r.v.empresa || ''];
+    if (multiDoc) c.push(r.doc.label);
+    c.push(r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
+           r.dias < 0 ? Math.abs(r.dias) + ' Dias Vencidos' : r.dias + ' Dias a Vencer');
+    return c;
+  };
+  // el encabezado de empresa va como fila combinada: en la pizarra es lo que
+  // ordena el trabajo
+  const encabezado = g => [{
+    content: `${g.nombre.toUpperCase()} — ${g.vehiculos} ${g.vehiculos === 1 ? 'vehiculo' : 'vehiculos'}, ${g.filas.length} ${g.filas.length === 1 ? 'documento' : 'documentos'}` +
+      (g.vencidos ? `, ${g.vencidos} vencidos` : ''),
+    colSpan: colsPDF.length, fillColor: [226, 232, 240], textColor: [0, 0, 0],
+    fontStyle: 'bold', fontSize: 11.5
+  }];
+  const body = [];
+  if (grupos) grupos.forEach(g => {
+    body.push(encabezado(g));
+    g.filas.forEach(r => body.push(celda(r)));
+  });
+  else filas.forEach(r => body.push(celda(r)));
+  const anchoTotal = w - 2 * m;
+  const estilos = multiDoc
+    ? { 'Patente': 24, 'Interno': 17, 'Tipo': 24, 'Empresa': 38, 'Documento': 24, 'Fecha venc.': 25, 'Dias': 34 }
+    : { 'Patente': 25, 'Interno': 19, 'Tipo': 28, 'Empresa': 46, 'Fecha venc.': 28, 'Dias': 40 };
+  doc.autoTable(Object.assign({}, PDF_TABLA, {
     startY: y0,
     head: [colsPDF],
     body,
-    theme: 'grid',
-    tableWidth: w - 2 * m,
-    styles: { fontSize: 9.5, cellPadding: 2, lineWidth: 0.5, lineColor: [31, 41, 55] },
-    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10, halign: 'left' },
-    bodyStyles: { textColor: [0, 0, 0] },
-    alternateRowStyles: { fillColor: [241, 245, 249] },
+    tableWidth: anchoTotal,
+    styles: { fontSize: 9, cellPadding: 2, lineWidth: 0.5, lineColor: [31, 41, 55] },
     columnStyles: {
-      'Patente': { cellWidth: 25, fontStyle: 'bold' },
-      'Interno': { cellWidth: 19, halign: 'center' },
-      'Tipo': { cellWidth: 28 },
-      'Empresa': { cellWidth: 46 },
-      'Fecha venc.': { cellWidth: 28 },
-      'Dias': { cellWidth: 40, fontSize: 10, fontStyle: 'bold' }
+      'Patente': { cellWidth: estilos.Patente, fontStyle: 'bold' },
+      'Interno': { cellWidth: estilos.Interno, halign: 'center' },
+      'Tipo': { cellWidth: estilos.Tipo },
+      'Empresa': { cellWidth: estilos.Empresa },
+      'Documento': { cellWidth: estilos.Documento, fontStyle: 'bold' },
+      'Fecha venc.': { cellWidth: estilos['Fecha venc.'] },
+      'Dias': { cellWidth: estilos.Dias, fontSize: 10, fontStyle: 'bold' }
     },
-    margin: { left: m, right: m }
-  });
-  const yPie = (doc.lastAutoTable ? doc.lastAutoTable.finalY : y0 + 250) + 8;
-  doc.setFontSize(7.5); doc.setTextColor(55, 65, 81);
-  doc.text('Grupo Falpat SRL — Sistema de Control Vehicular', w / 2, yPie, { align: 'center' });
+    margin: { left: m, right: m, bottom: 16 },
+    didDrawPage: pieEnCadaPagina(doc)
+  }));
   doc.save(`vencimientos-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
 }

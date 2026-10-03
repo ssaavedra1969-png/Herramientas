@@ -51,6 +51,30 @@
   .rpt-table tr:hover td { background: rgba(255,255,255,0.03); }
   /* los nombres de empresa son largos: que no estiren la tabla (el title tiene el valor completo) */
   .rpt-table td.col-empresa { max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ===== CHECKLISTS MULTIPLES (Documento / Empresa) =====
+     Son <select> reemplazados por un botón + panel con checkboxes: se pueden
+     elegir varios a la vez. El panel se arma desde reports.js. */
+  .vc-multi { position: relative; }
+  .vc-multi-btn { display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; cursor: pointer; font-weight: 500; }
+  .vc-multi-caret { width: 0.85rem; height: 0.85rem; flex-shrink: 0; color: #6b7280; transition: transform 0.2s ease; }
+  .vc-multi-btn[aria-expanded="true"] .vc-multi-caret { transform: rotate(180deg); }
+  .vc-multi-panel { position: absolute; z-index: 40; top: calc(100% + 4px); left: 0; min-width: 100%; max-width: min(320px, 80vw); max-height: 280px; overflow-y: auto; background: #0d1220; border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; box-shadow: 0 16px 40px rgba(0,0,0,0.55); padding: 5px; }
+  .vc-multi-item { display: flex; align-items: center; gap: 8px; padding: 6px 9px; border-radius: 7px; font-size: 0.82rem; color: #d1d5db; cursor: pointer; white-space: nowrap; }
+  .vc-multi-item:hover { background: rgba(255,255,255,0.07); }
+  .vc-multi-item input { accent-color: #2563EB; width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
+  .vc-multi-sep { border-top: 1px solid rgba(255,255,255,0.09); margin: 4px 2px; }
+
+  /* ===== AGRUPACION POR EMPRESA =====
+     El destino real del reporte es la pizarra: encabezado de empresa grande,
+     con cuántos vehículos y documentos mete, y cuántos ya vencieron. */
+  .rpt-table tr.vc-grp td { background: rgba(212,175,55,0.09); border-top: 1px solid rgba(212,175,55,0.3); border-bottom: 1px solid rgba(212,175,55,0.18); padding: 9px 12px; }
+  .rpt-table tr.vc-grp:hover td { background: rgba(212,175,55,0.09); }
+  .vc-grp-nombre { font-weight: 800; font-size: 0.8rem; letter-spacing: 0.04em; color: #f3f4f6; }
+  .vc-grp-count { font-weight: 500; font-size: 0.72rem; color: #9ca3af; }
+  .vc-switch { display: inline-flex; align-items: center; gap: 7px; font-size: 0.78rem; font-weight: 600; color: #9ca3af; cursor: pointer; padding: 5px 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; background: rgba(255,255,255,0.04); user-select: none; }
+  .vc-switch:hover { background: rgba(255,255,255,0.08); color: #f3f4f6; }
+  .vc-switch-box { accent-color: #2563EB; width: 14px; height: 14px; cursor: pointer; }
   .rpt-badge { font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 10px; }
   .filtro-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.25); color: #2563EB; font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
   .filtro-chip .x { cursor: pointer; color: #fca5a5; font-weight: 800; margin-left: 2px; }
@@ -97,6 +121,10 @@
   body.printing-venc #sec-vencimientos .text-\[10px\] { font-size: 9pt !important; font-weight: 700 !important; }
   body.printing-venc .rpt-table th .sort-arrow { display: none !important; }
   body.printing-venc .rpt-table tr:hover td { background: none !important; }
+  /* el encabezado de empresa es lo que ordena el trabajo en la pizarra: letra grande */
+  body.printing-venc .rpt-table tr.vc-grp td { background: #e2e8f0 !important; border-top: 1.2pt solid #000 !important; border-bottom: 0.5pt solid #000 !important; padding: 5pt !important; }
+  body.printing-venc .rpt-table tr.vc-grp .vc-grp-nombre { font-size: 13pt !important; font-weight: 800 !important; color: #000 !important; }
+  body.printing-venc .rpt-table tr.vc-grp .vc-grp-count { font-size: 10pt !important; font-weight: 700 !important; color: #000 !important; }
   body.printing-venc .text-red-400 { color: #b91c1c !important; }
   body.printing-venc .text-yellow-400 { color: #b45309 !important; }
   body.printing-venc .text-teal-300 { color: #0f766e !important; }
@@ -344,7 +372,13 @@
             </div>
             <div class="flex flex-col">
               <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Documento</label>
-              <select id="vc-doc" class="rpt-input rpt-input-sm" onchange="setVencDoc(this.value)"></select>
+              <div class="vc-multi">
+                <button type="button" class="rpt-input rpt-input-sm vc-multi-btn" onclick="toggleMultiVenc('doc')" aria-expanded="false" aria-haspopup="true">
+                  <span id="vc-doc-label">Todos</span>
+                  <svg class="vc-multi-caret" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div class="vc-multi-panel hidden" id="vc-doc-panel"></div>
+              </div>
             </div>
             <div class="flex flex-col">
               <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Estado</label>
@@ -357,7 +391,13 @@
             </div>
             <div class="flex flex-col">
               <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Empresa</label>
-              <select id="vc-empresa" class="rpt-input rpt-input-sm" onchange="setVencEmpresa(this.value)"></select>
+              <div class="vc-multi">
+                <button type="button" class="rpt-input rpt-input-sm vc-multi-btn" onclick="toggleMultiVenc('emp')" aria-expanded="false" aria-haspopup="true">
+                  <span id="vc-empresa-label">Todas</span>
+                  <svg class="vc-multi-caret" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div class="vc-multi-panel hidden" id="vc-empresa-panel"></div>
+              </div>
             </div>
             <div class="flex flex-col">
               <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Centro de trabajo</label>
@@ -366,6 +406,12 @@
             <div class="flex flex-col">
               <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Tipo</label>
               <select id="vc-tipo" class="rpt-input rpt-input-sm" onchange="setVencTipo(this.value)"></select>
+            </div>
+            <div class="flex flex-col justify-end">
+              <label class="vc-switch" title="Agrupa el informe por empresa, de la más urgente a la menos urgente">
+                <input type="checkbox" id="vc-agrupar" class="vc-switch-box" checked onchange="setVencAgrupar(this.checked)">
+                <span>Agrupar por empresa</span>
+              </label>
             </div>
             <div class="flex flex-col justify-end">
               <button onclick="limpiarFiltrosVenc()" class="rpt-btn"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>Limpiar</button>

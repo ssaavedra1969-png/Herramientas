@@ -1,6 +1,91 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-10-02 (tarde).
+Cambios registrados por sesión. Última actualización: 2026-10-03 (tarde).
+
+## 2026-10-03 (tarde) — Reportes / Vencimientos: checklists múltiples + informe agrupado por empresa + PDF con estilo pizarra
+
+`public/js/reports.js` + `views/reports.ejs`. Sin cambios en backend ni en la base.
+`npm test` → **105/105**.
+
+### Los 2 filtros múltiples
+- **`Documento` y `Empresa` pasaron de `<select>` a checklists desplegables**: se pueden elegir **varios a la vez**. `vencFilters.doc`/`vencFilters.empresa` (strings) son ahora **`vencFilters.docs`/`vencFilters.empresas` (arrays)**, con array vacío = "Todos"/"Todas".
+- Botón `.vc-multi-btn` que muestra "Todos" / lo único elegido / "N documentos" ("N empresas"), y panel `.vc-multi-panel` con un checkbox por opción.
+- El valor viaja en **`data-opt`**, nunca interpolado en un `onclick`: una empresa con comilla o `&` rompería el HTML. `llenarMultiVenc()` asigna `panel.onchange` y **no** `addEventListener`, porque se vuelve a llamar al limpiar filtros y asignar reemplaza el handler en vez de acumularlo (con `addEventListener` cada cambio renderizaba dos veces).
+
+### Una fila por vehículo Y documento (solo con 2+ documentos)
+- Con **0 o 1** documento elegido sigue siendo **una fila por vehículo** con lo más urgente: es la lista de trabajo, no cambia.
+- Con **2 o más**, **una fila por vehículo y documento**: el mismo camión sale una vez por cada documento en ventana, cada uno con su fecha, su estado y su color.
+- El stat **Vehículos** pasó a contar los vehículos **distintos** (`grupos.reduce(s => s + g.vehiculos)`), no las filas, para que no crezca con los repetidos.
+
+### El informe agrupado por empresa
+- `datosVenc()` es el nuevo que arma el resultado y devuelve `{grupos, filas}`; `vencFiltrada()` quedó solo con el filtrado (sin el `sort`).
+- Un grupo por empresa con clave de `normTxt(v.empresa)`: **`" obra  norte "` cae en el mismo grupo que `"Obra Norte"`** (la flota tiene `mixer` y `Mixer`). Sin empresa → `"Sin empresa"`.
+- **Dentro de cada grupo, de la fecha más próxima a la más lejana; las empresas también de la más urgente a la menos urgente** (por su `minDias`). Si se clickea otra columna, el orden de grupos pasa a ser el de esa columna.
+- Encabezado de grupo `<tr class="vc-grp">` (`colspan=5`) con `N vehículos · N documentos · N vencidos`. Toggle **"Agrupar por empresa"** (prendido por defecto) para volver a la lista plana.
+- Al imprimir sale en **13pt negro sobre gris**: en la pizarra es lo que ordena el trabajo.
+
+### Exports
+- **Excel y PDF salen en el mismo orden que la pantalla** (los dos usaban `vencFiltrada()` plano; ahora usan `datosVenc()`).
+- El PDF **suma la columna `Documento` cuando hay 2+ documentos elegidos** (6 → 7 columnas, anchos recalculados a 186 mm): sin ella el mismo camión sale dos veces y no se dice qué hay que renovar.
+- Con agrupación, cada grupo se imprime como **fila combinada** (`colSpan`) con fondo gris y la empresa en mayúsculas.
+- El subtítulo del PDF ahora dice `Seguro + VTV · … · 2 empresas · agrupado por empresa` (`resumenFiltroVenc()`).
+
+### Orden dentro de cada empresa: por patente
+- **Adentro de cada empresa los camiones van ordenados por patente** (se lee como una lista de vehículos), no por fecha. Las **empresas** siguen ordenadas por su vencimiento más próximo: la más urgente arriba.
+- Se implementó con `keyFila` en `datosVenc()`: si el agrupado está prendido y la columna activa es `fecha`, las filas se ordenan por `patente` (y **la flecha de orden se muestra en Patente**, no en Vencimiento, que ordena las empresas). Clickear cualquier columna manda esa columna adentro del grupo. `g.minDias` pasó a ser `Math.min()` de las filas del grupo: antes tomaba la primera fila, que con el orden por patente ya no era la más urgente.
+- **`filas` sale aplanada en el orden final**, no en el sort global: el Excel no lleva fila de encabezado de empresa, así que antes el `.xlsx` salía ordenado por patente con las empresas intercaladas mientras la pantalla y el PDF salían agrupados. Ahora los tres coinciden (cubierto por `check-venc.js`).
+
+### Los 3 PDF con el mismo estilo "pizarra"
+- El de **Flota** y el de **Documentación**aban en **5.5pt sin bordes**, ilegibles de lejos (el de Vencimientos ya estaba bien). Ahora los 3 usan el mismo `PDF_TABLA`: cuerpo **9pt**, header **9.5pt** negro con letras blancas, **grilla de 0.5mm en #1F2937**, filas alternadas y `cellPadding: 2`.
+- `encabezadoInforme()` arma logo + título + subtítulo multilínea + fecha y devuelve el `startY`; los 3 PDF lo usan (Flota y Documentación tenían su propio encabezado con `y0 = 36` fijo).
+- `pieEnCadaPagina()` como `didDrawPage`: el pie **con número de página aparece en todas las páginas** (antes solo al final de la última). Requiere `margin.bottom: 16`.
+- **Anchos por columna:** Flota es de ancho variable (el usuario elige columnas con checkbox), así que `anchosColumnasPDF()` reparte los 273 mm según el largo del contenido (`PDF_ANCHO_COL`: empresa/chofer/centro se llevan más mm). Documentación tiene anchos fijos (Patente 26, Marca/Modelo 52, Centro 32, Empresa 44, 6×13 a los documentos, Faltan 16).
+- Vercimientos mantiene su portrait de 6 columnas (7 con multi-documento) con anchos fijos que suman 186 mm.
+
+### Trampa
+Los `<select>` de documento y empresa se reemplazaron por completo: `setVencDoc()` y `setVencEmpresa()` **ya no existen**. Si se agrega un filtro nuevo al mismo patrón, usar `llenarMultiVenc()` y **no** un `<select>`.
+- **Para probar los PDF hay que instalar jsPDF**: la app los carga por CDN, así que `node_modules` no lo tiene. `npm install --no-save jspdf@2.5.1 jspdf-autotable@3.8.2`, generar con `doc.output('arraybuffer')` y **descomprimir los streams con `zlib.inflateSync`**: ahí se ven los operadores de tamaño de letra (`/F1 9 Tf`) y los bordes de la grilla (`0.5 w` + `0.12 0.16 0.22 RG`, uno por celda). Es la única forma de confirmar que el estilo entró en el archivo y no solo en el código. Verificar con `git status` que no se tocaron `package.json`/`package-lock.json`.
+- **Ojo con el nombre del archivo**: el harness escribe en `%TEMP%\reporte-test-*.pdf`. Medir un `ver-*.pdf` viejo da resultados que ya no corresponden al código (con un archivo de 09:04 se veía el cuerpo de Vencimientos en 9,5 pt "cuando" ya estaba en 9). Si el PDF no coincide con el código, primero mirá la **fecha de modificación**.
+- **No usar `Get-Content -Raw` + `Set-Content` para tocar archivos con acentos** en PowerShell 5.1: se comió los caracteres no ASCII del harness y dejó `U+FFFD` en los datos (`label: 'Cédula'` → `'C?dula'`), que rompe los asserts sin dar ningún error de sintaxis. Usar las herramientas de archivo, o `[System.IO.File]::ReadAllText/WriteAllText` con UTF-8 explícito.
+
+## 2026-10-03 — Renovación de seguros: 7 certificados + fecha 07/10/2026 + fix del rótulo de `subir:docs`
+
+Detalle completo en **`Update_2026.10.03.md`**. Commits: **`e134709`** (los 7 PDF de
+`PATENTE/`), más el fix de `scripts/subir-documentos.js` y la doc.
+
+### Los 7 certificados y su fecha
+- Los PDF **ya estaban** reemplazados en `PATENTE/{patente}/seguro.pdf` (los hizo el usuario con la app de Optimizaciones). **No hizo falta tocar la app**: `routes/admin.js` → `fechaDocVenc(v,'seguro')` ya resuelve el campo. Lo que faltaba era la fecha.
+- 6 de las pólizas **13695272** (certificados 134, 156, 159, 161, 175, 179) y `AF170SV` de la **13674442** (cert. 59). Todas con vigencia 07/04/2026 → **07/10/2026**.
+- `AF606JL` estaba **vencido desde 07/10/2025** (un año) y `AF170SV` **cambió de aseguradora** (el PDF viejo eran 6 páginas de otra compañía).
+- `AH125AF` ya tenía `seguro.fechaVencimiento` en 07/10/2026 pero `documentacion.seguro.fechaVencimiento` en 07/04/2026: un Reporte que leyera el genérico lo mostraba vencido.
+- Cargado con `node scripts/cargar-vencimientos.js --archivo=PATENTE/Vtos/SEGUROS_RENOVACION_2026-10-03.xlsx` (dry-run primero). **Sin código nuevo**: se armó un Excel a medida que se llama `SEGUROS_RENOVACION_*` y no `CONTROL_VENCIMIENTOS_*` para no secuestrar el default de `excelReciente()`.
+- Re-verificado: **7/7** con los dos campos en `2026-10-07`.
+
+### ⚠️ No correr `cargar:vencimientos` a secas
+`PATENTE/Vtos/CONTROL_VENCIMIENTOS_2026-09-07.xlsx` tiene las fechas **viejas** (07/04/2026, 07/10/2025): correrlo **revierte** la renovación de los 7 y deja los PDF del disco contradiciendo la base.
+
+### Las pólizas de `PATENTE/Seg/` (el usuario después las borró)
+| Póliza | Vigencia | Placas |
+|---|---|---|
+| **13674442** (`CERTIFICADOS DE COBERTURAS.pdf`, 182 pág) | 07/04/2026 → 07/10/2026 | 60 |
+| **13673743** (`...POLIZA 13673743.pdf`, 90 pág) | 24/04/2026 → 24/10/2026 | 23 |
+- **83 dominios distintos**; 4 páginas por certificado con `Dominio: XXXXXX` arriba → **no hace falta OCR** para mapear.
+- `AG276BQ`, `GKX407` y `LEC583` **no están en ninguna** de las dos (ni por coincidencia parcial).
+
+### Bug: `subir-documentos.js` nunca contaba el primer vehículo
+- El commit `e134709` se anunció como **"Docs: 6 vehículos"** y llevaba **7 archivos**. Con **un solo** archivo, el mensaje decía **"Docs: 0 vehículos"**.
+- Causa: `git status --porcelain` de un archivo modificado empieza con `" M "`, y el `.trim()` de la línea 50 se come ese espacio de la **primera** línea; el parseo `/^.. /` deja de matchear y `partes[0]` queda `"M PATENTE"`.
+- **Solo era de rótulo**: los documentos siempre se commitearon bien (el `git add` es del directorio, no de la lista), pero el log de git queda subinformado. Fix: sacar el `.trim()` y saltear líneas vacías.
+
+### Census de seguros (corte 2026-10-03, solo lectura)
+- **3 vencidos hace meses**: `GKX407` y `AG276BQ` (-361 d), `LEC583` (-181 d) — de una póliza que no está en `Seg/`.
+- **30 con seguro al 07/10/2026** y **5 al 24/10/2026**: de los 30, solo **7** tienen el PDF nuevo. Los otros **23** (más los 5) siguen con el certificado viejo.
+- **18 sin fecha de seguro cargada**.
+
+### Limpieza
+- Borrados 8 scripts `.py` sueltos de la raíz del repo (`buscar_patentes.py`, `extraer_certificados*.py`, `extraer_primer_*.py`, `list_structure.py`, `search_cond6.py`, `ver_paginas.py`).
+- `PATENTE/Seg/` quedó vacía (la borró el usuario). **No está en `.gitignore`** por decisión suya: si se vuelven a poner las pólizas ahí, `subir:docs` las commitea (4,7 MB por póliza, ~190 MB con el material extraído).
+- `npm test` → **105/105**.
 
 ## 2026-10-02 (tarde) — Columna Chofer en los Excel de control + vencimientos faltantes + auditoría de PDF
 
