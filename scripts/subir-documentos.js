@@ -47,19 +47,23 @@ function main() {
 
   let status = '';
   try {
-    status = run('git status --porcelain -- ' + PATENTE_DIR).trim();
+    // OJO: sin .trim() aca. El porcelain de un archivo modificado empieza con
+    // " M " (espacio inicial) y trim() se lo come a la PRIMERA linea, el parseo
+    // la descarta y el mensaje dice menos vehiculos de los que se commitean.
+    status = run('git status --porcelain -- ' + PATENTE_DIR).replace(/\s+$/, '');
   } catch (e) {
     error('No se pudo leer el estado de la carpeta ' + PATENTE_DIR + '.');
     process.exit(1);
   }
 
-  if (!status) {
+  if (!status.trim()) {
     info('No hay cambios en ' + PATENTE_DIR + '/. Nada que subir.\n');
     process.exit(0);
   }
 
   const patentes = [];
   status.split('\n').forEach(line => {
+    if (!line.trim()) return;
     const p = line.replace(/^.. /, '').replace(/^"|"$/g, '').replace(/ -> .*$/, '');
     const partes = p.split('/');
     if (partes.length >= 2 && partes[0] === PATENTE_DIR) {
