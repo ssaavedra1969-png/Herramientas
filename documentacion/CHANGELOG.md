@@ -30,6 +30,21 @@ Cambios registrados por sesión. Última actualización: 2026-10-03 (tarde).
 - Con agrupación, cada grupo se imprime como **fila combinada** (`colSpan`) con fondo gris y la empresa en mayúsculas.
 - El subtítulo del PDF ahora dice `Seguro + VTV · … · 2 empresas · agrupado por empresa` (`resumenFiltroVenc()`).
 
+### Matafuego: informe de toda la flota agrupado por tipo (`scripts/generar-control-matafuego.js`)
+- 3 pedidos del usuario: (1) un Excel con **todo junto, con y sin matafuego**; (2) los que decían **"Sin dato"** ahora dicen **"Sin Matafuego"**; (3) **agrupado por tipo**.
+- Nuevo `CONTROL_MATAFUEGO_TODOS_<fecha>.xlsx` (57 vehículos en 12 tipos). Los otros dos (`_MIXERS_`, `_RESTO_`) no cambian: siguen siendo los que **no** tienen matafuego. Se llegó a este archivo por un pedido intermedio de "solo los mixers que sí tienen", que quedó como subconjunto del nuevo.
+- `estadoMatafuego()` ya no distingue las dos situaciones: sin campo y con estado "Sin Matafuego" devuelven ambos `'Sin Matafuego'`. Para no perder el dato, la fila lleva `sinDato` (**flag, no columna**) y la consola lo cuenta aparte.
+- `filaDe()` es la única constructora de filas de las 3 salidas. `escribir()` acepta `agrupadoPor`: mete una fila de encabezado **combinada** (`mergeCells` A:I) por tipo con `N vehiculos · M con matafuego`, y **omite el autofiltro** en las salidas agrupadas (con filas de encabezado en el medio, el filtro las mezcla). Las 2 salidas planas lo conservan.
+- **Trampa evitada:** el tipo se agrupa con `normTipo()` (trim + minúsculas, la misma clave que la app). Sin eso "mixer" (22) y "Mixer" (1) salían como **dos grupos del mismo tipo**. Adentro de cada tipo van primero los que **tienen** matafuego y después los que no, por cantidad de documentación faltante.
+- Census 2026-10-03: **3 con matafuego y los 3 son mixers** (`AG148TK` sin `fechaVto` → "SIN CARGAR", `AF804RU` 31/03/2027, `AE943EN` 18/12/2026). 54 sin: 24 nunca cargado + 30 marcados. **Los otros 11 tipos de vehículo no tienen ni un matafuego cargado**: si deberían, el dato falta en Firestore.
+- Verificado en el XML del `.xlsx`: 13 merges (1 título + 12 grupos) y 71 filas (1+1+57+12).
+
+### Columna Tipo en la card Documentación
+- El usuario pidió "una columna más, la de tipo, junto a marca/modelo": la única card con **Marca/Modelo** es Documentación (Vencimientos ya tenía Tipo). Quedan **12 columnas** en pantalla, Excel y PDF: Patente · Marca/Modelo · **Tipo** · Centro · Empresa · 6 documentos · Faltan.
+- 4 lugares, todos en `public/js/reports.js`: `baseCols` en `renderDoc()` (el `<td>` va en el template de la fila), el objeto de `filasDocExport()` (el Excel toma el orden de las claves), el `head`/`body` de `exportDocPDF()` y `anchos`. Los anchos del PDF se repartieron para que sigan entrando en los 273 mm: Patente 26, Marca/Modelo 44, Tipo 24, Centro 30, Empresa 40, 6×13, Faltan 16 = **258**.
+- De yapa el buscador de texto de la card ahora incluye `tipo` y `subtipo` (antes solo buscaba patente/interno/marca/modelo/empresa/centro).
+- Verificado inflando los streams del PDF de prueba: el header repite `Patente, Marca/Modelo, Tipo, Centro, Empresa, Faltan` en las 5 páginas y las celdas pasan de 693 (11 col) a 756 (12 col).
+
 ### Orden dentro de cada empresa: por patente
 - **Adentro de cada empresa los camiones van ordenados por patente** (se lee como una lista de vehículos), no por fecha. Las **empresas** siguen ordenadas por su vencimiento más próximo: la más urgente arriba.
 - Se implementó con `keyFila` en `datosVenc()`: si el agrupado está prendido y la columna activa es `fecha`, las filas se ordenan por `patente` (y **la flecha de orden se muestra en Patente**, no en Vencimiento, que ordena las empresas). Clickear cualquier columna manda esa columna adentro del grupo. `g.minDias` pasó a ser `Math.min()` de las filas del grupo: antes tomaba la primera fila, que con el orden por patente ya no era la más urgente.

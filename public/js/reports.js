@@ -522,7 +522,7 @@ function limpiarFiltrosDoc() {
 function docFiltrada() {
   const rows = fleet.filter(v => {
     if (docFilters.term) {
-      const hay = [v.patente, v.interno, v.marca, v.modelo, v.empresa, v.centroTrabajo].join(' ').toLowerCase();
+      const hay = [v.patente, v.interno, v.marca, v.modelo, v.tipo, v.subtipo, v.empresa, v.centroTrabajo].join(' ').toLowerCase();
       if (!hay.includes(docFilters.term)) return false;
     }
     if (docFilters.falta && v.docs && v.docs[docFilters.falta]) return false;
@@ -549,7 +549,7 @@ function sortDocBy(key) {
 }
 
 function renderDoc() {
-  const baseCols = [{ key: 'patente', label: 'Patente' }, { key: 'marca', label: 'Marca / Modelo' }, { key: 'centroTrabajo', label: 'Centro' }, { key: 'empresa', label: 'Empresa' }];
+  const baseCols = [{ key: 'patente', label: 'Patente' }, { key: 'marca', label: 'Marca / Modelo' }, { key: 'tipo', label: 'Tipo' }, { key: 'centroTrabajo', label: 'Centro' }, { key: 'empresa', label: 'Empresa' }];
   const allCols = [...baseCols, ...DOC_TIPOS.map(t => ({ key: 'doc:' + t, label: DOC_LABELS[t] })), { key: 'faltantes', label: 'Faltan' }];
   const arrow = (key) => (docSortKey === key ? (docSortDir === 'asc' ? '▲' : '▼') : '');
   document.getElementById('doc-thead').innerHTML = '<tr>' + allCols.map(c => `<th onclick="sortDocBy('${c.key}')">${esc(c.label)} <span class="sort-arrow">${arrow(c.key)}</span></th>`).join('') + '</tr>';
@@ -570,6 +570,7 @@ function renderDoc() {
       return `<tr>
         <td class="text-[#ffffff] font-medium">${esc(v.patente)}</td>
         <td>${esc([v.marca, v.modelo].filter(Boolean).join(' ') || '—')}</td>
+        <td>${esc(v.tipo || '—')}</td>
         <td>${esc(v.centroTrabajo || '—')}</td>
         <td>${esc(v.empresa || '—')}</td>
         ${cells}
@@ -652,7 +653,7 @@ async function exportFleetPDF() {
 /* ================= EXPORT DOCUMENTACIÓN ================= */
 function filasDocExport() {
   return docFiltrada().map(v => {
-    const out = { Patente: v.patente || '', 'Marca/Modelo': [v.marca, v.modelo].filter(Boolean).join(' ') || '', Centro: v.centroTrabajo || '', Empresa: v.empresa || '' };
+    const out = { Patente: v.patente || '', 'Marca/Modelo': [v.marca, v.modelo].filter(Boolean).join(' ') || '', Tipo: v.tipo || '', Centro: v.centroTrabajo || '', Empresa: v.empresa || '' };
     DOC_TIPOS.forEach(t => { out[DOC_LABELS[t]] = v.docs && v.docs[t] ? 'Sí' : 'Falta'; });
     out['Faltan'] = v.faltantes;
     return out;
@@ -677,11 +678,12 @@ async function exportDocPDF() {
   const y0 = encabezadoInforme(doc, logo, 'Grupo Falpat SRL', 'Documentación — estado por vehículo',
     rows.length + (rows.length === 1 ? ' vehículo' : ' vehículos'));
   const labels = [...DOC_TIPOS.map(t => DOC_LABELS[t]), 'Faltan'];
-  const head = ['Patente', 'Marca/Modelo', 'Centro', 'Empresa', ...labels];
-  const body = rows.map(r => [r.patente || '', [r.marca, r.modelo].filter(Boolean).join(' ') || '', r.centroTrabajo || '', r.empresa || '', ...DOC_TIPOS.map(t => r.docs && r.docs[t] ? 'Sí' : 'Falta'), String(r.faltantes)]);
+const head = ['Patente', 'Marca/Modelo', 'Tipo', 'Centro', 'Empresa', ...labels];
+const body = rows.map(r => [r.patente || '', [r.marca, r.modelo].filter(Boolean).join(' ') || '', r.tipo || '', r.centroTrabajo || '', r.empresa || '', ...DOC_TIPOS.map(t => r.docs && r.docs[t] ? 'Sí' : 'Falta'), String(r.faltantes)]);
   // las 6 columnas de documento son cortitas ("Sí"/"Falta"): el ancho se lo
-  // dejan a Marca/Modelo, Centro y Empresa, que son los que tienen texto largo
-  const anchos = { Patente: 26, 'Marca/Modelo': 52, Centro: 32, Empresa: 44, Faltan: 16 };
+  // dejan a Patente, Marca/Modelo, Tipo, Centro y Empresa, que son los que
+  // tienen texto largo (los anchos suman 258 de los 273 disponibles)
+  const anchos = { Patente: 26, 'Marca/Modelo': 44, Tipo: 24, Centro: 30, Empresa: 40, Faltan: 16 };
   labels.forEach(l => { anchos[l] = 13; });
   doc.autoTable(Object.assign({}, PDF_TABLA, {
     startY: y0,

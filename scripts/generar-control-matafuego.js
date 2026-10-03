@@ -1,11 +1,17 @@
 /**
  * Genera los Excel de control de MATAFUEGO en PATENTE/Reportes/:
  *
- *   CONTROL_MATAFUEGO_MIXERS_<fecha>.xlsx  -> mezcladoras (tipo "mixer")
- *   CONTROL_MATAFUEGO_RESTO_<fecha>.xlsx   -> el resto de los vehiculos
+ *   CONTROL_MATAFUEGO_MIXERS_<fecha>.xlsx           -> mezcladoras (tipo "mixer") SIN matafuego
+ *   CONTROL_MATAFUEGO_RESTO_<fecha>.xlsx            -> el resto de los vehiculos SIN matafuego
+ *   CONTROL_MATAFUEGO_MIXERS_CON_MATAFUEGO_<fecha>.xlsx -> las mezcladoras que SI tienen
  *
- * Cada fila es un vehiculo SIN matafuego, con patente, interno, tipo y la
- * documentacion que le falta (de la carpeta PATENTE/{patente}/).
+ * Los dos primeros son un control de faltantes (ordenados por cuantos papeles
+ * faltan). El tercero es la lista de las que ya lo tienen, para lo que haya que
+ * hacer con ellas (renovar el certificado, etc.): va por patente.
+ *
+ * Cada fila es un vehiculo con patente, interno, chofer, tipo, centro, estado y
+ * vencimiento del matafuego, que documentacion le falta (de la carpeta
+ * PATENTE/{patente}/) y empresa. Las 3 salidas usan las mismas columnas.
  *
  * Reutiliza la misma deteccion de documentos que
  * scripts/generar-control-documentacion.js: carpeta local + repo git +
@@ -39,16 +45,16 @@ const incluirBaja = args.includes('--incluir-baja');
 
 /**
  * El campo `matafuego` es un objeto { estado, fechaControl, fechaVto }.
- * Se reportan DOS situaciones distintas porque no son lo mismo:
- *   - 'Sin dato'    -> el campo no existe en el doc (nunca se cargo)
- *   - 'Sin Matafuego'-> el campo existe pero el estado dice que no tiene
- * En los dos casos el vehiculo NO tiene matafuego, asi que entra al reporte;
- * la columna distingue el estado para saber que corregir.
+ * Hay dos situaciones distintas y ninguna de las dos tiene matafuego:
+ *   - el campo no existe en el doc (nunca se cargo)
+ *   - el campo existe pero el estado dice que no tiene
+ * El usuario pidio que las dos se informen igual como "Sin Matafuego", asi que
+ * la columna ya no las distingue. Para no perder ese dato, `sinDato` queda en
+ * la fila (no es columna) y el script lo cuenta en la consola.
  */
 function estadoMatafuego(v) {
   const m = v.matafuego;
-  const sinDato = { estado: 'Sin dato', sinMatafuego: true, vto: null, control: null };
-  if (!m) return sinDato;
+  if (!m) return { estado: 'Sin Matafuego', sinMatafuego: true, sinDato: true, vto: null, control: null };
   if (typeof m === 'object') {
     const est = String(m.estado || '').trim();
     return {
@@ -68,6 +74,10 @@ function estadoMatafuego(v) {
 // Mezcladora: el tipo viene con distinta capitalizacion en la base
 // ("mixer" x22 y "Mixer" x1), asi que se compara sin distincion.
 const esMixer = v => String(v.tipo || '').trim().toLowerCase() === 'mixer';
+
+// Para agrupar por tipo: misma clave que usa la app (normTxt) para no partir
+// "mixer" y "Mixer" en dos grupos del mismo tipo.
+const normTipo = t => String(t == null ? '' : t).trim().toLowerCase();
 
 function archivosLocales(patente) {
   const dir = path.join(PATENTE_DIR, patente);
@@ -119,16 +129,12 @@ async function main() {
   const cmp = (a, b) => String(a.patente || '').localeCompare(
     String(b.patente || ''), undefined, { numeric: true });
 
-  const conMatafuego = [], filas = [];
-  autos.forEach(v => {
-    const patente = String(v.patente || '').toUpperCase();
-    const mf = estadoMatafuego(v);
-    if (!mf.sinMatafuego) {
-      conMatafuego.push(v);
-      return;
-    }
+  const conMatafuego = [], filas = [], filasCon = [];
+  // Una sola forma de fila para las dos listas: los mixers que TIENEN matafuego
+  // se exportan con exactamente las mismas columnas que los que no.
+  const filaDe = (v, patente, mf) => {
     const faltan = faltantesDe(v, patente, git);
-    filas.push({
+    return {
       patente,
       interno: v.interno || '',
       chofer: v.chofer || '',
@@ -139,13 +145,43 @@ async function main() {
       venceMatafuego: mf.vto ? fmtFecha(mf.vto) : 'SIN CARGAR',
       empresa: v.empresa || '',
       faltan: faltan.length,
-      faltantes: faltan.length ? faltan.join(', ') : 'Documentacion completa'
-    });
+      faltantes: faltan.length ? faltan.join(', ') : 'Documentacion completa',
+      // no son columnas: ordenan y cuentan
+      conMatafuego: !mf.sinMatafuego,
+      sinDato: !!mf.sinDato
+    };
+  };
+  autos.forEach(v => {
+    const patente = String(v.patente || '').toUpperCase();
+    const mf = estadoMatafuego(v);
+    if (!mf.sinMatafuego) {
+      conMatafuego.push(v);
+      filasCon.push(filaDe(v, patente, mf));
+      return;
+    }
+    filas.push(filaDe(v, patente, mf));
   });
 
   filas.sort((a, b) => b.faltan - a.faltan || cmp(a, b));
   const filasMixer = filas.filter(f => esMixer(f));
   const filasResto = filas.filter(f => !esMixer(f));
+
+  /* El informe completo: TODA la flota, con y sin matafuego, agrupada por tipo.
+     Adentro de cada tipo, primero los que tienen matafuego (que es lo que hay
+     que renovar) y despues los que no, ordenados por cuantos papeles faltan.
+     El tipo se agrupa sin distincion de mayusculas: la base tiene "mixer" (22)
+     y "Mixer" (1) y sin normalizar salen dos grupos del mismo tipo. */
+  const todas = [...filasCon, ...filas];
+  const mapaTipo = new Map();
+  todas.forEach(f => {
+    const k = normTipo(f.tipo);
+    if (!mapaTipo.has(k)) mapaTipo.set(k, { nombre: f.tipo || 'Sin tipo', filas: [] });
+    mapaTipo.get(k).filas.push(f);
+  });
+  const gruposTipo = [...mapaTipo.values()].sort((a, b) =>
+    String(a.nombre).localeCompare(String(b.nombre), undefined, { sensitivity: 'base' }));
+  gruposTipo.forEach(g => g.filas.sort((a, b) =>
+    (b.conMatafuego - a.conMatafuego) || (b.faltan - a.faltan) || cmp(a, b)));
 
   const hoy = new Date();
   const p2 = n => String(n).padStart(2, '0');
@@ -185,10 +221,23 @@ async function main() {
     colorFila: r => (r.faltan >= 4 ? 'FFF1F1F1' : r.faltan >= 2 ? 'FFFFF4E5' : null)
   });
 
-  const sinDato = filas.filter(f => f.estadoMatafuego === 'Sin dato').length;
+  const f3 = await escribir({
+    archivo: path.join(SALIDA, `CONTROL_MATAFUEGO_TODOS_${sello}.xlsx`),
+    hoja: 'Toda la flota',
+    columnas,
+    filas: todas,
+    titulo: `Matafuego de toda la flota — ${todas.length} vehiculos, ${filasCon.length} con matafuego — generado ${fmtFecha(hoy)}`,
+    colorFila: null,
+    agrupadoPor: 'tipo'
+  });
+
+  const sinDato = todas.filter(f => f.sinDato).length;
   const sinCarpeta = filas.filter(f => !fs.existsSync(path.join(PATENTE_DIR, f.patente))).map(f => f.patente);
   console.log(`\n${autos.length} vehiculos en servicio${soloPatente ? ' (patente ' + soloPatente + ')' : ''}${incluirBaja ? ' + bajas' : ''}`);
-  console.log(`  Con matafuego cargado : ${conMatafuego.length}`);
+  console.log(`  Con matafuego cargado : ${conMatafuego.length}  (mixers: ${filasCon.filter(esMixer).length})`);
+  if (conMatafuego.length) {
+    console.log(`    ${conMatafuego.map(v => String(v.patente || '').toUpperCase() + (esMixer(v) ? ' (mixer)' : '')).join(', ')}`);
+  }
   console.log(`  Sin matafuego        : ${filas.length}  (sin dato: ${sinDato} · marcados "Sin Matafuego": ${filas.length - sinDato})`);
   console.log(`    - Mixers           : ${filasMixer.length}`);
   console.log(`    - Resto            : ${filasResto.length}`);
@@ -208,10 +257,16 @@ async function main() {
 
   console.log(`\n  ${f1}  ->  ${filasMixer.length} filas`);
   console.log(`  ${f2}  ->  ${filasResto.length} filas`);
+  console.log(`  ${f3}  ->  ${todas.length} filas en ${gruposTipo.length} tipos`);
+  console.log('\n  Por tipo (con / sin matafuego):');
+  gruposTipo.forEach(g => {
+    const con = g.filas.filter(f => f.conMatafuego).length;
+    console.log(`    ${String(g.nombre).padEnd(16)} ${String(g.filas.length).padStart(3)} vehiculos  (${con} con / ${g.filas.length - con} sin)`);
+  });
   console.log(`\nOutput: ${SALIDA}\n`);
 }
 
-async function escribir({ archivo, hoja, columnas, filas, titulo, colorFila }) {
+async function escribir({ archivo, hoja, columnas, filas, titulo, colorFila, agrupadoPor }) {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Grupo Falpat SRL';
   const ws = wb.addWorksheet(hoja, { views: [{ state: 'frozen', ySplit: 2 }] });
@@ -231,17 +286,47 @@ async function escribir({ archivo, hoja, columnas, filas, titulo, colorFila }) {
   });
   columnas.forEach((c, i) => { ws.getColumn(i + 1).width = c.width; });
 
-  filas.forEach(f => {
+  const agregarFila = f => {
     const row = ws.addRow(columnas.map(c => f[c.key]));
     const bg = colorFila ? colorFila(f) : null;
     if (bg) row.eachCell(cell => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } }; });
-  });
+  };
+
+  /* agrupadoPor: una fila de encabezado combine cada grupo, con cuantos
+     vehículos tiene y cuantos con matafuego (lo primero que se mira). */
+  const encabezadoGrupo = (nombre, g) => {
+    const con = g.filter(f => f.conMatafuego).length;
+    const row = ws.addRow([`${String(nombre).toUpperCase()} — ${g.length} ${g.length === 1 ? 'vehiculo' : 'vehiculos'}${con ? ` · ${con} con matafuego` : ''}`]);
+    ws.mergeCells(row.number, 1, row.number, columnas.length);
+    const c = row.getCell(1);
+    c.font = { bold: true, size: 11, color: { argb: 'FF1F2937' } };
+    c.alignment = { vertical: 'middle' };
+    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
+    row.height = 18;
+  };
+
+  if (agrupadoPor) {
+    const mapa = new Map();
+    filas.forEach(f => {
+      const k = normTipo(f[agrupadoPor]);
+      if (!mapa.has(k)) mapa.set(k, []);
+      mapa.get(k).push(f);
+    });
+    [...mapa.keys()].sort().forEach(k => {
+      encabezadoGrupo(mapa.get(k)[0][agrupadoPor] || 'Sin tipo', mapa.get(k));
+      mapa.get(k).forEach(agregarFila);
+    });
+  } else {
+    filas.forEach(agregarFila);
+  }
   if (!filas.length) {
     const row = ws.addRow(['(sin registros)']);
     row.font = { italic: true, color: { argb: 'FF64748B' } };
   }
 
-  ws.autoFilter = { from: { row: 2, column: 1 }, to: { row: 2, column: columnas.length } };
+  // con filas de encabezado de grupo el autofiltro las mezcla: se deja solo el
+  // de las dos salidas planas
+  if (!agrupadoPor) ws.autoFilter = { from: { row: 2, column: 1 }, to: { row: 2, column: columnas.length } };
   await wb.xlsx.writeFile(archivo);
   return path.basename(archivo);
 }
