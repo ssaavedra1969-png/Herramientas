@@ -23,6 +23,7 @@ const path = require('path');
 const ExcelJS = require('exceljs');
 const { db } = require('../config/firebase');
 const gh = require('../lib/github-docs');
+const { sinDeshabilitados } = require('../lib/utils');
 
 const RAIZ = path.join(__dirname, '..');
 const PATENTE_DIR = path.join(RAIZ, 'PATENTE');
@@ -83,7 +84,7 @@ async function main() {
   const tieneEnGit = (p, tipo) => (enGit(p) || []).some(n => gh.esDeTipo(n, tipo));
 
   const snap = await db.collection('vehicles').get();
-  let autos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  let autos = sinDeshabilitados(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   if (soloPatente) {
     const p = soloPatente.toUpperCase();
     autos = autos.filter(v => String(v.patente || '').toUpperCase() === p);

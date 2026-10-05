@@ -5,7 +5,7 @@ const path = require('path');
 const { db, admin } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const gh = require('../lib/github-docs');
-const { parseFecha, toDate } = require('../lib/utils');
+const { parseFecha, toDate, esDeshabilitado } = require('../lib/utils');
 
 const DOCS_DIR = path.join(process.cwd(), 'PATENTE');
 const DOC_TIPOS = ['titulo', 'cedula', 'seguro', 'registro', 'vtv', 'dni'];
@@ -377,6 +377,10 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       fotoURL: req.body.fotoURL?.trim() || '',
       multas: req.body.multas || [],
       documentos: req.body.documentos || [],
+      // Deshabilitado: la info se conserva pero el vehículo deja de contar en
+      // todos los informes (ver esDeshabilitado en lib/utils.js).
+      deshabilitado: req.body.deshabilitado === true,
+      deshabilitadoMotivo: req.body.deshabilitado ? (req.body.deshabilitadoMotivo?.trim() || '') : '',
       fechaAlta: new Date(),
       createdAt: new Date(),
       updatedAt: new Date()
@@ -452,8 +456,16 @@ router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
       fotoURL: req.body.fotoURL?.trim() || '',
       multas: req.body.multas || [],
       documentos: req.body.documentos || [],
+      deshabilitado: req.body.deshabilitado === true,
+      deshabilitadoMotivo: req.body.deshabilitado ? (req.body.deshabilitadoMotivo?.trim() || '') : '',
       updatedAt: new Date()
     };
+
+    // deshabilitadoAt solo cambia cuando cambia el estado, para que guardar
+    // cualquier otro campo no pise la fecha real del cambio.
+    if (doc.data().deshabilitado !== data.deshabilitado) {
+      data.deshabilitadoAt = new Date();
+    }
 
     await db.collection('vehicles').doc(req.params.id).update(data);
     cacheTTL.delete('reporte-documentos');
@@ -653,7 +665,11 @@ router.get('/services/panel', verifyToken, async (req, res) => {
       db.collectionGroup('services').get()
     ]);
     const result = {};
-    vsnap.docs.forEach(d => { result[d.id] = { vehiculo: { id: d.id, ...d.data() }, services: [] }; });
+    // El panel de Services es un informe más: los deshabilitados no aparecen.
+    vsnap.docs.forEach(d => {
+      if (esDeshabilitado(d.data())) return;
+      result[d.id] = { vehiculo: { id: d.id, ...d.data() }, services: [] };
+    });
     for (const d of ssnap.docs) {
       const vehicleId = d.ref.parent.parent.id;
       if (!result[vehicleId]) continue;

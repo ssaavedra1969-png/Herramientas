@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { db, admin } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
-const { toDate } = require('../lib/utils');
+const { toDate, sinDeshabilitados, esDeshabilitado } = require('../lib/utils');
 const gh = require('../lib/github-docs');
 
 router.get('/users', verifyToken, requireAdmin, async (req, res) => {
@@ -41,8 +41,11 @@ router.put('/users/:id', verifyToken, requireAdmin, async (req, res) => {
 router.get('/dashboard', verifyToken, requireAdmin, async (req, res) => {
   try {
     const vehiclesSnap = await db.collection('vehicles').get();
-    const now = new Date();
-    const vehiculosActivos = vehiclesSnap.docs.filter(d => d.data().estadoGeneral !== 'Baja').length;
+    const ahora = new Date();
+    // Los deshabilitados no cuentan en ningún informe (dashboard incluido).
+    const activos = sinDeshabilitados(vehiclesSnap.docs.map(d => d.data()))
+      .filter(v => v.estadoGeneral !== 'Baja');
+    const vehiculosActivos = activos.length;
     res.json({ vehiculosActivos, vencidosHoy: 0, proximos7: 0, monthlyData: {} });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -58,9 +61,15 @@ router.get('/dashboard/financial', verifyToken, requireAdmin, async (req, res) =
     ]);
 
     const patentePorId = {};
+    const idsDeshabilitados = new Set();
     vehiclesSnap.docs.forEach(d => {
-      patentePorId[d.id] = d.data().patente || '—';
+      if (esDeshabilitado(d.data())) idsDeshabilitados.add(d.id);
+      else patentePorId[d.id] = d.data().patente || '—';
     });
+    // Un gasto de un vehículo deshabilitado no va a ningún informe: sus
+    // subcolecciones (combustible/repuestos) no entran ni en los gráficos ni en
+    // los totales.
+    const esInforme = d => !idsDeshabilitados.has(d.ref.parent.parent.id);
 
     const combustibleData = {};
     const gastoPorVehiculo = {};
@@ -68,6 +77,7 @@ router.get('/dashboard/financial', verifyToken, requireAdmin, async (req, res) =
     let totalRepuestos = 0;
 
     combGroupSnap.docs.forEach(d => {
+      if (!esInforme(d)) return;
       const parentId = d.ref.parent.parent.id;
       const patente = patentePorId[parentId] || '—';
       const c = d.data();
@@ -89,6 +99,7 @@ router.get('/dashboard/financial', verifyToken, requireAdmin, async (req, res) =
     });
 
     repGroupSnap.docs.forEach(d => {
+      if (!esInforme(d)) return;
       const parentId = d.ref.parent.parent.id;
       const patente = patentePorId[parentId] || '—';
       const r = d.data();
@@ -102,6 +113,7 @@ router.get('/dashboard/financial', verifyToken, requireAdmin, async (req, res) =
     let totalVTV = 0;
     let totalSeguro = 0;
     vehiclesSnap.docs.forEach(d => {
+      if (idsDeshabilitados.has(d.id)) return;
       const v = d.data();
       const patente = v.patente || '—';
 
@@ -165,6 +177,7 @@ router.get('/latest-services', verifyToken, async (req, res) => {
     await Promise.all(vehiclesSnap.docs.map(async (vDoc) => {
       const v = vDoc.data();
       if (v.estadoGeneral === 'Baja') return;
+      if (esDeshabilitado(v)) return;
 
       const svcSnap = await vDoc.ref.collection('services')
         .orderBy('fecha', 'desc').limit(5).get();
@@ -275,14 +288,18 @@ router.get('/report', verifyToken, requireAdmin, async (req, res) => {
     ]);
 
     const patentePorId = {};
+    const idsDeshabilitados = new Set();
     vehiclesSnap.docs.forEach(d => {
-      patentePorId[d.id] = d.data().patente || '—';
+      if (esDeshabilitado(d.data())) idsDeshabilitados.add(d.id);
+      else patentePorId[d.id] = d.data().patente || '—';
     });
+    const esInforme = d => !idsDeshabilitados.has(d.ref.parent.parent.id);
 
     const items = [];
     let totalComb = 0, totalRep = 0, totalVTV = 0, totalSeguro = 0;
 
     vehiclesSnap.docs.forEach(vDoc => {
+      if (idsDeshabilitados.has(vDoc.id)) return;
       const v = vDoc.data();
       const patente = v.patente || '—';
 
@@ -322,6 +339,7 @@ router.get('/report', verifyToken, requireAdmin, async (req, res) => {
     });
 
     combGroupSnap.docs.forEach(d => {
+      if (!esInforme(d)) return;
       const parentId = d.ref.parent.parent.id;
       const patente = patentePorId[parentId] || '—';
       const c = d.data();
@@ -334,6 +352,7 @@ router.get('/report', verifyToken, requireAdmin, async (req, res) => {
     });
 
     repGroupSnap.docs.forEach(d => {
+      if (!esInforme(d)) return;
       const parentId = d.ref.parent.parent.id;
       const patente = patentePorId[parentId] || '—';
       const r = d.data();
@@ -360,6 +379,7 @@ router.get('/alerts', verifyToken, requireAdmin, async (req, res) => {
     const alerts = [];
     for (const vDoc of vehiclesSnap.docs) {
       const v = vDoc.data();
+      if (esDeshabilitado(v)) continue;
       const patente = v.patente || '—';
       if (v.vtv?.fechaVencimiento) {
         const venc = v.vtv.fechaVencimiento.toDate ? v.vtv.fechaVencimiento.toDate() : new Date(v.vtv.fechaVencimiento);
@@ -382,8 +402,7 @@ router.get('/alerts', verifyToken, requireAdmin, async (req, res) => {
 router.get('/vehicles-basic', verifyToken, requireAdmin, async (req, res) => {
   try {
     const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
-    const vehicles = snap.docs.map(d => {
-      const v = d.data();
+    const vehicles = sinDeshabilitados(snap.docs.map(d => d.data())).map(v => {
       return {
         interno: v.interno || '',
         patente: v.patente || '',
@@ -534,11 +553,15 @@ router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
   try {
     const arbol = await arbolPatenteR();
     const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
-    const preliminares = snap.docs.map(d => {
-      const v = d.data();
-      const patente = (v.patente || '').toUpperCase();
-      return { doc: d, v, patente };
-    });
+    // Los vehículos deshabilitados no entran a los 3 reportes: conservan sus
+    // datos (por si hay que consultarlos) pero no cuentan para nada.
+    const preliminares = snap.docs
+      .filter(d => !esDeshabilitado(d.data()))
+      .map(d => {
+        const v = d.data();
+        const patente = (v.patente || '').toUpperCase();
+        return { doc: d, v, patente };
+      });
     for (const p of preliminares) {
       p.docs = await docsDePatenteR(p.patente, arbol);
       const subidos = p.v.docsAdjuntos || {};
@@ -638,6 +661,9 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
     const vehicleMap = {};
     vehiclesSnap.docs.forEach(d => {
       const v = d.data();
+      // vehicleMap vacío = el vehículo no va a ningún informe. Sirve de filtro
+      // para las subcolecciones: un gasto de un deshabilitado no entra.
+      if (esDeshabilitado(v)) return;
       vehicleMap[d.id] = { patente: v.patente || '—', interno: v.interno || '', marca: v.marca || '', modelo: v.modelo || '' };
     });
 
@@ -647,6 +673,7 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
     // Procesar vehículos (VTV y Seguro) - ya están en memoria
     for (const vDoc of vehiclesSnap.docs) {
       const vInfo = vehicleMap[vDoc.id];
+      if (!vInfo) continue; // deshabilitado: no va a ningún informe
       const patente = vInfo.patente;
       const v = vDoc.data();
 

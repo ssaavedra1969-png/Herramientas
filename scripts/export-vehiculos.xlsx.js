@@ -1,11 +1,13 @@
 const { db } = require('../config/firebase');
+const { sinDeshabilitados } = require('../lib/utils');
 const XLSX = require('xlsx');
 const path = require('path');
 
 (async () => {
   const snap = await db.collection('vehicles').orderBy('interno').get();
-  const rows = snap.docs.map(d => {
-    const v = d.data();
+  // Es un informe más: los vehículos deshabilitados no se exportan.
+  const docs = sinDeshabilitados(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  const rows = docs.map(v => {
     return {
       id: d.id,
       interno: v.interno || '',

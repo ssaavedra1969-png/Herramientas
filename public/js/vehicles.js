@@ -226,6 +226,9 @@ function fmap(v) {
     horometro: v.horometro || 0,
     estadoGeneral: v.estadoGeneral || v.estado || 'Bueno',
     fechaUltimaRevision: v.fechaUltimaRevision || null,
+    deshabilitado: v.deshabilitado === true,
+    deshabilitadoMotivo: v.deshabilitadoMotivo || '',
+    deshabilitadoAt: v.deshabilitadoAt || null,
     vtv: v.vtv || {
       fechaRealizacion: null,
       fechaVencimiento: v.vencimientoVTV || null,
@@ -288,6 +291,11 @@ function renderVehicleTable(vehicles) {
     const trompoChip = mv.trompo
       ? `<span class="exc__tag" style="background: var(--ac-soft); color: var(--ac);">Trompo</span>`
       : '';
+    // Deshabilitado: sigue en la lista, grisado y con etiqueta, pero no cuenta en
+    // ningún informe. El campo deshabilitado lo escribe el admin desde el modal.
+    const deshabChip = mv.deshabilitado
+      ? `<span class="exc__tag exc__tag--deshab" title="No cuenta en ningún informe${mv.deshabilitadoMotivo ? ' — ' + _esc(mv.deshabilitadoMotivo) : ''}">Deshabilitado</span>`
+      : '';
     const unidad = [
       mv.marca, mv.modelo
     ].filter(Boolean).join(' ') || '—';
@@ -296,7 +304,7 @@ function renderVehicleTable(vehicles) {
         <div class="flex items-center gap-2">
           <span class="font-mono text-[10px] t-subtle">${_esc(mv.interno || '')}</span>
           <span class="font-mono font-bold text-sm t-strong tracking-wide">${_esc(mv.patente || '—')}</span>
-          ${trompoChip}
+          ${trompoChip}${deshabChip}
         </div>
         <p class="text-xs t-subtle truncate">${_esc(unidad)}</p>
       </div>`;
@@ -349,7 +357,7 @@ function renderVehicleTable(vehicles) {
       </div>`;
 
     return `
-      <tr class="border-b border-white/5 hover:bg-[#2563EB]/10 cursor-pointer fade-row" onclick="rowClick('${v.id}', event)">
+      <tr class="border-b border-white/5 hover:bg-[#2563EB]/10 cursor-pointer fade-row${mv.deshabilitado ? ' veh-deshab' : ''}" onclick="rowClick('${v.id}', event)">
         ${checkboxCell}
         <td class="pr-3">${vehCell}</td>
         <td class="pr-3">${tipoCell}</td>
@@ -390,6 +398,11 @@ function renderVehicleCards(vehicles) {
       ? '<span class="card-badge trompo-yes">Trompo</span>'
       : '';
 
+    // Igual que en la tabla: el deshabilitado se ve grisado, pero sigue listado.
+    const deshabBadge = mv.deshabilitado
+      ? `<span class="exc__tag exc__tag--deshab" title="No cuenta en ningún informe${mv.deshabilitadoMotivo ? ' — ' + _esc(mv.deshabilitadoMotivo) : ''}">Deshabilitado</span>`
+      : '';
+
     const checkHtml = admin ? `<label class="card-check"><input type="checkbox" class="row-checkbox accent-[#2563EB]" value="${v.id}" ${checked ? 'checked' : ''} onchange="toggleRow('${v.id}', this.checked)"></label>` : '';
 
     const hasPhoto = !!mv.fotoURL;
@@ -406,7 +419,7 @@ function renderVehicleCards(vehicles) {
       : fallbackBg;
 
     return `
-      <div class="vehicle-card fade-row" onclick="rowClick('${v.id}', event)">
+      <div class="vehicle-card fade-row${mv.deshabilitado ? ' veh-deshab' : ''}" onclick="rowClick('${v.id}', event)">
         ${checkHtml}
         ${fotoHtml}
         <div class="vehicle-card-header">
@@ -420,6 +433,7 @@ function renderVehicleCards(vehicles) {
           <div class="flex items-center gap-2 flex-wrap mb-2">
             ${vtvBadge}
             ${trompoBadge}
+            ${deshabBadge}
             ${mv.tipo ? `<span class="card-detail"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>${mv.tipo}</span>` : ''}
           </div>
           <div class="flex flex-col gap-1">
@@ -521,6 +535,9 @@ function applyFilters() {
   const centro = document.getElementById('filter-centro').value;
   const empresa = document.getElementById('filter-empresa').value;
   const estado = document.getElementById('filter-estado')?.value || '';
+  // Los deshabilitados NO salen de la lista (el usuario los tiene que ver para
+  // poder reactivarlos), pero este filtro es cómodo para no contarlos a mano.
+  const soloDeshab = document.getElementById('filter-deshabilitado')?.value || '';
   const trompoFilterLocal = trompoFilter;
 
   let filtered = allVehicles;
@@ -543,6 +560,8 @@ function applyFilters() {
   if (centro) filtered = filtered.filter(v => (v.centroTrabajo || '') === centro);
   if (empresa) filtered = filtered.filter(v => (v.empresa || '') === empresa);
   if (estado) filtered = filtered.filter(v => (v.estadoGeneral === 'Baja' || v.estado === 'Baja' ? 'Baja' : 'Activo') === estado);
+  if (soloDeshab === 'no') filtered = filtered.filter(v => v.deshabilitado !== true);
+  if (soloDeshab === 'si') filtered = filtered.filter(v => v.deshabilitado === true);
   if (trompoFilterLocal === 'yes') filtered = filtered.filter(v => hasTrompo(v));
   if (trompoFilterLocal === 'no') filtered = filtered.filter(v => !hasTrompo(v));
 
@@ -592,6 +611,7 @@ function resetFilters() {
   document.getElementById('filter-centro').value = '';
   document.getElementById('filter-empresa').value = '';
   if (document.getElementById('filter-estado')) document.getElementById('filter-estado').value = '';
+  if (document.getElementById('filter-deshabilitado')) document.getElementById('filter-deshabilitado').value = '';
   trompoFilter = 'all';
   document.querySelectorAll('[data-trompo-filter]').forEach((btn, i) => {
     btn.classList.remove('bg-[#2563EB]/30', 'text-[#ffffff]');
@@ -631,6 +651,9 @@ function openVehicleModal(vehicleId = null) {
   document.getElementById('modal-vehiculo-title').textContent = 'Nuevo Vehículo';
   document.getElementById('multas-container').innerHTML = '<div class="text-sm text-gray-400 italic">Sin multas registradas</div>';
   document.getElementById('documentos-container').innerHTML = '<div class="text-sm text-gray-400 italic">Sin documentos adjuntos</div>';
+  document.getElementById('v-deshabilitado').checked = false;
+  document.getElementById('v-deshabilitado-motivo').value = '';
+  toggleMotivoDeshabilitado();
 
   if (vehicleId) {
     const raw = allVehicles.find(x => x.id === vehicleId);
@@ -680,6 +703,9 @@ function openVehicleModal(vehicleId = null) {
     setDateField('v-vencimientoRegistro', v.vencimientoRegistro || null);
     document.getElementById('v-observaciones').value = v.observaciones;
     document.getElementById('v-foto').value = v.fotoURL;
+    document.getElementById('v-deshabilitado').checked = v.deshabilitado;
+    document.getElementById('v-deshabilitado-motivo').value = v.deshabilitadoMotivo || '';
+    toggleMotivoDeshabilitado();
 
     if (v.multas.length) {
       document.getElementById('multas-container').innerHTML = '';
@@ -693,6 +719,13 @@ function openVehicleModal(vehicleId = null) {
 
   showModal('modal-vehiculo');
 }
+
+// El campo "motivo" solo aparece cuando la casilla está marcada.
+function toggleMotivoDeshabilitado() {
+  const wrap = document.getElementById('v-deshabilitado-motivo-wrap');
+  if (wrap) wrap.classList.toggle('hidden', !document.getElementById('v-deshabilitado').checked);
+}
+document.getElementById('v-deshabilitado')?.addEventListener('change', toggleMotivoDeshabilitado);
 
 function setDateField(id, val) {
   const el = document.getElementById(id);
@@ -792,6 +825,19 @@ async function saveVehicle(e) {
     return;
   }
 
+  /* Deshabilitado: conserva todos los datos pero lo saca de todos los informes
+     (lo aplica el backend, el dashboard y los scripts de Excel). El motivo es
+     opcional; deshabilitadoAt solo se toca cuando el estado cambia, para que
+     guardar cualquier otro campo no pise la fecha real del cambio. */
+  const deshab = document.getElementById('v-deshabilitado').checked;
+  const motivo = document.getElementById('v-deshabilitado-motivo').value.trim();
+  data.deshabilitado = deshab;
+  if (deshab) {
+    if (motivo) data.deshabilitadoMotivo = motivo;
+  } else if (!isNew) {
+    data.deshabilitadoMotivo = firebase.firestore.FieldValue.delete();
+  }
+
   try {
     showLoading(true);
     if (isNew) {
@@ -808,8 +854,19 @@ async function saveVehicle(e) {
       showToast(`Vehículo creado exitosamente — N° Interno: ${seq.formatted}`);
     } else {
       data.interno = document.getElementById('v-interno').value.trim();
+      // deshabilitadoAt solo se toca cuando el estado cambia: si no, cada
+      // guardado de cualquier otro campo dejaría la fecha de siempre vieja.
+      const previo = allVehicles.find(x => x.id === id);
+      const antes = previo && previo.deshabilitado === true;
+      if (antes !== data.deshabilitado) {
+        data.deshabilitadoAt = firebase.firestore.FieldValue.serverTimestamp();
+      } else {
+        delete data.deshabilitadoAt;
+      }
       await db.collection('vehicles').doc(id).update(data);
-      showToast('Vehículo actualizado exitosamente');
+      showToast(data.deshabilitado
+        ? 'Vehículo actualizado — queda deshabilitado (no cuenta en los informes)'
+        : 'Vehículo actualizado exitosamente');
     }
     closeVehicleModal();
   } catch (error) {
@@ -1445,20 +1502,31 @@ function toggleAllExportFields(checked) {
   updateExportPreview();
 }
 
+/* La flota que cuenta en los informes: los vehículos habilitados. Los
+   deshabilitados siguen en la lista (grisados, para poder reactivarlos) pero no
+   entran en ningún informe, export included. */
+function flotaParaInformes() {
+  return allVehicles.filter(v => v.deshabilitado !== true);
+}
+
 function getExportData() {
   const fields = getSelectedFields();
   const headers = fields.map(f => f.label);
-  const rows = allVehicles.map(v => fields.map(f => String(f.fn(v))));
+  const rows = flotaParaInformes().map(v => fields.map(f => String(f.fn(v))));
   return { headers, rows, fields };
 }
 
 function updateExportPreview() {
   const fields = getSelectedFields();
-  const count = allVehicles.length;
+  const todos = allVehicles.length;
+  const count = flotaParaInformes().length;
   const ncols = fields.length;
+  const omitidos = todos - count;
 
   document.getElementById('exp-count').textContent = count;
-  document.getElementById('exp-stats').textContent = `${count} vehículos × ${ncols} campos = ${count * ncols} celdas`;
+  document.getElementById('exp-stats').textContent =
+    `${count} vehículos × ${ncols} campos = ${count * ncols} celdas` +
+    (omitidos ? ` · ${omitidos} deshabilitado(s) excluidos` : '');
 
   const preview = document.getElementById('exp-preview');
   if (ncols === 0) {
@@ -1473,7 +1541,7 @@ function updateExportPreview() {
   const subtitulo = document.getElementById('exp-subtitulo')?.value || '';
   const ahora = new Date().toLocaleDateString('es-AR');
 
-  const previewRows = allVehicles.slice(0, 5);
+  const previewRows = flotaParaInformes().slice(0, 5);
 
   let html = `<div style="font-family: Inter, sans-serif; font-size: 10px; color: #ffffff; background: #0a0e17; border-radius: 8px; overflow: hidden;">`;
 

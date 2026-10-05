@@ -692,7 +692,13 @@ async function loadDocsPresentes() {
 function initRealtimeListeners() {
   db.collection('vehicles').orderBy('interno').onSnapshot(async (snapshot) => {
     await loadDocsPresentes();
-    const all = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    /* Los vehículos deshabilitados conservan sus datos pero no cuentan en ningún
+       informe, y el dashboard es el informe más mirado de todos: por eso acá
+       no entran (ni en los contadores, ni en los alerts, ni en la búsqueda).
+       Para consultarlos o reactivarlos está la pantalla /vehicles. */
+    const all = snapshot.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(v => v.deshabilitado !== true);
     allVehicles = all;
     const active = all.filter(d => d.estadoGeneral !== 'Baja').length;
 

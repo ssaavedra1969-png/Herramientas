@@ -270,8 +270,10 @@ app.get('/vehicles/qr-stickers-bulk', requireAuth, requireAdminPage, async (req,
 app.get('/vehicles/fichas-taller-bulk', requireAuth, requireAdminPage, async (req, res) => {
   try {
     const { db } = require('./config/firebase');
+    const { esDeshabilitado } = require('./lib/utils');
     const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
-    const vehicles = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(v => v.estadoGeneral !== 'Baja');
+    const vehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(v => v.estadoGeneral !== 'Baja' && !esDeshabilitado(v));
     res.render('fichas-taller-bulk', { vehicles });
   } catch (e) {
     console.error('fichas-taller-bulk:', e.message);
@@ -298,9 +300,12 @@ function parseDesdeParam(s) {
 
 async function cargarVehiculosCarpeta() {
   const { db } = require('./config/firebase');
+  const { esDeshabilitado } = require('./lib/utils');
   const snap = await db.collection('vehicles').get();
+  // La Carpeta de Documentación es un informe: los deshabilitados no salen en
+  // el índice ni cuentan como "novedad" para el modo Solo Novedades.
   return snap.docs.map(d => ({ id: d.id, ...d.data() }))
-    .filter(v => v.estadoGeneral !== 'Baja')
+    .filter(v => v.estadoGeneral !== 'Baja' && !esDeshabilitado(v))
     .sort((a, b) => String(a.interno || '').localeCompare(String(b.interno || ''), 'es', { numeric: true }))
     .map(v => ({ ...v, docsCarpeta: scanDocsCarpeta(v.patente || '') }));
 }

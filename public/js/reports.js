@@ -900,16 +900,14 @@ function valorVenc(r, key, fb) {
 }
 
 /* Un solo informe: las empresas ordenadas por su vencimiento más próximo (la
-   más urgente arriba) y, DENTRO de cada empresa, los camiones ordenados por
-   patente, que es como se lee una lista de vehículos. Si se clickea una
-   columna, esa columna manda adentro del grupo. Sin agrupar, manda la columna
-   activa como siempre. */
+   más urgente arriba) y, DENTRO de cada empresa, los camiones ordenados por la
+   columna activa (por defecto Vencimiento, que es la lista de trabajo). Si se
+   clickea otra columna, esa manda adentro del grupo. Sin agrupar, manda la
+   columna activa como siempre. */
 function datosVenc() {
   const out = vencFiltrada();
   const dir = vencSortDir === 'asc' ? 1 : -1;
-  // adentro del grupo el orden por defecto es por patente; recién clickeando
-  // "Vencimiento" se vuelve a ordenar por fecha
-  const keyFila = (vencFilters.agrupar && vencSortKey === 'fecha') ? 'patente' : vencSortKey;
+  const keyFila = vencSortKey;
   const fb = campoObjeto(keyFila);
   const cmpFila = (a, b) => {
     const va = valorVenc(a, keyFila, fb), vb = valorVenc(b, keyFila, fb);
@@ -1021,13 +1019,12 @@ function renderVenc() {
     { key: 'interno', label: 'Interno' },
     { key: 'tipo', label: 'Tipo' },
     { key: 'empresa', label: 'Empresa' },
-    { key: 'fecha', label: 'Vencimiento', titulo: multiDoc ? 'Con 2 o más documentos sale una fila por documento' : 'Fecha del documento elegido en el filtro, o la más próxima si está en "Todos". Con el agrupado prendido ordena las empresas' }
+    { key: 'fecha', label: 'Vencimiento', titulo: multiDoc ? 'Con 2 o más documentos sale una fila por documento' : 'Fecha del documento elegido en el filtro, o la más próxima si está en "Todos". Ordena los vehículos por fecha y, con el agrupado prendido, las empresas por su vencimiento más próximo' }
   ];
 
-  // con el agrupado prendido el default ordena por patente adentro del grupo:
-  // la flecha va en Patente, no en Vencimiento (que ordena las empresas)
-  const colActiva = (vencFilters.agrupar && vencSortKey === 'fecha') ? 'patente' : vencSortKey;
-  const arrow = k => (colActiva === k ? (vencSortDir === 'asc' ? '▲' : '▼') : '');
+  // Con el agrupado prendido la flecha va en la columna que ordena adentro del
+  // grupo, que es la columna activa (por defecto Vencimiento).
+  const arrow = k => (vencSortKey === k ? (vencSortDir === 'asc' ? '▲' : '▼') : '');
   document.getElementById('vc-thead').innerHTML = '<tr>' + cols.map(c =>
     `<th onclick="sortVencBy('${c.key}')"${c.titulo ? ` title="${esc(c.titulo)}"` : ''}>${esc(c.label)} <span class="sort-arrow">${arrow(c.key)}</span></th>`
   ).join('') + '</tr>';

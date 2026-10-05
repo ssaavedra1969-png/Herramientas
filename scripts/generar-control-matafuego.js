@@ -26,6 +26,7 @@ const path = require('path');
 const ExcelJS = require('exceljs');
 const { db } = require('../config/firebase');
 const gh = require('../lib/github-docs');
+const { sinDeshabilitados } = require('../lib/utils');
 
 const RAIZ = path.join(__dirname, '..');
 const PATENTE_DIR = path.join(RAIZ, 'PATENTE');
@@ -79,6 +80,12 @@ const esMixer = v => String(v.tipo || '').trim().toLowerCase() === 'mixer';
 // "mixer" y "Mixer" en dos grupos del mismo tipo.
 const normTipo = t => String(t == null ? '' : t).trim().toLowerCase();
 
+// Orden de filas. Va a nivel de modulo porque lo usan tanto main() como
+// escribir() (que es la que arma los grupos del informe completo).
+// {numeric:true} para que AH2 vaya antes que AH10.
+const cmp = (a, b) => String(a.patente || '').localeCompare(
+  String(b.patente || ''), undefined, { numeric: true });
+
 function archivosLocales(patente) {
   const dir = path.join(PATENTE_DIR, patente);
   if (!fs.existsSync(dir)) return [];
@@ -119,15 +126,12 @@ async function main() {
   try { git = await gh.listarPatenteGlobal(); } catch (e) { git = null; }
 
   const snap = await db.collection('vehicles').get();
-  let autos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  let autos = sinDeshabilitados(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   if (soloPatente) {
     const p = soloPatente.toUpperCase();
     autos = autos.filter(v => String(v.patente || '').toUpperCase() === p);
   }
   if (!incluirBaja) autos = autos.filter(v => v.estadoGeneral !== 'Baja');
-
-  const cmp = (a, b) => String(a.patente || '').localeCompare(
-    String(b.patente || ''), undefined, { numeric: true });
 
   const conMatafuego = [], filas = [], filasCon = [];
   // Una sola forma de fila para las dos listas: los mixers que TIENEN matafuego
@@ -167,21 +171,12 @@ async function main() {
   const filasResto = filas.filter(f => !esMixer(f));
 
   /* El informe completo: TODA la flota, con y sin matafuego, agrupada por tipo.
-     Adentro de cada tipo, primero los que tienen matafuego (que es lo que hay
-     que renovar) y despues los que no, ordenados por cuantos papeles faltan.
-     El tipo se agrupa sin distincion de mayusculas: la base tiene "mixer" (22)
-     y "Mixer" (1) y sin normalizar salen dos grupos del mismo tipo. */
+     El agrupado lo hace `escribir()` (es el que mete las filas de encabezado) y
+     adentro de cada tipo va POR PATENTE: se lee como una lista de vehiculos.
+     El tipo se agrupa sin distincion de mayusculas porque la base tiene
+     "mixer" (22) y "Mixer" (1) y sin normalizar salen dos grupos del mismo
+     tipo. El cmp es con {numeric:true} para que AH2 vaya antes que AH10. */
   const todas = [...filasCon, ...filas];
-  const mapaTipo = new Map();
-  todas.forEach(f => {
-    const k = normTipo(f.tipo);
-    if (!mapaTipo.has(k)) mapaTipo.set(k, { nombre: f.tipo || 'Sin tipo', filas: [] });
-    mapaTipo.get(k).filas.push(f);
-  });
-  const gruposTipo = [...mapaTipo.values()].sort((a, b) =>
-    String(a.nombre).localeCompare(String(b.nombre), undefined, { sensitivity: 'base' }));
-  gruposTipo.forEach(g => g.filas.sort((a, b) =>
-    (b.conMatafuego - a.conMatafuego) || (b.faltan - a.faltan) || cmp(a, b)));
 
   const hoy = new Date();
   const p2 = n => String(n).padStart(2, '0');
@@ -226,8 +221,10 @@ async function main() {
     hoja: 'Toda la flota',
     columnas,
     filas: todas,
-    titulo: `Matafuego de toda la flota — ${todas.length} vehiculos, ${filasCon.length} con matafuego — generado ${fmtFecha(hoy)}`,
-    colorFila: null,
+    titulo: `Toda la flota con y sin matafuego — ${todas.length} vehiculos (${filasCon.length} con matafuego) — generado ${fmtFecha(hoy)}`,
+    // mismo pintado que los otros dos: gris si faltan 4+ papeles, naranja si
+    // faltan 2 o 3
+    colorFila: r => (r.faltan >= 4 ? 'FFF1F1F1' : r.faltan >= 2 ? 'FFFFF4E5' : null),
     agrupadoPor: 'tipo'
   });
 
@@ -255,13 +252,22 @@ async function main() {
       .forEach(([k, v]) => console.log(`  ${k.padEnd(9)} ${String(v).padStart(3)} vehiculos`));
   }
 
+  // Resumen de consola (no del archivo: el agrupado del .xlsx lo hace escribir)
+  const porTipoFlota = new Map();
+  todas.forEach(f => {
+    const k = normTipo(f.tipo);
+    if (!porTipoFlota.has(k)) porTipoFlota.set(k, []);
+    porTipoFlota.get(k).push(f);
+  });
+  const gruposTipo = [...porTipoFlota.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+
   console.log(`\n  ${f1}  ->  ${filasMixer.length} filas`);
   console.log(`  ${f2}  ->  ${filasResto.length} filas`);
   console.log(`  ${f3}  ->  ${todas.length} filas en ${gruposTipo.length} tipos`);
   console.log('\n  Por tipo (con / sin matafuego):');
-  gruposTipo.forEach(g => {
-    const con = g.filas.filter(f => f.conMatafuego).length;
-    console.log(`    ${String(g.nombre).padEnd(16)} ${String(g.filas.length).padStart(3)} vehiculos  (${con} con / ${g.filas.length - con} sin)`);
+  gruposTipo.forEach(([, g]) => {
+    const con = g.filter(f => f.conMatafuego).length;
+    console.log(`    ${String(g[0].tipo || 'Sin tipo').padEnd(16)} ${String(g.length).padStart(3)} vehiculos  (${con} con / ${g.length - con} sin)`);
   });
   console.log(`\nOutput: ${SALIDA}\n`);
 }
@@ -313,8 +319,11 @@ async function escribir({ archivo, hoja, columnas, filas, titulo, colorFila, agr
       mapa.get(k).push(f);
     });
     [...mapa.keys()].sort().forEach(k => {
-      encabezadoGrupo(mapa.get(k)[0][agrupadoPor] || 'Sin tipo', mapa.get(k));
-      mapa.get(k).forEach(agregarFila);
+      // adentro del grupo, por patente (no por cuantos papeles faltan: este
+      // informe es el control de matafuegos, no el de documentacion)
+      const g = mapa.get(k).sort(cmp);
+      encabezadoGrupo(g[0][agrupadoPor] || 'Sin tipo', g);
+      g.forEach(agregarFila);
     });
   } else {
     filas.forEach(agregarFila);
@@ -324,9 +333,7 @@ async function escribir({ archivo, hoja, columnas, filas, titulo, colorFila, agr
     row.font = { italic: true, color: { argb: 'FF64748B' } };
   }
 
-  // con filas de encabezado de grupo el autofiltro las mezcla: se deja solo el
-  // de las dos salidas planas
-  if (!agrupadoPor) ws.autoFilter = { from: { row: 2, column: 1 }, to: { row: 2, column: columnas.length } };
+  ws.autoFilter = { from: { row: 2, column: 1 }, to: { row: 2, column: columnas.length } };
   await wb.xlsx.writeFile(archivo);
   return path.basename(archivo);
 }
