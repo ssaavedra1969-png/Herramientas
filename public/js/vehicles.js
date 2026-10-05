@@ -364,7 +364,7 @@ function renderVehicleTable(vehicles) {
         <td class="pr-3">${empresaCell}</td>
         <td class="pr-3">${vtvCell}</td>
         <td class="pr-3">${docsCell}</td>
-        <td class="no-print" onclick="event.stopPropagation()"><div class="row-actions justify-end">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}</div></td>
+        <td class="no-print" onclick="event.stopPropagation()"><div class="row-actions justify-end">${createActionButtons(null, `deleteVehicle('${v.id}')`, `viewVehicle('${v.id}')`)}<button onclick="toggleDeshabilitado('${v.id}')" class="btn-xs ${mv.deshabilitado ? 'btn-success' : 'btn-amber'}" title="${mv.deshabilitado ? 'Reactivar' : 'Deshabilitar'}">${mv.deshabilitado ? '↩' : '✕'}</button></div></td>
       </tr>`;
   }).join('');
 }
@@ -485,6 +485,22 @@ function checkAllTitulos() {
 function rowClick(id, event) {
   if (event.target.type === 'checkbox') return;
   viewVehicle(id);
+}
+
+async function toggleDeshabilitado(id) {
+  const v = allVehicles.find(x => x.id === id);
+  if (!v) return;
+  const nuevo = !v.deshabilitado;
+  try {
+    await db.collection('vehicles').doc(id).update({
+      deshabilitado: nuevo,
+      deshabilitadoAt: nuevo ? firebase.firestore.FieldValue.serverTimestamp() : firebase.firestore.FieldValue.delete(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast(nuevo ? 'Vehículo deshabilitado' : 'Vehículo reactivado');
+  } catch (e) {
+    showToast('Error: ' + e.message);
+  }
 }
 
 function toggleRow(id, checked) {
