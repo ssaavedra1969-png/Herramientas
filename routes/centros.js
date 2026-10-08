@@ -242,25 +242,39 @@ router.get('/elementos', verifyToken, async (req, res) => {
     const vehMap = {};
     vehiculosSnap.docs.forEach(d => {
       const v = d.data();
-      vehMap[v.interno] = { nombre: `${v.patente || v.interno || ''} — ${v.marca || ''} ${v.modelo || ''} ${v.anio || ''}`.trim(), marca: v.marca || '', modelo: v.modelo || '' };
+      const info = {
+        nombre: `${v.patente || v.interno || ''} — ${v.marca || ''} ${v.modelo || ''} ${v.anio || ''}`.trim(),
+        marca: v.marca || '',
+        modelo: v.modelo || '',
+        tipoVehiculo: v.tipo || '',
+        chofer: v.chofer || v.conductorHabitual || ''
+      };
+      /* Los elementos de vehiculo guardan la PATENTE en `interno` (el select de
+         alta usa getVehicleList(), que devuelve la patente como valor), pero el
+         mapa se indexaba solo por v.interno (V-XXX): el join nunca matcheaba y
+         la tabla salia sin nombre/marca/modelo. Se indexa por las dos claves. */
+      if (v.patente) vehMap[v.patente.toUpperCase()] = info;
+      if (v.interno) vehMap[v.interno.toUpperCase()] = info;
     });
 
     const catalogoSnap = await db.collection('elementos_catalogo').get();
     const catMap = {};
     catalogoSnap.docs.forEach(d => {
       const c = d.data();
-      catMap[c.interno] = { nombre: c.nombre || '', marca: c.marca || '', modelo: c.modelo || '' };
+      if (c.interno) catMap[c.interno.toUpperCase()] = { nombre: c.nombre || '', marca: c.marca || '', modelo: c.modelo || '' };
     });
 
     const elementos = items.map(e => {
       const info = e.elementoTipo === 'vehiculo'
-        ? vehMap[e.interno]
-        : catMap[e.interno];
+        ? vehMap[(e.interno || '').toUpperCase()]
+        : catMap[(e.interno || '').toUpperCase()];
       return cleanTimestamps({
         ...e,
         nombre: info?.nombre || '',
         marca: info?.marca || '',
-        modelo: info?.modelo || ''
+        modelo: info?.modelo || '',
+        tipoVehiculo: info?.tipoVehiculo || '',
+        chofer: info?.chofer || ''
       });
     });
 

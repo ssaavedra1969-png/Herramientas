@@ -148,11 +148,12 @@ class FakeDB {
 class DocRef {
   constructor(db, col, id) { this._db = db; this._col = col; this._id = id; this.id = id; }
 
-  // d.ref.parent.parent.id -> para desandar la ruta de una subcolección
+  /* En Firestore real docRef.parent es la COLECCIÓN que contiene al doc, y
+     docRef.parent.parent es el doc padre: centros/c1/elementos/e1 -> 'c1'.
+     Devolver acá directamente el doc padre dejaba un nivel de más y el id
+     salía 'centros'. */
   get parent() {
-    const parts = this._col.split('/');
-    parts.pop();
-    return new DocRef(this._db, parts.join('/'), parts[parts.length - 1] || '');
+    return new CollectionRef(this._db, this._col);
   }
 
   async get() {
@@ -190,6 +191,15 @@ class CollectionRef {
   }
 
   doc(id) { return new DocRef(this._db, this._col, id); }
+
+  // collectionRef.parent es el doc padre; null en una colección raíz.
+  get parent() {
+    const parts = this._col.split('/');
+    if (parts.length < 2) return null;
+    parts.pop();
+    const id = parts.pop();
+    return new DocRef(this._db, parts.join('/'), id);
+  }
 
   where(f, op, v) {
     const n = new CollectionRef(this._db, this._col);

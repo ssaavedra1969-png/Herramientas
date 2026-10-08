@@ -662,14 +662,25 @@ async function loadElementos() {
     renderElementos();
   } catch (e) {
     console.error('Error cargando elementos:', e);
-    if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-red-400">Error: ' + esc(e.message) + '</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="13" class="text-center py-8 text-red-400">Error: ' + esc(e.message) + '</td></tr>';
   }
 }
 
-function renderElementos() {
+function estadoElem(e) {
+  return (!e.fechaDevolucion || e.fechaDevolucion === '') ? 'asignado' : 'devuelto';
+}
+
+/* Filtra según la barra de la pestaña. Se usa en pantalla y en el PDF, así que
+   lo que se imprime es exactamente lo que se ve. */
+function filtrarElementos() {
   let filtered = [...elementosData];
   if (elementosFilter.search) {
-    filtered = filtered.filter(e => (e.interno || '').toLowerCase().includes(elementosFilter.search));
+    const s = elementosFilter.search;
+    filtered = filtered.filter(e =>
+      (e.interno || '').toLowerCase().includes(s) ||
+      (e.nombre || '').toLowerCase().includes(s) ||
+      (e.marca || '').toLowerCase().includes(s)
+    );
   }
   if (elementosFilter.centro) {
     filtered = filtered.filter(e => e.centroId === elementosFilter.centro);
@@ -678,12 +689,29 @@ function renderElementos() {
     filtered = filtered.filter(e => e.elementoTipo === elementosFilter.tipo);
   }
   if (elementosFilter.estado) {
-    if (elementosFilter.estado === 'asignado') {
-      filtered = filtered.filter(e => !e.fechaDevolucion || e.fechaDevolucion === '');
-    } else {
-      filtered = filtered.filter(e => e.fechaDevolucion && e.fechaDevolucion !== '');
-    }
+    filtered = filtered.filter(e => estadoElem(e) === elementosFilter.estado);
   }
+  return filtered;
+}
+
+/* La pestaña es "Obra": los elementos van agrupados con una cabecera por obra
+   (nombre + cantidad) y debajo sus filas. Los grupos se ordenan por nombre; la
+   posición relativa de las filas dentro de cada grupo la respeta el orden
+   global que dejó sortElementos (elementosData viene ordenado). */
+function agruparPorObra(filtered) {
+  const grupos = new Map();
+  filtered.forEach(e => {
+    const key = e.centroId || '(sin obra)';
+    if (!grupos.has(key)) grupos.set(key, []);
+    grupos.get(key).push(e);
+  });
+  const orden = [...grupos.keys()].sort((a, b) =>
+    nombreCentro(a).localeCompare(nombreCentro(b), 'es', { sensitivity: 'base' }));
+  return orden.map(id => ({ id, nombre: nombreCentro(id), filas: grupos.get(id) }));
+}
+
+function renderElementos() {
+  const filtered = filtrarElementos();
   const totalEl = document.getElementById('elementos-total');
   if (totalEl) totalEl.textContent = filtered.length;
   const tbody = document.getElementById('elementos-table-body');
@@ -694,23 +722,52 @@ function renderElementos() {
     return;
   }
   empty?.classList.add('hidden');
-  tbody.innerHTML = filtered.map(e => {
-    const asignado = !e.fechaDevolucion || e.fechaDevolucion === '';
-    return `
-      <tr class="border-b border-white/5 hover:bg-[#10B981]/5">
-        <td class="px-4 py-3 text-[#ffffff] font-medium">${esc(nombreCentro(e.centroId))}</td>
-        <td class="px-4 py-3 text-[#00E5FF] font-mono text-xs">${esc(e.interno)}</td>
-        <td class="px-4 py-3 text-[#8b9bb4]">${esc(e.nombre || '')}</td>
-        <td class="px-4 py-3 text-[#8b9bb4]">${esc(e.marca || '')}</td>
-        <td class="px-4 py-3 text-[#8b9bb4]">${esc(e.modelo || '')}</td>
-        <td class="px-4 py-3 text-[#8b9bb4]">${e.elementoTipo}</td>
-        <td class="px-4 py-3 text-[#8b9bb4] text-xs">${formatDate(e.fechaAsignacion)}</td>
-        <td class="px-4 py-3 text-[#8b9bb4] text-xs">${e.origenCentro ? esc(e.origenCentro) : '—'}</td>
-        <td class="px-4 py-3">${asignado ? '<span class="text-[#10B981] text-xs font-bold">Asignado</span>' : `<span class="text-[#4a5568] text-xs">Devuelto ${formatDate(e.fechaDevolucion)}</span>`}</td>
-        <td class="px-4 py-3 text-[#4a5568] text-xs max-w-[150px] truncate">${esc(e.observaciones || '')}</td>
-        <td class="px-3 py-3 no-print">${asignado ? `<button onclick="returnElement('${e.centroId}', '${e.id}')" class="text-[#00E5FF] hover:underline text-xs">Devolver</button>` : ''}</td>
+
+  const grupos = agruparPorObra(filtered);
+  tbody.innerHTML = grupos.map(g => `
+      <tr class="bg-[#10B981]/10">
+        <td colspan="13" class="px-3 py-2 border border-white/10 text-[11px] font-bold uppercase tracking-widest text-[#10B981]">${esc(g.nombre)} <span class="text-[#8b9bb4] font-normal">· ${g.filas.length} elemento${g.filas.length === 1 ? '' : 's'}</span></td>
+      </tr>` + g.filas.map(filaElemento).join('')).join('');
+}
+
+function filaElemento(e) {
+  const asignado = estadoElem(e) === 'asignado';
+  /* Dos tipos de celda, para que NADA quede cortado con ...:
+     - las columnas cortas van con whitespace-nowrap (nunca se parten);
+     - las largas (Nombre y Observaciones) envuelven dentro de la celda y, si
+       hace falta, ocupan 2 renglones: el texto sale COMPLETO y no hace falta
+       ni cortarlo ni scrollear.
+     Los bordes van por celda (la tabla usa border-collapse) para que la grilla
+     tenga líneas horizontales y verticales. */
+  const td = 'px-3 py-2 border border-white/10 align-top';
+  const c = (cls, val, title, envuelve) =>
+    `<td class="${td} ${envuelve ? 'break-words' : 'whitespace-nowrap'} ${cls}"${title ? ` title="${esc(title)}"` : ''}>${val}</td>`;
+  return `
+      <tr class="hover:bg-[#10B981]/5">
+        ${c('text-[#ffffff] font-medium', esc(nombreCentro(e.centroId)))}
+        ${c('text-[#00E5FF] font-mono', esc(e.interno))}
+        ${c('text-[#8b9bb4]', esc(e.nombre || '—'), e.nombre, true)}
+        ${c('text-[#8b9bb4]', esc(e.marca || '—'), e.marca)}
+        ${c('text-[#8b9bb4]', esc(e.modelo || '—'), e.modelo)}
+        ${c('text-[#8b9bb4]', esc(e.elementoTipo), e.elementoTipo)}
+        ${c('text-[#8b9bb4]', esc(e.tipoVehiculo || '—'), e.tipoVehiculo)}
+        ${c('text-[#8b9bb4]', esc(e.chofer || '—'), e.chofer)}
+        ${c('text-[#8b9bb4]', formatDate(e.fechaAsignacion))}
+        ${c('text-[#8b9bb4]', e.origenCentro ? esc(e.origenCentro) : '—', e.origenCentro)}
+        ${c('', asignado ? '<span class="text-[#10B981] font-bold">Asignado</span>' : `<span class="text-[#4a5568]">Devuelto ${formatDate(e.fechaDevolucion)}</span>`)}
+        ${c('text-[#4a5568]', esc(e.observaciones || ''), e.observaciones, true)}
+        ${c('no-print', asignado ? `<button onclick="returnElement('${e.centroId}', '${e.id}')" class="text-[#00E5FF] hover:underline">Devolver</button>` : '')}
       </tr>`;
-  }).join('');
+}
+
+/* Valor comparable de cada columna: la obra y el estado no son campos crudos
+   del elemento, y las fechas van a timestamp para ordenarlas de verdad. */
+function elemSortVal(e, col) {
+  if (col === 'centroNombre') return (nombreCentro(e.centroId) || '').toLowerCase();
+  if (col === 'estado') return estadoElem(e) === 'asignado' ? 0 : 1;
+  if (col === 'fechaAsignacion') return e.fechaAsignacion ? new Date(e.fechaAsignacion).getTime() : 0;
+  const v = e[col];
+  return v == null ? '' : v;
 }
 
 function sortElementos(col) {
@@ -723,15 +780,159 @@ function sortElementos(col) {
   }
   const dir = state.asc ? 1 : -1;
   elementosData.sort((a, b) => {
-    let va = a[col], vb = b[col];
-    if (col === 'fechaAsignacion') { va = va || ''; vb = vb || ''; }
-    if (typeof va === 'string') return va.localeCompare(vb) * dir;
-    return ((va || 0) - (vb || 0)) * dir;
+    const va = elemSortVal(a, col), vb = elemSortVal(b, col);
+    if (typeof va === 'string' || typeof vb === 'string') {
+      return String(va).localeCompare(String(vb), 'es') * dir;
+    }
+    return (va - vb) * dir;
   });
   renderElementos();
   document.querySelectorAll(`th[onclick^="sortElementos('"] .sort-ind`).forEach(el => el.textContent = '');
   const th = document.querySelector(`th[onclick="sortElementos('${col}')"] .sort-ind`);
   if (th) th.textContent = state.asc ? '▲' : '▼';
+}
+
+/* ── PDF de la pestaña Obra ──
+   Exporta exactamente lo que muestra la pantalla (mismos filtros y mismo
+   agrupado por obra), en A4 apaisado con logo, cabecera de obra en verde,
+   grilla y pie con número de página en todas las hojas. */
+let _logoObra = null;
+async function logoObra() {
+  if (_logoObra) return _logoObra;
+  try {
+    const resp = await fetch('/images/fp3d.png');
+    if (!resp.ok) return null;
+    const blob = await resp.blob();
+    _logoObra = await new Promise(r => {
+      const reader = new FileReader();
+      reader.onloadend = () => r(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch { return null; }
+  return _logoObra;
+}
+
+/* [encabezado, ancho relativo] — se reescala al ancho útil de la hoja
+   (297 - 12 - 12 = 273 mm), igual que hace el reporte de flota. */
+const PDF_OBRA_COLS = [
+  ['Obra', 26], ['Interno', 14], ['Nombre', 40], ['Marca', 20], ['Modelo', 20],
+  ['Tipo', 12], ['Tipo Vehículo', 15], ['Chofer', 20], ['Asignación', 16],
+  ['Origen', 15], ['Estado', 24], ['Observaciones', 40]
+];
+
+function resumenFiltroObra() {
+  const p = [];
+  if (elementosFilter.search) p.push(`búsqueda: "${elementosFilter.search}"`);
+  if (elementosFilter.centro) p.push(`obra: ${nombreCentro(elementosFilter.centro)}`);
+  if (elementosFilter.tipo) p.push(`tipo: ${elementosFilter.tipo}`);
+  if (elementosFilter.estado) p.push(`estado: ${elementosFilter.estado}`);
+  return p.length ? 'Filtros — ' + p.join(' · ') : 'Sin filtros — todos los elementos';
+}
+
+/* Encabezado completo (logo + título + subtítulo + línea + fecha). Devuelve el
+   Y donde arranca la tabla; se vuelve a dibujar IGUAL en cada hoja. */
+function encabezadoObra(doc, logo, titulo, subtitulo, generado, w, m) {
+  const tx = logo ? m + 18 : m;
+  if (logo) doc.addImage(logo, 'PNG', m, 8, 14, 14);
+  doc.setTextColor(17, 24, 39);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
+  doc.text(titulo, tx, 16);
+  let y = 22;
+  doc.setFontSize(9);
+  doc.splitTextToSize(subtitulo, w - m - tx).forEach(l => { doc.text(l, tx, y); y += 4.4; });
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(55, 65, 81);
+  doc.text(generado, tx, y);
+  y += 3;
+  doc.setDrawColor(17, 24, 39); doc.setLineWidth(0.8);
+  doc.line(m, y, w - m, y);
+  return y + 6;
+}
+
+async function exportarPdfObra() {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    showToast('No se pudo cargar el generador de PDF (recargá la página)', 'error');
+    return;
+  }
+  const grupos = agruparPorObra(filtrarElementos());
+  const totalFilas = grupos.reduce((s, g) => s + g.filas.length, 0);
+  if (!totalFilas) { showToast('No hay elementos para exportar', 'error'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('l', 'mm', 'a4');
+  const logo = await logoObra();
+  const w = 297, m = 12;
+  const titulo = 'Grupo Falpat SRL';
+  const subtitulo = 'Elementos por Obra — herramientas, equipos y vehículos por centro de trabajo';
+  const generado = `Generado: ${new Date().toLocaleString('es-AR')}   |   ${resumenFiltroObra()}`;
+  const y0 = encabezadoObra(doc, logo, titulo, subtitulo, generado, w, m);
+
+  /* body: una fila de cabecera por obra (marcada con _g para que didParseCell
+     la pinte de verde) y luego sus elementos, en el mismo orden que en pantalla */
+  const body = [];
+  grupos.forEach(g => {
+    const cab = [`${g.nombre} · ${g.filas.length} elemento${g.filas.length === 1 ? '' : 's'}`];
+    cab.push(...Array(PDF_OBRA_COLS.length - 1).fill(''));
+    cab._g = true;
+    body.push(cab);
+    g.filas.forEach(e => {
+      const asignado = estadoElem(e) === 'asignado';
+      body.push([
+        g.nombre,
+        e.interno || '',
+        e.nombre || '',
+        e.marca || '',
+        e.modelo || '',
+        e.elementoTipo || '',
+        e.tipoVehiculo || '',
+        e.chofer || '',
+        formatDate(e.fechaAsignacion) === '-' ? '' : formatDate(e.fechaAsignacion),
+        e.origenCentro || '',
+        asignado ? 'Asignado' : `Devuelto ${formatDate(e.fechaDevolucion) === '-' ? '' : formatDate(e.fechaDevolucion)}`,
+        e.observaciones || ''
+      ]);
+    });
+  });
+
+  const anchoUtil = w - 2 * m;
+  const escala = anchoUtil / PDF_OBRA_COLS.reduce((s, c) => s + c[1], 0);
+  const columnStyles = {};
+  PDF_OBRA_COLS.forEach((c, i) => { columnStyles[i] = { cellWidth: c[1] * escala, valign: 'top' }; });
+
+  doc.autoTable({
+    startY: y0,
+    head: [PDF_OBRA_COLS.map(c => c[0])],
+    body,
+    theme: 'grid',
+    styles: { fontSize: 7.5, cellPadding: 1.6, lineWidth: 0.4, lineColor: [31, 41, 55], overflow: 'linebreak', valign: 'top' },
+    headStyles: { fillColor: [17, 24, 39], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8, halign: 'left' },
+    columnStyles,
+    margin: { left: m, right: m, bottom: 16, top: y0 },
+    didParseCell: d => {
+      if (d.section === 'body' && d.row.raw && d.row.raw._g) {
+        d.cell.styles.fillColor = [220, 252, 231];
+        d.cell.styles.textColor = [6, 95, 70];
+        d.cell.styles.fontStyle = 'bold';
+        d.cell.styles.fontSize = 8;
+      }
+    },
+    /* el encabezado COMPLETO de la hoja 1 se repite en todas las hojas (la 1 ya
+       lo tiene dibujado, porque encabezadoObra corrió antes de autoTable y su Y
+       quedó como margin.top); el pie en todas. */
+    didDrawPage: (() => {
+      let hojas = 0;
+      return () => {
+        hojas += 1;
+        if (hojas > 1) encabezadoObra(doc, logo, titulo, subtitulo, generado, w, m);
+        const p = doc.internal.pageSize;
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(55, 65, 81);
+        doc.text('Grupo Falpat SRL — Sistema de Control Vehicular — Elementos por Obra — Página ' + doc.internal.getNumberOfPages(),
+          p.getWidth() / 2, p.getHeight() - 7, { align: 'center' });
+      };
+    })()
+  });
+
+  doc.save(`elementos-por-obra-${new Date().toISOString().split('T')[0]}.pdf`);
+  showToast('PDF exportado correctamente');
 }
 
 /* ── Helpers ── */

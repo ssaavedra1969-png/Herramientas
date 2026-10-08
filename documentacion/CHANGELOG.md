@@ -1,6 +1,35 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-10-06.
+Cambios registrados por sesión. Última actualización: 2026-10-08.
+
+## 2026-10-08 — Reportes (modelo) + Solapa Obra con PDF + encabezado en cada hoja de los PDF
+
+Detalle completo en **`Update_2026.10.08.md`**.
+
+### Reporte de Flota: afuera Subtipo, Nº BET, Trompo y Año
+- `FIELDS` −4, `DEFAULT_COLS` 12 → **8** (Patente, Interno, Tipo, Marca, Modelo, Chofer, Empresa, Centro de trabajo), sin buscador/orden/celda/export para esos campos; stats 4 → 2 (afuera Trompo y Con Nº BET). Siguen `cargaM3Trompo` y los demas `*Trompo`.
+
+### Solapa Obra (módulo Centros)
+- Tabla `min-w-[900px] border-collapse` con grilla por celda, 13 columnas, sin `truncate`: Nombre y Observaciones envuelven y se leen completas. Refactor `filtrarElementos` / `agruparPorObra` / `renderElementos` / `filaElemento` (mismo origen para pantalla y PDF).
+- **PDF "Elementos por Obra"** (jsPDF apaisado): logo, filtros en el subtítulo, cabecera de obra en verde, 12 columnas escaladas a 273 mm, pie con página.
+- Fix del join de `GET /api/centros/elementos`: `vehMap` indexado por **patente e interno** en mayúsculas (el alta guarda la patente en `interno`, el mapa sólo tenía `V-XXX` → salía sin nombre/marca/modelo) + respuesta con **`tipoVehiculo`** y **`chofer`**.
+- `tests/fake-firestore.js`: `DocRef.parent` = colección y `CollectionRef.parent` = doc padre (antes `d.ref.parent.parent.id` daba `'centros'`).
+
+### Los 4 PDF repiten el encabezado completo de la 1ª hoja
+- `encabezadoEnTodas()` en `reports.js` (Flota, Documentación, Vencimientos) y `encabezadoObra()` en `centros.js`: la hoja 1 dibuja antes de autoTable, su Y queda como `margin.top` y `didDrawPage` redibuja el encabezado desde la hoja 2 + el pie en todas. El texto (incluida la fecha "Generado") se calcula una sola vez → idéntico hoja por hoja.
+
+### Centro de trabajo: "Obra Ibicuy" → "Lujan" en los 2 camiones (datos)
+- **Ibicuy es la obra que se carga en el popup "Centro de trabajo + Carga M3 Trompo"** del editar vehículo: no hay campo Obra/Destino aparte, es `centroTrabajo`, y por eso Reportes lo listaba. `AF804RU` y `PCS413` pasaron a **`centroTrabajo = "Lujan"`** (su base); `cargaM3Trompo` 8 M3 / 4 M3 intactos.
+- Censo final (58 vehículos): **Lujan 41, `""` 16, Campana 1** — sin "Obra Ibicuy".
+- Se creó y **borró** (revertido) la obra "Obra Ibicuy" del módulo Centros con esos 2 camiones como elementos: el usuario aclaró que **Ibicuy no es una obra de Centros**. `centros` queda con 2 obras (Cordoba, Carlos Casares) y 4 elementos, igual que antes.
+- Selectores de la ficha: **+ "Carlos Casares"** y **+ "Obra Ibicuy"** como opciones de `centroTrabajo` (`vehicles.ejs`, `vehicle-detail.ejs`).
+
+### Documentación `PATENTE/`
+- `AE335KK/cedula.pdf` reemplazada (1,29 MB → 181 KB); nuevos `AE335KK/dni.pdf`, `AE335KK/registro.pdf`, `AH784OY/dni.pdf`, `AH784OY/registro.pdf`.
+
+### Verificación
+- `npm test` → **131 checks, 0 fallas**. Harnesses de sesión: modelo de Flota 12/12, páginas de PDF 36/36, PDF Obra 17/17, sort 7/7, render 13/15 (2 aserciones propias inválidas).
+- API real contra el server local: `/api/centros` 2 obras / 4 elementos; `/api/admin/report/flota` con `centroTrabajo` Lujan 41 / `""` 16 / Campana 1.
 
 ## 2026-10-06 — Renovación de seguros (póliza 30457810): 32 constancias separadas + BACKUP del seguro viejo + fecha 07/04/2027
 

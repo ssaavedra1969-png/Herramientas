@@ -41,7 +41,7 @@
       <div class="flex gap-1 mb-4 no-print">
         <button id="tab-centros" onclick="switchTab('centros')" class="px-4 py-2 text-xs font-bold rounded-lg bg-[#2563EB] text-white transition-colors">Centros</button>
         <button id="tab-catalogo" onclick="switchTab('catalogo')" class="px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors">Catálogo</button>
-        <button id="tab-elementos" onclick="switchTab('elementos')" class="px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors">Elementos</button>
+        <button id="tab-elementos" onclick="switchTab('elementos')" class="px-4 py-2 text-xs font-bold rounded-lg bg-[#0a0e17]/50 text-[#8b9bb4] hover:text-[#ffffff] border border-[#2563EB]/20 transition-colors">Obra</button>
       </div>
 
       <div id="section-centros">
@@ -125,13 +125,17 @@
           <div class="px-4 py-3 flex items-center justify-between border-b border-white/5 bg-white/[0.02]">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-[#10B981]"></span>
-              <h2 class="text-sm font-bold tracking-wide text-[#ffffff]">Elementos Asignados</h2>
+              <h2 class="text-sm font-bold tracking-wide text-[#ffffff]">Elementos por Obra</h2>
               <span class="px-2 py-0.5 rounded-md bg-[#10B981]/15 text-[#10B981] text-xs font-bold"><span id="elementos-total">0</span></span>
             </div>
+            <button type="button" onclick="exportarPdfObra()" class="no-print btn-primary text-xs flex items-center gap-1 px-3 py-1.5" title="Descargar PDF de los elementos agrupados por obra (respeta los filtros activos)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+              PDF
+            </button>
           </div>
           <div class="p-3 border-b border-white/5">
             <div class="flex flex-wrap items-center gap-2">
-              <input type="text" id="elementos-search" placeholder="Buscar por interno..." class="px-3 py-1.5 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon w-48">
+              <input type="text" id="elementos-search" placeholder="Buscar por interno, nombre o marca..." class="px-3 py-1.5 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon w-56">
               <select id="elementos-filter-centro" class="px-3 py-1.5 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
                 <option value="">Todos los centros</option>
               </select>
@@ -151,24 +155,26 @@
             </div>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-sm min-w-[800px]">
+            <table class="w-full text-xs min-w-[900px] border-collapse">
               <thead>
-                <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
-                  <th class="px-4 py-3 text-left font-semibold cursor-pointer hover:text-white select-none" onclick="sortElementos('centroNombre')">Centro <span class="sort-ind"></span></th>
-                  <th class="px-4 py-3 text-left font-semibold cursor-pointer hover:text-white select-none" onclick="sortElementos('interno')">Interno <span class="sort-ind"></span></th>
-                  <th class="px-4 py-3 text-left font-semibold">Nombre</th>
-                  <th class="px-4 py-3 text-left font-semibold">Marca</th>
-                  <th class="px-4 py-3 text-left font-semibold">Modelo</th>
-                  <th class="px-4 py-3 text-left font-semibold cursor-pointer hover:text-white select-none" onclick="sortElementos('elementoTipo')">Tipo <span class="sort-ind"></span></th>
-                  <th class="px-4 py-3 text-left font-semibold cursor-pointer hover:text-white select-none" onclick="sortElementos('fechaAsignacion')">Asignación <span class="sort-ind"></span></th>
-                  <th class="px-4 py-3 text-left font-semibold">Origen</th>
-                  <th class="px-4 py-3 text-left font-semibold">Estado</th>
-                  <th class="px-4 py-3 text-left font-semibold">Observaciones</th>
-                  <th class="px-3 py-3 no-print"></th>
+                <tr class="text-[10px] uppercase tracking-widest text-[#4a5568]">
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('centroNombre')">Obra <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('interno')">Interno <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('nombre')">Nombre <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('marca')">Marca <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('modelo')">Modelo <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('elementoTipo')">Tipo <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('tipoVehiculo')">Tipo Vehículo <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('chofer')">Chofer <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('fechaAsignacion')">Asignación <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('origenCentro')">Origen <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('estado')">Estado <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 text-left font-semibold whitespace-nowrap cursor-pointer hover:text-white select-none border border-white/20" onclick="sortElementos('observaciones')">Observaciones <span class="sort-ind"></span></th>
+                  <th class="px-3 py-2 no-print border border-white/20"></th>
                 </tr>
               </thead>
               <tbody id="elementos-table-body">
-                <tr><td colspan="11" class="text-center py-8 text-gray-400">Cargando...</td></tr>
+                <tr><td colspan="13" class="text-center py-8 text-gray-400">Cargando...</td></tr>
               </tbody>
             </table>
           </div>
@@ -445,5 +451,7 @@
   </div>
 </div>
 
-<script src="/js/centros.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="/js/centros.js?v=<%= Date.now() %>"></script>
 <%- include('partials/footer') %>

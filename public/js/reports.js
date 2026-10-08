@@ -63,10 +63,25 @@ function pieEnCadaPagina(doc) {
   };
 }
 
+/* El encabezado COMPLETO de la primera hoja (logo + título + subtítulo con los
+   filtros + fecha de generación + la línea) se repite en todas las hojas.
+   Cómo funciona: la primera hoja lo dibuja encabezadoInforme() antes de
+   autoTable y su Y de retorno se usa como margin.top, así autoTable reserva ese
+   espacio en las hojas siguientes; acá lo redibujamos a partir de la hoja 2 (en
+   la 1 ya está) y de paso el pie. Se pasa como didDrawPage. */
+function encabezadoEnTodas(doc, logo, titulo, subtitulo, extra) {
+  let hojas = 0;
+  return function () {
+    hojas += 1;
+    if (hojas > 1) encabezadoInforme(doc, logo, titulo, subtitulo, extra);
+    pieEnCadaPagina(doc)();
+  };
+}
+
 /* Ancho por columna para la Flota, que el usuario arma a whim (checkbox de
    columnas): las de texto largo se llevan más mm y el resto se reparte parejo,
    para que no quede una columna de 2mm al lado de una de 60. */
-const PDF_ANCHO_COL = { chofer: 26, empresa: 30, centroTrabajo: 28, marca: 20, modelo: 20, estadoGeneral: 24, chasis: 26, numeroMotor: 24, subtipo: 20, patente: 20, interno: 13, nroBet: 15, tipo: 15, trompo: 12, anio: 10, kilometraje: 16, horometro: 16 };
+const PDF_ANCHO_COL = { chofer: 26, empresa: 30, centroTrabajo: 28, marca: 20, modelo: 20, estadoGeneral: 24, chasis: 26, numeroMotor: 24, patente: 20, interno: 13, tipo: 15, kilometraje: 16, horometro: 16 };
 function anchosColumnasPDF(campos, labels, total) {
   const suma = campos.reduce((s, k) => s + (PDF_ANCHO_COL[k] || 14), 0);
   const f = total / suma;
@@ -79,12 +94,8 @@ const FIELDS = [
   { key: 'patente', label: 'Patente', type: 'text' },
   { key: 'interno', label: 'Interno', type: 'text' },
   { key: 'tipo', label: 'Tipo', type: 'select' },
-  { key: 'subtipo', label: 'Subtipo', type: 'select' },
-  { key: 'nroBet', label: 'Nº BET', type: 'text' },
-  { key: 'trompo', label: 'Trompo', type: 'bool' },
   { key: 'marca', label: 'Marca', type: 'text' },
   { key: 'modelo', label: 'Modelo', type: 'text' },
-  { key: 'anio', label: 'Año', type: 'number' },
   { key: 'chofer', label: 'Chofer', type: 'text' },
   { key: 'dni', label: 'DNI chofer', type: 'text' },
   { key: 'registro', label: 'Registro chofer', type: 'text' },
@@ -112,7 +123,7 @@ const FIELDS = [
 DOC_TIPOS.forEach(t => FIELDS.push({ key: 'doc:' + t, label: 'Doc · ' + DOC_LABELS[t], type: 'doc' }));
 FIELDS.push({ key: 'faltantes', label: 'Docs faltantes', type: 'number' });
 
-const DEFAULT_COLS = ['patente', 'interno', 'tipo', 'subtipo', 'nroBet', 'trompo', 'marca', 'modelo', 'anio', 'chofer', 'empresa', 'centroTrabajo'];
+const DEFAULT_COLS = ['patente', 'interno', 'tipo', 'marca', 'modelo', 'chofer', 'empresa', 'centroTrabajo'];
 const OPERS = {
   text: ['contiene', 'no_contiene', 'es', 'no_es', 'vacio', 'no_vacio'],
   select: ['es', 'no_es'],
@@ -362,7 +373,7 @@ function obtenerValor(v, key) {
 
 function buscarGlobal(v) {
   if (!searchTerm) return true;
-  const hay = [v.patente, v.interno, v.marca, v.modelo, v.tipo, v.subtipo, v.nroBet, v.chofer, v.dni, v.empresa, v.centroTrabajo].join(' ').toLowerCase();
+  const hay = [v.patente, v.interno, v.marca, v.modelo, v.tipo, v.chofer, v.dni, v.empresa, v.centroTrabajo].join(' ').toLowerCase();
   return hay.includes(searchTerm);
 }
 
@@ -374,7 +385,7 @@ function cumpleFiltro(v, f) {
     case 'contiene': return String(val || '').toLowerCase().includes(String(f.valor || '').toLowerCase());
     case 'no_contiene': return !String(val || '').toLowerCase().includes(String(f.valor || '').toLowerCase());
     case 'es':
-      return f.campo === 'trompo' ? (val === true) === (f.valor === 'true') : String(val || '').toLowerCase() === String(f.valor || '').toLowerCase();
+      return String(val || '').toLowerCase() === String(f.valor || '').toLowerCase();
     case 'no_es': return String(val || '').toLowerCase() !== String(f.valor || '').toLowerCase();
     case '>': case '>=': case '<': case '<=': case '=': case '!=': {
       const a = toNum(val), b = toNum(f.valor);
@@ -407,7 +418,6 @@ function flotaFiltrada() {
 
 function orderVal(v, key, fb) {
   if (key.startsWith('doc:')) return v.docs && v.docs[key.slice(4)] ? 1 : 0;
-  if (key === 'trompo') return v.trompo ? 1 : 0;
   if (fb && fb.type === 'number') {
     const val = v[key];
     const n = toNum(val);
@@ -450,20 +460,13 @@ function renderFlota() {
   }
 
   document.getElementById('fv-resultados').innerHTML = `<span class="text-2xl">${rows.length}</span><span class="text-sm font-medium text-[#6b7280] ml-1">de ${fleet.length}</span>`;
-  document.getElementById('fv-trompo').textContent = rows.filter(v => v.trompo).length;
   document.getElementById('fv-mixers').textContent = rows.filter(v => String(v.tipo || '').toLowerCase().includes('mixer')).length;
-  document.getElementById('fv-bet').textContent = rows.filter(v => !isEmpty(v.nroBet)).length;
 }
 
 function celdaFlota(v, f) {
   if (f.key.startsWith('doc:')) {
     const tipo = f.key.slice(4);
     return docCell(tipo, !!(v.docs && v.docs[tipo]));
-  }
-  if (f.key === 'trompo') {
-    return v.trompo
-      ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#2563EB]/15 text-[#2563EB]">Sí</span>'
-      : '<span class="px-2 py-0.5 rounded-full text-[10px] bg-white/5 text-[#4a5568]">No</span>';
   }
   if (f.type === 'date') return fechaCol(v[f.key]);
   if (f.type === 'number') {
@@ -603,7 +606,6 @@ function columnasVisibles() { return FIELDS.filter(f => visibleCols.has(f.key));
 
 function valorExport(v, f) {
   if (f.key.startsWith('doc:')) return v.docs && v.docs[f.key.slice(4)] ? 'Sí' : 'Falta';
-  if (f.key === 'trompo') return v.trompo ? 'Sí' : 'No';
   const val = v[f.key];
   if (f.type === 'date' && val) {
     const [y, m, d] = val.split('-');
@@ -634,8 +636,10 @@ async function exportFleetPDF() {
   const logo = await getLogoBase64();
   const w = 297, m = 12;
   const filas = flotaFiltrada();
-  const y0 = encabezadoInforme(doc, logo, 'Grupo Falpat SRL', 'Reporte de Flota — vehículos filtrados',
-    filas.length + (filas.length === 1 ? ' vehículo' : ' vehículos'));
+  const titulo = 'Grupo Falpat SRL';
+  const subtitulo = 'Reporte de Flota — vehículos filtrados';
+  const extra = filas.length + (filas.length === 1 ? ' vehículo' : ' vehículos');
+  const y0 = encabezadoInforme(doc, logo, titulo, subtitulo, extra);
   const visible = columnasVisibles();
   const body = filas.map(v => visible.map(f => valorExport(v, f)));
   doc.autoTable(Object.assign({}, PDF_TABLA, {
@@ -644,7 +648,8 @@ async function exportFleetPDF() {
     body,
     tableWidth: w - 2 * m,
     columnStyles: anchosColumnasPDF(visible.map(f => f.key), visible.map(f => f.label), w - 2 * m),
-    didDrawPage: pieEnCadaPagina(doc)
+    margin: Object.assign({}, PDF_TABLA.margin, { top: y0 }),
+    didDrawPage: encabezadoEnTodas(doc, logo, titulo, subtitulo, extra)
   }));
   doc.save(`reporte-flota-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
@@ -675,8 +680,10 @@ async function exportDocPDF() {
   const logo = await getLogoBase64();
   const w = 297, m = 12;
   const rows = docFiltrada();
-  const y0 = encabezadoInforme(doc, logo, 'Grupo Falpat SRL', 'Documentación — estado por vehículo',
-    rows.length + (rows.length === 1 ? ' vehículo' : ' vehículos'));
+  const titulo = 'Grupo Falpat SRL';
+  const subtitulo = 'Documentación — estado por vehículo';
+  const extra = rows.length + (rows.length === 1 ? ' vehículo' : ' vehículos');
+  const y0 = encabezadoInforme(doc, logo, titulo, subtitulo, extra);
   const labels = [...DOC_TIPOS.map(t => DOC_LABELS[t]), 'Faltan'];
 const head = ['Patente', 'Marca/Modelo', 'Tipo', 'Centro', 'Empresa', ...labels];
 const body = rows.map(r => [r.patente || '', [r.marca, r.modelo].filter(Boolean).join(' ') || '', r.tipo || '', r.centroTrabajo || '', r.empresa || '', ...DOC_TIPOS.map(t => r.docs && r.docs[t] ? 'Sí' : 'Falta'), String(r.faltantes)]);
@@ -690,7 +697,8 @@ const body = rows.map(r => [r.patente || '', [r.marca, r.modelo].filter(Boolean)
     head: [head], body,
     tableWidth: w - 2 * m,
     columnStyles: anchos,
-    didDrawPage: pieEnCadaPagina(doc)
+    margin: Object.assign({}, PDF_TABLA.margin, { top: y0 }),
+    didDrawPage: encabezadoEnTodas(doc, logo, titulo, subtitulo, extra)
   }));
   doc.save(`documentacion-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
@@ -1099,8 +1107,10 @@ async function exportVencPDF() {
   const { grupos, filas } = datosVenc();
   const nVeh = grupos ? grupos.reduce((s, g) => s + g.vehiculos, 0) : new Set(filas.map(r => r.v.patente)).size;
   // El subtítulo lleva los filtros puestos: en la pizarra tiene que verse qué reporte es.
-  const y0 = encabezadoInforme(doc, logo, 'Grupo Falpat SRL', 'Vencimientos — ' + resumenFiltroVenc(),
-    nVeh + (nVeh === 1 ? ' vehículo' : ' vehículos'));
+  const titulo = 'Grupo Falpat SRL';
+  const subtitulo = 'Vencimientos — ' + resumenFiltroVenc();
+  const extra = nVeh + (nVeh === 1 ? ' vehículo' : ' vehículos');
+  const y0 = encabezadoInforme(doc, logo, titulo, subtitulo, extra);
 
   // Con 2+ documentos el mismo camión sale varias filas: sin la columna Documento
   // el PDF no dice qué hay que renovar.
@@ -1148,8 +1158,8 @@ async function exportVencPDF() {
       'Fecha venc.': { cellWidth: estilos['Fecha venc.'] },
       'Dias': { cellWidth: estilos.Dias, fontSize: 10, fontStyle: 'bold' }
     },
-    margin: { left: m, right: m, bottom: 16 },
-    didDrawPage: pieEnCadaPagina(doc)
+    margin: { left: m, right: m, bottom: 16, top: y0 },
+    didDrawPage: encabezadoEnTodas(doc, logo, titulo, subtitulo, extra)
   }));
   doc.save(`vencimientos-${new Date().toISOString().split('T')[0]}.pdf`);
   showToast('PDF exportado correctamente');
