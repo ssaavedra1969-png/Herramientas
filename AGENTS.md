@@ -192,6 +192,9 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
    El script (`scripts/subir-documentos.js`) hace `git pull origin main` → detecta qué vehículos se tocaron → `git add PATENTE/` → `git commit` → `git push origin main`. Solo toca la carpeta `PATENTE/` (no commitea código).
 4. Vercel despliega automáticamente (~1-2 min).
 
+### Renovación de seguros (póliza de la aseguradora → por patente)
+Cuando llega un PDF con todas las constancias juntas, el **procedimiento completo está en `documentacion/PROCEDIMIENTO-SEGUROS.md`** (se repite con cada renovación; leído antes de arrancar). Resumen: el PDF va a `PATENTE/Seg/` → separar con PyMuPDF (1 pág = 1 vehículo, campo `PATENTE:`, **sin OCR**) en `PATENTE/Seg/{PATENTE}.pdf` → **mover** el viejo a `PATENTE/{patente}/BACKUP/seguro_al DD.MM.YY.pdf` (fecha de **modificación** del archivo) → copiar el nuevo como `seguro.pdf` → cargar la fecha con un Excel `SEGUROS_RENOVACION_<fecha>.xlsx` (columnas `Patente | Tipo documento | Vencimiento | Nota`) + `node scripts/cargar-vencimientos.js --archivo=...` (**dry-run primero**). **Nunca** correr `npm run cargar:vencimientos` sin `--archivo`: revierte fechas. Últimas aplicaciones: 2026-10-03 (7 vehículos) y 2026-10-06 (31 vehículos, póliza 30457810).
+
 ### Nota crítica
 - **Storage no disponible** (no intentar migrar a Firebase Storage; el bucket no existe en el plan gratuito).
 - `config/firebase.js`: el Admin SDK local necesita `projectId: sa.project_id` explícito.

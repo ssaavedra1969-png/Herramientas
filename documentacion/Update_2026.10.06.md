@@ -153,9 +153,11 @@ Antes de escribir se leyeron las 32 fechas actuales:
    con su seguro actual (5 en 24/10/2026, resto en 07/04/2026 u otra fecha).
    Hay que ver si entran en otra constancia o si falta material.
 3. **14 vehículos siguen sin fecha de seguro** (de los 18 originales).
-4. **Commitear**: `PATENTE/Seg/` (32 PDF, 9,6 MB), los 31 `seguro.pdf`
-   nuevos, los 29 `BACKUP/` y la doc. `PATENTE/Seg/` **no está en
+4. **Commitear**: hecho → **`443c368`** (104 archivos: los 31 `seguro.pdf`, los
+   29 `BACKUP/`, los 32 PDF de `PATENTE/Seg/` y la doc), **pusheado a `origin/main`**.
+   Después el usuario **borró `PATENTE/Seg/`** (área de trabajo, vacía): ese
+   borrado va en el commit siguiente. `PATENTE/Seg/` **no está en
    `.gitignore`** (decisión del usuario del 03/10), así que `npm run subir:docs`
-   los sube. **No se commiteó nada sin confirmar.**
+   lo subiría si se vuelve a llenar.
 5. El día **07/10/2026** (mañana) los 5 vehículos de la póliza 13673743 que
    vencen **24/10/2026** todavía no tienen renovación cargada.
