@@ -1,6 +1,32 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-10-03 (tarde).
+Cambios registrados por sesión. Última actualización: 2026-10-06.
+
+## 2026-10-06 — Renovación de seguros (póliza 30457810): 32 constancias separadas + BACKUP del seguro viejo + fecha 07/04/2027
+
+Detalle completo en **`Update_2026.10.06.md`**. **Ningún cambio de código de la app.**
+
+### Separación del PDF (`PATENTE/Seg/`)
+- `PATENTE/Seg/Certificados de cobertura.pdf` (32 págs, póliza **Ref 30457810**, vigencia **07/10/2026 → 07/04/2027**) → **32 PDF en `PATENTE/Seg/` nombrados con la patente** (`AC264CZ.pdf`, ...).
+- Distinto al formato del 03/10: acá es **1 página = 1 vehículo** con campo `PATENTE:` (no `Dominio:` de 4 páginas), así que un regex alcanza, **sin OCR**.
+- Verificado 32/32: 1 pág, patente del texto = nombre del archivo, vigencia correcta.
+- **31 de 32 son de la flota**; `AH784OY` no existe en Firestore. **`AG469LY` era un error de la aseguradora**: la patente real es **`AG469YL`** (V017), que no figuraba en el PDF; el usuario consiguió la constancia corregida (`AG469YL_reimpreso.pdf` → renombrada a `AG469YL.pdf`) y se borró `AG469LY.pdf`. **`PATENTE/Seg/` quedó con 32 PDF (9,6 MB)**; el PDF fuente se retiró de la carpeta a mitad de sesión.
+
+### Backup y reemplazo del seguro viejo
+- `PATENTE/{patente}/BACKUP/seguro_al DD.MM.YY.pdf` = el viejo **movido** ahí, con la **fecha de modificación del archivo** (pedido del usuario; ej. `seguro_al 22.04.26.pdf`).
+- **29 respaldados**; `AH919KE` y `NYR481` no tenían seguro previo (solo recibieron el nuevo). **31/31** con `seguro.pdf` nuevo verificado.
+
+### Fecha en Firestore
+- `PATENTE/Vtos/SEGUROS_RENOVACION_2026-10-06.xlsx` (32 filas únicas) + `node scripts/cargar-vencimientos.js --archivo=...` (dry-run primero): **30 actualizados, 2 SKIP, 0 errores**; después **`--patente=AG469YL`** para la corrección → **1 más, total 31**.
+- Re-leído: **31/31** con `seguro.fechaVencimiento` **y** `documentacion.seguro.fechaVencimiento` en **07/04/2027**.
+- **Censo previo de solo lectura: no se recortó ninguna fecha.** 24 en 07/10/2026 (vencían al día siguiente), 2 en 07/10/2025, 1 en 06/10/2026, 4 sin fecha, `AG469YL` en 07/10/2026 y `AG976PG` en 28/01/2027 (se **extiende**).
+- ⚠️ Recordatorio: **no correr `npm run cargar:vencimientos` a secas** (el `CONTROL_VENCIMIENTOS_2026-09-07.xlsx` revierte fechas).
+
+### Pendientes que quedaron
+- **`LEC583` sigue sin póliza** (los otros 2 vencidos, `GKX407` y `AG276BQ`, sí entraron).
+- **29 carpetas de flota no están en esta póliza**; **14 vehículos siguen sin fecha de seguro**.
+- **Nada commiteado sin confirmar**: `PATENTE/Seg/` (32 PDF, 9,6 MB, no ignorado), los 31 `seguro.pdf`, los 29 `BACKUP/` y esta doc.
+- `npm test` → **105/105 + 26 checks, 0 fallas**.
 
 ## 2026-10-03 (tarde) — Reportes / Vencimientos: checklists múltiples + informe agrupado por empresa + PDF con estilo pizarra
 
