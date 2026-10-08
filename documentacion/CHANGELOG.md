@@ -31,6 +31,10 @@ Detalle completo en **`Update_2026.10.08.md`**.
 - `npm test` → **131 checks, 0 fallas**. Harnesses de sesión: modelo de Flota 12/12, páginas de PDF 36/36, PDF Obra 17/17, sort 7/7, render 13/15 (2 aserciones propias inválidas).
 - API real contra el server local: `/api/centros` 2 obras / 4 elementos; `/api/admin/report/flota` con `centroTrabajo` Lujan 41 / `""` 16 / Campana 1.
 
+### Commits y deploy
+- Commit **`46d10bb`** — "feat: Reportes sin Subtipo/BET/Trompo/Anio, solapa Obra con PDF y encabezado en todas las hojas" (15 archivos: 6 JS, 4 vistas, 2 docs, 5 PDF de `PATENTE/`). Pusheado a `origin/main`.
+- Deploy `vercel --prod --yes` → **Ready**, alias https://falpat-control-de-vehiculos.vercel.app (build 11s). Verificado en producción: `/login` 200, `reports.js` con `encabezadoEnTodas` y `DEFAULT_COLS` de 8, `centros.js` con `encabezadoObra`.
+
 ## 2026-10-06 — Renovación de seguros (póliza 30457810): 32 constancias separadas + BACKUP del seguro viejo + fecha 07/04/2027
 
 Detalle completo en **`Update_2026.10.06.md`**. **Ningún cambio de código de la app.**
