@@ -1,6 +1,15 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-10-08.
+Cambios registrados por sesión. Última actualización: 2026-10-09.
+
+## 2026-10-09 — Documentos de vehículos (solo docs, sin código)
+
+Detalle completo en **`Update_2026.10.09.md`**. **Ningún cambio de código ni de
+Firestore.**
+
+### Vehículo `AH190PG` — 2 PDF nuevos
+- `PATENTE/AH190PG/cedula.pdf` y `PATENTE/AH190PG/dni.pdf` (`seguro.pdf` y
+  `titulo.pdf` ya estaban versionados).
 
 ## 2026-10-08 — Reportes (modelo) + Solapa Obra con PDF + encabezado en cada hoja de los PDF
 
