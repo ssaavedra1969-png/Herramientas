@@ -30,7 +30,7 @@ function folioDe(v, pos) {
 const _modoPdf = !!(locals && locals.modoPdf);
 const LOGO = logoDataUri || '/images/fp3d.png';
 const ROWS_P1 = 20;
-const ROWS_RS = 26;
+const ROWS_RS = 24;
 const SOLO_NOVEDADES = !!(locals && locals.soloNovedades);
 const DESDE_TXT = (locals && locals.desde) || null;
 const DESDE_ISO = (locals && locals.desdeISO) || '';
@@ -132,7 +132,12 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
     .indice-intro h2 { margin: 0; font-size: 15pt; font-weight: 800; color: #1a1a2e; letter-spacing: 0.5px; }
     .indice-intro p { margin: 1.5mm 0 0; font-size: 8pt; color: #6b6b8a; }
     .indice-fecha { font-size: 7.5pt; color: #6b6b8a; font-weight: 600; }
-    .indice-table { width: 100%; border-collapse: collapse; }
+    .indice-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    /* Una sola línea por fila: alto uniforme y predecible. Si el texto no entra
+       se recorta con "…" en vez de envolver y empujar las filas de abajo
+       (eso hacía que la última fila de la hoja se cortara al imprimir). */
+    .indice-table thead th { white-space: nowrap; overflow: hidden; }
+    .indice-table tbody td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .indice-table thead th {
       background: #2563EB; color: #fff; font-size: 7.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;
       padding: 2.6mm 2.5mm; text-align: left;
@@ -375,6 +380,15 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
         <% } %>
 
         <table class="indice-table">
+          <colgroup>
+            <col style="width:10mm">
+            <col style="width:18mm">
+            <col style="width:25mm">
+            <col>
+            <col style="width:11mm">
+            <col style="width:46mm">
+            <col style="width:14mm">
+          </colgroup>
           <thead>
             <tr>
               <th>N°</th>
@@ -393,9 +407,9 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
                 <td style="color:#8b9bb4;font-weight:700;"><%= start + r + 1 %></td>
                 <td class="it-interno"><%= v.interno || '' %></td>
                 <td class="it-patente"><%= v.patente || '' %><% if (SOLO_NOVEDADES && v._novedad) { %><span class="badge-nuevo">NUEVO</span><% } %></td>
-                <td><%= [v.marca, v.modelo].filter(Boolean).join(' ') %></td>
+                <td title="<%= [v.marca, v.modelo].filter(Boolean).join(' ') %>"><%= [v.marca, v.modelo].filter(Boolean).join(' ') %></td>
                 <td style="color:#3f4756;"><%= v.año || '' %></td>
-                <td class="it-empresa"><%= v.empresa || '' %></td>
+                <td class="it-empresa" title="<%= v.empresa || '' %>"><%= v.empresa || '' %></td>
                 <td><span class="it-folio"><%= folioDe(v, start + r + 1) %></span></td>
               </tr>
             <% } %>
