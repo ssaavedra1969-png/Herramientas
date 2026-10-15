@@ -37,6 +37,10 @@ const DESDE_ISO = (locals && locals.desdeISO) || '';
 const idxPages = Math.max(1, 1 + Math.ceil(Math.max(0, vehicles.length - ROWS_P1) / ROWS_RS));
 const PAGE_OFFSET = idxPages;
 const esNuevo = (v) => !SOLO_NOVEDADES || !!v._novedad;
+/* Único informe que muestra vehículos deshabilitados: van marcados con una
+   leyenda para que quede claro en la carpeta física. */
+const esDeshab = (v) => !!v.deshabilitadoFlag;
+const CANT_DESHAB = vehicles.filter(esDeshab).length;
 const TOTAL_DOCS = vehicles.reduce((acc, v) => acc + Object.keys(v.docsCarpeta || {}).length, 0);
 let TOTAL_DOCS_NOV = vehicles.reduce((acc, v) => {
   if (!esNuevo(v)) return acc;
@@ -81,6 +85,29 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
     .alert-success b { color: #ffffff; }
     .badge-nuevo { display: inline-block; margin-left: 5px; padding: 0.6mm 2mm; border-radius: 1mm; background: #f59e0b; color: #fff; font-size: 6.5pt; font-weight: 800; letter-spacing: 0.5px; vertical-align: middle; }
     .indice-table tbody tr.nuevo-row td { background: #fffbeb; }
+
+    /* ---------- Vehículos deshabilitados (solo en esta carpeta) ---------- */
+    .tag-deshab {
+      display: inline-block; margin-left: 1.5mm; padding: 0.6mm 1.6mm; border-radius: 1mm;
+      background: #dc2626; color: #fff; font-size: 6.2pt; font-weight: 800;
+      letter-spacing: 0.5px; vertical-align: middle; text-transform: uppercase;
+    }
+    .indice-table tbody tr.row-deshab td { background: #fef2f2; }
+    .indice-table tbody tr.row-deshab td:first-child { box-shadow: inset 1.2mm 0 0 #dc2626; }
+    .indice-table tbody tr.row-deshab .it-interno { color: #b91c1c; }
+    .banner-deshab {
+      display: flex; align-items: center; justify-content: center; gap: 4mm;
+      background: #dc2626; color: #fff; font-weight: 900; font-size: 14pt;
+      letter-spacing: 3px; text-transform: uppercase; padding: 3.5mm; border-radius: 2mm;
+      margin-top: 5mm; box-shadow: 0 1mm 4mm rgba(220,38,38,0.3);
+    }
+    .banner-deshab small { font-size: 8.5pt; font-weight: 700; letter-spacing: 0.4px; text-transform: none; opacity: 0.96; }
+    .marca-deshab {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-28deg);
+      font-size: 54pt; font-weight: 900; color: #dc2626; opacity: 0.10;
+      letter-spacing: 8px; white-space: nowrap; z-index: 4; pointer-events: none;
+    }
 
     /* ---------- Hoja A4 ---------- */
     .page {
@@ -287,11 +314,15 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
       @page { size: A4 portrait; margin: 0; }
       body { background: #fff !important; padding: 0; margin: 0; }
       .no-print { display: none !important; }
-      /* height fijo (296mm, 1mm menos que el A4) en vez de min-height: si el
-         contenido se pasaba aunque sea por un sub-pixel de redondeo, el browser
-         FRAGMENTABA la hoja y generaba una página intermedia con unas pocas
-         líneas. Ahora se recorta en el borde en vez de partirse. */
-      .page { margin: 0; box-shadow: none; height: 296mm; min-height: 0; overflow: hidden; }
+      /* NADA de altura fija de página completa: si el área imprimible del driver
+         era 1-5mm más chica que 296mm, el contenido se pasaba un pelo y Chrome
+         FRAGMENTABA, creando una hoja EN BLANCO después de cada hoja (y antes
+         cortaba la última fila). Ahora la hoja mide su contenido y solo se le
+         impone un mínimo de 270mm para que el pie quede abajo: 270mm entra en
+         cualquier A4 imprimible (con 10mm de margen da 277mm; sin margen 297mm)
+         y si el ancho útil es menor, Chrome escala y el alto baja en la misma
+         proporción. */
+      .page { margin: 0; box-shadow: none; height: auto; min-height: 270mm; overflow: hidden; }
     }
   </style>
 </head>
@@ -338,6 +369,7 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
 
     <div class="info-bar">
       <span><strong><%= vehicles.length %></strong> vehículos</span>
+      <% if (CANT_DESHAB) { %><span style="color:#f87171;"><strong style="color:#fca5a5;"><%= CANT_DESHAB %></strong> deshabilitados</span><% } %>
       <span><strong><%= SOLO_NOVEDADES ? CARATS_IMP : vehicles.length %></strong> carátulas<%= SOLO_NOVEDADES ? ' (novedades)' : '' %></span>
       <span><strong><%= SOLO_NOVEDADES ? TOTAL_DOCS_NOV : TOTAL_DOCS %></strong> documentos a descargar</span>
       <span><strong><%= SOLO_NOVEDADES ? TOTAL_PRINT : TOTAL_PAGES %></strong> hojas a imprimir</span>
@@ -390,7 +422,8 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
             <col style="width:25mm">
             <col>
             <col style="width:11mm">
-            <col style="width:46mm">
+            <col style="width:40mm">
+            <col style="width:20mm">
             <col style="width:14mm">
           </colgroup>
           <thead>
@@ -401,19 +434,21 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
               <th>Marca / Modelo</th>
               <th>Año</th>
               <th>Empresa</th>
+              <th>Estado</th>
               <th>Folio</th>
             </tr>
           </thead>
           <tbody>
             <% for (let r = 0; r < paginaRows; r++) { %>
               <% const v = vehicles[start + r]; %>
-              <tr class="<%= SOLO_NOVEDADES && v._novedad ? 'nuevo-row' : '' %>">
+              <tr class="<%= (SOLO_NOVEDADES && v._novedad ? 'nuevo-row ' : '') + (esDeshab(v) ? 'row-deshab' : '') %>">
                 <td style="color:#8b9bb4;font-weight:700;"><%= start + r + 1 %></td>
                 <td class="it-interno"><%= v.interno || '' %></td>
                 <td class="it-patente"><%= v.patente || '' %><% if (SOLO_NOVEDADES && v._novedad) { %><span class="badge-nuevo">NUEVO</span><% } %></td>
                 <td title="<%= [v.marca, v.modelo].filter(Boolean).join(' ') %>"><%= [v.marca, v.modelo].filter(Boolean).join(' ') %></td>
                 <td style="color:#3f4756;"><%= v.año || '' %></td>
                 <td class="it-empresa" title="<%= v.empresa || '' %>"><%= v.empresa || '' %></td>
+                <td><% if (esDeshab(v)) { %><span class="tag-deshab">DESHAB.</span><% } %></td>
                 <td><span class="it-folio"><%= folioDe(v, start + r + 1) %></span></td>
               </tr>
             <% } %>
@@ -442,6 +477,7 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
   <% vehicles.forEach((v, i) => { %>
   <% if (esNuevo(v)) { pagImpresas++; %>
   <div class="page" data-section="caratula" data-interno="<%= v.interno || '' %>">
+    <% if (esDeshab(v)) { %><div class="marca-deshab">DESHABILITADO</div><% } %>
     <button type="button" class="no-print btn-print-page" onclick="imprimirUnaHoja(this)" title="Imprimir solo esta carátula">🖨 Imprimir esta hoja</button>
     <div class="doc-header">
       <div style="display:flex;align-items:center;gap:3mm;z-index:1;">
@@ -464,6 +500,9 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
     </div>
 
     <div class="caratula-body">
+      <% if (esDeshab(v)) { %>
+      <div class="banner-deshab">Vehículo Deshabilitado<% if (v.deshabilitadoMotivo) { %> <small>· <%= v.deshabilitadoMotivo %></small><% } %></div>
+      <% } %>
       <div class="identidad">
         <div class="id-box id-box-interno">
           <div class="id-label">Interno</div>

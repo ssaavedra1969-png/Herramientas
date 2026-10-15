@@ -79,7 +79,60 @@ aprobados por el usuario con las 3 opciones recomendadas):
 - `estadoGeneral === 'Baja'` y `deshabilitado` conviven: los informes filtran
   las dos cosas por separado (Baja por legado operativo, deshabilitado por
   "no cuenta para nada").
-- El dashboard es el único lugar donde los deshabilitados **se muestran** (con
-  contador y modal); en el resto son invisibles por diseño.
+- El dashboard es un lugar donde los deshabilitados **se muestran** (con
+  contador y modal); **el otro es Carpeta Docs** (ver más abajo). En el resto
+  son invisibles por diseño.
 - Si se toca el QR público: el server siempre pasa `deshabilitado` (boolean) a
   la vista; la vista lo asume definido.
+
+---
+
+# Sesión tarde — Carpeta Docs (deshabilitados + impresión)
+
+## Deshabilitados ahora sí salen en Carpeta Docs
+
+`cargarVehiculosCarpeta()` (`server.js`) **dejó de filtrar** a los
+deshabilitados: sigue excluyendo solo `estadoGeneral === 'Baja'`, y les agrega
+`deshabilitadoFlag: esDeshabilitado(v)` en lugar de sacarlos. Es la **única
+excepción** a la regla "no cuentan en ningún informe" (el comentario de
+`lib/utils.js` quedó actualizado).
+
+- **Índice** (`views/carpeta-docs.ejs`): columna nueva **"Estado"** (20mm, la
+  columna Interno era de 18mm y el tag se comía con `text-overflow: ellipsis`:
+  el texto existía en el HTML pero no llegaba al papel). Fila teñida de rojo,
+  interno rojo y tag `DESHAB.`. Barra de info muestra "N deshabilitados".
+- **Carátula**: banner rojo grande **"VEHÍCULO DESHABILITADO · motivo"** +
+  marca de agua diagonal de 54pt "DESHABILITADO" (opacidad 10%, z-index 4).
+- **PDF descargado** (`/vehicles/carpeta-docs/pdf`): la hoja separadora lleva
+  "VEHICULO DESHABILITADO" en rojo (`rgb(0.86,0.15,0.15)`), importado `rgb` de
+  `pdf-lib`.
+- Hoy el flag está en 5 vehículos: V004, V009, V028, V056, V058 (59 en la
+  carpeta, 62 hojas = 3 índice + 59 carátulas).
+
+**Trampa:** `deshabilitadoFlag` lo calcula el **backend**. Si se toca
+`server.js` y se prueba en local, hay que **reiniciar** `node server.js` (no
+recarga en caliente); sin reiniciar la vista nueva no pinta nada porque
+`v.deshabilitadoFlag` es `undefined`.
+
+## Hoja en blanco entre hojas al imprimir (corte de la última fila)
+
+**Causa raíz de todo el percal de impresión**: en `@media print` la hoja tenía
+**altura fija** `.page { height: 296mm }`. Si el área imprimible del driver
+daba un par de milímetros menos (A4 con margen propio de la impresora: 291-295mm),
+el contenido se pasaba un pelo y Chrome **fragmentaba la hoja** → salía una
+**página en blanco** después de cada hoja (y antes, con el contenido más
+alto, la fragmentación cortaba la última fila — lo de "corta en 20, 44 y 54").
+
+Fix (verificado con Chrome headless + PyMuPDF): `height: auto; min-height:
+270mm`. La hoja mide su contenido y solo se le impone un mínimo para que el
+pie quede abajo; **270mm entra en cualquier A4 imprimible** (297 sin margen,
+277 con 10mm) y si el ancho útil es menor que 210mm Chrome escala, bajando el
+alto en la misma proporción. Último bloque medido a **266,5mm** → 30mm de
+holgura. 62 páginas, **0 en blanco**, índice 20/24/15 con pie en las 3.
+
+## Pendiente / decisión
+
+- **Índice en 2 hojas vs 3**: pide "todo en 2 hojas A4". Cabe (59 filas ×
+  ~6,8mm + intro + leyenda ≈ 540mm disponibles), pero queda ajustado: bajar
+  fila de 7,6 a ~6,8mm y achicar la leyenda, con poco margen de seguridad.
+  Opción B (3 hojas con holgura) es lo que quedó mientras se decide.
