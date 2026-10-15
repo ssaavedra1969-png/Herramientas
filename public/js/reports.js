@@ -1006,7 +1006,7 @@ function filaGrupoVenc(g) {
   const meta = [g.vehiculos + (g.vehiculos === 1 ? ' vehículo' : ' vehículos'),
                 g.filas.length + (g.filas.length === 1 ? ' documento' : ' documentos')];
   if (g.vencidos) meta.push(g.vencidos + (g.vencidos === 1 ? ' vencido' : ' vencidos'));
-  return '<tr class="vc-grp"><td colspan="5"><span class="vc-grp-nombre">' + esc(g.nombre) +
+  return '<tr class="vc-grp"><td colspan="6"><span class="vc-grp-nombre">' + esc(g.nombre) +
     '</span><span class="vc-grp-count"> — ' + esc(meta.join(' · ')) + '</span></td></tr>';
 }
 
@@ -1015,6 +1015,7 @@ function filaVenc(r) {
     '<td class="text-[#ffffff] font-medium">' + esc(r.v.patente) + '</td>' +
     '<td class="text-center">' + esc(r.v.interno || '—') + '</td>' +
     '<td>' + esc(r.v.tipo || '—') + '</td>' +
+    '<td class="col-chofer" title="' + esc(r.v.chofer || '') + '">' + esc(r.v.chofer || '—') + '</td>' +
     '<td class="col-empresa" title="' + esc(r.v.empresa || '') + '">' + esc(r.v.empresa || '—') + '</td>' +
     '<td>' + celdaVenc(r) + '</td>' +
     '</tr>';
@@ -1026,6 +1027,7 @@ function renderVenc() {
     { key: 'patente', label: 'Patente' },
     { key: 'interno', label: 'Interno' },
     { key: 'tipo', label: 'Tipo' },
+    { key: 'chofer', label: 'Chofer' },
     { key: 'empresa', label: 'Empresa' },
     { key: 'fecha', label: 'Vencimiento', titulo: multiDoc ? 'Con 2 o más documentos sale una fila por documento' : 'Fecha del documento elegido en el filtro, o la más próxima si está en "Todos". Ordena los vehículos por fecha y, con el agrupado prendido, las empresas por su vencimiento más próximo' }
   ];
@@ -1075,6 +1077,7 @@ function filasVencExport() {
     Patente: r.v.patente || '',
     Interno: r.v.interno || '',
     Tipo: r.v.tipo || '',
+    Chofer: r.v.chofer || '',
     Empresa: r.v.empresa || '',
     'Fecha vencimiento': r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
     Documento: r.doc.label,
@@ -1083,14 +1086,14 @@ function filasVencExport() {
 }
 
 function vencColsExport() {
-  return ['Patente', 'Interno', 'Tipo', 'Empresa', 'Fecha vencimiento', 'Documento', 'Dias'];
+  return ['Patente', 'Interno', 'Tipo', 'Chofer', 'Empresa', 'Fecha vencimiento', 'Documento', 'Dias'];
 }
 
 function exportVencExcel() {
 
   const rows = filasVencExport();
   const ws = XLSX.utils.json_to_sheet(rows);
-  const anchos = { Empresa: 24, 'Fecha vencimiento': 16 };
+  const anchos = { Empresa: 24, Chofer: 22, 'Fecha vencimiento': 16 };
   const wsCols = vencColsExport().map(c => ({ wch: anchos[c] || Math.max(9, c.length + 2) }));
   ws['!cols'] = wsCols;
   const wb = XLSX.utils.book_new();
@@ -1116,10 +1119,10 @@ async function exportVencPDF() {
   // el PDF no dice qué hay que renovar.
   const multiDoc = vencFilters.docs.length > 1;
   const colsPDF = multiDoc
-    ? ['Patente', 'Interno', 'Tipo', 'Empresa', 'Documento', 'Fecha venc.', 'Dias']
-    : ['Patente', 'Interno', 'Tipo', 'Empresa', 'Fecha venc.', 'Dias'];
+    ? ['Patente', 'Interno', 'Tipo', 'Chofer', 'Empresa', 'Documento', 'Fecha venc.', 'Dias']
+    : ['Patente', 'Interno', 'Tipo', 'Chofer', 'Empresa', 'Fecha venc.', 'Dias'];
   const celda = r => {
-    const c = [r.v.patente || '', r.v.interno || '', r.v.tipo || '', r.v.empresa || ''];
+    const c = [r.v.patente || '', r.v.interno || '', r.v.tipo || '', r.v.chofer || '', r.v.empresa || ''];
     if (multiDoc) c.push(r.doc.label);
     c.push(r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
            r.dias < 0 ? Math.abs(r.dias) + ' Dias Vencidos' : r.dias + ' Dias a Vencer');
@@ -1141,8 +1144,8 @@ async function exportVencPDF() {
   else filas.forEach(r => body.push(celda(r)));
   const anchoTotal = w - 2 * m;
   const estilos = multiDoc
-    ? { 'Patente': 24, 'Interno': 17, 'Tipo': 24, 'Empresa': 38, 'Documento': 24, 'Fecha venc.': 25, 'Dias': 34 }
-    : { 'Patente': 25, 'Interno': 19, 'Tipo': 28, 'Empresa': 46, 'Fecha venc.': 28, 'Dias': 40 };
+    ? { 'Patente': 22, 'Interno': 15, 'Tipo': 20, 'Chofer': 24, 'Empresa': 32, 'Documento': 22, 'Fecha venc.': 24, 'Dias': 27 }
+    : { 'Patente': 24, 'Interno': 16, 'Tipo': 24, 'Chofer': 26, 'Empresa': 36, 'Fecha venc.': 26, 'Dias': 34 };
   doc.autoTable(Object.assign({}, PDF_TABLA, {
     startY: y0,
     head: [colsPDF],
@@ -1153,6 +1156,7 @@ async function exportVencPDF() {
       'Patente': { cellWidth: estilos.Patente, fontStyle: 'bold' },
       'Interno': { cellWidth: estilos.Interno, halign: 'center' },
       'Tipo': { cellWidth: estilos.Tipo },
+      'Chofer': { cellWidth: estilos.Chofer },
       'Empresa': { cellWidth: estilos.Empresa },
       'Documento': { cellWidth: estilos.Documento, fontStyle: 'bold' },
       'Fecha venc.': { cellWidth: estilos['Fecha venc.'] },

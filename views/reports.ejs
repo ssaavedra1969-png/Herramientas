@@ -51,6 +51,7 @@
   .rpt-table tr:hover td { background: rgba(255,255,255,0.03); }
   /* los nombres de empresa son largos: que no estiren la tabla (el title tiene el valor completo) */
   .rpt-table td.col-empresa { max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+  .rpt-table td.col-chofer { max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
 
   /* ===== CHECKLISTS MULTIPLES (Documento / Empresa) =====
      Son <select> reemplazados por un botón + panel con checkboxes: se pueden
@@ -85,7 +86,7 @@
      Al imprimir solo sale la sección Vencimientos: sin sidebar, sin menús,
      sin los botones ni los selects de filtros, y la tabla sin scroll para
      que entre completa en varias páginas. Se activa con body.printing-venc.
-     Vertical: la tabla tiene 5 columnas (patente, interno, tipo, empresa, vencimiento).
+     Vertical: la tabla tiene 6 columnas (patente, interno, tipo, chofer, empresa, vencimiento).
      Va con mucho contraste (negro sobre blanco, bordes gruesos, letra grande)
      porque el destino real es una pizarra: los grises claros y las letras
      chicas no se leen a distancia. */
@@ -115,6 +116,7 @@
   body.printing-venc .rpt-table td { color: #000 !important; font-size: 11pt !important; padding: 5pt !important; border: 0.5pt solid #000 !important; white-space: normal !important; }
   /* en la pizarra el nombre de la empresa tiene que leerse entero: sin recorte */
   body.printing-venc .rpt-table td.col-empresa { max-width: none !important; overflow: visible !important; text-overflow: clip !important; }
+  body.printing-venc .rpt-table td.col-chofer { max-width: none !important; overflow: visible !important; text-overflow: clip !important; }
   body.printing-venc .rpt-table tr { page-break-inside: avoid; }
   /* las dos líneas chicas de la celda de vencimiento (días y tipo de documento) */
   body.printing-venc #sec-vencimientos .text-\[11px\] { font-size: 9.5pt !important; font-weight: 700 !important; }
@@ -353,7 +355,7 @@
           <div class="flex flex-wrap items-end gap-2 flex-1">
             <div class="flex flex-col">
               <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Buscar</label>
-              <input type="text" id="vc-buscar" class="rpt-input" style="min-width:150px" placeholder="Patente, interno…" oninput="setVencSearch(this.value)">
+              <input type="text" id="vc-buscar" class="rpt-input" style="min-width:150px" placeholder="Patente, interno, chofer…" oninput="setVencSearch(this.value)">
             </div>
             <div class="flex flex-col">
               <label class="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1">Vence en</label>
