@@ -144,13 +144,17 @@ const TOTAL_PRINT = CARATS_IMP + PAGE_OFFSET;
     }
     .indice-table thead th:first-child { border-radius: 2mm 0 0 0; width: 11mm; }
     .indice-table thead th:last-child { border-radius: 0 2mm 0 0; }
-    .indice-table tbody td { padding: 2.2mm 2.5mm; font-size: 8.5pt; border-bottom: 0.3mm solid #e8e6f2; }
+    .indice-table tbody td { padding: 0 2.5mm; font-size: 8.5pt; border-bottom: 0.3mm solid #e8e6f2; line-height: 1.1; vertical-align: middle; }
+    /* Alto de fila fijo: sin esto la fila la define el chip del folio y mide
+       ~9.8mm, con lo que 24 filas + encabezado + pie no entran en el A4 y el
+       pie/última fila se recortaban al imprimir. */
+    .indice-table tbody tr { height: 7.6mm; }
     .indice-table tbody tr:nth-child(even) { background: #f4f6fc; }
     .it-interno { font-weight: 800; color: #1a1a2e; }
     .it-patente { font-weight: 800; color: #2563EB; letter-spacing: 0.8px; font-size: 9.5pt; }
     .it-folio {
       display: inline-flex; align-items: center; justify-content: center;
-      min-width: 9mm; height: 6mm; border-radius: 1.5mm;
+      min-width: 9mm; height: 5mm; border-radius: 1.5mm;
       background: #eef2ff; border: 0.35mm solid #2563EB; color: #1D4ED8;
       font-weight: 800; font-size: 9pt;
     }
