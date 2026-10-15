@@ -39,7 +39,7 @@
 | `middleware/auth.js` | `verifyToken`, `requireAdmin`, `loadUser` (define `res.locals.*` y `res.locals.mockMode`), `requireAuth`, `requireAdminPage`, `_baseVars`. |
 | `routes/auth.js` | Login/sesión Firebase Auth + cookies. |
 | `routes/vehicles.js` | CRUD vehículos, subcolecciones combustible/repuestos, **panel services** (`/services/panel`, `/services/panel-mock`), documentos (`/documentos/*`), **reporte global de documentación** (`/api/vehicles/documentos/reporte`, lee todo `PATENTE/`), import/export. |
-| `routes/centros.js` | Centros de Trabajo / Obras: catálogo de elementos + contadores, crear, **editar (PUT: nombre/ubicación/estado/observaciones)**, **eliminar (DELETE: borra subcolección `elementos` + doc, con 409 si quedan elementos sin devolver)**, asignar/devolver elementos, `collectionGroup('elementos')` para la pestaña Elementos. |
+| `routes/centros.js` | Centros de Trabajo / Obras: catálogo de elementos + contadores, crear, **editar (PUT: nombre/ubicación/estado/observaciones)**, **eliminar (DELETE: borra subcolección `elementos` + doc, con 409 si quedan elementos sin devolver)**, asignar/devolver elementos, `collectionGroup('elementos')` para la pestaña Elementos. **El selector de vehículos excluye los deshabilitados** (`getVehicleList()`); las asignaciones viejas se conservan. |
 | `routes/admin.js` | Dashboard stats, reportes, export Excel, backup, `latest-services`. `GET /report/flota` alimenta las 3 cards de `/reports`: resuelve las fechas de documento (`fechaDocVenc`, legacy → plano → `documentacion.<tipo>`) y lee la lista de PDFs de `PATENTE/` **desde GitHub** (`arbolPatenteR()` con caché de 10 min), porque la carpeta no está en el deploy de Vercel. |
 | `lib/github-docs.js` | Lectura de la carpeta `PATENTE/` vía API de GitHub: `listarPatenteGlobal()` (todo el árbol en 1 request), `cambiosDesde()`, `esDeTipo()`. |
 | `scripts/subir-documentos.js` | Sube `PATENTE/` a producción (pull+add+commit+push, solo esa carpeta). → `npm run subir:docs` |
@@ -52,16 +52,16 @@
 ### Frontend (EJS + JS cliente)
 | Archivo | Contenido |
 |---------|-----------|
-| `views/*.ejs` | Páginas: `dashboard`, `vehicles`, `vehicle-detail`, `reports`, `admin`, `centros`, `service`, `login`, `scanner`, `vehicle-qr-public`, `carpeta-docs`, `qr-sticker`, `qr-stickers-bulk`, `fichas-taller-bulk`. **No existe `maintenance.ejs`** (ver nota abajo). |
+| `views/*.ejs` | Páginas: `dashboard`, `vehicles`, `vehicle-detail`, `reports`, `admin`, `centros`, `service`, `login`, `scanner`, `vehicle-qr-public` (muestra aviso si el vehículo está deshabilitado), `carpeta-docs`, `qr-sticker`, `qr-stickers-bulk`, `fichas-taller-bulk`. **No existe `maintenance.ejs`** (ver nota abajo). |
 | `views/partials/head.ejs` | `<head>` con SDKs CDN (Tailwind, Firebase, Chart.js, SweetAlert2, PapaParse, XLSX). |
 | `views/partials/sidebar.ejs` | Menú lateral de desktop (rail colapsable, secciones `Operación`/`Análisis`/`Utilidades`/`Administración`). |
 | `views/partials/mobile-menu.ejs` | Menú móvil (drawer). Debe tener **los mismos destinos que el desktop**: `/centros` y `Carpeta Docs` se agregaron el 2026-10-01, faltaban. |
 | `views/partials/topbar.ejs` | Barra superior: migas, buscador global, acciones y reloj. **Solo en dashboard y vehículos**; el resto de las páginas usa `.clock-float`. |
 | `views/partials/footer.ejs` | Firebase init + carga de `auth-client.js` y demás scripts del footer. |
 | `public/js/auth-client.js` | Helpers globales: `isAdmin()`, `getAuthHeaders()`, `deleteWithBackup()`, **`daysUntil()`** (genérico), `showToast()`, `showModal()`, etc. |
-| `public/js/dashboard.js` | Dashboard: clock, search, modales alertas, fleet health, empresas, alertas VTV/choferes, últimos services. |
-| `public/js/vehicles.js` | CRUD vehículos, bulk delete, filtros, import CSV/Excel. |
-| `public/js/vehicle-detail.js` | Combustible + repuestos CRUD. |
+| `public/js/dashboard.js` | Dashboard: clock, search, modales alertas, fleet health, empresas, alertas VTV/choferes, últimos services. Botón "N deshab." + `showDeshabilitadosModal()` (únicos lugares donde se muestran los deshabilitados). |
+| `public/js/vehicles.js` | CRUD vehículos, bulk delete, filtros, import CSV/Excel. Filtro "En informes" y toggle deshabilitar por fila. |
+| `public/js/vehicle-detail.js` | Combustible + repuestos CRUD. Chip "Deshabilitado" + botón Admin Deshabilitar/Reactivar (`toggleDeshabilitadoFicha`). |
 | `public/js/service.js` | Página Service: tabla sortable, filtros, vencimientos. **Usa `serviceDaysUntil()`** (no colisiona con auth-client). |
 | `public/js/reports.js` | Página Reportes: **3 cards apiladas** - `Flota` (tabla de la flota con columnas visibles), `Documentacion` (checklist por vehículo) y `Vencimientos` (nuevo). Ver "Reportes / Vencimientos" más abajo. |
 | `public/js/admin.js` | Roles de usuario. |

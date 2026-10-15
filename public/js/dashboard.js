@@ -1,4 +1,5 @@
 let allVehicles = [];
+let allDeshabilitados = [];
 let docsPresentes = null;
 
 /* Escribe texto si el elemento existe. Auxiliar global: acá hay muchos ids
@@ -64,6 +65,40 @@ function showVehiculosModal() {
       }).join('');
   const iconSvg = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>';
   openDashModal('Vehículos Activos', subtitle, 'linear-gradient(135deg,#2563EB,#4F46E5)', iconSvg, body);
+}
+
+function renderKpiDeshabilitados() {
+  const btn = document.getElementById('kpi-deshab-btn');
+  if (!btn) return;
+  if (allDeshabilitados.length > 0) {
+    btn.classList.remove('hidden');
+    btn.textContent = `${allDeshabilitados.length} deshab. ▸`;
+  } else {
+    btn.classList.add('hidden');
+  }
+}
+
+function showDeshabilitadosModal() {
+  const list = allDeshabilitados.slice().sort((a, b) => (a.interno || '').localeCompare(b.interno || '', undefined, { numeric: true }));
+  const subtitle = list.length === 0
+    ? 'Ningún vehículo deshabilitado'
+    : `${list.length} vehículo${list.length > 1 ? 's' : ''} no cuenta${list.length > 1 ? 'n' : ''} en ningún informe`;
+  const body = list.length === 0
+    ? '<p class="text-[#4a5568] text-center py-6">No hay vehículos deshabilitados</p>'
+    : list.map(v => {
+        let fecha = '';
+        if (v.deshabilitadoAt) {
+          const d = v.deshabilitadoAt.toDate ? v.deshabilitadoAt.toDate() : new Date(v.deshabilitadoAt);
+          if (d && !isNaN(d.getTime())) fecha = d.toLocaleDateString('es-AR');
+        }
+        const extra = `<span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold" style="background:#F59E0B22;color:#F59E0B;">${fecha ? 'desde ' + fecha : 'deshabilitado'}</span>`;
+        const motivo = v.deshabilitadoMotivo
+          ? `<p class="text-[#4a5568] text-[10px] px-3 pb-2 -mt-1">Motivo: ${esc(v.deshabilitadoMotivo)}</p>`
+          : '';
+        return vehicleRow(v, extra) + motivo;
+      }).join('');
+  const iconSvg = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>';
+  openDashModal('Vehículos Deshabilitados', subtitle, 'linear-gradient(135deg,#D97706,#92400E)', iconSvg, body);
 }
 
 function showVtvAlertModal() {
@@ -696,10 +731,11 @@ function initRealtimeListeners() {
        informe, y el dashboard es el informe más mirado de todos: por eso acá
        no entran (ni en los contadores, ni en los alerts, ni en la búsqueda).
        Para consultarlos o reactivarlos está la pantalla /vehicles. */
-    const all = snapshot.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .filter(v => v.deshabilitado !== true);
+    const docsAll = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    allDeshabilitados = docsAll.filter(v => v.deshabilitado === true);
+    const all = docsAll.filter(v => v.deshabilitado !== true);
     allVehicles = all;
+    renderKpiDeshabilitados();
     const active = all.filter(d => d.estadoGeneral !== 'Baja').length;
 
     const elFlota = document.getElementById('kpi-flota-val');

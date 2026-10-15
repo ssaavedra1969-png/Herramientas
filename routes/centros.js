@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { db, admin } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
+const { esDeshabilitado } = require('../lib/utils');
 
 const TTL_CENTROS = 60 * 1000;
 const cacheTTL = new Map();
@@ -37,14 +38,19 @@ function cleanTimestamps(obj) {
 
 async function getVehicleList() {
   const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
-  return snap.docs.map(d => {
-    const v = d.data();
-    return {
-      id: d.id,
-      interno: v.patente || v.interno || '',
-      nombre: `${v.patente || v.interno || ''} — ${v.marca || ''} ${v.modelo || ''} ${v.anio || ''}`.trim()
-    };
-  });
+  // El selector de Obras es un control: un vehículo deshabilitado no se puede
+  // asignar de nuevo. Las asignaciones viejas se siguen viendo (vehMap de
+  // GET /elementos no filtra, es histórico).
+  return snap.docs
+    .filter(d => !esDeshabilitado(d.data()))
+    .map(d => {
+      const v = d.data();
+      return {
+        id: d.id,
+        interno: v.patente || v.interno || '',
+        nombre: `${v.patente || v.interno || ''} — ${v.marca || ''} ${v.modelo || ''} ${v.anio || ''}`.trim()
+      };
+    });
 }
 
 async function getCatalogElements(tipo) {

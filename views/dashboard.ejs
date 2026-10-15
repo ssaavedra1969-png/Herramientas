@@ -35,7 +35,8 @@
             <p class="kpi__value"><span id="kpi-flota-val">0</span></p>
             <div class="kpi__foot">
               <span class="kpi__hint" id="kpi-flota-hint">—</span>
-              <button onclick="showVehiculosModal()" class="btn btn-ghost btn-sm !min-h-0 !px-2 !py-0.5 !text-[var(--fs-micro)] uppercase tracking-wider">Ver <span aria-hidden="true">→</span></button>
+              <button id="kpi-deshab-btn" onclick="showDeshabilitadosModal()" class="hidden btn btn-ghost btn-sm !min-h-0 !px-2 !py-0.5 !text-[var(--fs-micro)] uppercase tracking-wider !text-amber-400 hover:!text-amber-300" title="Vehículos deshabilitados — no cuentan en ningún informe">0 deshab. ▸</button>
+              <button onclick="showVehiculosModal()" class="btn btn-ghost btn-sm !min-h-0 !px-2 !py-0.5 !text-[var(--fs-micro)] uppercase tracking-wider">Ver <span aria-hidden="true">▸</span></button>
             </div>
           </article>
 

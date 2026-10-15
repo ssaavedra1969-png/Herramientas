@@ -60,7 +60,17 @@
         <% const ec = vehicle.estadoGeneral === 'Bueno' ? 'bg-[#00E5FF]/20 text-[#00E5FF]' : vehicle.estadoGeneral === 'Regular' ? 'bg-yellow-500/20 text-yellow-400' : vehicle.estadoGeneral === 'Malo' ? 'bg-red-500/20 text-red-400' : 'bg-gray-500/20 text-gray-400'; %>
         <div class="mb-2">
           <span class="status-badge <%= ec %>"><%= vehicle.estadoGeneral || 'Sin estado' %></span>
+          <% if (deshabilitado) { %>
+          <span class="status-badge bg-amber-500/20 text-amber-300 ml-1">Deshabilitado</span>
+          <% } %>
         </div>
+
+        <% if (deshabilitado) { %>
+        <div class="rounded-xl p-3 mb-1 border border-amber-400/40 bg-amber-500/10">
+          <p class="text-amber-300 font-bold text-xs">⚠ Vehículo deshabilitado</p>
+          <p class="text-amber-200/70 text-[11px] mt-0.5">No cuenta en ningún informe del sistema. Solo se muestra la identificación del vehículo.</p>
+        </div>
+        <% } %>
 
         <div class="h-px bg-[#2563EB]/15 my-3"></div>
         <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
@@ -76,6 +86,7 @@
           <% if (vehicle.empresa) { %><div><p class="text-[#8b9bb4] text-[10px]">Empresa</p><p class="font-semibold text-[#ffffff]"><%= vehicle.empresa %></p></div><% } %>
         </div>
 
+        <% if (!deshabilitado) { %>
         <div class="h-px bg-[#2563EB]/15 my-3"></div>
         <div class="flex items-center gap-1.5 flex-wrap">
           <% const vtvBadgeC = vencimientos && vencimientos.find(x => x.label === 'VTV'); %>
@@ -91,9 +102,10 @@
             <span class="status-badge <%= sc %>"><%= segBadgeC.dias === null ? 'Seguro sin fecha' : segBadgeC.dias < 0 ? 'Seguro vencido' : segBadgeC.dias <= 30 ? 'Seguro ' + segBadgeC.dias + 'd' : 'Seguro al día' %></span>
           <% } %>
         </div>
+        <% } %>
       </div>
 
-      <% if (vencimientos && vencimientos.length) { %>
+      <% if (!deshabilitado && vencimientos && vencimientos.length) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
         <h2 class="text-sm font-bold title-page mb-3">Vencimientos</h2>
         <div class="space-y-2">
@@ -174,7 +186,7 @@
       </div>
       <% } %>
 
-      <% if ((recentServices && recentServices.length) || (recentRepuestos && recentRepuestos.length)) { %>
+      <% if (!deshabilitado && ((recentServices && recentServices.length) || (recentRepuestos && recentRepuestos.length))) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
         <h2 class="text-sm font-bold title-page mb-3">Últimos movimientos</h2>
         <div class="space-y-2">
@@ -205,6 +217,7 @@
 
 
 
+      <% if (!deshabilitado) { %>
       <div class="glass-card rounded-2xl p-4 sm:p-5 mb-3">
         <h2 class="text-sm font-bold title-page mb-1">Documentos del vehículo</h2>
         <p class="text-[#8b9bb4] text-[10px] mb-3">Cédula · Seguro · VTV — solo lectura</p>
@@ -227,6 +240,7 @@
           <% }); %>
         </div>
       </div>
+      <% } %>
 
       <div class="text-center mt-4 pb-4">
         <p class="text-[#4a5568] text-[10px]">Grupo Falpat SRL — Control de Mantenimiento</p>

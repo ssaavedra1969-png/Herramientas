@@ -1,6 +1,25 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-10-09.
+Cambios registrados por sesión. Última actualización: 2026-10-15.
+
+## 2026-10-15 — Deshabilitar vehículos: dashboard, Obras, QR y ficha
+
+Detalle completo en **`Update_2026.10.15.md`**. El campo `deshabilitado` ya
+existía (`ff00ba0`); esta sesión cerró los 4 huecos que quedaban:
+
+- **Dashboard**: botón ámbar "N deshab. ▸" en la tarjeta Flota activa +
+  modal con la lista (interno, patente, fecha y motivo). Es el único lugar
+  donde se muestran; el resto de los informes los sigue excluyendo.
+- **Obras**: `getVehicleList()` filtra deshabilitados → ya no se les puede
+  asignar una obra nueva (las asignaciones viejas se conservan como
+  histórico en `GET /api/centros/elementos`).
+- **QR público**: si escanean el QR de un deshabilitado aparece chip ámbar +
+  aviso "Vehículo deshabilitado", sin vencimientos/movimientos/documentos.
+  `qr-stickers-bulk` ahora también los excluye.
+- **Ficha del vehículo**: chip "Deshabilitado" junto al título y botón Admin
+  "Deshabilitar / Reactivar" (con confirmación).
+- **Tests**: sección nueva en `tests/deshabilitado-orden.test.js` (selector
+  de Obras con Firestore falso) → 30 checks, 0 fallas. `npm test` completo OK.
 
 ## 2026-10-09 — Documentos de vehículos (solo docs, sin código)
 

@@ -156,5 +156,26 @@ eq(mezcladas.filas.map(f => f.dias), [3, 30, 300], 'días crecientes');
 eq(mezcladas.filas.map(f => f.v.patente), ['AAA111', 'MMM555', 'ZZZ999'],
   'las patentes salen ordenadas al revés de como entraron: no es orden por patente');
 
-console.log(`\n${checks} checks, ${fails} fallas`);
-process.exit(fails ? 1 : 0);
+// ---------- routes/centros.js: el selector de Obras excluye deshabilitados ----------
+// Un vehículo deshabilitado no se puede asignar a una obra: getVehicleList()
+// filtra con esDeshabilitado(). Las asignaciones viejas se siguen viendo
+// (vehMap de GET /elementos no filtra). Se monta el harness real de helpers
+// (Firestore falso) y se pega al endpoint real.
+const { fake, req } = require('./helpers');
+
+(async () => {
+  console.log('\nObras: el selector de vehiculos excluye deshabilitados');
+  fake.seed('vehicles', 'vActivo',  { patente: 'AB123CD', interno: 'V001', marca: 'Scania', modelo: 'X', anio: 2020 });
+  fake.seed('vehicles', 'vDeshab',  { patente: 'ZZ999ZZ', interno: 'V002', marca: 'Mercedes', modelo: 'Y', anio: 2021, deshabilitado: true });
+  fake.seed('vehicles', 'vDeshabStr', { patente: 'YY888YY', interno: 'V003', deshabilitado: 'true' });
+
+  const r = await req('GET', '/api/centros/elementos/disponibles/vehiculo');
+  ok(r.status === 200, 'responde 200');
+  const values = (r.json || []).map(e => e.interno);
+  ok(values.includes('AB123CD'), 'el vehículo activo aparece en el selector');
+  ok(!values.includes('ZZ999ZZ'), 'el deshabilitado (boolean) NO aparece');
+  ok(!values.includes('YY888YY'), 'el deshabilitado (string "true") tampoco');
+
+  console.log(`\n${checks} checks, ${fails} fallas`);
+  process.exit(fails ? 1 : 0);
+})();

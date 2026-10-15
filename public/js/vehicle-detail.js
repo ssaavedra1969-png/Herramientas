@@ -59,6 +59,7 @@ async function loadVehicle() {
   renderDocumentos();
   renderFoto();
   renderHeroMobile();
+  renderDeshabilitado();
   document.getElementById('vg-observaciones').textContent = vehicleData.observaciones || 'Sin observaciones';
 
   generateQR();
@@ -102,6 +103,39 @@ function renderGeneralInfo() {
   setText('vg-horometro', vehicleData.horometro ? `${vehicleData.horometro} hs` : '-');
   setText('vg-fechaUltimaRevision', formatDate(vehicleData.fechaUltimaRevision));
   setText('vg-fechaAlta', formatDate(vehicleData.fechaAlta) || formatDate(vehicleData.createdAt) || '-');
+}
+
+/* Deshabilitado: el vehículo conserva sus datos pero no cuenta en ningún
+   informe. El mismo flag lo excluye del dashboard, reportes, services, obras,
+   QR y scripts de control (lib/utils.js → esDeshabilitado). El toggle es el
+   mismo que usa la lista de /vehicles (update directo del campo). */
+function renderDeshabilitado() {
+  const on = vehicleData && vehicleData.deshabilitado === true;
+  const badge = document.getElementById('deshab-badge');
+  if (badge) badge.classList.toggle('hidden', !on);
+  const label = document.getElementById('btn-deshabilitar-label');
+  if (label) label.textContent = on ? 'Reactivar' : 'Deshabilitar';
+}
+
+async function toggleDeshabilitadoFicha() {
+  if (!isAdmin() || !vehicleData) return;
+  const nuevo = vehicleData.deshabilitado !== true;
+  const okBtn = window.confirm(nuevo
+    ? '¿Deshabilitar este vehículo? No va a aparecer en ningún informe (dashboard, reportes, services, obras, QR).'
+    : '¿Reactivar este vehículo? Vuelve a contar en todos los informes.');
+  if (!okBtn) return;
+  try {
+    await db.collection('vehicles').doc(vehicleId).update({
+      deshabilitado: nuevo,
+      deshabilitadoAt: nuevo ? firebase.firestore.FieldValue.serverTimestamp() : firebase.firestore.FieldValue.delete(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    vehicleData.deshabilitado = nuevo;
+    renderDeshabilitado();
+    showToast(nuevo ? 'Vehículo deshabilitado — no cuenta en los informes' : 'Vehículo reactivado');
+  } catch (e) {
+    showToast('Error: ' + e.message);
+  }
 }
 
 function renderTrompo() {

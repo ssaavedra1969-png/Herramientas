@@ -193,9 +193,11 @@ function scanDocsCarpeta(patente) {
 app.get('/vehicle/:id/qr', async (req, res) => {
   try {
     const { db } = require('./config/firebase');
+    const { esDeshabilitado } = require('./lib/utils');
     const doc = await db.collection('vehicles').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).send('Vehículo no encontrado');
     const v = doc.data();
+    const deshabilitado = esDeshabilitado(v);
     const patente = (v.patente || '').toUpperCase();
     const docsCarpeta = scanDocsCarpeta(patente);
     const fecha = (d) => d ? (d.toDate ? d.toDate() : new Date(d)) : null;
@@ -226,6 +228,8 @@ app.get('/vehicle/:id/qr', async (req, res) => {
       recentRepuestos,
       docsCarpeta,
       vencimientos,
+      deshabilitado,
+      deshabilitadoMotivo: v.deshabilitadoMotivo || '',
       clientConfig: res.locals.clientConfig,
       currentUserData
     });
@@ -254,13 +258,19 @@ app.get('/vehicle/:id/qr-sticker', requireAuth, async (req, res) => {
 app.get('/vehicles/qr-stickers-bulk', requireAuth, requireAdminPage, async (req, res) => {
   try {
     const { db } = require('./config/firebase');
+    const { esDeshabilitado } = require('./lib/utils');
     const snap = await db.collection('vehicles').orderBy('interno', 'asc').get();
     const baseUrl = req.protocol + '://' + req.get('host');
-    const vehicles = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data(),
-      qrUrl: baseUrl + '/vehicle/' + d.id + '/qr'
-    }));
+    // Imprimir el sticker de un vehículo deshabilitado no tiene sentido: no
+    // cuenta en ningún informe. (Los QR ya pegados muestran el aviso en la
+    // página pública.)
+    const vehicles = snap.docs
+      .filter(d => !esDeshabilitado(d.data()))
+      .map(d => ({
+        id: d.id,
+        ...d.data(),
+        qrUrl: baseUrl + '/vehicle/' + d.id + '/qr'
+      }));
     res.render('qr-stickers-bulk', { vehicles, baseUrl });
   } catch (e) {
     res.status(500).send('Error del servidor');
