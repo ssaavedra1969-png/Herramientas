@@ -640,6 +640,25 @@ router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
+/* PDF del informe semanal de vencimientos (botón "Semanal" en Reportes →
+   Vencimientos). Vencidos + próximos `dias` (default 30) de seguro, VTV,
+   registro y service. La misma lógica la corre la tarea programada de los
+   viernes vía scripts/informe-vencimientos-semanal.js (lib/informe-vencimientos.js). */
+router.get('/report/vencimientos/semanal/pdf', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const dias = Math.max(1, parseInt(req.query.dias, 10) || 90);
+    const { armarFilas, generarPDF } = require('../lib/informe-vencimientos');
+    const { filas, stats } = await armarFilas({ dias });
+    const pdf = generarPDF(filas, { dias, stats });
+    const hoy = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="VENCIMIENTOS_SEMANAL_${hoy}.pdf"`);
+    res.send(pdf);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
   try {
     const ExcelJS = require('exceljs');

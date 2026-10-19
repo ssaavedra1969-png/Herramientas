@@ -19,3 +19,6 @@ papeles/
 PATENTE/*.zip
 PATENTE/**/*.zip
 .env*
+
+# PDFs del informe semanal de vencimientos (se regeneran solos)
+informes/

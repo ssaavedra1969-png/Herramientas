@@ -1186,3 +1186,29 @@ function printVenc() {
   setTimeout(limpio, 1000);
 }
 
+/* PDF del informe semanal: lo genera el SERVIDOR (mismo código que la tarea
+   programada de los viernes) y se descarga. A diferencia de exportVencPDF()
+   (que usa los filtros de la pantalla), este es fijo: vencidos + próximos
+   30 días de seguro, VTV, registro y service. */
+async function descargarInformeSemanal() {
+  try {
+    const res = await fetch('/api/admin/report/vencimientos/semanal/pdf', { headers: await getAuthHeaders() });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || ('HTTP ' + res.status));
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'VENCIMIENTOS_SEMANAL_' + new Date().toISOString().slice(0, 10) + '.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Informe semanal descargado');
+  } catch (e) {
+    showToast('Error al generar el informe: ' + e.message, 'error');
+  }
+}
+

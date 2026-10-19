@@ -15,6 +15,7 @@
     "generar:control": "node scripts/generar-control-documentacion.js",
     "generar:matafuego": "node scripts/generar-control-matafuego.js",
     "generar:pdf-seguros": "node scripts/generar-pdf-seguros.js",
+    "informe:vencimientos": "node scripts/informe-vencimientos-semanal.js",
     "copiar:docs-choferes": "node scripts/copiar-docs-choferes.js",
     "cargar:companias": "node scripts/cargar-compania-seguros.js",
     "limpiar:service": "node scripts/limpiar-service-fields.js",
@@ -39,6 +40,7 @@
     "helmet": "^7.1.0",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
+    "nodemailer": "^10.1.7",
     "pdf-lib": "^1.17.1",
     "xlsx": "^0.18.5"
   }
