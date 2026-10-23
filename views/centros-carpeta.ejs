@@ -1,0 +1,657 @@
+<%
+function fmt(v) {
+  if (!v) return '—';
+  if (v.toDate) v = v.toDate();
+  const d = v instanceof Date ? v : new Date(v);
+  if (isNaN(d.getTime())) return String(v);
+  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+const TIPOS = { equipo: 'Equipo', herramienta: 'Herramienta', vehiculo: 'Vehículo', ropa: 'Ropa', material: 'Material' };
+const PLURAL = { equipo: 'equipos', herramienta: 'herramientas', vehiculo: 'vehículos', ropa: 'ropa', material: 'materiales' };
+const tipo = (t) => TIPOS[String(t || '').toLowerCase()] || (t ? String(t) : '—');
+const plural = (t) => PLURAL[String(t || '').toLowerCase()] || (tipo(t).toLowerCase() + 's');
+const tiposTxt = (tipos) => Object.entries(tipos || {}).map(([t, n]) => `${n} ${n === 1 ? tipo(t).toLowerCase() : plural(t)}`).join(' · ');
+const estadoDe = (e) => (!e.fechaDevolucion || e.fechaDevolucion === '') ? 'Asignado' : ('Devuelto ' + fmt(e.fechaDevolucion));
+const cap = (s) => { const t = String(s || ''); return t ? t.charAt(0).toUpperCase() + t.slice(1) : '—'; };
+const logo = logoDataUri || '/images/fp3d.png';
+const totalSecciones = secciones.length;
+const anchoFolio = String(totalPaginas).length;
+const folioTxt = (n) => String(n).padStart(anchoFolio, '0');
+%><!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= title %></title>
+<style>
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0d1322;
+    font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, Arial, sans-serif;
+    color: #0f172a;
+    padding: 22px 14px 40px;
+  }
+
+  /* ---------- Barra superior (no se imprime) ---------- */
+  .toolbar {
+    max-width: 900px; margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; flex-wrap: wrap;
+  }
+  .toolbar h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 800; letter-spacing: .2px; }
+  .toolbar p { margin: 3px 0 0; color: #93a3bd; font-size: 12px; }
+  .toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    border: 0; border-radius: 9px; padding: 10px 18px; font-size: 13px; font-weight: 700;
+    cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px;
+    font-family: inherit; transition: opacity .15s, background .15s;
+  }
+  .btn:hover { opacity: .92; }
+  .btn-primary { background: linear-gradient(135deg, #1d4ed8, #2563eb); color: #fff; box-shadow: 0 5px 18px rgba(37,99,235,.35); }
+  .btn-ghost { background: rgba(255,255,255,.08); color: #e2e8f0; border: 1px solid rgba(255,255,255,.16); }
+  .btn-ghost:hover { background: rgba(255,255,255,.14); }
+  .info-bar {
+    max-width: 900px; margin: 0 auto 18px; padding: 10px 14px;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(37,99,235,.28);
+    border-radius: 10px; color: #93a3bd; font-size: 12px;
+    display: flex; gap: 18px; flex-wrap: wrap;
+  }
+  .info-bar b { color: #fff; }
+
+  /* ---------- Hoja A4 ---------- */
+  .page {
+    width: 210mm; min-height: 297mm; background: #fff;
+    margin: 0 auto 18px; position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+    page-break-after: always; break-after: page;
+    box-shadow: 0 12px 40px rgba(0,0,0,.45);
+  }
+  .page:last-of-type { page-break-after: auto; break-after: auto; }
+
+  .page-print {
+    position: absolute; top: 2.5mm; right: 2.5mm; z-index: 20;
+    background: #1d4ed8; color: #fff; border: 0; border-radius: 5px;
+    padding: 4px 9px; font-size: 7pt; font-weight: 700; cursor: pointer;
+    opacity: 0; transition: opacity .15s; font-family: inherit;
+  }
+  .page:hover .page-print { opacity: 1; }
+
+  /* ---------- Cabecera / pie ---------- */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6mm 12mm 4mm; border-bottom: .5mm solid #e2e8f0; flex-shrink: 0;
+  }
+  .ph-left { display: flex; align-items: center; gap: 4mm; }
+  .ph-left img { height: 10mm; width: auto; }
+  .ph-brand { font-size: 7.5pt; font-weight: 900; letter-spacing: 1.4px; color: #1e3a8a; line-height: 1.2; }
+  .ph-sub { font-size: 6.2pt; letter-spacing: .9px; color: #64748b; text-transform: uppercase; margin-top: .8mm; }
+  .ph-right { text-align: right; font-size: 6.5pt; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+  .ph-right b { display: block; color: #1e3a8a; font-size: 7.5pt; letter-spacing: .6px; margin-top: .6mm; }
+
+  .page-footer {
+    margin-top: auto; padding: 3mm 12mm 4mm;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: .4mm solid #e2e8f0; font-size: 6.5pt; color: #94a3b8;
+    flex-shrink: 0;
+  }
+  .pf-brand { font-weight: 800; letter-spacing: .6px; color: #475569; }
+  .pf-brand span { color: #94a3b8; font-weight: 400; }
+  .pf-folio { font-weight: 800; color: #1e3a8a; letter-spacing: .4px; }
+
+  .content { padding: 8mm 12mm 4mm; }
+
+  /* ---------- Portada ---------- */
+  .cover { background: #0b1220; color: #fff; }
+  .cover::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 82% 12%, rgba(37,99,235,.42), transparent 42%),
+      radial-gradient(circle at 12% 88%, rgba(14,116,144,.30), transparent 44%),
+      linear-gradient(140deg, #0b1220 0%, #111c33 55%, #0b1220 100%);
+  }
+  .cover > * { position: relative; z-index: 1; }
+  .cover-top { padding: 15mm 16mm 0; display: flex; align-items: center; justify-content: space-between; }
+  .cover-logo { background: #fff; border-radius: 2mm; padding: 3mm 5mm; display: inline-flex; align-items: center; }
+  .cover-logo img { height: 15mm; width: auto; }
+  .cover-brand { text-align: right; font-size: 7.5pt; letter-spacing: 2.4px; color: #bfdbfe; font-weight: 800; }
+  .cover-brand span { display: block; font-size: 6.2pt; letter-spacing: 1.2px; color: #7f93b3; font-weight: 500; margin-top: 1.2mm; }
+  .cover-main { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 16mm; }
+  .cover-kicker { font-size: 8pt; letter-spacing: 4.5px; color: #93c5fd; font-weight: 800; text-transform: uppercase; }
+  .cover h1 { font-size: 46pt; line-height: .92; margin: 5mm 0 4mm; font-weight: 900; letter-spacing: -1.6px; }
+  .cover-rule { width: 42mm; height: 1.6mm; background: linear-gradient(90deg, #60a5fa, #22d3ee); border-radius: 2mm; margin: 2mm 0 6mm; }
+  .cover-sub { font-size: 10pt; line-height: 1.55; color: #cbd5e1; max-width: 150mm; text-transform: uppercase; letter-spacing: .7px; }
+  .cover-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm 12mm; margin-top: 14mm; max-width: 165mm; }
+  .cover-meta span { display: block; font-size: 6.2pt; letter-spacing: 1.6px; color: #93c5fd; text-transform: uppercase; font-weight: 700; }
+  .cover-meta strong { display: block; font-size: 10pt; color: #fff; font-weight: 600; margin-top: 1mm; }
+  .cover-bottom {
+    padding: 5mm 16mm 7mm; border-top: .4mm solid rgba(255,255,255,.16);
+    display: flex; justify-content: space-between; gap: 6mm; font-size: 7.5pt; color: #cbd5e1;
+  }
+  .cover-bottom b { display: block; color: #fff; font-size: 8.5pt; margin-top: .8mm; }
+  .cover .page-footer { border-top-color: rgba(255,255,255,.14); color: #7f93b3; }
+  .cover .pf-brand { color: #bfdbfe; }
+  .cover .pf-brand span { color: #7f93b3; }
+  .cover .pf-folio { color: #93c5fd; }
+
+  /* ---------- Títulos / tablas ---------- */
+  .doc-kicker { font-size: 6.8pt; letter-spacing: 2.4px; color: #64748b; font-weight: 800; text-transform: uppercase; }
+  .doc-title { font-size: 21pt; line-height: 1; color: #1e3a8a; font-weight: 900; margin: 2mm 0 1.5mm; letter-spacing: -.5px; }
+  .doc-sub { font-size: 8.5pt; color: #64748b; line-height: 1.5; }
+  .section-label { margin-top: 7mm; margin-bottom: 2.5mm; font-size: 7pt; letter-spacing: 1.7px; color: #1e3a8a; font-weight: 900; text-transform: uppercase; border-bottom: .5mm solid #dbeafe; padding-bottom: 1.5mm; }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 8.2pt; }
+  .tbl th {
+    background: #1e3a8a; color: #fff; text-align: left; padding: 2.2mm 2mm;
+    font-size: 6.6pt; letter-spacing: .8px; text-transform: uppercase; font-weight: 800;
+    border: .3mm solid #1e3a8a;
+  }
+  .tbl td { padding: 2.1mm 2mm; border: .3mm solid #e2e8f0; vertical-align: top; }
+  .tbl tbody tr:nth-child(even) td { background: #f8fafc; }
+  .tbl .mono { font-family: Consolas, 'Courier New', monospace; font-weight: 700; color: #1e3a8a; }
+  .tbl .num { text-align: center; font-weight: 700; }
+  .tbl .muted { color: #64748b; }
+  .tbl .tag {
+    display: inline-block; padding: .5mm 1.8mm; border-radius: 4mm;
+    background: #eff6ff; border: .3mm solid #bfdbfe; color: #1e40af;
+    font-size: 6.4pt; font-weight: 700; white-space: nowrap;
+  }
+  .tbl .ok { color: #047857; font-weight: 700; }
+  .tbl .off { color: #94a3b8; }
+
+  .legend { display: flex; gap: 5mm; flex-wrap: wrap; margin-top: 4mm; font-size: 7pt; color: #475569; }
+  .legend span { display: inline-flex; align-items: center; gap: 1.6mm; }
+  .legend i { width: 2.6mm; height: 2.6mm; border-radius: 1mm; display: inline-block; }
+
+  .data-grid { display: grid; grid-template-columns: 1fr 1fr; border: .4mm solid #cbd5e1; border-radius: 2mm; overflow: hidden; }
+  .data-cell { padding: 3mm 3.5mm; border-bottom: .3mm solid #e2e8f0; }
+  .data-cell:nth-child(odd) { border-right: .3mm solid #e2e8f0; }
+  .data-cell:nth-last-child(-n+2) { border-bottom: 0; }
+  .data-cell label { display: block; font-size: 6.2pt; letter-spacing: 1px; color: #64748b; text-transform: uppercase; font-weight: 800; margin-bottom: 1mm; }
+  .data-cell .val { font-size: 9.2pt; font-weight: 700; color: #0f172a; line-height: 1.25; }
+  .data-cell .val.mono { font-family: Consolas, 'Courier New', monospace; color: #1e3a8a; }
+
+  .note-box {
+    border: .4mm solid #cbd5e1; border-left: 1.6mm solid var(--sec, #1e3a8a);
+    border-radius: 1.5mm; padding: 3mm 3.5mm; min-height: 17mm;
+    font-size: 9pt; color: #334155; line-height: 1.45; white-space: pre-wrap;
+  }
+  .note-box.empty { color: #cbd5e1; font-style: italic; }
+
+  .control-tbl th { background: #f1f5f9; color: #1e3a8a; border-color: #cbd5e1; }
+  .control-tbl td { height: 8.2mm; }
+
+  .signs { display: grid; grid-template-columns: 1fr 1fr; gap: 14mm; margin-top: 10mm; }
+  .sign { border-top: .4mm solid #94a3b8; padding-top: 2mm; text-align: center; font-size: 7pt; color: #475569; line-height: 1.4; }
+  .sign b { display: block; color: #1e3a8a; font-size: 7.5pt; }
+
+  /* ---------- Carátula de sección ---------- */
+  .section-band { background: var(--sec); color: #fff; padding: 11mm 12mm 9mm; position: relative; overflow: hidden; }
+  .section-band::after {
+    content: ''; position: absolute; right: -30mm; top: -30mm; width: 90mm; height: 90mm;
+    border: 10mm solid rgba(255,255,255,.10); border-radius: 50%;
+  }
+  .section-num { font-size: 7pt; letter-spacing: 3.2px; font-weight: 800; text-transform: uppercase; opacity: .92; }
+  .section-name { font-size: 30pt; font-weight: 900; line-height: .98; margin: 2mm 0 0; letter-spacing: -.9px; max-width: 165mm; }
+  .section-stats { display: flex; gap: 6mm; flex-wrap: wrap; margin-top: 7mm; position: relative; z-index: 1; }
+  .stat { background: rgba(255,255,255,.16); border: .3mm solid rgba(255,255,255,.24); border-radius: 2mm; padding: 2.5mm 4mm; min-width: 30mm; }
+  .stat b { display: block; font-size: 16pt; font-weight: 900; line-height: 1; }
+  .stat span { display: block; font-size: 6.3pt; letter-spacing: 1.2px; text-transform: uppercase; opacity: .9; margin-top: 1mm; }
+  .section-intro { font-size: 8.5pt; color: #475569; line-height: 1.55; margin: 6mm 0 0; }
+
+  /* ---------- Ficha de elemento ---------- */
+  .ficha-band { background: var(--sec); color: #fff; padding: 5.5mm 12mm; display: flex; align-items: center; justify-content: space-between; gap: 6mm; }
+  .ficha-sector { font-size: 7.4pt; letter-spacing: 2.2px; font-weight: 800; text-transform: uppercase; }
+  .ficha-kind { font-size: 6.6pt; letter-spacing: 2px; opacity: .9; text-transform: uppercase; }
+  .ficha-folio { background: rgba(255,255,255,.18); border: .3mm solid rgba(255,255,255,.32); border-radius: 1.8mm; padding: 2mm 3.5mm; text-align: center; }
+  .ficha-folio span { display: block; font-size: 5.8pt; letter-spacing: 1.4px; text-transform: uppercase; opacity: .85; }
+  .ficha-folio b { display: block; font-size: 14pt; line-height: 1.05; font-weight: 900; }
+  .ficha-title { display: flex; align-items: flex-end; gap: 6mm; margin: 6mm 0 4mm; }
+  .ficha-interno { font-family: Consolas, 'Courier New', monospace; font-size: 28pt; line-height: 1; font-weight: 900; color: #1e3a8a; letter-spacing: -1px; }
+  .ficha-name { font-size: 17pt; line-height: 1.12; font-weight: 900; color: #0f172a; margin: 0; }
+  .ficha-meta { font-size: 7.2pt; color: #64748b; text-transform: uppercase; letter-spacing: 1.1px; margin-bottom: 4mm; }
+
+  /* ---------- Acta / observaciones ---------- */
+  .acta-body { font-size: 10pt; line-height: 1.75; color: #334155; margin-top: 6mm; text-align: justify; }
+  .acta-body b { color: #0f172a; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin-top: 7mm; }
+  .summary-grid .box { border: .4mm solid #cbd5e1; border-radius: 2mm; padding: 3.5mm; text-align: center; }
+  .summary-grid .box b { display: block; font-size: 18pt; color: #1e3a8a; line-height: 1; font-weight: 900; }
+  .summary-grid .box span { display: block; font-size: 6.4pt; color: #64748b; text-transform: uppercase; letter-spacing: 1.1px; margin-top: 1.5mm; }
+  .lines-tbl td { height: 10mm; }
+
+  /* ---------- Anexo fotográfico ---------- */
+  .foto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 8mm; }
+  .foto-card { margin: 0; border: .4mm solid #cbd5e1; border-radius: 2mm; overflow: hidden; background: #fff; }
+  .foto-img { height: 108mm; background: #f1f5f9; display: flex; align-items: center; justify-content: center; }
+  .foto-img img { width: 100%; height: 100%; object-fit: contain; }
+  .foto-card figcaption { padding: 3mm 3.5mm; border-top: .3mm solid #e2e8f0; }
+  .foto-card figcaption b { display: block; font-size: 8.2pt; color: #1e3a8a; letter-spacing: .6px; }
+  .foto-card figcaption span { display: block; font-size: 6.8pt; color: #94a3b8; margin-top: 1mm; }
+  .foto-note { margin-top: 6mm; font-size: 7.2pt; color: #64748b; line-height: 1.5; border-left: 1.4mm solid #1e3a8a; padding-left: 3mm; }
+
+  @media print {
+    @page { size: A4 portrait; margin: 0; }
+    body { background: #fff !important; padding: 0; margin: 0; }
+    .no-print { display: none !important; }
+    .page { margin: 0; box-shadow: none; height: auto; min-height: 270mm; }
+    body.printing-one .page { display: none !important; }
+    body.printing-one .page.print-target { display: flex !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <div>
+    <h1>Carpeta de Obra · <%= centro.nombre %></h1>
+    <p>Legajo técnico listo para imprimir o guardar como PDF.</p>
+  </div>
+  <div class="toolbar-actions">
+    <a class="btn btn-ghost" href="/centros">← Volver a Obras</a>
+    <button class="btn btn-primary" onclick="window.print()">Imprimir / Guardar PDF</button>
+  </div>
+</div>
+
+<div class="info-bar no-print">
+  <span><b><%= totalSecciones %></b> secciones</span>
+  <span><b><%= totalElementos %></b> elementos</span>
+  <span><b><%= totalUnidades %></b> unidades</span>
+  <span><b><%= totalPaginas %></b> folios</span>
+</div>
+
+<!-- ================= PORTADA ================= -->
+<div class="page cover">
+  <button class="page-print no-print" onclick="imprimirHoja(this)">Imprimir hoja</button>
+  <div class="cover-top">
+    <div class="cover-logo"><img src="<%= logo %>" alt="Grupo Falpat"></div>
+    <div class="cover-brand">GRUPO FALPAT SRL<span>SISTEMA DE CONTROL DE MANTENIMIENTO</span></div>
+  </div>
+  <div class="cover-main">
+    <div class="cover-kicker">Legajo técnico de obra</div>
+    <h1><%= centro.nombre %></h1>
+    <div class="cover-rule"></div>
+    <div class="cover-sub">Documentación de elementos, sectores, inventario y control de mantenimiento</div>
+    <div class="cover-meta">
+      <div><span>Ubicación</span><strong><%= centro.ubicacion || '—' %></strong></div>
+      <div><span>Estado de la obra</span><strong><%= cap(centro.estado) %></strong></div>
+      <div><span>Fecha de apertura</span><strong><%= fmt(centro.createdAt) %></strong></div>
+      <div><span>Contenido</span><strong><%= totalSecciones %> secciones · <%= totalElementos %> elementos</strong></div>
+      <div><span>Unidades inventariadas</span><strong><%= totalUnidades %></strong></div>
+      <div><span>Total de folios</span><strong><%= totalPaginas %></strong></div>
+    </div>
+  </div>
+  <div class="cover-bottom">
+    <div>Emitido<b><%= hoy %></b></div>
+    <div>Versión<b>1.0</b></div>
+    <div>Bibliorato N°<b>____________</b></div>
+    <div>Responsable<b>____________</b></div>
+  </div>
+  <div class="page-footer">
+    <span class="pf-brand">GRUPO FALPAT SRL <span>· Legajo técnico de obra</span></span>
+    <span class="pf-folio">Folio <%= folioTxt(1) %> de <%= folioTxt(totalPaginas) %></span>
+  </div>
+</div>
+
+<!-- ================= CONTROL DEL LEGAJO ================= -->
+<div class="page">
+  <button class="page-print no-print" onclick="imprimirHoja(this)">Imprimir hoja</button>
+  <div class="page-header">
+    <div class="ph-left">
+      <img src="<%= logo %>" alt="Falpat">
+      <div><div class="ph-brand">GRUPO FALPAT SRL</div><div class="ph-sub">Legajo técnico de obra</div></div>
+    </div>
+    <div class="ph-right">Control del legajo<b><%= centro.nombre %></b></div>
+  </div>
+  <div class="content">
+    <div class="doc-kicker">Registro y uso</div>
+    <div class="doc-title">Control del legajo</div>
+    <div class="doc-sub">Este bibliorato reúne la documentación de los elementos asignados a la obra. Las hojas están numeradas con un folio único y correlativo para asegurar la trazabilidad del inventario.</div>
+
+    <div class="section-label">Datos generales</div>
+    <div class="data-grid">
+      <div class="data-cell"><label>Obra / Centro de trabajo</label><div class="val"><%= centro.nombre %></div></div>
+      <div class="data-cell"><label>Ubicación</label><div class="val"><%= centro.ubicacion || '—' %></div></div>
+      <div class="data-cell"><label>Estado</label><div class="val"><%= cap(centro.estado) %></div></div>
+      <div class="data-cell"><label>Fecha de apertura</label><div class="val"><%= fmt(centro.createdAt) %></div></div>
+      <div class="data-cell"><label>Secciones</label><div class="val"><%= totalSecciones %></div></div>
+      <div class="data-cell"><label>Elementos / Unidades</label><div class="val"><%= totalElementos %> elementos · <%= totalUnidades %> unidades</div></div>
+      <div class="data-cell"><label>Folios del legajo</label><div class="val"><%= totalPaginas %></div></div>
+      <div class="data-cell"><label>Última emisión</label><div class="val"><%= hoyCorto %></div></div>
+    </div>
+
+    <div class="section-label">Control de versiones</div>
+    <table class="tbl">
+      <thead><tr><th style="width:16mm">Versión</th><th style="width:26mm">Fecha</th><th>Descripción del cambio</th><th style="width:38mm">Responsable</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1.0</td><td><%= hoyCorto %></td><td>Emisión inicial del legajo técnico de obra.</td><td>Sistema / ______________</td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-label">Instrucciones de uso</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5mm 8mm;font-size:8.3pt;line-height:1.5;color:#334155">
+      <div><b style="color:#1e3a8a">1.</b> Cada sección comienza con su carátula y el índice de elementos que la componen.</div>
+      <div><b style="color:#1e3a8a">2.</b> Cada elemento ocupa un folio propio e irrepetible dentro del legajo.</div>
+      <div><b style="color:#1e3a8a">3.</b> Las fichas incluyen espacio para registrar mantenimiento, novedades y observaciones.</div>
+      <div><b style="color:#1e3a8a">4.</b> Si se incorpora un elemento, imprimir su ficha, agregarla al final de la sección y actualizar el índice.</div>
+      <div><b style="color:#1e3a8a">5.</b> Si se reemplaza una ficha, conservar el folio original y dejar constancia en el registro de observaciones.</div>
+      <div><b style="color:#1e3a8a">6.</b> No retirar folios: el legajo debe conservar la trazabilidad completa del inventario.</div>
+    </div>
+    <% if (centro.observaciones) { %>
+      <div class="section-label">Observaciones de la obra</div>
+      <div class="note-box"><%= centro.observaciones %></div>
+    <% } %>
+  </div>
+  <div class="page-footer">
+    <span class="pf-brand">GRUPO FALPAT SRL <span>· Control del legajo</span></span>
+    <span class="pf-folio">Folio <%= folioTxt(2) %> de <%= folioTxt(totalPaginas) %></span>
+  </div>
+</div>
+
+<!-- ================= ÍNDICE GENERAL ================= -->
+<div class="page">
+  <button class="page-print no-print" onclick="imprimirHoja(this)">Imprimir hoja</button>
+  <div class="page-header">
+    <div class="ph-left">
+      <img src="<%= logo %>" alt="Falpat">
+      <div><div class="ph-brand">GRUPO FALPAT SRL</div><div class="ph-sub">Legajo técnico de obra</div></div>
+    </div>
+    <div class="ph-right">Índice general<b><%= centro.nombre %></b></div>
+  </div>
+  <div class="content">
+    <div class="doc-kicker">Estructura del legajo</div>
+    <div class="doc-title">Índice general</div>
+    <div class="doc-sub">El legajo está organizado por sector. Cada sección contiene su carátula, el índice de elementos y una ficha por elemento.</div>
+
+    <div class="section-label">Secciones</div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th style="width:14mm">Sección</th>
+          <th>Sector / contenido</th>
+          <th style="width:30mm">Folios</th>
+          <th style="width:20mm">Elementos</th>
+          <th style="width:20mm">Unidades</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% secciones.forEach(function(sec) { %>
+          <tr>
+            <td class="num"><%= String(sec.numero).padStart(2, '0') %></td>
+            <td>
+              <span style="display:inline-block;width:2.6mm;height:2.6mm;border-radius:1mm;background:<%= sec.color %>;margin-right:2mm;vertical-align:middle"></span>
+              <b><%= sec.nombre %></b>
+              <div class="muted" style="font-size:6.8pt;margin-top:.8mm"><%= tiposTxt(sec.tipos) %></div>
+            </td>
+            <td><%= folioTxt(sec.portada) %> – <%= folioTxt(sec.hasta) %></td>
+            <td class="num"><%= sec.count %></td>
+            <td class="num"><%= sec.unidades %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <div class="section-label">Anexos</div>
+    <table class="tbl">
+      <thead><tr><th style="width:30mm">Folio</th><th>Contenido</th></tr></thead>
+      <tbody>
+        <tr><td class="mono"><%= folioTxt(folioActa) %></td><td>Acta de constancia de inventario y firmas.</td></tr>
+        <tr><td class="mono"><%= folioTxt(folioObservaciones) %></td><td>Registro de observaciones generales del legajo.</td></tr>
+
+      </tbody>
+    </table>
+
+    <div class="section-label">Resumen</div>
+    <div class="summary-grid">
+      <div class="box"><b><%= totalSecciones %></b><span>Secciones</span></div>
+      <div class="box"><b><%= totalElementos %></b><span>Elementos</span></div>
+      <div class="box"><b><%= totalUnidades %></b><span>Unidades</span></div>
+      <div class="box"><b><%= totalPaginas %></b><span>Folios</span></div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="pf-brand">GRUPO FALPAT SRL <span>· Índice general</span></span>
+    <span class="pf-folio">Folio <%= folioTxt(3) %> de <%= folioTxt(totalPaginas) %></span>
+  </div>
+</div>
+
+<!-- ================= SECCIONES Y FICHAS ================= -->
+<% secciones.forEach(function(sec) { %>
+  <div class="page" style="--sec:<%= sec.color %>">
+    <button class="page-print no-print" onclick="imprimirHoja(this)">Imprimir hoja</button>
+    <div class="page-header">
+      <div class="ph-left">
+        <img src="<%= logo %>" alt="Falpat">
+        <div><div class="ph-brand">GRUPO FALPAT SRL</div><div class="ph-sub">Legajo técnico de obra</div></div>
+      </div>
+      <div class="ph-right">Sección <%= String(sec.numero).padStart(2, '0') %><b><%= sec.nombre %></b></div>
+    </div>
+
+    <div class="section-band">
+      <div class="section-num">Sección <%= String(sec.numero).padStart(2, '0') %></div>
+      <div class="section-name"><%= sec.nombre %></div>
+      <div class="section-stats">
+        <div class="stat"><b><%= sec.count %></b><span>Elementos</span></div>
+        <div class="stat"><b><%= sec.unidades %></b><span>Unidades</span></div>
+        <div class="stat"><b><%= sec.hasta - sec.portada %></b><span>Folios de fichas</span></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="section-intro">
+        Esta sección reúne los elementos asignados al sector <b><%= sec.nombre %></b> de la obra <b><%= centro.nombre %></b>.
+        El índice siguiente indica el folio de cada ficha; las fichas se ordenan por interno.
+      </div>
+      <div class="section-label">Índice de la sección</div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:15mm">Folio</th>
+            <th style="width:24mm">Interno</th>
+            <th style="width:25mm">Tipo</th>
+            <th>Elemento</th>
+            <th style="width:16mm">Cant.</th>
+            <th style="width:34mm">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% sec.items.forEach(function(e) { %>
+            <tr>
+              <td class="mono"><%= folioTxt(e.folio) %></td>
+              <td class="mono"><%= e.interno || '—' %></td>
+              <td><span class="tag"><%= tipo(e.elementoTipo) %></span></td>
+              <td><b><%= e.nombre || '—' %></b><% if (e.marca || e.modelo) { %><div class="muted" style="font-size:6.7pt;margin-top:.6mm"><%= [e.marca, e.modelo].filter(Boolean).join(' ') %></div><% } %></td>
+              <td class="num"><%= e.stock || 1 %></td>
+              <td class="<%= (!e.fechaDevolucion || e.fechaDevolucion === '') ? 'ok' : 'off' %>"><%= estadoDe(e) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="page-footer">
+      <span class="pf-brand">GRUPO FALPAT SRL <span>· Sección <%= String(sec.numero).padStart(2, '0') %> · <%= sec.nombre %></span></span>
+      <span class="pf-folio">Folio <%= folioTxt(sec.portada) %> de <%= folioTxt(totalPaginas) %></span>
+    </div>
+  </div>
+
+  <% sec.items.forEach(function(e) { %>
+    <div class="page" style="--sec:<%= sec.color %>">
+      <button class="page-print no-print" onclick="imprimirHoja(this)">Imprimir hoja</button>
+      <div class="page-header">
+        <div class="ph-left">
+          <img src="<%= logo %>" alt="Falpat">
+          <div><div class="ph-brand">GRUPO FALPAT SRL</div><div class="ph-sub">Legajo técnico de obra</div></div>
+        </div>
+        <div class="ph-right">Ficha de elemento<b><%= centro.nombre %></b></div>
+      </div>
+
+      <div class="ficha-band">
+        <div>
+          <div class="ficha-sector"><%= sec.nombre %></div>
+          <div class="ficha-kind">Ficha individual de elemento</div>
+        </div>
+        <div class="ficha-folio"><span>Folio</span><b><%= folioTxt(e.folio) %></b></div>
+      </div>
+
+      <div class="content">
+        <div class="ficha-meta"><%= tipo(e.elementoTipo) %> · <%= sec.nombre %> · <%= estadoDe(e) %></div>
+        <div class="ficha-title">
+          <div class="ficha-interno"><%= e.interno || '—' %></div>
+          <h2 class="ficha-name"><%= e.nombre || 'Elemento sin nombre' %></h2>
+        </div>
+
+        <div class="data-grid">
+          <div class="data-cell"><label>Tipo de elemento</label><div class="val"><%= tipo(e.elementoTipo) %></div></div>
+          <div class="data-cell"><label>Sector / ubicación</label><div class="val"><%= sec.nombre %></div></div>
+          <div class="data-cell"><label>Marca</label><div class="val"><%= e.marca || '—' %></div></div>
+          <div class="data-cell"><label>Modelo</label><div class="val"><%= e.modelo || '—' %></div></div>
+          <div class="data-cell"><label>Cantidad / stock</label><div class="val"><%= e.stock || 1 %></div></div>
+          <div class="data-cell"><label>Estado de asignación</label><div class="val"><%= estadoDe(e) %></div></div>
+          <div class="data-cell"><label>Fecha de asignación</label><div class="val"><%= fmt(e.fechaAsignacion) %></div></div>
+          <div class="data-cell"><label>Origen / centro anterior</label><div class="val"><%= e.origenCentro || '—' %></div></div>
+          <div class="data-cell"><label>Tipo de vehículo</label><div class="val"><%= e.tipoVehiculo || '—' %></div></div>
+          <div class="data-cell"><label>Chofer / responsable</label><div class="val"><%= e.chofer || '—' %></div></div>
+        </div>
+
+        <% if (e.descripcion) { %>
+          <div class="section-label">Descripción</div>
+          <div class="note-box"><%= e.descripcion %></div>
+        <% } %>
+
+        <div class="section-label">Observaciones del elemento</div>
+        <div class="note-box <%= e.observaciones ? '' : 'empty' %>"><%= e.observaciones || 'Sin observaciones registradas al momento de la emisión.' %></div>
+
+        <div class="section-label">Control de mantenimiento / novedades</div>
+        <table class="tbl control-tbl">
+          <thead>
+            <tr>
+              <th style="width:24mm">Fecha</th>
+              <th>Tarea / novedad</th>
+              <th style="width:38mm">Responsable</th>
+              <th style="width:46mm">Observaciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for (let i = 0; i < 8; i++) { %>
+              <tr><td></td><td></td><td></td><td></td></tr>
+            <% } %>
+          </tbody>
+        </table>
+
+        <div class="signs">
+          <div class="sign"><b>Responsable de obra</b>Nombre y firma</div>
+          <div class="sign"><b>Control de inventario</b>Nombre y firma</div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <span class="pf-brand">GRUPO FALPAT SRL <span>· <%= sec.nombre %> · <%= e.interno || '' %></span></span>
+        <span class="pf-folio">Folio <%= folioTxt(e.folio) %> de <%= folioTxt(totalPaginas) %></span>
+      </div>
+    </div>
+  <% }) %>
+<% }) %>
+
+<!-- ================= ACTA ================= -->
+<div class="page">
+  <button class="page-print no-print" onclick="imprimirHoja(this)">Imprimir hoja</button>
+  <div class="page-header">
+    <div class="ph-left">
+      <img src="<%= logo %>" alt="Falpat">
+      <div><div class="ph-brand">GRUPO FALPAT SRL</div><div class="ph-sub">Legajo técnico de obra</div></div>
+    </div>
+    <div class="ph-right">Anexo<b>Acta de inventario</b></div>
+  </div>
+  <div class="content">
+    <div class="doc-kicker">Anexo · Constancia</div>
+    <div class="doc-title">Acta de constancia de inventario</div>
+    <div class="doc-sub">Folio <%= folioTxt(folioActa) %> · <%= centro.nombre %></div>
+
+    <div class="acta-body">
+      En la localidad de <b><%= centro.ubicacion || '________________' %></b>, a los ______ días del mes de ________________ de <b><%= anio %></b>, se deja constancia que el presente legajo técnico corresponde al Centro de Trabajo <b><%= centro.nombre %></b> y contiene el inventario de los elementos asignados a la obra, organizado en <b><%= totalSecciones %></b> secciones, con un total de <b><%= totalElementos %></b> elementos y <b><%= totalUnidades %></b> unidades inventariadas.
+    </div>
+    <div class="acta-body">
+      El legajo comprende <b><%= totalPaginas %></b> folios numerados en forma correlativa. Cada elemento cuenta con una ficha individual identificada con su folio, en la que se registran los datos de identificación, asignación, estado y las novedades de mantenimiento.
+    </div>
+    <div class="acta-body">
+      Se deja constancia de que los datos consignados surgen del Sistema de Control de Mantenimiento de Grupo Falpat SRL y que las firmas intervinientes validan la información contenida en el presente legajo.
+    </div>
+
+    <div class="summary-grid">
+      <div class="box"><b><%= totalSecciones %></b><span>Secciones</span></div>
+      <div class="box"><b><%= totalElementos %></b><span>Elementos</span></div>
+      <div class="box"><b><%= totalUnidades %></b><span>Unidades</span></div>
+      <div class="box"><b><%= totalPaginas %></b><span>Folios</span></div>
+    </div>
+
+    <div class="section-label">Firmas</div>
+    <div class="signs" style="grid-template-columns:1fr 1fr 1fr;gap:10mm;margin-top:22mm">
+      <div class="sign"><b>Responsable de obra</b>Nombre, aclaración y firma</div>
+      <div class="sign"><b>Control de inventario</b>Nombre, aclaración y firma</div>
+      <div class="sign"><b>Gerencia / Administración</b>Nombre, aclaración y firma</div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span class="pf-brand">GRUPO FALPAT SRL <span>· Acta de constancia de inventario</span></span>
+    <span class="pf-folio">Folio <%= folioTxt(folioActa) %> de <%= folioTxt(totalPaginas) %></span>
+  </div>
+</div>
+
+<!-- ================= OBSERVACIONES GENERALES ================= -->
+<div class="page">
+  <button class="page-print no-print" onclick="imprimirHoja(this)">Imprimir hoja</button>
+  <div class="page-header">
+    <div class="ph-left">
+      <img src="<%= logo %>" alt="Falpat">
+      <div><div class="ph-brand">GRUPO FALPAT SRL</div><div class="ph-sub">Legajo técnico de obra</div></div>
+    </div>
+    <div class="ph-right">Anexo<b>Registro de observaciones</b></div>
+  </div>
+  <div class="content">
+    <div class="doc-kicker">Anexo · Control</div>
+    <div class="doc-title">Registro de observaciones generales</div>
+    <div class="doc-sub">Folio <%= folioTxt(folioObservaciones) %> · Utilice este registro para novedades del legajo, reemplazos de fichas, altas y bajas de elementos.</div>
+
+    <div class="section-label">Registro</div>
+    <table class="tbl lines-tbl">
+      <thead>
+        <tr>
+          <th style="width:24mm">Fecha</th>
+          <th>Observación / novedad</th>
+          <th style="width:42mm">Responsable</th>
+          <th style="width:22mm">Folio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% for (let i = 0; i < 16; i++) { %>
+          <tr><td></td><td></td><td></td><td></td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+  <div class="page-footer">
+    <span class="pf-brand">GRUPO FALPAT SRL <span>· Registro de observaciones generales</span></span>
+    <span class="pf-folio">Folio <%= folioTxt(folioObservaciones) %> de <%= folioTxt(totalPaginas) %></span>
+  </div>
+</div>
+
+<script>
+  function imprimirHoja(btn) {
+    var page = btn && btn.closest ? btn.closest('.page') : null;
+    if (!page) return;
+    document.querySelectorAll('.page.print-target').forEach(function (p) { p.classList.remove('print-target'); });
+    page.classList.add('print-target');
+    document.body.classList.add('printing-one');
+    window.print();
+  }
+  window.addEventListener('afterprint', function () {
+    document.body.classList.remove('printing-one');
+    document.querySelectorAll('.page.print-target').forEach(function (p) { p.classList.remove('print-target'); });
+  });
+</script>
+</body>
+</html>

@@ -13,6 +13,7 @@ const { devReadOnly } = require('./middleware/dev-readonly');
 const authRoutes = require('./routes/auth');
 const vehiclesRoutes = require('./routes/vehicles');
 const centrosRoutes = require('./routes/centros');
+const { cargarObraCompleta, agruparPorSector } = require('./lib/centros-docs');
 
 const adminRoutes = require('./routes/admin');
 
@@ -127,6 +128,55 @@ app.get('/centros', requireAuth, (req, res) => {
     currentUser: res.locals.currentUser,
     currentUserData: res.locals.currentUserData
   });
+});
+
+app.get('/centros/:id/carpeta', requireAuth, requireAdminPage, async (req, res) => {
+  try {
+    const data = await cargarObraCompleta(req.params.id);
+    if (!data) return res.status(404).send('Obra no encontrada');
+
+    const { centro, elementos } = data;
+    const seccionesBase = agruparPorSector(elementos);
+
+    let cursor = 4;
+    const secciones = seccionesBase.map((s, i) => {
+      const portada = cursor++;
+      const items = s.items.map(e => ({ ...e, folio: cursor++ }));
+      return { ...s, numero: i + 1, portada, items, desde: portada, hasta: cursor - 1 };
+    });
+    const folioActa = cursor++;
+    const folioObservaciones = cursor++;
+    const totalPaginas = cursor - 1;
+    const totalElementos = elementos.length;
+    const totalUnidades = elementos.reduce((acc, e) => acc + (Number(e.stock) || 1), 0);
+
+    let logoDataUri = null;
+    try {
+      const logoPath = path.join(__dirname, 'public', 'images', 'fp3d.png');
+      if (fs.existsSync(logoPath)) {
+        logoDataUri = 'data:image/png;base64,' + fs.readFileSync(logoPath).toString('base64');
+      }
+    } catch (e) { /* logo opcional */ }
+
+    const ahora = new Date();
+    res.render('centros-carpeta', {
+      title: `Carpeta de Obra — ${centro.nombre}`,
+      centro,
+      secciones,
+      totalElementos,
+      totalUnidades,
+      totalPaginas,
+      folioActa,
+      folioObservaciones,
+      logoDataUri,
+      hoy: ahora.toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' }),
+      hoyCorto: ahora.toLocaleDateString('es-AR'),
+      anio: ahora.getFullYear()
+    });
+  } catch (e) {
+    console.error('centros-carpeta:', e.message);
+    res.status(500).send('Error generando la carpeta de obra');
+  }
 });
 
 app.get('/service', (req, res) => {

@@ -385,9 +385,13 @@ async function openDetalleCentro(centroId) {
       ${centro.observaciones ? `<div class="mt-2 text-sm rounded-lg border border-[#F59E0B]/30 bg-[#F59E0B]/10 p-2.5"><span class="text-[10px] uppercase tracking-widest text-[#FBBF24]">Observaciones:</span> <span class="text-[#ffffff]">${esc(centro.observaciones)}</span></div>` : ''}
       ${Object.keys(secCounts).length ? `<div class="mt-3 flex flex-wrap gap-1.5">${Object.entries(secCounts).map(([s, n]) => `<span class="inline-block px-2 py-0.5 rounded-full border text-[10px] ${sectorColor(s)}">${esc(s)}: ${n}</span>`).join('')}</div>` : ''}
       <div class="mt-3 flex flex-wrap gap-2">
+        <a href="/centros/${centroId}/carpeta" target="_blank" rel="noopener" class="px-3 py-1.5 text-xs rounded-lg bg-[#2563EB] text-white hover:bg-[#1d4ed8] transition-colors flex items-center gap-1 font-semibold">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          Carpeta de Obra (Bibliorato)
+        </a>
         <button onclick="imprimirDetalleCentro('${centroId}')" class="px-3 py-1.5 text-xs rounded-lg border border-[#2563EB]/40 text-[#60A5FA] hover:bg-[#2563EB]/10 transition-colors flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-          Imprimir / PDF
+          Resumen PDF
         </button>
       </div>
     `;
