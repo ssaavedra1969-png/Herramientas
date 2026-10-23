@@ -1,6 +1,30 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-10-15.
+Cambios registrados por sesión. Última actualización: 2026-10-19.
+
+## 2026-10-19 — Informe semanal de vencimientos (commit `1d9b9dc`)
+
+Detalle completo en **`Update_2026.10.19.md`**.
+
+- **PDF compartido entre la web y la tarea programada**: `lib/informe-vencimientos.js`
+  (`armarFilas()` + `generarPDF()`). Cubre **VTV, Seguro, Registro y Service** de
+  los vehículos habilitados, **solo los que vencen entre hoy y la ventana**
+  (default **90 días**; los vencidos NO entran).
+- **Web**: botón **"Semanal"** en la card Vencimientos → `GET
+  /api/admin/report/vencimientos/semanal/pdf` (`verifyToken` + `requireAdmin`).
+  Descarga `VENCIMIENTOS_SEMANAL_<fecha>.pdf`; **no aplica los filtros de la
+  pantalla**.
+- **PDF**: A4 horizontal, una hoja por documento (**VTV → Seguro → Registro →
+  Service**) + hoja final de **Resumen por documento**. `Quedan` en rojo si
+  vence hoy o en ≤ 7 días.
+- **Tarea programada**: `npm run informe:vencimientos`
+  (`scripts/informe-vencimientos-semanal.js`) escribe en `informes/`
+  (gitignored) y manda mail si hay SMTP en `.env`. Se instala una vez con
+  `scripts/instalar-tarea-vencimientos.bat` → tarea **"Falpat Informe
+  Vencimientos"**, viernes 08:00.
+- **Trampa**: los comentarios y el tooltip dicen "vencidos + 30 días", pero el
+  código **excluye los vencidos** (`dias < 0`) y la ventana default es **90**.
+- **Docs (sin código)**: `e406f9f` agregó 6 PDF de `PATENTE/LFI597/`.
 
 ## 2026-10-15 — Deshabilitar vehículos: dashboard, Obras, QR y ficha
 

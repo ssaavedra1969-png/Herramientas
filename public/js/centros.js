@@ -81,6 +81,7 @@ function filterCatalogo(tipo) {
     <tr class="border-b border-white/5 hover:bg-[#00E5FF]/10">
       <td class="px-4 py-3 font-mono text-[#00E5FF] text-xs">${esc(e.interno)}</td>
       <td class="px-4 py-3 text-[#ffffff]">${esc(e.nombre)}</td>
+      <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.sector || '—')}</td>
       <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.marca || '—')}</td>
       <td class="px-4 py-3 text-[#8b9bb4] text-sm">${esc(e.modelo || '—')}</td>
       <td class="px-4 py-3 text-center">${e.stock ?? 0}</td>
@@ -256,6 +257,106 @@ async function createCentro(e) {
 }
 
 /* ── Modal Detalle Centro ── */
+let detalleCentroData = null;
+let detalleSort = { col: 'interno', asc: true };
+
+const SECTOR_COLORS = {
+  'planta dosificadora': 'bg-[#F59E0B]/15 text-[#FBBF24] border-[#F59E0B]/40',
+  'silo móvil': 'bg-[#06B6D4]/15 text-[#22D3EE] border-[#06B6D4]/40',
+  'silo movil': 'bg-[#06B6D4]/15 text-[#22D3EE] border-[#06B6D4]/40',
+  'contenedor 1': 'bg-[#10B981]/15 text-[#34D399] border-[#10B981]/40',
+  'contenedor 2': 'bg-[#8B5CF6]/15 text-[#A78BFA] border-[#8B5CF6]/40'
+};
+const TIPO_COLORS = {
+  equipo: 'bg-[#2563EB]/15 text-[#93C5FD] border-[#2563EB]/40',
+  herramienta: 'bg-[#F59E0B]/15 text-[#FBBF24] border-[#F59E0B]/40',
+  vehiculo: 'bg-[#10B981]/15 text-[#34D399] border-[#10B981]/40',
+  ropa: 'bg-[#EC4899]/15 text-[#F472B6] border-[#EC4899]/40',
+  material: 'bg-[#14B8A6]/15 text-[#5EEAD4] border-[#14B8A6]/40'
+};
+function sectorColor(s) {
+  return SECTOR_COLORS[String(s || '').toLowerCase().trim()] || 'bg-[#64748B]/15 text-[#94A3B8] border-[#64748B]/40';
+}
+function tipoColor(t) {
+  return TIPO_COLORS[String(t || '').toLowerCase().trim()] || 'bg-[#64748B]/15 text-[#94A3B8] border-[#64748B]/40';
+}
+function detalleSortVal(e, col) {
+  if (col === 'estado') return (!e.fechaDevolucion ? '0' : '1') + (e.fechaDevolucion || '');
+  if (col === 'asignacion') return String(e.fechaAsignacion || '');
+  if (col === 'tipo') return e.elementoTipo || '';
+  if (col === 'obs') return e.observaciones || '';
+  return e[col] || '';
+}
+function sortArrow(col) {
+  if (detalleSort.col !== col) return '<span class="opacity-40">↕</span>';
+  return detalleSort.asc ? '▲' : '▼';
+}
+function sortDetalleCentro(col) {
+  if (!detalleCentroData) return;
+  if (detalleSort.col === col) detalleSort.asc = !detalleSort.asc;
+  else detalleSort = { col, asc: true };
+  renderDetalleElementos();
+}
+function renderDetalleElementos() {
+  const centro = detalleCentroData;
+  const elemDiv = document.getElementById('dc-elementos');
+  if (!centro || !elemDiv) return;
+  const elems = (centro.elementos || []).slice();
+  if (!elems.length) {
+    elemDiv.innerHTML = '<p class="text-[#4a5568] text-sm">No hay elementos asignados</p>';
+    return;
+  }
+  elems.sort((a, b) => {
+    const cmp = String(detalleSortVal(a, detalleSort.col)).localeCompare(
+      String(detalleSortVal(b, detalleSort.col)), 'es', { numeric: true, sensitivity: 'base' }
+    );
+    return detalleSort.asc ? cmp : -cmp;
+  });
+  const th = (col, label, extra = '') => `
+    <th onclick="sortDetalleCentro('${col}')" class="px-2.5 py-2.5 text-left font-semibold cursor-pointer select-none hover:text-[#ffffff] transition-colors whitespace-nowrap ${extra}">
+      ${label} <span class="text-[9px] text-[#60A5FA]">${sortArrow(col)}</span>
+    </th>`;
+  elemDiv.innerHTML = `
+    <div class="text-xs text-[#93C5FD] uppercase tracking-wider mb-2 flex items-center gap-2">
+      <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#2563EB]"></span>
+      Elementos Asignados (${elems.length})
+    </div>
+    <div class="overflow-x-auto rounded-lg border border-[#2563EB]/25">
+      <table class="w-full text-xs min-w-[760px]">
+        <thead class="bg-[#2563EB]/20">
+          <tr class="text-[10px] uppercase tracking-widest text-[#93C5FD]">
+            ${th('interno', 'Interno')}
+            ${th('sector', 'Sector')}
+            ${th('tipo', 'Tipo')}
+            ${th('nombre', 'Nombre')}
+            ${th('asignacion', 'Asignación')}
+            ${th('estado', 'Estado')}
+            ${th('obs', 'Obs.')}
+            <th class="px-2.5 py-2.5 no-print"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${elems.map((e, i) => {
+            const asignado = !e.fechaDevolucion || e.fechaDevolucion === '';
+            return `
+            <tr class="border-t border-white/5 ${i % 2 ? 'bg-white/[0.02]' : ''} hover:bg-[#2563EB]/10 cursor-pointer transition-colors" onclick="verDetalleElementoById('${e.id}')">
+              <td class="px-2.5 py-2 text-[#ffffff] font-mono font-medium">${esc(e.interno)}</td>
+              <td class="px-2.5 py-2">${e.sector ? `<span class="inline-block px-2 py-0.5 rounded-full border text-[10px] ${sectorColor(e.sector)}">${esc(e.sector)}</span>` : '<span class="text-[#4a5568]">—</span>'}</td>
+              <td class="px-2.5 py-2"><span class="inline-block px-2 py-0.5 rounded border text-[10px] ${tipoColor(e.elementoTipo)}">${esc(e.elementoTipo || '—')}</span></td>
+              <td class="px-2.5 py-2 text-[#cbd5e1] max-w-[240px] truncate" title="${esc(e.nombre || '')}">${esc(e.nombre || '—')}</td>
+              <td class="px-2.5 py-2 text-[#8b9bb4] whitespace-nowrap">${formatDate(e.fechaAsignacion)}</td>
+              <td class="px-2.5 py-2 whitespace-nowrap">${asignado
+                ? '<span class="inline-flex items-center gap-1 text-[#34D399]"><span class="w-1.5 h-1.5 rounded-full bg-[#34D399]"></span>Asignado</span>'
+                : `<span class="inline-flex items-center gap-1 text-[#94A3B8]"><span class="w-1.5 h-1.5 rounded-full bg-[#64748B]"></span>Devuelto ${formatDate(e.fechaDevolucion)}</span>`}</td>
+              <td class="px-2.5 py-2 text-[#94A3B8] max-w-[200px] truncate" title="${esc(e.observaciones || '')}">${esc(e.observaciones || '')}</td>
+              <td class="px-2.5 py-2 no-print" onclick="event.stopPropagation()">${asignado ? `<button onclick="returnElement('${centro.id}', '${e.id}')" class="text-[#22D3EE] hover:text-[#67E8F9] hover:underline">Devolver</button>` : ''}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
 async function openDetalleCentro(centroId) {
   currentCentroId = centroId;
   try {
@@ -265,53 +366,35 @@ async function openDetalleCentro(centroId) {
     const centro = await res.json();
 
     document.getElementById('dc-nombre').textContent = centro.nombre;
+    const secCounts = {};
+    (centro.elementos || []).forEach(e => { if (e.sector) secCounts[e.sector] = (secCounts[e.sector] || 0) + 1; });
+    const estadoColor = centro.estado === 'activa' ? '#34D399' : (centro.estado === 'pausada' ? '#FBBF24' : '#94A3B8');
+    const infoBox = (label, val, accent) => `
+      <div class="rounded-lg border p-2.5" style="border-color:${accent}55;background:linear-gradient(90deg,${accent}1f,transparent)">
+        <div class="text-[10px] uppercase tracking-widest mb-1" style="color:${accent}">${esc(label)}</div>
+        <div class="text-sm text-[#ffffff] truncate" title="${esc(val)}">${esc(val || '—')}</div>
+      </div>`;
     const details = document.getElementById('dc-details');
     details.innerHTML = `
-      <div class="grid grid-cols-2 gap-3 text-sm">
-        <div><span class="text-[#8b9bb4]">Ubicación:</span> <span class="text-[#ffffff]">${esc(centro.ubicacion || '—')}</span></div>
-        <div><span class="text-[#8b9bb4]">Estado:</span> <span class="text-[#ffffff]">${centro.estado}</span></div>
-        <div><span class="text-[#8b9bb4]">Creado:</span> <span class="text-[#ffffff]">${formatDate(centro.createdAt)}</span></div>
-        <div><span class="text-[#8b9bb4]">Total Elementos:</span> <span class="text-[#ffffff]">${centro.totalElementos || 0}</span></div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+        ${infoBox('Ubicación', centro.ubicacion, '#2563EB')}
+        ${infoBox('Estado', centro.estado, estadoColor)}
+        ${infoBox('Creado', formatDate(centro.createdAt), '#8B5CF6')}
+        ${infoBox('Total Elementos', String(centro.totalElementos || 0), '#06B6D4')}
       </div>
-      ${centro.observaciones ? `<div class="mt-2 text-sm"><span class="text-[#8b9bb4]">Observaciones:</span> <span class="text-[#ffffff]">${esc(centro.observaciones)}</span></div>` : ''}
+      ${centro.observaciones ? `<div class="mt-2 text-sm rounded-lg border border-[#F59E0B]/30 bg-[#F59E0B]/10 p-2.5"><span class="text-[10px] uppercase tracking-widest text-[#FBBF24]">Observaciones:</span> <span class="text-[#ffffff]">${esc(centro.observaciones)}</span></div>` : ''}
+      ${Object.keys(secCounts).length ? `<div class="mt-3 flex flex-wrap gap-1.5">${Object.entries(secCounts).map(([s, n]) => `<span class="inline-block px-2 py-0.5 rounded-full border text-[10px] ${sectorColor(s)}">${esc(s)}: ${n}</span>`).join('')}</div>` : ''}
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button onclick="imprimirDetalleCentro('${centroId}')" class="px-3 py-1.5 text-xs rounded-lg border border-[#2563EB]/40 text-[#60A5FA] hover:bg-[#2563EB]/10 transition-colors flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Imprimir / PDF
+        </button>
+      </div>
     `;
 
-    const elemDiv = document.getElementById('dc-elementos');
-    const elems = centro.elementos || [];
-    if (!elems.length) {
-      elemDiv.innerHTML = '<p class="text-[#4a5568] text-sm">No hay elementos asignados</p>';
-    } else {
-      elemDiv.innerHTML = `
-        <div class="text-xs text-[#8b9bb4] uppercase tracking-wider mb-2">Elementos Asignados (${elems.length})</div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-xs min-w-[500px]">
-            <thead>
-              <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
-                <th class="px-2 py-2 text-left font-semibold">Interno</th>
-                <th class="px-2 py-2 text-left font-semibold">Tipo</th>
-                <th class="px-2 py-2 text-left font-semibold">Asignación</th>
-                <th class="px-2 py-2 text-left font-semibold">Estado</th>
-                <th class="px-2 py-2 text-left font-semibold">Obs.</th>
-                <th class="px-2 py-2 no-print"></th>
-              </tr>
-            </thead>
-            <tbody>
-              ${elems.map(e => {
-                const asignado = !e.fechaDevolucion || e.fechaDevolucion === '';
-                return `
-                <tr class="border-b border-white/5">
-                  <td class="px-2 py-2 text-[#ffffff] font-medium">${esc(e.interno)}</td>
-                  <td class="px-2 py-2 text-[#8b9bb4]">${e.elementoTipo}</td>
-                  <td class="px-2 py-2 text-[#8b9bb4]">${formatDate(e.fechaAsignacion)}</td>
-                  <td class="px-2 py-2">${asignado ? '<span class="text-[#10B981]">Asignado</span>' : `<span class="text-[#4a5568]">Devuelto ${formatDate(e.fechaDevolucion)}</span>`}</td>
-                  <td class="px-2 py-2 text-[#4a5568] max-w-[120px] truncate">${esc(e.observaciones || '')}</td>
-                  <td class="px-2 py-2 no-print">${asignado ? `<button onclick="returnElement('${centroId}', '${e.id}')" class="text-[#00E5FF] hover:underline">Devolver</button>` : ''}</td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>`;
-    }
+    detalleCentroData = centro;
+    detalleSort = { col: 'interno', asc: true };
+    renderDetalleElementos();
 
     const actions = document.getElementById('dc-actions');
     let html = '';
@@ -331,7 +414,107 @@ async function openDetalleCentro(centroId) {
     showModal('modal-detalle-centro');
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
-function closeDetalleCentro() { hideModal('modal-detalle-centro'); currentCentroId = null; }
+function closeDetalleCentro() {
+  hideModal('modal-detalle-centro');
+  currentCentroId = null;
+  detalleCentroData = null;
+}
+
+function verDetalleElementoById(id) {
+  if (!detalleCentroData) return;
+  const e = (detalleCentroData.elementos || []).find(x => x.id === id);
+  if (!e) return;
+  const asignado = !e.fechaDevolucion || e.fechaDevolucion === '';
+  document.getElementById('de-titulo').textContent = e.nombre || e.interno || 'Detalle del Elemento';
+  const c = document.getElementById('de-contenido');
+  const item = (label, val, accent = '#2563EB') => `
+    <div class="rounded-lg border p-2.5" style="border-color:${accent}55;background:linear-gradient(90deg,${accent}1f,transparent)">
+      <div class="text-[10px] uppercase tracking-widest mb-1" style="color:${accent}">${esc(label)}</div>
+      <div class="text-sm text-[#ffffff] whitespace-pre-wrap break-words">${esc(val || '—')}</div>
+    </div>
+  `;
+  c.innerHTML = `
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      ${item('Interno', e.interno, '#60A5FA')}
+      ${item('Tipo', e.elementoTipo, '#FBBF24')}
+      ${item('Sector', e.sector, '#22D3EE')}
+      ${item('Marca / Modelo', [e.marca, e.modelo].filter(Boolean).join(' '), '#A78BFA')}
+      ${item('Tipo Vehículo', e.tipoVehiculo, '#34D399')}
+      ${item('Chofer', e.chofer, '#34D399')}
+      ${item('Fecha asignación', formatDate(e.fechaAsignacion), '#60A5FA')}
+      ${item('Estado', asignado ? 'Asignado' : 'Devuelto ' + formatDate(e.fechaDevolucion), asignado ? '#34D399' : '#94A3B8')}
+      ${item('Origen', e.origenCentro, '#F472B6')}
+      <div class="sm:col-span-2">${item('Observaciones', e.observaciones, '#FBBF24')}</div>
+    </div>
+  `;
+  showModal('modal-detalle-elemento');
+}
+
+function closeDetalleElemento() { hideModal('modal-detalle-elemento'); }
+
+function imprimirDetalleCentro(centroId) {
+  const c = (detalleCentroData && detalleCentroData.id === centroId)
+    ? detalleCentroData
+    : centrosData.find(x => x.id === centroId);
+  if (!c) return showToast('No se encontró la obra', 'error');
+  const w = window.open('', '_blank');
+  if (!w) return showToast('Habilitá las ventanas emergentes para imprimir', 'error');
+  const elems = (c.elementos || []).slice();
+  if (detalleCentroData && detalleCentroData.id === centroId) {
+    elems.sort((a, b) => {
+      const cmp = String(detalleSortVal(a, detalleSort.col)).localeCompare(
+        String(detalleSortVal(b, detalleSort.col)), 'es', { numeric: true, sensitivity: 'base' }
+      );
+      return detalleSort.asc ? cmp : -cmp;
+    });
+  }
+  const rows = elems.map((e, i) => {
+    const asignado = !e.fechaDevolucion || e.fechaDevolucion === '';
+    return `<tr class="${i % 2 ? 'alt' : ''}">
+      <td class="mono strong">${esc(e.interno||'')}</td>
+      <td><span class="tag">${esc(e.sector||'—')}</span></td>
+      <td><span class="tag">${esc(e.elementoTipo||'')}</span></td>
+      <td>${esc(e.nombre||'')}</td>
+      <td>${esc(e.marca||'')}</td>
+      <td>${esc(e.modelo||'')}</td>
+      <td>${formatDate(e.fechaAsignacion)}</td>
+      <td class="${asignado ? 'ok' : 'muted'}">${asignado?'Asignado':('Devuelto '+formatDate(e.fechaDevolucion))}</td>
+      <td>${esc(e.observaciones||'')}</td>
+    </tr>`;
+  }).join('');
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Detalle - ${esc(c.nombre)}</title>
+  <style>
+    *{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;margin:20px;color:#111}
+    .head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1e3a8a;padding-bottom:8px;margin-bottom:10px}
+    h1{font-size:20px;margin:0;color:#1e3a8a}
+    .brand{font-size:11px;font-weight:bold;letter-spacing:2px;color:#1e3a8a;text-align:right}
+    .meta{font-size:11px;color:#374151;margin-bottom:12px}
+    .meta b{color:#111}
+    table{width:100%;border-collapse:collapse;font-size:9.5px}
+    thead th{background:#1e3a8a;color:#fff;border:1px solid #1e3a8a;padding:6px 5px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.5px}
+    td{border:1px solid #cbd5e1;padding:5px;vertical-align:top}
+    tbody tr.alt td{background:#eff6ff}
+    .mono{font-family:Consolas,monospace}
+    .strong{font-weight:bold}
+    .tag{display:inline-block;border:1px solid #93c5fd;background:#dbeafe;color:#1e40af;border-radius:10px;padding:1px 6px;font-size:8.5px}
+    .ok{color:#047857;font-weight:bold}
+    .muted{color:#64748b}
+    .btn{position:fixed;top:14px;right:14px;background:#1e3a8a;color:#fff;border:0;border-radius:6px;padding:10px 16px;font-size:13px;cursor:pointer;box-shadow:0 2px 8px #1e3a8a55}
+    @media print{body{margin:10mm}.btn{display:none}@page{size:A4 landscape;margin:8mm}}
+  </style></head><body>
+  <button class="btn" onclick="window.print()">Imprimir / Guardar PDF</button>
+  <div class="head">
+    <div>
+      <h1>${esc(c.nombre)}</h1>
+      <div class="meta">Ubicación: <b>${esc(c.ubicacion||'—')}</b> &nbsp;|&nbsp; Estado: <b>${esc(c.estado||'—')}</b> &nbsp;|&nbsp; Creado: <b>${formatDate(c.createdAt)}</b> &nbsp;|&nbsp; Total: <b>${elems.length}</b></div>
+    </div>
+    <div class="brand">GRUPO FALPAT SRL<br>CONTROL DE ELEMENTOS</div>
+  </div>
+  <table><thead><tr><th>Interno</th><th>Sector</th><th>Tipo</th><th>Nombre</th><th>Marca</th><th>Modelo</th><th>Asignación</th><th>Estado</th><th>Observaciones</th></tr></thead><tbody>${rows}</tbody></table>
+  </body></html>`);
+  w.document.close();
+}
 
 /* ── Modal Asignar Elemento ── */
 let ae_tipoActual = '';
@@ -395,7 +578,11 @@ async function onTipoChange() {
       if (!elems.length) {
         elemSelect.innerHTML = '<option value="">Sin elementos en catálogo</option>';
       } else {
-        elemSelect.innerHTML = elems.map(e => `<option value="${esc(e.interno)}">${esc(e.nombre)} ${e.marca ? '- ' + esc(e.marca) : ''} ${e.modelo ? '- ' + esc(e.modelo) : ''}</option>`).join('');
+        elemSelect.innerHTML = elems.map(e => {
+          const sector = e.sector ? ` [${esc(e.sector)}]` : '';
+          const marcaMod = (e.marca || e.modelo) ? ` - ${esc(e.marca || '')}${e.marca && e.modelo ? ' ' : ''}${esc(e.modelo || '')}` : '';
+          return `<option value="${esc(e.interno)}">${esc(e.nombre)}${sector}${marcaMod}</option>`;
+        }).join('');
       }
     } catch (e) {
       elemSelect.innerHTML = '<option value="">Error al cargar</option>';
@@ -421,6 +608,7 @@ async function assignElement(e) {
       body: JSON.stringify({
         interno,
         elementoTipo: tipo,
+        sector: document.getElementById('ae-sector')?.value.trim() || '',
         origenCentro: document.getElementById('ae-origenCentro').value.trim() || null,
         observaciones: document.getElementById('ae-observaciones').value.trim()
       })
@@ -444,6 +632,7 @@ async function addElemento(e) {
   const nombre = document.getElementById('ae-new-nombre').value.trim();
   const marca = document.getElementById('ae-new-marca').value.trim();
   const modelo = document.getElementById('ae-new-modelo').value.trim();
+  const sector = document.getElementById('ae-new-sector')?.value.trim() || '';
   const stock = parseInt(document.getElementById('ae-new-stock').value) || 1;
   const desc = document.getElementById('ae-new-desc').value.trim();
   if (!tipo || !nombre) return showToast('Completá tipo y nombre', 'error');
@@ -451,7 +640,7 @@ async function addElemento(e) {
     const headers = await getAuthHeaders();
     const res = await fetch(`/api/centros/elementos/disponibles`, {
       method: 'POST', headers,
-      body: JSON.stringify({ tipo, nombre, descripcion: desc, marca, modelo, stock })
+      body: JSON.stringify({ tipo, nombre, descripcion: desc, marca, modelo, sector, stock })
     });
     if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
     closeAddElementoModal();
@@ -472,6 +661,7 @@ async function returnElement(centroId, elemId) {
     if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
     showToast('Elemento devuelto');
     await loadCentros();
+    if (currentCentroId === centroId) await openDetalleCentro(centroId);
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
 
@@ -597,6 +787,7 @@ function openEditElementoModal(id) {
   const item = (catalogoData[tipo] || []).find(e => e.id === id);
   if (!item) return;
   document.getElementById('ee-nombre').value = item.nombre || '';
+  document.getElementById('ee-sector').value = item.sector || '';
   document.getElementById('ee-marca').value = item.marca || '';
   document.getElementById('ee-modelo').value = item.modelo || '';
   document.getElementById('ee-stock').value = item.stock ?? 1;
@@ -613,6 +804,7 @@ async function editElemento(e) {
   const nombre = document.getElementById('ee-nombre').value.trim();
   const marca = document.getElementById('ee-marca').value.trim();
   const modelo = document.getElementById('ee-modelo').value.trim();
+  const sector = document.getElementById('ee-sector')?.value.trim() || '';
   const stock = parseInt(document.getElementById('ee-stock').value) || 1;
   const desc = document.getElementById('ee-desc').value.trim();
   if (!nombre) return showToast('Completá el nombre', 'error');
@@ -620,7 +812,7 @@ async function editElemento(e) {
     const headers = await getAuthHeaders();
     const res = await fetch(`/api/centros/elementos/disponibles/${id}`, {
       method: 'PUT', headers,
-      body: JSON.stringify({ nombre, descripcion: desc, marca, modelo, stock })
+      body: JSON.stringify({ nombre, descripcion: desc, marca, modelo, sector, stock })
     });
     if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
     closeEditElementoModal();
@@ -662,7 +854,7 @@ async function loadElementos() {
     renderElementos();
   } catch (e) {
     console.error('Error cargando elementos:', e);
-    if (tbody) tbody.innerHTML = '<tr><td colspan="13" class="text-center py-8 text-red-400">Error: ' + esc(e.message) + '</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="text-center py-8 text-red-400">Error: ' + esc(e.message) + '</td></tr>';
   }
 }
 
@@ -726,7 +918,7 @@ function renderElementos() {
   const grupos = agruparPorObra(filtered);
   tbody.innerHTML = grupos.map(g => `
       <tr class="bg-[#10B981]/10">
-        <td colspan="13" class="px-3 py-2 border border-white/10 text-[11px] font-bold uppercase tracking-widest text-[#10B981]">${esc(g.nombre)} <span class="text-[#8b9bb4] font-normal">· ${g.filas.length} elemento${g.filas.length === 1 ? '' : 's'}</span></td>
+        <td colspan="14" class="px-3 py-2 border border-white/10 text-[11px] font-bold uppercase tracking-widest text-[#10B981]">${esc(g.nombre)} <span class="text-[#8b9bb4] font-normal">· ${g.filas.length} elemento${g.filas.length === 1 ? '' : 's'}</span></td>
       </tr>` + g.filas.map(filaElemento).join('')).join('');
 }
 
@@ -745,6 +937,7 @@ function filaElemento(e) {
   return `
       <tr class="hover:bg-[#10B981]/5">
         ${c('text-[#ffffff] font-medium', esc(nombreCentro(e.centroId)))}
+        ${c('text-[#8b9bb4]', esc(e.sector || '—'), e.sector)}
         ${c('text-[#00E5FF] font-mono', esc(e.interno))}
         ${c('text-[#8b9bb4]', esc(e.nombre || '—'), e.nombre, true)}
         ${c('text-[#8b9bb4]', esc(e.marca || '—'), e.marca)}
@@ -766,6 +959,7 @@ function elemSortVal(e, col) {
   if (col === 'centroNombre') return (nombreCentro(e.centroId) || '').toLowerCase();
   if (col === 'estado') return estadoElem(e) === 'asignado' ? 0 : 1;
   if (col === 'fechaAsignacion') return e.fechaAsignacion ? new Date(e.fechaAsignacion).getTime() : 0;
+  if (col === 'sector') return (e.sector || '').toLowerCase();
   const v = e[col];
   return v == null ? '' : v;
 }

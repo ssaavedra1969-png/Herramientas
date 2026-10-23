@@ -58,7 +58,7 @@ async function getCatalogElements(tipo) {
   const snap = await col.get();
   const items = snap.docs.map(d => {
     const data = d.data();
-    return { id: d.id, nombre: data.nombre, interno: data.interno || data.elementoId || '', marca: data.marca || '', modelo: data.modelo || '', descripcion: data.descripcion || '', stock: data.stock || 0 };
+    return { id: d.id, nombre: data.nombre, interno: data.interno || data.elementoId || '', marca: data.marca || '', modelo: data.modelo || '', sector: data.sector || '', descripcion: data.descripcion || '', stock: data.stock || 0 };
   });
   items.sort((a, b) => a.nombre.localeCompare(b.nombre));
   return items;
@@ -106,7 +106,7 @@ async function getNextCatalogNumber(tipo) {
 
 router.post('/elementos/disponibles', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { tipo, nombre, descripcion, marca, modelo, stock } = req.body;
+    const { tipo, nombre, descripcion, marca, modelo, sector, stock } = req.body;
     if (!tipo || !nombre) return res.status(400).json({ error: 'tipo y nombre son obligatorios' });
     if (!TIPOS_ELEMENTOS.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
     const { formatted } = await getNextCatalogNumber(tipo);
@@ -117,6 +117,7 @@ router.post('/elementos/disponibles', verifyToken, requireAdmin, async (req, res
       descripcion: descripcion || '',
       marca: marca || '',
       modelo: modelo || '',
+      sector: sector?.trim() || '',
       stock: stock || 1,
       createdAt: new Date()
     });
@@ -128,7 +129,7 @@ router.post('/elementos/disponibles', verifyToken, requireAdmin, async (req, res
 
 router.put('/elementos/disponibles/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { nombre, descripcion, marca, modelo, stock } = req.body;
+    const { nombre, descripcion, marca, modelo, sector, stock } = req.body;
     if (!nombre) return res.status(400).json({ error: 'nombre es obligatorio' });
     const stockNum = parseInt(stock, 10);
     await db.collection('elementos_catalogo').doc(req.params.id).update({
@@ -136,6 +137,7 @@ router.put('/elementos/disponibles/:id', verifyToken, requireAdmin, async (req, 
       descripcion: descripcion || '',
       marca: marca || '',
       modelo: modelo || '',
+      sector: sector?.trim() || '',
       stock: Number.isNaN(stockNum) ? 1 : stockNum,
       updatedAt: new Date()
     });
@@ -237,6 +239,7 @@ router.get('/elementos', verifyToken, async (req, res) => {
         centroId,
         interno: data.interno || '',
         elementoTipo: data.elementoTipo || '',
+        sector: data.sector || '',
         fechaAsignacion: data.fechaAsignacion || null,
         fechaDevolucion: data.fechaDevolucion || null,
         origenCentro: data.origenCentro || null,
@@ -306,7 +309,45 @@ router.get('/:id', verifyToken, async (req, res) => {
 
     const elementosSnap = await db.collection(`centros/${req.params.id}/elementos`)
       .orderBy('fechaAsignacion', 'desc').get();
-    const elementos = elementosSnap.docs.map(d => cleanTimestamps({ id: d.id, ...d.data() }));
+    let elementos = elementosSnap.docs.map(d => cleanTimestamps({ id: d.id, ...d.data() }));
+
+    const vehiculosSnap = await db.collection('vehicles').get();
+    const vehMap = {};
+    vehiculosSnap.docs.forEach(d => {
+      const v = d.data();
+      const info = {
+        nombre: `${v.patente || v.interno || ''} — ${v.marca || ''} ${v.modelo || ''} ${v.anio || ''}`.trim(),
+        marca: v.marca || '',
+        modelo: v.modelo || '',
+        tipoVehiculo: v.tipo || '',
+        chofer: v.chofer || v.conductorHabitual || ''
+      };
+      if (v.patente) vehMap[v.patente.toUpperCase()] = info;
+      if (v.interno) vehMap[v.interno.toUpperCase()] = info;
+    });
+
+    const catalogoSnap = await db.collection('elementos_catalogo').get();
+    const catMap = {};
+    catalogoSnap.docs.forEach(d => {
+      const c = d.data();
+      if (c.interno) catMap[c.interno.toUpperCase()] = { nombre: c.nombre || '', marca: c.marca || '', modelo: c.modelo || '', sector: c.sector || '' };
+    });
+
+    elementos = elementos.map(e => {
+      const info = e.elementoTipo === 'vehiculo'
+        ? vehMap[(e.interno || '').toUpperCase()]
+        : catMap[(e.interno || '').toUpperCase()];
+      return {
+        ...e,
+        nombre: info?.nombre || '',
+        marca: info?.marca || '',
+        modelo: info?.modelo || '',
+        tipoVehiculo: info?.tipoVehiculo || '',
+        chofer: info?.chofer || '',
+        sector: e.sector || info?.sector || ''
+      };
+    });
+
     centro.elementos = elementos;
     centro.totalElementos = elementos.length;
     centro.asignados = elementos.filter(e => !e.fechaDevolucion || e.fechaDevolucion === '').length;
@@ -389,13 +430,14 @@ router.delete('/:id', verifyToken, requireAdmin, async (req, res) => {
 
 router.post('/:id/elementos', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { interno, elementoTipo, origenCentro, observaciones } = req.body;
+    const { interno, elementoTipo, sector, origenCentro, observaciones } = req.body;
     if (!interno || !elementoTipo) {
       return res.status(400).json({ error: 'interno y elementoTipo son obligatorios' });
     }
     const docRef = await db.collection(`centros/${req.params.id}/elementos`).add({
       interno,
       elementoTipo,
+      sector: sector?.trim() || '',
       origenCentro: origenCentro || null,
       fechaAsignacion: new Date(),
       fechaDevolucion: '',

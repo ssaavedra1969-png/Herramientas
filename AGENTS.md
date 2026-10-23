@@ -98,6 +98,13 @@ scripts/
   generar-control-documentacion.js  # Genera CONTROL_FALTANTES / CONTROL_VENCIDOS en PATENTE/Reportes/ → npm run generar:control
   generar-control-matafuego.js      # Genera CONTROL_MATAFUEGO_MIXERS / _RESTO (sin matafuego) + _TODOS (flota entera agrupada por tipo) → npm run generar:matafuego
   marcar-cedulas-no-vence.js        # Marca documentacion.cedula.noVence en los vehículos sin fecha (SIN alias npm) → node scripts/marcar-cedulas-no-vence.js [--apply]
+  informe-vencimientos-semanal.js   # Informe semanal: PDF en informes/ (+ mail opcional SMTP) → npm run informe:vencimientos
+  instalar-tarea-vencimientos.bat   # Crea la tarea "Falpat Informe Vencimientos" (viernes 08:00); correr como Admin
+  ejecutar-informe-vencimientos.bat # La llama la tarea programada; corre el script con --sin-abrir
+  generar-pdf-seguros.js            # PDF de control de seguros de toda la flota por compañía → npm run generar:pdf-seguros
+  copiar-docs-choferes.js           # Copia DNI/Registro a la carpeta de red de Choferes (dry-run; --apply) → npm run copiar:docs-choferes
+  cargar-compania-seguros.js        # Completa seguro.compania vacío (dry-run; --apply) → npm run cargar:companias
+  limpiar-service-fields.js         # Recalcula proximoService* desde la subcolección services (--dry-run) → npm run limpiar:service
   inspeccionar-counters.js    # SOLO LECTURA: cómo se llaman los docs de counters y si hay internos duplicados → npm run inspect:counters
 tests/
   fake-firestore.js          # Firestore falso en memoria (permite testear escrituras sin producción)
@@ -106,6 +113,7 @@ tests/
   negocio.test.js            # Contador del catálogo, recomputeServiceSummary, FieldValue.delete() → npm run test:negocio
   vehiculos-numeracion.test.js  # Numeración de vehículos (código cliente) → npm run test:numeracion
   import-vehiculos.test.js   # Import masivo de vehículos (código cliente) → npm run test:import
+  deshabilitado-orden.test.js  # Campo deshabilitado + orden de Vencimientos → npm run test:deshabilitado
   README.md                  # Cómo escribir tests + las trampas del fake
 PATENTE/
   {patente}/{tipo}.ext        # Documentos obligatorios versionados (fuente leída por la app en Vercel)
@@ -202,7 +210,9 @@ Cuando llega un PDF con todas las constancias juntas, el **procedimiento complet
 
 ## Registro de cambios recientes (para puesta al día de IA)
 
-Último commit: **`e134709`** ("Docs: 6 vehículos", 2026-10-03) — el rótulo miente, son 7 PDF (§1). Antes de este hubo `b31c2c9`, `7138138`, `bf465f2`, `b38c4b3` y `288cd38`. **El registro de abajo está en orden temático, no cronológico**: arranca por la sesión del 2026-09-29 (numeración + harness de tests) y después sigue con las del 2026-10-01 y 10-02, que fueron todas de **Reportes**. Detalle de las últimas: `documentacion/Update_2026.10.03.md` (renovación de seguros), `Update_2026.10.02.md` (Reportes) y `Update_2026.10.02_tarde.md` (documentación de la flota).
+Último commit: **`1d9b9dc`** ("Informe semanal de vencimientos: PDF A4 horizontal, botón Semanal y tarea de los viernes", 2026-10-19). Antes `e406f9f` (solo docs de `LFI597`) y `8e4d3e8` (columna Chofer en Vencimientos). **El registro de abajo está en orden temático, no cronológico**: arranca por la sesión del 2026-09-29 (numeración + harness de tests) y después sigue con las de octubre, en su mayoría de **Reportes**. Detalle de las últimas: `documentacion/Update_2026.10.19.md` (informe semanal), `Update_2026.10.15.md` (deshabilitados + Carpeta Docs), `Update_2026.10.08.md` (Reportes/obra), `Update_2026.10.03.md` (renovación de seguros) y `Update_2026.10.02_tarde.md` (documentación de la flota).
+
+- **Sesión 2026-10-19 (informe semanal de vencimientos, `documentacion/Update_2026.10.19.md`)** — PDF que comparten **la web y la tarea programada**: `lib/informe-vencimientos.js` (`armarFilas()` + `generarPDF()`), `GET /api/admin/report/vencimientos/semanal/pdf` (`routes/admin.js:647`) y botón **Semanal** en la card Vencimientos. `npm run informe:vencimientos` escribe `informes/VENCIMIENTOS_SEMANAL_<fecha>.pdf` (gitignored) y lo manda por mail si hay SMTP en `.env`; la tarea **"Falpat Informe Vencimientos"** corre los viernes 08:00 (`scripts/instalar-tarea-vencimientos.bat` → `ejecutar-informe-vencimientos.bat`). Cubre **VTV, Seguro, Registro y Service** de los habilitados. **Trampa:** comentarios y tooltip dicen "vencidos + 30 días", pero el código **excluye los vencidos** (`dias < 0`) y la ventana default es **90** (route y script), no 30. A4 horizontal, **una hoja por documento + hoja de resumen**. Aparte, `e406f9f` solo agregó 6 PDF de `PATENTE/LFI597/` (sin código ni Firestore).
 
 - **Sesión 2026-10-03 tarde (Reportes / Vencimientos, detalle en `documentacion/CHANGELOG.md`)** — dos pedidos del usuario sobre la 3ra card de `/reports`, **todo en `public/js/reports.js` + `views/reports.ejs`**, sin tocar backend ni Firestore:
   - **Los `<select>` de documento y empresa se reemplazaron por checklists multiple (`llenarMultiVenc()`)**, con toggle "Todos". `setVencDoc()`/`setVencEmpresa()` **ya no existen**: no volver a agregarlos.
