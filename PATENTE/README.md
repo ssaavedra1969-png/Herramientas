@@ -60,4 +60,6 @@ true` marca una cédula que no caduca (`node scripts/marcar-cedulas-no-vence.js`
 (con los archivos) debe quedar **versionada en git** (se sube al repo y Vercel la
 despliega), igual que se hacía con `titulo/`. No se debe agregar a `.gitignore`.
 La carga masiva a producción es `npm run subir:docs` (`scripts/subir-documentos.js`,
-solo toca `PATENTE/`).
+solo toca `PATENTE/`). También se puede iniciar manualmente con doble clic en
+`PATENTE/Update.bat`; el archivo abre la raíz del proyecto, ejecuta el mismo
+comando y deja la ventana abierta para ver el resultado.
