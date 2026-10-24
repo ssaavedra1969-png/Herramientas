@@ -59,7 +59,25 @@ true` marca una cédula que no caduca (`node scripts/marcar-cedulas-no-vence.js`
 **IMPORTANTE:** para que los documentos aparezcan desplegados, la carpeta `PATENTE/`
 (con los archivos) debe quedar **versionada en git** (se sube al repo y Vercel la
 despliega), igual que se hacía con `titulo/`. No se debe agregar a `.gitignore`.
-La carga masiva a producción es `npm run subir:docs` (`scripts/subir-documentos.js`,
-solo toca `PATENTE/`). También se puede iniciar manualmente con doble clic en
-`PATENTE/Update.bat`; el archivo abre la raíz del proyecto, ejecuta el mismo
-comando y deja la ventana abierta para ver el resultado.
+Los archivos locales **no se publican automáticamente al guardarlos**. Para
+publicarlos, ejecutá `npm run subir:docs` desde la raíz o hacé doble clic en
+`PATENTE/Update.bat`. El BAT abre la raíz del proyecto, ejecuta el mismo comando
+y deja la ventana abierta para ver el resultado.
+
+El script verifica que estés en `main`, hace `git pull --ff-only`, agrega y
+commitea los cambios Git de **toda** la carpeta `PATENTE/` y hace push a
+`origin/main`. Ese push inicia el deploy automático de Vercel. Antes de ejecutarlo,
+revisá los archivos que hay en la carpeta: también se suben otros cambios
+versionables, no solo PDFs reconocidos por la app. Los `.xlsx` están ignorados por
+Git y no se publican con este flujo.
+
+Subir o reemplazar un PDF **no carga ni cambia la fecha de vencimiento**. La fecha
+se ingresa por separado en la ficha del vehículo o se importa a Firestore con
+`node scripts/cargar-vencimientos.js --archivo=...` (primero validar con
+`--dry-run`).
+
+La carga desde el botón Admin de la ficha es otro flujo: envía el PDF directamente
+a GitHub mediante `GITHUB_TOKEN`, sin depender de `Update.bat`. Los listados de
+documentos que consultan GitHub pueden tardar hasta 10 minutos en refrescar por
+caché. `PATENTE/` está excluida del bundle Vercel, así que no hay que asumir que
+el static local `/documentos` sirve los PDF desde el filesystem de producción.

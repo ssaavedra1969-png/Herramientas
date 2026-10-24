@@ -1,6 +1,31 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-10-19.
+Cambios registrados por sesión. Última actualización: 2026-10-24.
+
+## 2026-10-24 — Publicación manual de documentos PATENTE
+
+Detalle completo en **`Update_2026.10.24.md`**.
+
+- Se revisó el recorrido de `PATENTE/` desde el disco local hasta GitHub, Vercel
+  y los endpoints de lectura de documentos.
+- Se agregó `PATENTE/Update.bat`: con doble clic ejecuta `npm run subir:docs`
+  desde la raíz del repo, muestra el resultado y deja la ventana abierta.
+- **No es automático al guardar:** el BAT debe ejecutarse manualmente. El script
+  verifica `main`, hace pull fast-forward, detecta cambios Git dentro de
+  `PATENTE/`, los agrega, commitea y pushea. El push inicia el deploy de Vercel.
+- Se aclaró que el Excel de `PATENTE/Vtos/` está ignorado por Git, subir un PDF
+  no actualiza su fecha de vencimiento y los nombres de archivo deben coincidir
+  con los tipos reconocidos.
+- Se documentó aparte la carga/borrado desde la web, que escribe en GitHub usando
+  `GITHUB_TOKEN`, y la caché de hasta 10 minutos de las listas consultadas desde
+  GitHub.
+- Durante esta sesión `origin/main` avanzó al commit **`500802c` — `Docs: 13
+  vehículos`**, que incluye el BAT, PDFs de seguros/VTV y archivos fuente bajo
+  `PATENTE/Vtos/seguros/`. El asistente no ejecutó el BAT ni el script; no se
+  verificó el deploy de Vercel.
+- Tres archivos auxiliares `_seg.pdf` están en el commit remoto pero figuran
+  eliminados en el directorio de trabajo. No se restauraron ni publicaron de
+  nuevo.
 
 ## 2026-10-19 — Informe semanal de vencimientos (commit `1d9b9dc`)
 

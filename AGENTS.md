@@ -193,12 +193,27 @@ La documentación (Título, Cédula, Seguro, Registro del chofer, DNI del chofer
 ### Cómo subir documentos a producción (carga masiva)
 1. Poné cada PDF en `PATENTE/{patente}/` en la PC local.
 2. Cargá la fecha de vencimiento en la web (por vehículo).
-3. En terminal, corré **un solo comando**:
+3. Publicá manualmente con **un solo comando**:
    ```
    npm run subir:docs
    ```
+   También se puede hacer doble clic en `PATENTE/Update.bat`, que ejecuta el
+   mismo comando desde la raíz y deja visible el resultado. No hay watcher: los
+   cambios locales no se suben al guardar el archivo.
    El script (`scripts/subir-documentos.js`) hace `git pull origin main` → detecta qué vehículos se tocaron → `git add PATENTE/` → `git commit` → `git push origin main`. Solo toca la carpeta `PATENTE/` (no commitea código).
 4. Vercel despliega automáticamente (~1-2 min).
+
+   **El script incluye todos los cambios Git dentro de `PATENTE/`, no solo PDFs
+   reconocidos.** Revisar nombres/contenido antes de ejecutarlo. Los Excel `.xlsx`
+   están ignorados por `.gitignore` y no se publican con `subir:docs`. Subir un
+   documento no carga su vencimiento: esa fecha se ingresa aparte en la ficha o
+   con `scripts/cargar-vencimientos.js --archivo=...`.
+
+- **Carga desde la ficha Admin:** es independiente del BAT; el endpoint usa
+  `GITHUB_TOKEN` para subir el PDF directamente a GitHub. Los reportes/listados
+  leen desde GitHub porque `.vercelignore` excluye `PATENTE/` del bundle, y sus
+  árboles pueden quedar cacheados hasta 10 minutos. No asumir que el static
+  `/documentos` sirve esos archivos desde el filesystem de Vercel.
 
 ### Renovación de seguros (póliza de la aseguradora → por patente)
 Cuando llega un PDF con todas las constancias juntas, el **procedimiento completo está en `documentacion/PROCEDIMIENTO-SEGUROS.md`** (se repite con cada renovación; leído antes de arrancar). Resumen: el PDF va a `PATENTE/Seg/` → separar con PyMuPDF (1 pág = 1 vehículo, campo `PATENTE:`, **sin OCR**) en `PATENTE/Seg/{PATENTE}.pdf` → **mover** el viejo a `PATENTE/{patente}/BACKUP/seguro_al DD.MM.YY.pdf` (fecha de **modificación** del archivo) → copiar el nuevo como `seguro.pdf` → cargar la fecha con un Excel `SEGUROS_RENOVACION_<fecha>.xlsx` (columnas `Patente | Tipo documento | Vencimiento | Nota`) + `node scripts/cargar-vencimientos.js --archivo=...` (**dry-run primero**). **Nunca** correr `npm run cargar:vencimientos` sin `--archivo`: revierte fechas. Últimas aplicaciones: 2026-10-03 (7 vehículos) y 2026-10-06 (31 vehículos, póliza 30457810).
@@ -209,6 +224,8 @@ Cuando llega un PDF con todas las constancias juntas, el **procedimiento complet
 - `titulo/` (41 PDFs) es el patrón previo de versionado que replicó `PATENTE/`.
 
 ## Registro de cambios recientes (para puesta al día de IA)
+
+- **Publicación de documentos `PATENTE/` (2026-10-24; `documentacion/Update_2026.10.24.md`)** — no existe sincronización automática al guardar archivos locales. `PATENTE/Update.bat` ejecuta manualmente `npm run subir:docs`; el script hace pull fast-forward de `main`, incluye todos los cambios versionables dentro de `PATENTE/`, crea commit y push, y el push inicia el deploy Vercel. `.xlsx` está ignorado. Subir PDF no carga fecha de vencimiento: se actualiza aparte en Firestore. El botón Admin de la ficha sube directamente a GitHub con `GITHUB_TOKEN`; la lectura de listados GitHub puede tener caché de hasta 10 min. Revisar nombres `*_seg.pdf` antes de publicar: el patrón de documento reconocido es `<tipo>.<ext>` dentro de la carpeta de patente.
 
 Último commit: **`1d9b9dc`** ("Informe semanal de vencimientos: PDF A4 horizontal, botón Semanal y tarea de los viernes", 2026-10-19). Antes `e406f9f` (solo docs de `LFI597`) y `8e4d3e8` (columna Chofer en Vencimientos). **El registro de abajo está en orden temático, no cronológico**: arranca por la sesión del 2026-09-29 (numeración + harness de tests) y después sigue con las de octubre, en su mayoría de **Reportes**. Detalle de las últimas: `documentacion/Update_2026.10.19.md` (informe semanal), `Update_2026.10.15.md` (deshabilitados + Carpeta Docs), `Update_2026.10.08.md` (Reportes/obra), `Update_2026.10.03.md` (renovación de seguros) y `Update_2026.10.02_tarde.md` (documentación de la flota).
 
@@ -404,4 +421,3 @@ Proyecto aparte en `C:\AI\Antigravity\FALPAT srl\Optimizaciones` (no es parte de
   - Salida siempre `PATENTE/{patente}/{tipo}.pdf` (la app ya prioriza `.pdf`).
   - Luego de optimizar, publicar con `npm run subir:docs`.
 - **Config:** `Optimizaciones\config.json` (`patente_dir`, `port`, `jpeg_quality`, `watermark_opacity/fontsize/angle`).
-
