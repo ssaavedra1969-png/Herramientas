@@ -22,3 +22,6 @@ PATENTE/**/*.zip
 
 # PDFs del informe semanal de vencimientos (se regeneran solos)
 informes/
+
+# Credenciales locales (API keys, secretos). NO versionar.
+documentacion/privado/

@@ -19,7 +19,9 @@
 | **`MS_BASE.md`** | Análisis de una **posible migración de Firestore → Microsoft SQL Server** (pros/contras). Es un documento de decisión, NO está implementado. | Evaluar futuro de la infraestructura. |
 | **`RESUMEN-SESION-*.md`** | Resúmenes detallados de sesiones puntuales (diagnósticos, bugs, decisiones). Patrón: `RESUMEN-SESION-YYYY-MM-DD.md`. | Puesta al día de qué pasó en una sesión concreta. |
 | **`PROCEDIMIENTO-SEGUROS.md`** | **Procedimiento paso a paso de la renovación de seguros**: inspeccionar el PDF de la aseguradora, separar una constancia por patente (`PATENTE/Seg/{PATENTE}.pdf`), respaldar el viejo en `BACKUP/seguro_al DD.MM.YY.pdf`, reemplazar `seguro.pdf` y cargar la fecha con `cargar-vencimientos.js`. **Se repite con cada renovación** (ya aplicado el 2026-10-03 y el 2026-10-06). | Llegó una póliza/constancia nueva de la aseguradora. |
-| **`Update_YYYY.MM.DD.md`** | Detalle técnico de una sesión de trabajo: qué se cambió, por qué, cómo se verificó y qué quedó pendiente. Patrón: `Update_YYYY.MM.DD.md` (ej: `Update_2026.09.28.md` = vencimientos del dashboard + Excel de control + editar/eliminar Obras; `Update_2026.09.27.md` = alta de Centros de Trabajo; `Update_2026.10.02.md` = columna Empresa + título con los filtros + impresión "pizarra" en Reportes; `Update_2026.10.02_tarde.md` = columna Chofer en los 4 Excel de control + carga de los 4 vencimientos que faltaban + auditoría de peso de los PDF; `Update_2026.10.03.md` = renovación de seguros: 7 certificados nuevos, `seguro.fechaVencimiento = 07/10/2026` en los 7 + fix del rótulo de `subir:docs`; `Update_2026.10.06.md` = póliza 30457810: 32 constancias separadas de `PATENTE/Seg/` por patente (incluye la corrección `AG469LY` → `AG469YL`), `BACKUP/seguro_al DD.MM.YY.pdf` del seguro viejo y fecha 07/04/2027 en los 31); `Update_2026.10.08.md` = Reportes: afuera Subtipo/Nº BET/Trompo/Año, solapa Obra con export PDF y encabezado en todas las hojas; `Update_2026.10.09.md` = docs de AH190PG; `Update_2026.10.15.md` = deshabilitados en dashboard/Obras/QR/ficha + Carpeta Docs; `Update_2026.10.19.md` = informe semanal de vencimientos (PDF, botón y tarea de los viernes); `Update_2026.10.24.md` = publicación manual de `PATENTE/`, nuevo `PATENTE/Update.bat`, sincronización con GitHub/Vercel, límites de fechas de vencimiento y estado de archivos locales. | Entender el por qué de un cambio antes de tocarlo. |
+| **`BREVO-MANUAL.md`** | **Manual operativo de Brevo** para el informe de vencimientos: plan free, verificar remitentes, crear/rotar la API key, variables de entorno, límites, entregabilidad (DKIM/DMARC) y problemas frecuentes. **No contiene secretos.** | Tocar remitentes, claves, envíos o el cron de los lunes. |
+| **`privado/`** | **Credenciales locales** (`CREDENCIALES-BREVO.local.md`: API key, `CRON_SECRET`, cuenta). **Ignorada por git**: no viaja al repo ni a Vercel; hay que recrearla en cada PC. | Buscar una clave/valor operativo. **Nunca commitear.** |
+| **`Update_YYYY.MM.DD.md`** | Detalle técnico de una sesión de trabajo: qué se cambió, por qué, cómo se verificó y qué quedó pendiente. Patrón: `Update_YYYY.MM.DD.md` (ej: `Update_2026.09.28.md` = vencimientos del dashboard + Excel de control + editar/eliminar Obras; `Update_2026.09.27.md` = alta de Centros de Trabajo; `Update_2026.10.02.md` = columna Empresa + título con los filtros + impresión "pizarra" en Reportes; `Update_2026.10.02_tarde.md` = columna Chofer en los 4 Excel de control + carga de los 4 vencimientos que faltaban + auditoría de peso de los PDF; `Update_2026.10.03.md` = renovación de seguros: 7 certificados nuevos, `seguro.fechaVencimiento = 07/10/2026` en los 7 + fix del rótulo de `subir:docs`; `Update_2026.10.06.md` = póliza 30457810: 32 constancias separadas de `PATENTE/Seg/` por patente (incluye la corrección `AG469LY` → `AG469YL`), `BACKUP/seguro_al DD.MM.YY.pdf` del seguro viejo y fecha 07/04/2027 en los 31); `Update_2026.10.08.md` = Reportes: afuera Subtipo/Nº BET/Trompo/Año, solapa Obra con export PDF y encabezado en todas las hojas; `Update_2026.10.09.md` = docs de AH190PG; `Update_2026.10.15.md` = deshabilitados en dashboard/Obras/QR/ficha + Carpeta Docs; `Update_2026.10.19.md` = informe semanal de vencimientos (PDF, botón y tarea de los viernes); `Update_2026.10.24.md` = publicación manual de `PATENTE/`, nuevo `PATENTE/Update.bat`, sincronización con GitHub/Vercel, límites de fechas de vencimiento y estado de archivos locales; `Update_2026.11.11_informes-brevo.md` = Admin → Correos (config + envío manual + cron de los lunes), activación de Brevo en producción, envs en Vercel, deploy y pruebas end-to-end. | Entender el por qué de un cambio antes de tocarlo. |
 | **`TAREAS_PENDIENTES/`** | Backlog priorizado de tareas en archivos `.md` independientes. Índice: `00-INDICE.md` (P0 bugs → P1 seguridad → P2 refactor → P3 cosmético). | Saber qué tareas quedaron pendientes. |
 | **`rollback/`** | Guías de rollback de optimizaciones (ej: `OPTIMIZACION-LECTURAS-ROLLBACK.md`). | Revertir un lote de cambios sin perder trabajo posterior. |
 
@@ -42,7 +44,11 @@
 | `routes/centros.js` | Centros de Trabajo / Obras: catálogo de elementos + contadores, crear, **editar (PUT: nombre/ubicación/estado/observaciones)**, **eliminar (DELETE: borra subcolección `elementos` + doc, con 409 si quedan elementos sin devolver)**, asignar/devolver elementos, `collectionGroup('elementos')` para la pestaña Elementos. **El selector de vehículos excluye los deshabilitados** (`getVehicleList()`); las asignaciones viejas se conservan. |
 | `routes/admin.js` | Dashboard stats, reportes, export Excel, backup, `latest-services`. `GET /report/flota` alimenta las 3 cards de `/reports`: resuelve las fechas de documento (`fechaDocVenc`, legacy → plano → `documentacion.<tipo>`) y lee la lista de PDFs de `PATENTE/` **desde GitHub** (`arbolPatenteR()` con caché de 10 min), porque la carpeta no está en el deploy de Vercel. |
 | `lib/github-docs.js` | Lectura de la carpeta `PATENTE/` vía API de GitHub: `listarPatenteGlobal()` (todo el árbol en 1 request), `cambiosDesde()`, `esDeTipo()`. |
-| `lib/informe-vencimientos.js` | Lógica compartida del **informe semanal de vencimientos**: `armarFilas()` (solo a vencer, VTV/Seguro/Registro/Service, sin deshabilitados) y `generarPDF()` (A4 horizontal, una hoja por documento + resumen). La usan el botón "Semanal" y la tarea de los viernes. |
+| `lib/informe-vencimientos.js` | Lógica compartida del **informe semanal de vencimientos**: `armarFilas()` (solo a vencer, VTV/Seguro/Registro/Service, sin deshabilitados) y `generarPDF()` (A4 horizontal, una hoja por documento + resumen). La usan el botón "Semanal", la tarea de los viernes, Admin → Correos y el cron. |
+| `lib/informe-config.js` | Config del informe por mail en `config/informesMail` (destinatarios, asunto, cuerpo, días, `activo`) + defaults, normalización, `resolverEnvio()` y plantillas `{{fecha}} {{dias}} {{total}} {{hoy}} {{flota}} {{hoy_linea}}`. |
+| `lib/mailer.js` | `enviarInforme()`: **Brevo** (API HTTPS) → SMTP (nodemailer) → `{enviado:false,motivo}`. Remitente `INFORMES_EMAIL_FROM` → `SMTP_USER` → `grupo@falpat.com.ar`. |
+| `routes/informes.js` | API Admin → Correos: `GET/PUT /api/informes/config`, `GET /api/informes/vista-previa`, `POST /api/informes/enviar` (`verifyToken` + `requireAdmin`). |
+| `routes/cron.js` | `GET /api/cron/vencimientos` para Vercel Cron (lunes): `CRON_SECRET`, `?forzar=1`, `?mail=0`, `?dias=N`. No escribe en Firestore. |
 | `scripts/subir-documentos.js` | Sube `PATENTE/` a producción (pull+add+commit+push, solo esa carpeta). → `npm run subir:docs` |
 | `scripts/cargar-vencimientos.js` | Carga masiva de vencimientos desde Excel de `PATENTE/Vtos/`. → `npm run cargar:vencimientos` |
 | `scripts/generar-control-documentacion.js` | Genera `CONTROL_FALTANTES_*.xlsx` y `CONTROL_VENCIDOS_*.xlsx` en `PATENTE/Reportes/`. Columnas: **Faltantes** = Patente, Interno, **Chofer**, Tipo documento, Vencimiento, Nota · **Vencidos** = Patente, Interno, **Chofer**, Tipo documento, Vencimiento, Dias vencida, Empresa, Nota. → `npm run generar:control` |
@@ -71,6 +77,7 @@
 | `public/js/service.js` | Página Service: tabla sortable, filtros, vencimientos. **Usa `serviceDaysUntil()`** (no colisiona con auth-client). |
 | `public/js/reports.js` | Página Reportes: **3 cards apiladas** - `Flota` (tabla de la flota con columnas visibles), `Documentacion` (checklist por vehículo) y `Vencimientos` (nuevo). Ver "Reportes / Vencimientos" más abajo. |
 | `public/js/admin.js` | Roles de usuario. |
+| `public/js/informes.js` | Página Admin → Correos: chips de destinatarios, asunto/cuerpo, días, toggle, vista previa (`renderLocal()`), Descargar PDF, Guardar y Enviar ahora. Banner `#aviso-mail` si falta Brevo/SMTP y remitente visible en `#remitente-info`. |
 | `public/js/centros.js` | Obras: tabla con filtros, pestaña Catálogo, asignar/devolver, editar y eliminar. |
 | `public/js/theme.js` | Selector de tema persistente (**4 temas**: `pro`, `claro`, `industrial`, `auto`). El color de la barra del navegador se lee del CSS, no hardcodeado. |
 | `public/js/clock.js` | Reloj global: monta en `.topbar-clock` si hay topbar, o en `.clock-float` si la página no tiene barra. |
@@ -87,6 +94,7 @@
 | `tests/escrituras.test.js` | Auth, roles, obras, elementos, vehículos (47 checks). → `npm run test:escrituras` |
 | `tests/negocio.test.js` | Contador del catálogo, `recomputeServiceSummary`, `FieldValue.delete()` (25 checks). → `npm run test:negocio` |
 | `tests/deshabilitado-orden.test.js` | Campo `deshabilitado` (incluye `GET /api/centros/elementos/disponibles/vehiculo`) y orden de Vencimientos por fecha (30 checks). → `npm run test:deshabilitado` |
+| `tests/informes-config.test.js` | Config del informe, defaults, `resolverEnvio()`, plantillas y cron (41 checks). → `npm run test:informes` |
 | `tests/README.md` | Cómo escribir tests nuevos + **las trampas del fake ya pisadas**. |
 
 > **Nota — el módulo `maintenance` ya no existe.** Se documentaba
@@ -227,6 +235,30 @@ Es un **cuarto PDF**, distinto de los 3 exports de la web: lo genera el
 - **Trampa documentada**: el comentario del código y el `title` del botón dicen "vencidos + próximos 30 días", pero el código **excluye los vencidos** y usa **90** por defecto. Detalle en `Update_2026.10.19.md` §1.1.
 
 > **Ojo:** la página es `requireAdminPage` pero el ítem "Reportes" del menú se muestra a usuarios básicos. O se oculta el ítem o se habilita el acceso; hoy el endpoint responde 403 a un Usuario.
+
+### Admin → Correos (envío por mail + cron de los lunes)
+
+Página **`GET /informes`** (solo Admin, `requireAdminPage`; entrada "Correos" en
+sidebar y menú móvil). Edita la configuración del informe **sin tocar código**:
+
+- **Config**: `config/informesMail` → `destinatarios[]` (hasta 20), `asunto`,
+  `cuerpo` (placeholders `{{fecha}} {{dias}} {{total}} {{hoy}} {{flota}} {{hoy_linea}}`),
+  `dias` (1..365, default **90**) y `activo` (toggle del envío automático).
+- **API**: `GET/PUT /api/informes/config`, `GET /api/informes/vista-previa`
+  (devuelve `stats` + `vars`; el cliente renderiza) y `POST /api/informes/enviar`.
+  **"Enviar ahora" manda lo que está en pantalla** (`resolverEnvio()` pisa lo
+  guardado) y **no** exige Guardar antes.
+- **Servicio de mail**: `lib/mailer.js` usa **Brevo** si hay `BREVO_API_KEY`;
+  si no, SMTP (`SMTP_HOST/PORT/USER/PASS`). La UI muestra el remitente
+  (`INFORMES_EMAIL_FROM` → `SMTP_USER` → `grupo@falpat.com.ar`) y un banner rojo
+  si no hay ningún servicio. Manual: `BREVO-MANUAL.md`.
+- **Cron**: `vercel.json` → `GET /api/cron/vencimientos` los **lunes 11:00 UTC
+  (08:00 ART)**, protegido con `CRON_SECRET` (`Authorization: Bearer` o
+  `?token=`). `?forzar=1` ignora el toggle, `?mail=0` genera el PDF sin enviar,
+  `?dias=N` cambia la ventana. Si no hay config guardada usa los defaults
+  (`grupo@falpat.com.ar` y `administracion_hormigonera@constructoraalmajo.com.ar`).
+- **Local**: `DEV_READ_ONLY=true` bloquea Guardar/Enviar; el envío real se
+  prueba en producción. Evidencia y checklist: `Update_2026.11.11_informes-brevo.md`.
 
 ---
 

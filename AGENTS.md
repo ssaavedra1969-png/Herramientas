@@ -66,12 +66,19 @@ vercel --prod       # Deploy a producción
 ```
 server.js                    # Entry point (Express + rutas)
 config/firebase.js           # Admin SDK init
+lib/
+  informe-vencimientos.js    # armarFilas() + generarPDF() del informe semanal (web, script y cron)
+  informe-config.js          # Config del informe por mail (config/informesMail) + defaults + plantillas
+  mailer.js                  # enviarInforme(): Brevo (BREVO_API_KEY) → SMTP → {enviado:false,motivo}
+  github-docs.js             # Lectura de PATENTE/ vía API de GitHub (listarPatenteGlobal, cambiosDesde)
 middleware/auth.js           # verifyToken, requireAdmin, loadUser, requireAuth
 routes/
   auth.js                    # Login/session
   vehicles.js                # CRUD vehículos + combustible/repuestos subcolecciones
   maintenance.js             # CRUD mantenimientos
   admin.js                   # Dashboard stats, reports, backup
+  informes.js                # Admin → Correos: config + vista previa + envío manual (requireAdmin)
+  cron.js                    # GET /api/cron/vencimientos (lunes) con CRON_SECRET
 views/
   dashboard.ejs              # Dashboard principal
   vehicles.ejs               # Listado vehículos + modal CRUD + import CSV/Excel
@@ -79,6 +86,7 @@ views/
   maintenance.ejs            # Listado mantenimientos + modal CRUD
   reports.ejs                # Reportes: 3 cards plegables (Flota, Documentación, Vencimientos) + CSS de impresión "pizarra"
   admin.ejs                  # Gestión de usuarios
+  informes.ejs               # Admin → Correos: destinatarios, asunto/cuerpo, días, toggle, vista previa, enviar
   centros.ejs                # Centros de Trabajo / Obras (lista, catálogo, modales crear/editar/eliminar)
   partials/head.ejs          # Head con SDKs CDN
   partials/sidebar.ejs       # Sidebar navegación
@@ -91,6 +99,7 @@ public/js/
   maintenance.js             # CRUD mantenimientos
   reports.js                 # Reportes: 3 cards (Flota, Documentación, Vencimientos) + export Excel/PDF/print
   admin.js                   # Roles de usuario
+  informes.js                # Admin → Correos: UI, renderLocal(), banner de servicio, Enviar ahora
   centros.js                 # Obras: tabla, catálogo, asignar/devolver, editar, eliminar
 scripts/
   subir-documentos.js        # Sube la carpeta PATENTE/ a producción (pull+add+commit+push) → npm run subir:docs
@@ -114,6 +123,7 @@ tests/
   vehiculos-numeracion.test.js  # Numeración de vehículos (código cliente) → npm run test:numeracion
   import-vehiculos.test.js   # Import masivo de vehículos (código cliente) → npm run test:import
   deshabilitado-orden.test.js  # Campo deshabilitado + orden de Vencimientos → npm run test:deshabilitado
+  informes-config.test.js    # Config del informe, plantillas y cron → npm run test:informes (41 checks)
   README.md                  # Cómo escribir tests + las trampas del fake
 PATENTE/
   {patente}/{tipo}.ext        # Documentos obligatorios versionados (fuente leída por la app en Vercel)
@@ -225,9 +235,11 @@ Cuando llega un PDF con todas las constancias juntas, el **procedimiento complet
 
 ## Registro de cambios recientes (para puesta al día de IA)
 
+- **Sesión 2026-11-11 (Admin → Correos + Brevo en producción; `documentacion/Update_2026.11.11_informes-brevo.md`)** — nueva página **`/informes`** (Admin) para el informe de vencimientos: config en **`config/informesMail`** (`destinatarios[]` hasta 20, `asunto`, `cuerpo` con placeholders, `dias` 1..365 default **90**, `activo`), `GET/PUT /api/informes/config`, `GET /api/informes/vista-previa` (devuelve `stats`+`vars`; el cliente renderiza con `renderLocal()`), `POST /api/informes/enviar`. **"Enviar ahora" manda lo que está en pantalla** (`resolverEnvio()` pisa lo guardado, no exige Guardar). Envío: `lib/mailer.js` → **Brevo** (`BREVO_API_KEY`) → SMTP → `{enviado:false,motivo}`; remitente `INFORMES_EMAIL_FROM` → `SMTP_USER` → `grupo@falpat.com.ar`. **Cron**: `vercel.json` → `GET /api/cron/vencimientos` lunes **11:00 UTC (08:00 ART)**, protegido con `CRON_SECRET` (`Bearer` o `?token=`), `?forzar=1`/`?mail=0`/`?dias=N`; sin config guardada usa los defaults (`grupo@falpat.com.ar`, `administracion_hormigonera@constructoraalmajo.com.ar`). **Brevo activado**: cuenta **free** (300/día), remitente verificado, envs en Vercel (`BREVO_API_KEY`, `INFORMES_EMAIL_FROM`, `CRON_SECRET`) + **Redeploy** (las env no se aplican solas). Evidencia: `npm test` **197 checks 0 fallas** (informes 41); cron prod `200` (54 vehículos, 32 vencimientos); informe real por Brevo con PDF de **1.134.535 bytes / 32 filas** enviado a la casilla del usuario. Commits `789b1e5`, `12ea3ad`, `bf1c407`, `94f3c90`. **Seguridad:** `documentacion/privado/` está en `.gitignore` (credenciales locales, se recrea en cada PC); la API key actual se compartió en un chat → **rotarla** (pasos en `documentacion/BREVO-MANUAL.md` §5). **Nunca commitear claves** en docs, código ni tests.
+
 - **Publicación de documentos `PATENTE/` (2026-10-24; `documentacion/Update_2026.10.24.md`)** — no existe sincronización automática al guardar archivos locales. `PATENTE/Update.bat` ejecuta manualmente `npm run subir:docs`; el script hace pull fast-forward de `main`, incluye todos los cambios versionables dentro de `PATENTE/`, crea commit y push, y el push inicia el deploy Vercel. `.xlsx` está ignorado. Subir PDF no carga fecha de vencimiento: se actualiza aparte en Firestore. El botón Admin de la ficha sube directamente a GitHub con `GITHUB_TOKEN`; la lectura de listados GitHub puede tener caché de hasta 10 min. Revisar nombres `*_seg.pdf` antes de publicar: el patrón de documento reconocido es `<tipo>.<ext>` dentro de la carpeta de patente.
 
-Último commit: **`1d9b9dc`** ("Informe semanal de vencimientos: PDF A4 horizontal, botón Semanal y tarea de los viernes", 2026-10-19). Antes `e406f9f` (solo docs de `LFI597`) y `8e4d3e8` (columna Chofer en Vencimientos). **El registro de abajo está en orden temático, no cronológico**: arranca por la sesión del 2026-09-29 (numeración + harness de tests) y después sigue con las de octubre, en su mayoría de **Reportes**. Detalle de las últimas: `documentacion/Update_2026.10.19.md` (informe semanal), `Update_2026.10.15.md` (deshabilitados + Carpeta Docs), `Update_2026.10.08.md` (Reportes/obra), `Update_2026.10.03.md` (renovación de seguros) y `Update_2026.10.02_tarde.md` (documentación de la flota).
+Último commit: **`94f3c90`** ("Correos: pista accionable cuando Brevo rechaza el remitente", 2026-11-11). Antes `bf1c407`, `12ea3ad` y `789b1e5` (sección Admin → Correos + cron). Antes de eso, `1d9b9dc` ("Informe semanal de vencimientos...", 2026-10-19), `e406f9f` (solo docs de `LFI597`) y `8e4d3e8` (columna Chofer en Vencimientos). **El registro de abajo está en orden temático, no cronológico**: arranca por la sesión del 2026-09-29 (numeración + harness de tests) y después sigue con las de octubre, en su mayoría de **Reportes**. Detalle de las últimas: `documentacion/Update_2026.10.19.md` (informe semanal), `Update_2026.10.15.md` (deshabilitados + Carpeta Docs), `Update_2026.10.08.md` (Reportes/obra), `Update_2026.10.03.md` (renovación de seguros) y `Update_2026.10.02_tarde.md` (documentación de la flota).
 
 - **Sesión 2026-10-19 (informe semanal de vencimientos, `documentacion/Update_2026.10.19.md`)** — PDF que comparten **la web y la tarea programada**: `lib/informe-vencimientos.js` (`armarFilas()` + `generarPDF()`), `GET /api/admin/report/vencimientos/semanal/pdf` (`routes/admin.js:647`) y botón **Semanal** en la card Vencimientos. `npm run informe:vencimientos` escribe `informes/VENCIMIENTOS_SEMANAL_<fecha>.pdf` (gitignored) y lo manda por mail si hay SMTP en `.env`; la tarea **"Falpat Informe Vencimientos"** corre los viernes 08:00 (`scripts/instalar-tarea-vencimientos.bat` → `ejecutar-informe-vencimientos.bat`). Cubre **VTV, Seguro, Registro y Service** de los habilitados. **Trampa:** comentarios y tooltip dicen "vencidos + 30 días", pero el código **excluye los vencidos** (`dias < 0`) y la ventana default es **90** (route y script), no 30. A4 horizontal, **una hoja por documento + hoja de resumen**. Aparte, `e406f9f` solo agregó 6 PDF de `PATENTE/LFI597/` (sin código ni Firestore).
 
