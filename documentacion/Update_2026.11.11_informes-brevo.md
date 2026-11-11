@@ -125,13 +125,16 @@ defaults). Log de Brevo (`GET /v3/smtp/statistics/events`):
 
 | Destinatario | Resultado | Detalle |
 |--------------|-----------|---------|
-| `ssaavedra1969@gmail.com` | **delivered** 13:03:22 | entregado (revisar Spam/Promociones) |
+| `ssaavedra1969@gmail.com` | **delivered** 13:03:22 | **recibido y confirmado por el usuario** |
 | `grupo@falpat.com.ar` | **softBounce** 13:03:21 | `550 5.7.1 Blacklisted [France, Europe]` |
 | `administracion_hormigonera@constructoraalmajo.com.ar` | **softBounce** 13:03:23 | `550 5.7.1 Blacklisted [France, Europe]` |
 
 - Brevo entrega a Gmail; los **servidores corporativos bloquean las IPs de
   Brevo** (`77.32.148.27` / `.28`, rango Francia). Los envíos de 12:57 y 13:02
   rebotaron igual.
+- El primer envío manual (12:57) **no incluía la casilla del usuario** (solo los
+  2 defaults) y por eso "no llegó"; el de 13:03 sí la incluyó y **llegó**.
+  Confirmado por el usuario.
 - **Consecuencia:** el cron del lunes va a fallar a esos dos destinos mientras
   siga usando Brevo.
 - **Acción:** pasar el envío a **Gmail SMTP** (contraseña de aplicación; las IPs
@@ -162,8 +165,8 @@ HEAD=94f3c90  ORIGIN=94f3c90
       (`SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_USER`, `SMTP_PASS`) y
       **quitar** `BREVO_API_KEY` para que `lib/mailer.js` use SMTP. Opción B:
       pedir al proveedor de correo que whitelistee las IPs de Brevo.
-- [ ] **Confirmar que el mail a Gmail llegó**: Brevo lo marca `delivered`
-      13:03:22; si no está en Recibidos, buscar en **Spam/Promociones/Todos**.
+- [x] **Confirmar que el mail a Gmail llegó**: Brevo lo marcó `delivered`
+      13:03:22 y el usuario lo recibió (el envío de 12:57 no lo incluía).
 
 ### P1 — esta semana
 - [ ] **Verificar el cron del lunes 2026-11-16 08:00 ART**:
