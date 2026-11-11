@@ -641,9 +641,9 @@ router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
 });
 
 /* PDF del informe semanal de vencimientos (botón "Semanal" en Reportes →
-   Vencimientos). Vencidos + próximos `dias` (default 30) de seguro, VTV,
-   registro y service. La misma lógica la corre la tarea programada de los
-   viernes vía scripts/informe-vencimientos-semanal.js (lib/informe-vencimientos.js). */
+   Vencimientos). Próximos `dias` (default 90) de VTV, seguro, registro, DNI,
+   cédula, matafuego y service. La misma lógica la usan el cron de los lunes
+   (routes/cron.js) y el script local (lib/informe-vencimientos.js). */
 router.get('/report/vencimientos/semanal/pdf', verifyToken, requireAdmin, async (req, res) => {
   try {
     const dias = Math.max(1, parseInt(req.query.dias, 10) || 90);

@@ -1,0 +1,84 @@
+<%- include('partials/head') %>
+<div class="flex h-screen overflow-hidden">
+  <%- include('partials/sidebar', { page: 'informes' }) %>
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="lg:hidden header-glass text-[#ffffff] p-3 flex items-center justify-between">
+      <button id="mobile-menu-btn" class="p-1 rounded hover:bg-[#2563EB]/10">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="font-bold text-gradient-primary">Grupo Falpat SRL</span>
+      <span class="w-8 h-8 bg-gradient-to-br from-[#2563EB] to-[#2563EB] rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg"><%= (currentUserData?.displayName || 'U').charAt(0).toUpperCase() %></span>
+    </div>
+
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 class="text-2xl font-bold title-page">Correos</h1>
+          <p class="text-[#8b9bb4] text-sm">Informe de vencimientos: envío automático de los lunes y envío manual</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button id="btn-vista" type="button" class="px-4 py-2 text-sm rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] transition-colors">Vista previa</button>
+          <button id="btn-pdf" type="button" class="px-4 py-2 text-sm rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] transition-colors">Descargar PDF</button>
+          <button id="btn-guardar" type="button" class="btn-primary text-sm px-4 py-2">Guardar</button>
+          <button id="btn-enviar" type="button" class="btn-primary text-sm px-4 py-2">Enviar ahora</button>
+        </div>
+      </div>
+
+      <% if (clientConfig?.devReadOnly) { %>
+      <div class="mt-4 rounded-lg border border-[#F59E0B]/40 bg-[#F59E0B]/10 px-4 py-3 text-sm text-[#F59E0B]">
+        Modo local solo lectura: guardar y enviar están deshabilitados. La vista previa y la descarga del PDF funcionan.
+      </div>
+      <% } %>
+
+      <div id="estado" class="mt-4 text-sm text-[#8b9bb4]"></div>
+
+      <div class="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <section class="glass-card rounded-xl p-5">
+          <h2 class="text-lg font-bold text-[#ffffff]">Destinatarios</h2>
+          <p class="text-xs text-[#8b9bb4] mt-1">Reciben el informe automático de los lunes y los envíos manuales.</p>
+          <div id="destinatarios" class="mt-4 flex flex-wrap gap-2"></div>
+          <div class="mt-4 flex gap-2">
+            <input id="nuevo-email" type="email" placeholder="nombre@empresa.com" class="flex-1 px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <button id="btn-agregar" type="button" class="btn-primary text-sm px-4 py-2">Agregar</button>
+          </div>
+          <p class="text-[11px] text-[#4a5568] mt-2">Máximo 20. Se descartan duplicados y direcciones inválidas.</p>
+        </section>
+
+        <section class="glass-card rounded-xl p-5">
+          <h2 class="text-lg font-bold text-[#ffffff]">Envío automático</h2>
+          <p class="text-xs text-[#8b9bb4] mt-1">Vercel Cron corre todos los lunes a las 08:00 (hora Argentina).</p>
+          <label class="mt-4 flex items-center gap-3 cursor-pointer">
+            <input id="activo" type="checkbox" class="w-4 h-4 accent-[#2563EB]">
+            <span class="text-sm text-[#ffffff]">Enviar automáticamente los lunes</span>
+          </label>
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Ventana de vencimientos (días)</label>
+            <input id="dias" type="number" min="1" max="365" class="w-32 px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+          </div>
+          <p class="text-[11px] text-[#4a5568] mt-3">El envío manual ignora este interruptor y usa la misma ventana.</p>
+        </section>
+      </div>
+
+      <section class="glass-card rounded-xl p-5 mt-4">
+        <h2 class="text-lg font-bold text-[#ffffff]">Asunto y cuerpo</h2>
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Asunto</label>
+          <input id="asunto" type="text" maxlength="200" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+        </div>
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-[#8b9bb4] mb-1">Cuerpo del mail</label>
+          <textarea id="cuerpo" rows="7" maxlength="5000" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon font-mono"></textarea>
+        </div>
+        <p class="text-[11px] text-[#4a5568] mt-2">
+          Placeholders: <code>{{fecha}}</code> <code>{{dias}}</code> <code>{{total}}</code> <code>{{hoy}}</code> <code>{{flota}}</code> <code>{{hoy_linea}}</code>.
+          El PDF del informe se adjunta siempre.
+        </p>
+      </section>
+    </main>
+  </div>
+</div>
+
+<%- include('partials/mobile-menu', { page: 'informes' }) %>
+
+<script src="/js/informes.js"></script>
+<%- include('partials/footer') %>

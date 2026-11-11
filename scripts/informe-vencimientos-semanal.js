@@ -1,4 +1,5 @@
-/* Informe semanal de vencimientos (seguro, VTV, registro, service).
+/* Informe semanal de vencimientos (VTV, seguro, registro, DNI, cédula,
+   matafuego y service).
 
    Genera el PDF con los vencidos + próximos 30 días y lo guarda en
    informes/VENCIMIENTOS_SEMANAL_<fecha>.pdf. Si hay SMTP configurado en .env
@@ -53,7 +54,7 @@ async function enviarMail(archivo, stats) {
     to: process.env.INFORMES_EMAIL_TO,
     subject: `Vencimientos próximos ${sello()} - ${stats.total} en los próximos ${ventana} días${stats.hoy ? ` (${stats.hoy} HOY)` : ''}`,
     text:
-      `Informe de vencimientos próximos (seguro, VTV, registro, service).\n\n` +
+      `Informe de vencimientos próximos (VTV, seguro, registro, DNI, cédula, matafuego y service).\n\n` +
       `Vencimientos en los próximos ${ventana} días: ${stats.total}\n` +
       (stats.hoy ? `Vence HOY: ${stats.hoy}\n` : '') +
       `\nPDF adjunto.\n`,

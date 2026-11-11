@@ -16,6 +16,8 @@ const centrosRoutes = require('./routes/centros');
 const { cargarObraCompleta, agruparPorSector } = require('./lib/centros-docs');
 
 const adminRoutes = require('./routes/admin');
+const cronRoutes = require('./routes/cron');
+const informesRoutes = require('./routes/informes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -88,6 +90,8 @@ app.use('/api/vehicles', vehiclesRoutes);
 app.use('/api/centros', centrosRoutes);
 
 app.use('/api/admin', adminRoutes);
+app.use('/api/cron', cronRoutes);
+app.use('/api/informes', informesRoutes);
 
 app.get('/login', (req, res) => {
   if (res.locals.currentUser) return res.redirect('/dashboard');
@@ -557,6 +561,15 @@ app.get('/reports', requireAuth, requireAdminPage, (req, res) => {
 app.get('/admin', requireAuth, requireAdminPage, (req, res) => {
   res.render('admin', {
     title: 'Usuarios',
+    clientConfig: res.locals.clientConfig,
+    currentUser: res.locals.currentUser,
+    currentUserData: res.locals.currentUserData
+  });
+});
+
+app.get('/informes', requireAuth, requireAdminPage, (req, res) => {
+  res.render('informes', {
+    title: 'Correos',
     clientConfig: res.locals.clientConfig,
     currentUser: res.locals.currentUser,
     currentUserData: res.locals.currentUserData
