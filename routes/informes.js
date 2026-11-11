@@ -30,7 +30,8 @@ router.get('/config', verifyToken, requireAdmin, async (req, res) => {
       config: cfg,
       servicioMail: {
         brevo: !!process.env.BREVO_API_KEY,
-        smtp: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
+        smtp: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
+        remitente: process.env.INFORMES_EMAIL_FROM || process.env.SMTP_USER || 'grupo@falpat.com.ar'
       }
     });
   } catch (error) {

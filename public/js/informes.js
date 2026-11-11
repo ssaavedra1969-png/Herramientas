@@ -121,6 +121,8 @@ async function cargarConfig() {
       } else {
         aviso.classList.add('hidden');
       }
+      const rem = document.getElementById('remitente-info');
+      if (rem && sm.remitente) rem.textContent = sm.remitente;
     }
     estado('');
   } catch (e) {
