@@ -112,6 +112,16 @@ async function cargarConfig() {
     if (!res.ok) throw new Error(data.error || 'No se pudo cargar la configuración');
     informesCfg = data.config;
     pintarFormulario(informesCfg);
+
+    const aviso = document.getElementById('aviso-mail');
+    if (aviso) {
+      const sm = data.servicioMail || {};
+      if (!sm.brevo && !sm.smtp) {
+        aviso.classList.remove('hidden');
+      } else {
+        aviso.classList.add('hidden');
+      }
+    }
     estado('');
   } catch (e) {
     estado('Error al cargar: ' + e.message, true);
@@ -173,7 +183,7 @@ async function enviar() {
     const res = await fetch('/api/informes/enviar', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ dias: payload.dias })
+      body: JSON.stringify(payload)
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Error al enviar');
@@ -217,13 +227,15 @@ async function vistaPrevia() {
     const res = await fetch(`/api/informes/vista-previa?dias=${dias}`, { headers });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'No se pudo generar la vista previa');
+    const asunto = renderLocal(document.getElementById('asunto')?.value || '', data.vars);
+    const cuerpo = renderLocal(document.getElementById('cuerpo')?.value || '', data.vars);
     Swal.fire({
       title: 'Vista previa',
       html: `<div class="text-left text-sm">
         <p class="font-semibold mb-1">Asunto</p>
-        <p class="mb-3">${escapeHtml(data.asunto)}</p>
+        <p class="mb-3">${escapeHtml(asunto)}</p>
         <p class="font-semibold mb-1">Cuerpo</p>
-        <pre class="whitespace-pre-wrap font-mono text-xs">${escapeHtml(data.cuerpo)}</pre>
+        <pre class="whitespace-pre-wrap font-mono text-xs">${escapeHtml(cuerpo)}</pre>
         <p class="mt-3 text-xs opacity-70">${data.stats.total} vencimientos en ${data.dias} días</p>
       </div>`,
       confirmButtonText: 'Cerrar',
@@ -232,6 +244,13 @@ async function vistaPrevia() {
   } catch (e) {
     showToast('Error en vista previa: ' + e.message, 'error');
   }
+}
+
+function renderLocal(texto, vars) {
+  return String(texto || '').replace(/\{\{\s*([a-zA-Z_]+)\s*\}\}/g, (m, clave) => {
+    const v = vars && vars[clave];
+    return v === undefined || v === null ? '' : String(v);
+  });
 }
 
 function escapeHtml(s) {

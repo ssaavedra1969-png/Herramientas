@@ -13,6 +13,7 @@ const { verifyToken, requireAdmin } = require('../middleware/auth');
 const {
   getInformeConfig,
   guardarInformeConfig,
+  resolverEnvio,
   renderPlantilla,
   varsInforme
 } = require('../lib/informe-config');
@@ -24,7 +25,14 @@ const router = express.Router();
 router.get('/config', verifyToken, requireAdmin, async (req, res) => {
   try {
     const cfg = await getInformeConfig();
-    res.json({ ok: true, config: cfg });
+    res.json({
+      ok: true,
+      config: cfg,
+      servicioMail: {
+        brevo: !!process.env.BREVO_API_KEY,
+        smtp: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -44,13 +52,11 @@ router.get('/vista-previa', verifyToken, requireAdmin, async (req, res) => {
     const cfg = await getInformeConfig();
     const dias = Math.max(1, parseInt(req.query.dias, 10) || cfg.dias);
     const { stats } = await armarFilas({ dias });
-    const vars = varsInforme({ stats, dias });
     res.json({
       ok: true,
       stats,
       dias,
-      asunto: renderPlantilla(cfg.asunto, vars),
-      cuerpo: renderPlantilla(cfg.cuerpo, vars)
+      vars: varsInforme({ stats, dias })
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -60,32 +66,35 @@ router.get('/vista-previa', verifyToken, requireAdmin, async (req, res) => {
 router.post('/enviar', verifyToken, requireAdmin, async (req, res) => {
   try {
     const cfg = await getInformeConfig();
-    if (!cfg.destinatarios.length) {
-      return res.status(400).json({ error: 'No hay destinatarios configurados' });
+
+    let envio;
+    try {
+      envio = resolverEnvio(req.body, cfg);
+    } catch (e) {
+      return res.status(400).json({ error: e.message });
     }
 
-    const dias = Math.max(1, parseInt(req.body && req.body.dias, 10) || cfg.dias);
-    const { filas, stats } = await armarFilas({ dias });
-    const pdf = generarPDF(filas, { dias, stats });
+    const { filas, stats } = await armarFilas({ dias: envio.dias });
+    const pdf = generarPDF(filas, { dias: envio.dias, stats });
     const hoy = new Date().toISOString().slice(0, 10);
     const filename = `VENCIMIENTOS_SEMANAL_${hoy}.pdf`;
 
-    const vars = varsInforme({ stats, dias, fecha: hoy });
-    const asunto = renderPlantilla(cfg.asunto, vars);
-    const texto = renderPlantilla(cfg.cuerpo, vars);
+    const vars = varsInforme({ stats, dias: envio.dias, fecha: hoy });
+    const asunto = renderPlantilla(envio.asunto, vars);
+    const texto = renderPlantilla(envio.cuerpo, vars);
 
     const mail = await enviarInforme({
       pdf,
       filename,
       asunto,
       texto,
-      destinatarios: cfg.destinatarios
+      destinatarios: envio.destinatarios
     });
     if (!mail.enviado) {
       return res.status(400).json({ error: mail.motivo || 'No se pudo enviar el mail', stats, mail });
     }
 
-    res.json({ ok: true, fecha: hoy, dias, stats, mail, asunto });
+    res.json({ ok: true, fecha: hoy, dias: envio.dias, stats, mail, asunto });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

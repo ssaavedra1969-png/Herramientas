@@ -11,10 +11,12 @@ delete process.env.SMTP_HOST;
 const {
   getInformeConfig,
   guardarInformeConfig,
+  resolverEnvio,
   renderPlantilla,
   varsInforme,
   normalizarDestinatarios,
   normalizarDias,
+  DESTINATARIOS_DEFAULT,
   ASUNTO_DEFAULT,
   CUERPO_DEFAULT
 } = require('../lib/informe-config');
@@ -44,6 +46,15 @@ const { check, section, done } = rep;
   check('activo por defecto', def.activo === true);
   check('dias default 90', def.dias === 90);
 
+  section('defaults sin env (los 2 correos de siempre)');
+
+  delete process.env.INFORMES_EMAIL_TO;
+  const sinEnv = await getInformeConfig();
+  check('2 destinatarios por defecto', sinEnv.destinatarios.length === 2, JSON.stringify(sinEnv.destinatarios));
+  check('primer default correcto', sinEnv.destinatarios[0] === DESTINATARIOS_DEFAULT[0]);
+  check('segundo default correcto', sinEnv.destinatarios[1] === DESTINATARIOS_DEFAULT[1]);
+  process.env.INFORMES_EMAIL_TO = 'grupo@falpat.com.ar, administracion_hormigonera@constructoraalmajo.com.ar, malo';
+
   section('guardar / leer');
 
   let fallo = false;
@@ -72,6 +83,30 @@ const { check, section, done } = rep;
   check('lee cuerpo', leido.cuerpo.includes('{{hoy_linea}}'));
   check('lee activo=false', leido.activo === false);
   check('lee dias', leido.dias === 30);
+
+  section('envío manual: manda lo que está en pantalla');
+
+  const manual = resolverEnvio({
+    destinatarios: ['nuevo@x.com'],
+    asunto: 'As {{total}}',
+    cuerpo: 'C {{dias}}',
+    dias: '15'
+  }, leido);
+  check('usa destinatarios del formulario', manual.destinatarios.length === 1 && manual.destinatarios[0] === 'nuevo@x.com', JSON.stringify(manual.destinatarios));
+  check('usa asunto del formulario', manual.asunto === 'As {{total}}');
+  check('usa cuerpo del formulario', manual.cuerpo === 'C {{dias}}');
+  check('usa dias del formulario', manual.dias === 15);
+
+  const sinBody = resolverEnvio({}, leido);
+  check('sin body cae en lo guardado', sinBody.destinatarios.length === 2 && sinBody.dias === 30, JSON.stringify(sinBody));
+
+  let falloManual = false;
+  try {
+    resolverEnvio({ destinatarios: ['no-es-email'] }, leido);
+  } catch (e) {
+    falloManual = /destinatario/i.test(e.message);
+  }
+  check('formulario sin emails válidos -> error', falloManual);
 
   section('plantillas');
 

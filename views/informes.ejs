@@ -30,6 +30,10 @@
       </div>
       <% } %>
 
+      <div id="aviso-mail" class="hidden mt-4 rounded-lg border border-red-400/40 bg-red-400/10 px-4 py-3 text-sm text-red-400">
+        No hay servicio de envío configurado en el servidor: falta <code>BREVO_API_KEY</code> o las variables <code>SMTP_*</code> en Vercel. Podés guardar la configuración, pero "Enviar ahora" y el envío de los lunes van a fallar hasta configurarlo.
+      </div>
+
       <div id="estado" class="mt-4 text-sm text-[#8b9bb4]"></div>
 
       <div class="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
