@@ -20,6 +20,10 @@
   remitente verificado, `BREVO_API_KEY` cargada en Vercel y redeploy.
 - Se probó el circuito completo: **PDF real (32 filas, 54 vehículos) enviado
   por Brevo con adjunto**.
+- **Cambio final del día:** los correos corporativos rebotaron
+  (`550 5.7.1 Blacklisted [France, Europe]`), así que se pasó el envío a
+  **Gmail SMTP** (contraseña de aplicación). `BREVO_API_KEY` se quitó de Vercel;
+  verificado en producción con `mail.via = "smtp"`.
 
 ## 2. Código agregado
 
@@ -59,13 +63,17 @@
 
 ### Variables de entorno en Vercel (Production)
 
-Cargadas el **2026-11-11** (tipo *Sensitive*, valor oculto):
+Estado **final** del 2026-11-11 (tipo *Sensitive*, valor oculto):
 
-| Variable | Valor (resumen) |
-|----------|-----------------|
-| `BREVO_API_KEY` | clave `xkeysib-...` (ver archivo privado) |
-| `INFORMES_EMAIL_FROM` | remitente verificado en Brevo (ver archivo privado) |
-| `CRON_SECRET` | secreto del cron (ver archivo privado) |
+| Variable | Estado | Valor (resumen) |
+|----------|--------|-----------------|
+| `SMTP_HOST` | **activa** | `smtp.gmail.com` |
+| `SMTP_PORT` | **activa** | `587` |
+| `SMTP_USER` | **activa** | cuenta de Gmail (ver archivo privado) |
+| `SMTP_PASS` | **activa** | contraseña de aplicación de 16 caracteres (ver archivo privado) |
+| `INFORMES_EMAIL_FROM` | **activa** | misma cuenta de Gmail |
+| `CRON_SECRET` | **activa** | secreto del cron (ver archivo privado) |
+| `BREVO_API_KEY` | **removida** | se quitó al pasar a SMTP (Brevo tiene prioridad si existe) |
 
 > Cambiar una env **exige Redeploy**. No alcanza con guardarla.
 
@@ -148,23 +156,40 @@ git status --porcelain   -> (vacío)
 HEAD=94f3c90  ORIGIN=94f3c90
 ```
 
+### 3.7 Cambio a Gmail SMTP (por el rebote corporativo)
+
+- Se creó una **contraseña de aplicación** de Gmail (16 caracteres, requiere 2FA).
+- En Vercel (Production): `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`,
+  `SMTP_USER=<cuenta>`, `SMTP_PASS=<app password>`; **se quitó `BREVO_API_KEY`**
+  (`lib/mailer.js` prioriza Brevo si la variable existe). Redeploy ×3
+  (alta de SMTP, prueba, limpieza de `INFORMES_EMAIL_TO`).
+- **Evidencia local:** envío del informe real con `lib/mailer.js` →
+  `{"enviado":true,"via":"smtp"}` · PDF 1.134.535 bytes.
+- **Evidencia producción:** se cargó `INFORMES_EMAIL_TO` temporal con la casilla
+  del usuario, se disparó el cron real
+  (`GET /api/cron/vencimientos?forzar=1&token=<CRON_SECRET>`) y respondió
+  `mailEnviado=True via=smtp`; después se quitó la variable y se redeployó para
+  que el lunes vuelvan los destinatarios por defecto.
+- **Pendiente de confirmar:** que los dos correos corporativos acepten el envío
+  por Gmail SMTP (no se les mandó todavía para no molestarlos).
+
 ## 4. Próximas acciones (checklist)
 
 ### P0 — inmediatas
-- [ ] **Rotar `BREVO_API_KEY`**: la clave actual se compartió en un chat.
-      Crear una nueva en Brevo, actualizar Vercel y **Redeploy**
-      (paso a paso: `BREVO-MANUAL.md` §5).
-- [ ] **Confirmar recepción** del mail de prueba (bandeja y **Spam**).
+- [x] **Confirmar recepción** del mail de prueba (el usuario lo recibió).
 - [ ] **Guardar la configuración** en Admin → Correos (destinatarios reales,
       asunto y cuerpo) para que el cron no dependa de los defaults.
+- [ ] **Rotar la contraseña de aplicación de Gmail** si se considera expuesta
+      (se compartió en un chat): crear otra, actualizar `SMTP_PASS` en Vercel y
+      **Redeploy**. La `BREVO_API_KEY` ya no se usa; si se vuelve a Brevo, rotarla
+      primero (`BREVO-MANUAL.md` §5).
 
 ### P0 bis — bloqueante detectado el 2026-11-11
-- [ ] **Resolver el rebote corporativo**: `550 5.7.1 Blacklisted [France, Europe]`
-      en `grupo@falpat.com.ar` y `administracion_hormigonera@constructoraalmajo.com.ar`.
-      Opción A (recomendada): **Gmail SMTP** con contraseña de aplicación
-      (`SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_USER`, `SMTP_PASS`) y
-      **quitar** `BREVO_API_KEY` para que `lib/mailer.js` use SMTP. Opción B:
-      pedir al proveedor de correo que whitelistee las IPs de Brevo.
+- [x] **Resolver el rebote corporativo**: se pasó el envío a **Gmail SMTP**
+      (contraseña de aplicación), se quitó `BREVO_API_KEY` y se verificó en
+      producción (`mail.via = "smtp"`).
+- [ ] **Probar un envío real a los dos correos corporativos** por SMTP
+      (no se hizo para no molestar; hacerlo antes del lunes).
 - [x] **Confirmar que el mail a Gmail llegó**: Brevo lo marcó `delivered`
       13:03:22 y el usuario lo recibió (el envío de 12:57 no lo incluía).
 
@@ -173,23 +198,23 @@ HEAD=94f3c90  ORIGIN=94f3c90
       revisar Vercel → Deployments → Functions → Logs y la bandeja de los
       destinatarios. Alternativa manual:
       `GET /api/cron/vencimientos?forzar=1&token=<CRON_SECRET>` (envía).
-- [ ] Revisar **Transaccional → Logs** en Brevo (entregado / rebotado / spam).
-- [ ] Decidir si se autentica el **dominio propio** (`@falpat.com.ar`) para
-      sacar el aviso de DKIM/DMARC y mejorar entregabilidad (`BREVO-MANUAL.md` §3).
+- [ ] Revisar la bandeja de los destinatarios y confirmar que **no cae en Spam**.
+- [ ] (Solo si se vuelve a Brevo) revisar **Transaccional → Logs** y evaluar
+      autenticar el dominio propio (`@falpat.com.ar`, `BREVO-MANUAL.md` §3).
 
 ### P2 — cuando se pueda
-- [ ] Monitorear el cupo free (300/día) — hoy sobra: 1 mail por corrida.
 - [ ] Documentar en `AGENTS.md` la nueva sección (hecho en esta sesión).
-- [ ] Evaluar alternativa **Gmail SMTP** (contraseña de aplicación) como
-      respaldo si Brevo bloquea la cuenta por rebotes.
+- [ ] Evaluar un remitente del dominio propio (`@falpat.com.ar`) para el futuro.
 
 ## 5. Riesgos y limitaciones
 
-1. **Remitente `@gmail.com`**: Brevo advierte que no cumple los requisitos
-   DKIM/DMARC de Google/Yahoo/Microsoft. El envío funciona, pero puede caer en
-   Spam. Mitigación: dominio propio autenticado.
-2. **Cuenta Brevo en revisión**: si Brevo marca la cuenta como "pendiente de
-   aprobación", los envíos fallan hasta que la habilite (minutos a horas).
+1. **Remitente `@gmail.com`**: con Brevo no alineaba DKIM/DMARC (riesgo de
+   Spam). Con **Gmail SMTP** el `From` es la propia cuenta y Google firma
+   SPF/DKIM, así que ese riesgo desaparece. Queda el límite de Gmail
+   (~500 destinatarios/día, sobra) y la dependencia de la contraseña de
+   aplicación.
+2. **Cuenta Brevo en revisión** (solo aplica si se vuelve a Brevo): si la
+   marcan "pendiente de aprobación", los envíos fallan hasta que la habilite.
 3. **Config no guardada**: si nadie guarda en Admin → Correos, el cron usa los
    defaults del código (dos direcciones corporativas).
 4. **Envs requieren redeploy**: cargar `BREVO_API_KEY` sin redeploy no tiene
@@ -204,8 +229,10 @@ HEAD=94f3c90  ORIGIN=94f3c90
 
 - **Desactivar el envío automático** sin tocar código: Admin → Correos →
   apagar el toggle (**Guardar**), o `PUT /api/informes/config` con `activo:false`.
-- **Cortar el envío por completo**: borrar `BREVO_API_KEY` en Vercel + Redeploy
-  (la app sigue generando el PDF y responde `enviado:false`).
+- **Cortar el envío por completo**: borrar `SMTP_*` y `BREVO_API_KEY` en Vercel
+  + Redeploy (la app sigue generando el PDF y responde `enviado:false`).
+- **Volver a Brevo**: cargar `BREVO_API_KEY` (rotada) + Redeploy. Brevo gana por
+  prioridad sobre SMTP.
 - **Revertir código**: `git revert 94f3c90 bf1c407 12ea3ad 789b1e5` (en ese
   orden) y push. El cron deja de existir al quitar `vercel.json`/`routes/cron.js`.
 

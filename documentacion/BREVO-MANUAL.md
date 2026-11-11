@@ -15,6 +15,10 @@
 - El sistema **no depende** de Brevo: `lib/mailer.js` intenta primero Brevo y,
   si no hay `BREVO_API_KEY`, cae a SMTP genérico (`SMTP_HOST/PORT/USER/PASS`).
   Si no hay ninguno, genera el PDF y responde `enviado: false` con el motivo.
+- **Estado actual (2026-11-11):** producción usa **Gmail SMTP**, no Brevo.
+  Motivo: los correos corporativos rebotaban con
+  `550 5.7.1 Blacklisted [France, Europe]` (el servidor del destinatario bloquea
+  las IPs de Brevo). Brevo queda documentado como **alternativa/respaldo**.
 
 ## 2. Datos de la cuenta
 
@@ -156,7 +160,39 @@ Respuesta OK: `{"messageId":"<...>"}`.
 | Banner rojo "sin servicio de mail" | falta `BREVO_API_KEY` en el deploy | cargar la env y **Redeploy** |
 | Cron responde 401 | `CRON_SECRET` distinto o ausente | revisar la env y el header/`?token=` |
 
-## 9. Referencias
+## 9. Gmail SMTP (alternativa activa)
+
+Cuando el servidor del destinatario bloquea las IPs de Brevo, se envía por la
+cuenta de Gmail usando una **contraseña de aplicación** (requiere 2FA).
+
+### Crear la contraseña de aplicación
+1. https://myaccount.google.com/security → **Verificación en dos pasos** (activada).
+2. https://myaccount.google.com/apppasswords.
+3. Nombre: `Falpat Informes` → **Crear**.
+4. Copiar los **16 caracteres** (sin espacios) → **Listo**.
+
+### Variables en Vercel (Production)
+| Variable | Valor |
+|----------|-------|
+| `SMTP_HOST` | `smtp.gmail.com` |
+| `SMTP_PORT` | `587` |
+| `SMTP_USER` | la cuenta de Gmail |
+| `SMTP_PASS` | la contraseña de aplicación (16 caracteres) |
+| `INFORMES_EMAIL_FROM` | la misma cuenta de Gmail |
+
+- **Quitar `BREVO_API_KEY`** para que `lib/mailer.js` use SMTP (Brevo tiene
+  prioridad si la variable existe).
+- **Redeploy** obligatorio.
+- Límites de Gmail: ~500 destinatarios/día y 25 MB por mail (el informe pesa
+  ~1,1 MB). Alcanza de sobra para 1 envío semanal.
+- Verificación: `GET /api/cron/vencimientos?mail=0...` no prueba el envío; un
+  envío real debe devolver `mail.via = "smtp"`.
+
+### Volver a Brevo
+1. Cargar `BREVO_API_KEY` en Vercel (rotada) → **Redeploy**.
+2. Quitar `SMTP_*` (o dejarlas: Brevo gana por prioridad).
+
+## 10. Referencias
 
 - Panel: https://app.brevo.com
 - Ayuda (ES): https://help.brevo.com/hc/es
