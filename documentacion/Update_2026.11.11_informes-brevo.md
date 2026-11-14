@@ -259,12 +259,13 @@ confirmación; reutiliza los destinatarios configurados y `lib/mailer.js`.
 | `lib/mailer.js` | El adjunto pasó a ser **opcional**: las novedades son solo texto. |
 | `lib/github-docs.js` | `cambiosDesde(fecha, {estricto:true})`: sin token o con error de GitHub **lanza** en vez de devolver vacío. |
 | `scripts/cargar-vencimientos.js` | Escribe `updatedAt` **solo si la fecha cambió de verdad**. |
-| `tests/informe-flota.test.js` | 29 checks del período, filtros, correo y errores (`npm run test:flota`). |
+| `tests/informe-flota.test.js` | 40 checks del período, filtros, correo, pendientes y errores (`npm run test:flota`). |
 
 **Lógica del período:** el primer resumen cubre los **últimos 7 días**; después
 arranca en `config/informesNovedadesFlota.ultimoEnvio`, que se guarda **solo si
-el mail fue aceptado**. Si no hay novedades responde **409**; si faltan
-destinatarios, **400**.
+el mail fue aceptado**. Se puede enviar aunque no haya novedades si hay
+documentación pendiente; si no hay ni una cosa ni la otra responde **409**; si
+faltan destinatarios, **400**.
 
 **Qué incluye:** vehículos con `createdAt`/`fechaAlta` o `updatedAt` dentro del
 período (`Alta` / `Datos actualizados`, sin deshabilitados) y documentos de
@@ -272,10 +273,16 @@ período (`Alta` / `Datos actualizados`, sin deshabilitados) y documentos de
 **25 commits** de `PATENTE/` en el período pide enviar más seguido para no omitir
 cambios.
 
-**Pendiente al cerrar la sesión:**
-- [ ] Probar el envío real en producción (local bloqueado por `DEV_READ_ONLY`).
-- [ ] Confirmar recepción y que la fecha de corte quede guardada en
-      `config/informesNovedadesFlota`.
-- [ ] Verificar que un envío posterior no repita las mismas novedades.
-- [ ] Confirmar que `GITHUB_TOKEN` está presente en Vercel (sin él la sección
-      avisa y no envía).
+**Orden del correo:** primero **Datos cargados** agrupados por **patente**
+(Alta / Datos actualizados + documentos actualizados de esa patente); al final
+**Documentación pendiente** de **toda la flota habilitada**, verificada contra lo
+que está online (`PATENTE/` en GitHub + `docsAdjuntos` de la ficha, sin mirar el
+disco local). `GET /api/informes/flota/pendientes` devuelve el `texto` ya armado
+por `armarCorreo()`, así la vista previa del modal es idéntica al mail.
+
+**Estado:** el envío real ya se probó en producción y quedó guardado
+`config/informesNovedadesFlota.ultimoEnvio` con su autor.
+
+**Pendiente:**
+- [ ] Probar en producción el nuevo formato (datos por patente + pendientes) en
+      el próximo envío con novedades.

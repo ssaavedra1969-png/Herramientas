@@ -274,21 +274,29 @@ de vencimientos ni el cron de los lunes: usa los **mismos destinatarios** y el
   `deshabilitado`) y (b) documentos de `PATENTE/{patente}/{tipo}.ext` tocados
   según los commits de GitHub. Los cambios de datos y de documentos se ven
   juntos sin programar otro cron.
+- **Orden del correo**: primero **Datos cargados** agrupados **por patente**
+  (Alta / Datos actualizados y qué documentos se actualizaron), y al final
+  **Documentación pendiente** de **toda la flota habilitada**, verificada
+  **contra lo online** (`PATENTE/` en GitHub + PDF subidos en `docsAdjuntos`, no
+  el disco local). El texto lo arma el servidor y la vista previa muestra
+  exactamente lo que se envía.
 - **Período**: la primera vez, **últimos 7 días**. Después arranca en
   `config/informesNovedadesFlota.ultimoEnvio`, que se escribe **solo si el mail
   fue aceptado** (si falla, se puede reintentar sin perder novedades).
 - **Flujo**: "Revisar novedades" (`GET /api/informes/flota/pendientes`) muestra
   el resumen en pantalla; "Enviar novedades" (`POST /api/informes/flota/enviar`)
-  pide confirmación, recomputa el período y envía. Si no hay novedades responde
-  **409**; si faltan destinatarios, **400**.
+  pide confirmación, recomputa el período y envía. Se puede enviar **aunque no
+  haya novedades**, si hay documentación pendiente para reportar. Si no hay ni
+  novedades ni pendientes responde **409**; si faltan destinatarios, **400**.
 - **GitHub estricto**: si `GITHUB_TOKEN` falta o la API falla, **no envía** y
   avisa (antes que omitir documentación en silencio). Si hay más de 25 commits
   de `PATENTE/` en el período, pide enviar más seguido para no perder cambios.
 - **Datos cargados por script**: `npm run cargar:vencimientos` actualiza
   `updatedAt` solo cuando la fecha realmente cambió (si no, no ensucia el
   resumen). El resto de las cargas hechas desde la web ya escribe `updatedAt`.
-- **Pendiente**: probar el envío real en producción y confirmar recepción
-  (local está bloqueado por `DEV_READ_ONLY`).
+- **Estado**: envío real probado en producción (mail aceptado y
+  `config/informesNovedadesFlota.ultimoEnvio` guardado). Tests: `npm run
+  test:flota` (**40 checks**).
 
 ---
 

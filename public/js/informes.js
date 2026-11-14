@@ -210,17 +210,8 @@ function estadoFlota(msg, error) {
 }
 
 function textoNovedadesFlota(data) {
-  const desde = new Date(data.desde).toLocaleDateString('es-AR');
-  const hasta = new Date(data.hasta).toLocaleDateString('es-AR');
-  const lineas = [`Período: ${desde} al ${hasta}`, '', `Datos de vehículos: ${data.vehiculos.length}`];
-  data.vehiculos.forEach((v) => {
-    lineas.push(`- ${v.accion}: ${v.patente}${v.interno ? ` (Interno ${v.interno})` : ''}`);
-  });
-  lineas.push('', `Vehículos con documentación actualizada: ${data.documentos.length}`);
-  data.documentos.forEach((d) => lineas.push(`- ${d.patente}: ${d.tipos.join(', ')}`));
-  if (!data.vehiculos.length && !data.documentos.length) lineas.push('', 'No hay novedades pendientes.');
-  lineas.push('', `Destinatarios: ${(data.destinatarios || []).join(', ') || 'ninguno'}`);
-  return lineas.join('\n');
+  const destinatarios = (data.destinatarios || []).join(', ') || 'ninguno';
+  return `${data.texto || ''}\n\nDestinatarios: ${destinatarios}`;
 }
 
 async function revisarNovedadesFlota() {
@@ -241,8 +232,12 @@ async function revisarNovedadesFlota() {
       resumen.classList.remove('hidden');
     }
     const total = data.vehiculos.length + data.documentos.length;
-    estadoFlota(total ? `${total} novedad(es) pendiente(s) de envío.` : 'No hay novedades pendientes.');
-    if (enviarBtn) enviarBtn.disabled = !total || !!window.__DEV_READ_ONLY;
+    const pendientes = (data.pendientes || []).length;
+    const partes = [];
+    if (total) partes.push(`${total} novedad(es) pendiente(s) de envío`);
+    if (pendientes) partes.push(`${pendientes} vehículo(s) con documentación pendiente`);
+    estadoFlota(partes.length ? `${partes.join(' · ')}.` : 'No hay novedades pendientes.');
+    if (enviarBtn) enviarBtn.disabled = (!total && !pendientes) || !!window.__DEV_READ_ONLY;
   } catch (e) {
     novedadesFlota = null;
     if (resumen) resumen.classList.add('hidden');
@@ -258,11 +253,12 @@ async function enviarNovedadesFlota() {
     if (!novedadesFlota) return;
   }
   const total = novedadesFlota.vehiculos.length + novedadesFlota.documentos.length;
-  if (!total) return;
+  const pendientes = (novedadesFlota.pendientes || []).length;
+  if (!total && !pendientes) return;
 
   const confirm = await Swal.fire({
     title: '¿Enviar las novedades de flota?',
-    html: `<div class="text-left text-sm whitespace-pre-wrap">${escapeHtml(textoNovedadesFlota(novedadesFlota))}</div>`,
+    html: `<div class="text-left text-sm whitespace-pre-wrap max-h-[60vh] overflow-auto">${escapeHtml(textoNovedadesFlota(novedadesFlota))}</div>`,
     icon: 'question',
     showCancelButton: true,
     confirmButtonText: 'Enviar novedades',

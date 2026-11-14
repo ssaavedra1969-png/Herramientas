@@ -26,6 +26,7 @@ const { enviarInforme } = require('../lib/mailer');
 const {
   obtenerNovedades,
   armarCorreo,
+  hayParaEnviar,
   guardarEnvio
 } = require('../lib/informe-flota');
 
@@ -114,6 +115,7 @@ router.get('/flota/pendientes', verifyToken, requireAdmin, async (req, res) => {
   try {
     const novedades = await obtenerNovedades();
     const cfg = await getInformeConfig();
+    const { asunto, texto } = armarCorreo(novedades);
     res.json({
       ok: true,
       primerEnvio: novedades.primerEnvio,
@@ -121,7 +123,10 @@ router.get('/flota/pendientes', verifyToken, requireAdmin, async (req, res) => {
       hasta: novedades.hasta,
       destinatarios: cfg.destinatarios,
       vehiculos: novedades.vehiculos,
-      documentos: novedades.documentos
+      documentos: novedades.documentos,
+      pendientes: novedades.pendientes,
+      asunto,
+      texto
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -131,9 +136,8 @@ router.get('/flota/pendientes', verifyToken, requireAdmin, async (req, res) => {
 router.post('/flota/enviar', verifyToken, requireAdmin, async (req, res) => {
   try {
     const novedades = await obtenerNovedades();
-    const total = novedades.vehiculos.length + novedades.documentos.length;
-    if (!total) {
-      return res.status(409).json({ error: 'No hay novedades de flota pendientes de enviar.' });
+    if (!hayParaEnviar(novedades)) {
+      return res.status(409).json({ error: 'No hay novedades ni documentación pendiente para enviar.' });
     }
 
     const cfg = await getInformeConfig();
