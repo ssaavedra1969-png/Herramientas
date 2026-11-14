@@ -1,4 +1,5 @@
 let informesCfg = { destinatarios: [], asunto: '', cuerpo: '', dias: 90, activo: true };
+let novedadesFlota = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -24,9 +25,11 @@ function bindEventos() {
   document.getElementById('btn-enviar')?.addEventListener('click', enviar);
   document.getElementById('btn-pdf')?.addEventListener('click', descargarPDF);
   document.getElementById('btn-vista')?.addEventListener('click', vistaPrevia);
+  document.getElementById('btn-flota-previa')?.addEventListener('click', revisarNovedadesFlota);
+  document.getElementById('btn-flota-enviar')?.addEventListener('click', enviarNovedadesFlota);
 
   if (window.__DEV_READ_ONLY) {
-    ['btn-guardar', 'btn-enviar', 'btn-agregar'].forEach((id) => {
+    ['btn-guardar', 'btn-enviar', 'btn-agregar', 'btn-flota-enviar'].forEach((id) => {
       const b = document.getElementById(id);
       if (b) b.disabled = true;
     });
@@ -196,6 +199,102 @@ async function enviar() {
     showToast('Error al enviar: ' + e.message, 'error');
   } finally {
     btn.disabled = !!window.__DEV_READ_ONLY;
+  }
+}
+
+function estadoFlota(msg, error) {
+  const el = document.getElementById('estado-flota');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.className = 'mt-3 text-sm ' + (error ? 'text-red-400' : 'text-[#8b9bb4]');
+}
+
+function textoNovedadesFlota(data) {
+  const desde = new Date(data.desde).toLocaleDateString('es-AR');
+  const hasta = new Date(data.hasta).toLocaleDateString('es-AR');
+  const lineas = [`Período: ${desde} al ${hasta}`, '', `Datos de vehículos: ${data.vehiculos.length}`];
+  data.vehiculos.forEach((v) => {
+    lineas.push(`- ${v.accion}: ${v.patente}${v.interno ? ` (Interno ${v.interno})` : ''}`);
+  });
+  lineas.push('', `Vehículos con documentación actualizada: ${data.documentos.length}`);
+  data.documentos.forEach((d) => lineas.push(`- ${d.patente}: ${d.tipos.join(', ')}`));
+  if (!data.vehiculos.length && !data.documentos.length) lineas.push('', 'No hay novedades pendientes.');
+  lineas.push('', `Destinatarios: ${(data.destinatarios || []).join(', ') || 'ninguno'}`);
+  return lineas.join('\n');
+}
+
+async function revisarNovedadesFlota() {
+  const btn = document.getElementById('btn-flota-previa');
+  const enviarBtn = document.getElementById('btn-flota-enviar');
+  const resumen = document.getElementById('resumen-flota');
+  if (btn) btn.disabled = true;
+  if (enviarBtn) enviarBtn.disabled = true;
+  estadoFlota('Consultando cambios de vehículos y documentación...');
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/informes/flota/pendientes', { headers });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'No se pudieron consultar las novedades');
+    novedadesFlota = data;
+    if (resumen) {
+      resumen.textContent = textoNovedadesFlota(data);
+      resumen.classList.remove('hidden');
+    }
+    const total = data.vehiculos.length + data.documentos.length;
+    estadoFlota(total ? `${total} novedad(es) pendiente(s) de envío.` : 'No hay novedades pendientes.');
+    if (enviarBtn) enviarBtn.disabled = !total || !!window.__DEV_READ_ONLY;
+  } catch (e) {
+    novedadesFlota = null;
+    if (resumen) resumen.classList.add('hidden');
+    estadoFlota('Error al consultar novedades: ' + e.message, true);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function enviarNovedadesFlota() {
+  if (!novedadesFlota) {
+    await revisarNovedadesFlota();
+    if (!novedadesFlota) return;
+  }
+  const total = novedadesFlota.vehiculos.length + novedadesFlota.documentos.length;
+  if (!total) return;
+
+  const confirm = await Swal.fire({
+    title: '¿Enviar las novedades de flota?',
+    html: `<div class="text-left text-sm whitespace-pre-wrap">${escapeHtml(textoNovedadesFlota(novedadesFlota))}</div>`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Enviar novedades',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#2563EB',
+    cancelButtonColor: '#6B7280'
+  });
+  if (!confirm.isConfirmed) return;
+
+  const btn = document.getElementById('btn-flota-enviar');
+  const previaBtn = document.getElementById('btn-flota-previa');
+  if (btn) btn.disabled = true;
+  if (previaBtn) previaBtn.disabled = true;
+  estadoFlota('Enviando resumen...');
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/informes/flota/enviar', { method: 'POST', headers, body: '{}' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'No se pudo enviar el resumen');
+    const okMsg = `Enviado por ${data.mail.via} a ${data.mail.destinatarios.join(', ')}.`;
+    showToast('Novedades de flota enviadas');
+    novedadesFlota = null;
+    await revisarNovedadesFlota();
+    // revisarNovedadesFlota() pisa #estado-flota con "No hay novedades"; después
+    // del envío lo que importa es confirmar a quién se mandó.
+    estadoFlota(okMsg);
+  } catch (e) {
+    estadoFlota('Error al enviar novedades: ' + e.message, true);
+    showToast('Error al enviar novedades: ' + e.message, 'error');
+    if (btn) btn.disabled = !!window.__DEV_READ_ONLY;
+  } finally {
+    if (previaBtn) previaBtn.disabled = false;
   }
 }
 

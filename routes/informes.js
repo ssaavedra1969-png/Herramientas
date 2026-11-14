@@ -5,7 +5,11 @@
    - PUT  /api/informes/config   → guardar destinatarios / asunto / cuerpo / días / activo
    - POST /api/informes/enviar   → genera el PDF y lo envía ahora (ignora el toggle)
    - GET  /api/informes/vista-previa → texto del asunto y cuerpo ya renderizados
-     (con datos reales) para revisar antes de enviar. */
+     (con datos reales) para revisar antes de enviar.
+   - GET  /api/informes/flota/pendientes → novedades de flota (Firestore + PATENTE/)
+     desde el último envío aceptado (o los últimos 7 días si es el primero).
+   - POST /api/informes/flota/enviar → envía esas novedades y recién si el mail
+     fue aceptado guarda la fecha de corte en config/informesNovedadesFlota. */
 'use strict';
 
 const express = require('express');
@@ -19,6 +23,11 @@ const {
 } = require('../lib/informe-config');
 const { armarFilas, generarPDF } = require('../lib/informe-vencimientos');
 const { enviarInforme } = require('../lib/mailer');
+const {
+  obtenerNovedades,
+  armarCorreo,
+  guardarEnvio
+} = require('../lib/informe-flota');
 
 const router = express.Router();
 
@@ -96,6 +105,69 @@ router.post('/enviar', verifyToken, requireAdmin, async (req, res) => {
     }
 
     res.json({ ok: true, fecha: hoy, dias: envio.dias, stats, mail, asunto });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/flota/pendientes', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const novedades = await obtenerNovedades();
+    const cfg = await getInformeConfig();
+    res.json({
+      ok: true,
+      primerEnvio: novedades.primerEnvio,
+      desde: novedades.desde,
+      hasta: novedades.hasta,
+      destinatarios: cfg.destinatarios,
+      vehiculos: novedades.vehiculos,
+      documentos: novedades.documentos
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/flota/enviar', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const novedades = await obtenerNovedades();
+    const total = novedades.vehiculos.length + novedades.documentos.length;
+    if (!total) {
+      return res.status(409).json({ error: 'No hay novedades de flota pendientes de enviar.' });
+    }
+
+    const cfg = await getInformeConfig();
+    if (!cfg.destinatarios.length) {
+      return res.status(400).json({ error: 'No hay destinatarios configurados en Admin → Correos.' });
+    }
+
+    const { asunto, texto } = armarCorreo(novedades);
+    const mail = await enviarInforme({
+      asunto,
+      texto,
+      destinatarios: cfg.destinatarios
+    });
+    if (!mail.enviado) {
+      return res.status(400).json({ error: mail.motivo || 'No se pudo enviar el mail', mail });
+    }
+
+    try {
+      await guardarEnvio(novedades.hasta, req.userData?.displayName || req.user?.email || '');
+    } catch (error) {
+      return res.status(500).json({
+        error: `El correo fue aceptado por el servicio, pero no se pudo registrar el envío: ${error.message}. Si se reintenta, podrían repetirse estas novedades.`,
+        mail
+      });
+    }
+
+    res.json({
+      ok: true,
+      asunto,
+      mail,
+      totalVehiculos: novedades.vehiculos.length,
+      totalDocumentos: novedades.documentos.length,
+      hasta: novedades.hasta
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

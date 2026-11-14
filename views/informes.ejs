@@ -79,6 +79,27 @@
           El PDF del informe se adjunta siempre.
         </p>
       </section>
+
+      <section class="glass-card rounded-xl p-5 mt-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-[#ffffff]">Novedades de flota</h2>
+            <p class="text-xs text-[#8b9bb4] mt-1">
+              Envío independiente y manual. Revisa las altas y actualizaciones de vehículos y la documentación publicada desde el último envío.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button id="btn-flota-previa" type="button" class="px-4 py-2 text-sm rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] transition-colors">Revisar novedades</button>
+            <button id="btn-flota-enviar" type="button" class="btn-primary text-sm px-4 py-2" disabled>Enviar novedades</button>
+          </div>
+        </div>
+        <p id="estado-flota" class="mt-3 text-sm text-[#8b9bb4]"></p>
+        <pre id="resumen-flota" class="hidden mt-3 rounded-lg bg-[#0a0e17]/50 border border-[#2563EB]/20 p-3 text-xs text-[#cbd5e1] whitespace-pre-wrap font-sans"></pre>
+        <p class="text-[11px] text-[#4a5568] mt-3">
+          Usa los destinatarios configurados arriba y el mismo servicio de correo. No está programado ni modifica el envío automático de los lunes.
+          La primera revisión considera los últimos 7 días; después, los cambios desde el último envío aceptado.
+        </p>
+      </section>
     </main>
   </div>
 </div>

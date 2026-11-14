@@ -243,3 +243,38 @@ HEAD=94f3c90  ORIGIN=94f3c90
 - `documentacion/Update_2026.10.19.md` — informe semanal original (PDF y tarea de los viernes).
 - `AGENTS.md` — reglas del proyecto y registro de cambios.
 - `tests/informes-config.test.js` — suite de la sección.
+
+## 8. Continuación 2026-11-14 — Novedades de flota (en curso)
+
+Se agregó una sección **independiente** dentro de `/informes` para mandar por mail
+lo que se cargó, **sin programar otro cron**. El disparo es manual y con
+confirmación; reutiliza los destinatarios configurados y `lib/mailer.js`.
+
+| Archivo | Qué hace |
+|---------|----------|
+| `lib/informe-flota.js` | `obtenerNovedades()` (Firestore + GitHub), `armarCorreo()` y `guardarEnvio()`. |
+| `routes/informes.js` | `GET /api/informes/flota/pendientes` y `POST /api/informes/flota/enviar` (`verifyToken` + `requireAdmin`). |
+| `views/informes.ejs` + `public/js/informes.js` | Botones "Revisar novedades" / "Enviar novedades", resumen en pantalla y confirmación con SweetAlert. |
+| `lib/mailer.js` | El adjunto pasó a ser **opcional**: las novedades son solo texto. |
+| `lib/github-docs.js` | `cambiosDesde(fecha, {estricto:true})`: sin token o con error de GitHub **lanza** en vez de devolver vacío. |
+| `scripts/cargar-vencimientos.js` | Escribe `updatedAt` **solo si la fecha cambió de verdad**. |
+| `tests/informe-flota.test.js` | 29 checks del período, filtros, correo y errores (`npm run test:flota`). |
+
+**Lógica del período:** el primer resumen cubre los **últimos 7 días**; después
+arranca en `config/informesNovedadesFlota.ultimoEnvio`, que se guarda **solo si
+el mail fue aceptado**. Si no hay novedades responde **409**; si faltan
+destinatarios, **400**.
+
+**Qué incluye:** vehículos con `createdAt`/`fechaAlta` o `updatedAt` dentro del
+período (`Alta` / `Datos actualizados`, sin deshabilitados) y documentos de
+`PATENTE/{patente}/{tipo}.ext` tocados según los commits de GitHub. Con más de
+**25 commits** de `PATENTE/` en el período pide enviar más seguido para no omitir
+cambios.
+
+**Pendiente al cerrar la sesión:**
+- [ ] Probar el envío real en producción (local bloqueado por `DEV_READ_ONLY`).
+- [ ] Confirmar recepción y que la fecha de corte quede guardada en
+      `config/informesNovedadesFlota`.
+- [ ] Verificar que un envío posterior no repita las mismas novedades.
+- [ ] Confirmar que `GITHUB_TOKEN` está presente en Vercel (sin él la sección
+      avisa y no envía).

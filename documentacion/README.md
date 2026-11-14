@@ -46,8 +46,9 @@
 | `lib/github-docs.js` | Lectura de la carpeta `PATENTE/` vía API de GitHub: `listarPatenteGlobal()` (todo el árbol en 1 request), `cambiosDesde()`, `esDeTipo()`. |
 | `lib/informe-vencimientos.js` | Lógica compartida del **informe semanal de vencimientos**: `armarFilas()` (solo a vencer, VTV/Seguro/Registro/Service, sin deshabilitados) y `generarPDF()` (A4 horizontal, una hoja por documento + resumen). La usan el botón "Semanal", la tarea de los viernes, Admin → Correos y el cron. |
 | `lib/informe-config.js` | Config del informe por mail en `config/informesMail` (destinatarios, asunto, cuerpo, días, `activo`) + defaults, normalización, `resolverEnvio()` y plantillas `{{fecha}} {{dias}} {{total}} {{hoy}} {{flota}} {{hoy_linea}}`. |
-| `lib/mailer.js` | `enviarInforme()`: **Brevo** (API HTTPS) → SMTP (nodemailer) → `{enviado:false,motivo}`. Remitente `INFORMES_EMAIL_FROM` → `SMTP_USER` → `grupo@falpat.com.ar`. |
-| `routes/informes.js` | API Admin → Correos: `GET/PUT /api/informes/config`, `GET /api/informes/vista-previa`, `POST /api/informes/enviar` (`verifyToken` + `requireAdmin`). |
+| `lib/mailer.js` | `enviarInforme()`: **Brevo** (API HTTPS) → SMTP (nodemailer) → `{enviado:false,motivo}`. Remitente `INFORMES_EMAIL_FROM` → `SMTP_USER` → `grupo@falpat.com.ar`. El adjunto es opcional (sirve para las novedades, que son solo texto). |
+| `lib/informe-flota.js` | **Novedades de flota** (envío manual desde Admin → Correos): `obtenerNovedades()` junta los vehículos con `createdAt`/`updatedAt` dentro del período (excluye deshabilitados) y los documentos de `PATENTE/` tocados según GitHub (`cambiosDesde(..., {estricto:true})`). Primer período = **últimos 7 días**; después, desde `config/informesNovedadesFlota.ultimoEnvio`. `armarCorreo()` y `guardarEnvio()`. |
+| `routes/informes.js` | API Admin → Correos: `GET/PUT /api/informes/config`, `GET /api/informes/vista-previa`, `POST /api/informes/enviar`, `GET /api/informes/flota/pendientes`, `POST /api/informes/flota/enviar` (`verifyToken` + `requireAdmin`). |
 | `routes/cron.js` | `GET /api/cron/vencimientos` para Vercel Cron (lunes): `CRON_SECRET`, `?forzar=1`, `?mail=0`, `?dias=N`. No escribe en Firestore. |
 | `scripts/subir-documentos.js` | Sube `PATENTE/` a producción (pull+add+commit+push, solo esa carpeta). → `npm run subir:docs` |
 | `scripts/cargar-vencimientos.js` | Carga masiva de vencimientos desde Excel de `PATENTE/Vtos/`. → `npm run cargar:vencimientos` |
@@ -77,7 +78,7 @@
 | `public/js/service.js` | Página Service: tabla sortable, filtros, vencimientos. **Usa `serviceDaysUntil()`** (no colisiona con auth-client). |
 | `public/js/reports.js` | Página Reportes: **3 cards apiladas** - `Flota` (tabla de la flota con columnas visibles), `Documentacion` (checklist por vehículo) y `Vencimientos` (nuevo). Ver "Reportes / Vencimientos" más abajo. |
 | `public/js/admin.js` | Roles de usuario. |
-| `public/js/informes.js` | Página Admin → Correos: chips de destinatarios, asunto/cuerpo, días, toggle, vista previa (`renderLocal()`), Descargar PDF, Guardar y Enviar ahora. Banner `#aviso-mail` si falta Brevo/SMTP y remitente visible en `#remitente-info`. |
+| `public/js/informes.js` | Página Admin → Correos: chips de destinatarios, asunto/cuerpo, días, toggle, vista previa (`renderLocal()`), Descargar PDF, Guardar y Enviar ahora. Banner `#aviso-mail` si falta Brevo/SMTP y remitente visible en `#remitente-info`. **Novedades de flota**: "Revisar novedades" (previsualiza) y "Enviar novedades" (confirma con SweetAlert y manda solo texto). |
 | `public/js/centros.js` | Obras: tabla con filtros, pestaña Catálogo, asignar/devolver, editar y eliminar. |
 | `public/js/theme.js` | Selector de tema persistente (**4 temas**: `pro`, `claro`, `industrial`, `auto`). El color de la barra del navegador se lee del CSS, no hardcodeado. |
 | `public/js/clock.js` | Reloj global: monta en `.topbar-clock` si hay topbar, o en `.clock-float` si la página no tiene barra. |
@@ -95,6 +96,7 @@
 | `tests/negocio.test.js` | Contador del catálogo, `recomputeServiceSummary`, `FieldValue.delete()` (25 checks). → `npm run test:negocio` |
 | `tests/deshabilitado-orden.test.js` | Campo `deshabilitado` (incluye `GET /api/centros/elementos/disponibles/vehiculo`) y orden de Vencimientos por fecha (30 checks). → `npm run test:deshabilitado` |
 | `tests/informes-config.test.js` | Config del informe, defaults, `resolverEnvio()`, plantillas y cron (41 checks). → `npm run test:informes` |
+| `tests/informe-flota.test.js` | Novedades de flota: período de 7 días / último envío, filtro de deshabilitados, orden, correo y errores de GitHub (29 checks). → `npm run test:flota` |
 | `tests/README.md` | Cómo escribir tests nuevos + **las trampas del fake ya pisadas**. |
 
 > **Nota — el módulo `maintenance` ya no existe.** Se documentaba
@@ -259,6 +261,33 @@ sidebar y menú móvil). Edita la configuración del informe **sin tocar código
   (`grupo@falpat.com.ar` y `administracion_hormigonera@constructoraalmajo.com.ar`).
 - **Local**: `DEV_READ_ONLY=true` bloquea Guardar/Enviar; el envío real se
   prueba en producción. Evidencia y checklist: `Update_2026.11.11_informes-brevo.md`.
+
+#### Novedades de flota (envío manual, sin cron nuevo)
+
+Sección independiente dentro de Admin → Correos. No toca la config del informe
+de vencimientos ni el cron de los lunes: usa los **mismos destinatarios** y el
+**mismo `lib/mailer.js`**, pero manda **solo texto** (sin PDF).
+
+- **Qué junta**: (a) vehículos de Firestore con `createdAt`/`fechaAlta` o
+  `updatedAt` dentro del período (marca `Alta` o `Datos actualizados`; excluye
+  `deshabilitado`) y (b) documentos de `PATENTE/{patente}/{tipo}.ext` tocados
+  según los commits de GitHub. Los cambios de datos y de documentos se ven
+  juntos sin programar otro cron.
+- **Período**: la primera vez, **últimos 7 días**. Después arranca en
+  `config/informesNovedadesFlota.ultimoEnvio`, que se escribe **solo si el mail
+  fue aceptado** (si falla, se puede reintentar sin perder novedades).
+- **Flujo**: "Revisar novedades" (`GET /api/informes/flota/pendientes`) muestra
+  el resumen en pantalla; "Enviar novedades" (`POST /api/informes/flota/enviar`)
+  pide confirmación, recomputa el período y envía. Si no hay novedades responde
+  **409**; si faltan destinatarios, **400**.
+- **GitHub estricto**: si `GITHUB_TOKEN` falta o la API falla, **no envía** y
+  avisa (antes que omitir documentación en silencio). Si hay más de 25 commits
+  de `PATENTE/` en el período, pide enviar más seguido para no perder cambios.
+- **Datos cargados por script**: `npm run cargar:vencimientos` actualiza
+  `updatedAt` solo cuando la fecha realmente cambió (si no, no ensucia el
+  resumen). El resto de las cargas hechas desde la web ya escribe `updatedAt`.
+- **Pendiente**: probar el envío real en producción y confirmar recepción
+  (local está bloqueado por `DEV_READ_ONLY`).
 
 ---
 

@@ -69,7 +69,8 @@ config/firebase.js           # Admin SDK init
 lib/
   informe-vencimientos.js    # armarFilas() + generarPDF() del informe semanal (web, script y cron)
   informe-config.js          # Config del informe por mail (config/informesMail) + defaults + plantillas
-  mailer.js                  # enviarInforme(): Brevo (BREVO_API_KEY) → SMTP → {enviado:false,motivo}
+  informe-flota.js           # Novedades de flota: vehículos nuevos/editados + docs de PATENTE/ desde el último envío
+  mailer.js                  # enviarInforme(): Brevo (BREVO_API_KEY) → SMTP → {enviado:false,motivo}; adjunto opcional
   github-docs.js             # Lectura de PATENTE/ vía API de GitHub (listarPatenteGlobal, cambiosDesde)
 middleware/auth.js           # verifyToken, requireAdmin, loadUser, requireAuth
 routes/
@@ -77,7 +78,7 @@ routes/
   vehicles.js                # CRUD vehículos + combustible/repuestos subcolecciones
   maintenance.js             # CRUD mantenimientos
   admin.js                   # Dashboard stats, reports, backup
-  informes.js                # Admin → Correos: config + vista previa + envío manual (requireAdmin)
+  informes.js                # Admin → Correos: config + vista previa + envío manual + novedades de flota (requireAdmin)
   cron.js                    # GET /api/cron/vencimientos (lunes) con CRON_SECRET
 views/
   dashboard.ejs              # Dashboard principal
@@ -86,7 +87,7 @@ views/
   maintenance.ejs            # Listado mantenimientos + modal CRUD
   reports.ejs                # Reportes: 3 cards plegables (Flota, Documentación, Vencimientos) + CSS de impresión "pizarra"
   admin.ejs                  # Gestión de usuarios
-  informes.ejs               # Admin → Correos: destinatarios, asunto/cuerpo, días, toggle, vista previa, enviar
+  informes.ejs               # Admin → Correos: destinatarios, asunto/cuerpo, días, toggle, vista previa, enviar, novedades de flota
   centros.ejs                # Centros de Trabajo / Obras (lista, catálogo, modales crear/editar/eliminar)
   partials/head.ejs          # Head con SDKs CDN
   partials/sidebar.ejs       # Sidebar navegación
@@ -99,7 +100,7 @@ public/js/
   maintenance.js             # CRUD mantenimientos
   reports.js                 # Reportes: 3 cards (Flota, Documentación, Vencimientos) + export Excel/PDF/print
   admin.js                   # Roles de usuario
-  informes.js                # Admin → Correos: UI, renderLocal(), banner de servicio, Enviar ahora
+  informes.js                # Admin → Correos: UI, renderLocal(), banner de servicio, Enviar ahora, novedades de flota
   centros.js                 # Obras: tabla, catálogo, asignar/devolver, editar, eliminar
 scripts/
   subir-documentos.js        # Sube la carpeta PATENTE/ a producción (pull+add+commit+push) → npm run subir:docs
@@ -124,6 +125,7 @@ tests/
   import-vehiculos.test.js   # Import masivo de vehículos (código cliente) → npm run test:import
   deshabilitado-orden.test.js  # Campo deshabilitado + orden de Vencimientos → npm run test:deshabilitado
   informes-config.test.js    # Config del informe, plantillas y cron → npm run test:informes (41 checks)
+  informe-flota.test.js      # Novedades de flota: período, filtros, correo y errores → npm run test:flota (29 checks)
   README.md                  # Cómo escribir tests + las trampas del fake
 PATENTE/
   {patente}/{tipo}.ext        # Documentos obligatorios versionados (fuente leída por la app en Vercel)
@@ -162,6 +164,10 @@ Doc con campo `current` para auto-increment. Hay **varios docs**, no uno solo. *
 **La doc histórica estaba mal:** decía `vehicles-{tipo}` y `cat-{prefijo}`. **No existe ningún doc con esos nombres.** El código busca `doc(tipo)` y **acierta**: los 4 counters del catálogo existen, así que la rama de incremento es la que corre y el fix `d98d8d8` sí es efectivo.
 
 **Los 2 counters de vehículo NO existen**, y es el dato importante: la numeración de vehículos **siempre** cae en la rama "derivar del máximo de los internos reales". Por eso nunca hubo duplicados (y por eso el bug llevaba tiempo latente). Pero apenas se cree el doc, a la segunda alta se disparaba — por eso el fix de `auth-client.js:270` era urgente, no cosmético.
+
+### `config` (documentos de configuración)
+- `config/informesMail` → config del informe de vencimientos (ver `lib/informe-config.js`).
+- `config/informesNovedadesFlota` → `ultimoEnvio` (fecha de corte del último envío de novedades **aceptado** por el mail) + `actualizadoPor`. Si no existe, el primer resumen cubre los últimos **7 días**. Lo escribe `guardarEnvio()` de `lib/informe-flota.js` **después** de que el mail fue aceptado.
 
 ### `centros` (Centros de Trabajo / Obras)
 Doc de catálogo por obra: `nombre`, `estado` (`activa`|`pausada`|`cerrada`), `ubicacion`, `observaciones`, `createdAt`, `updatedAt`.
@@ -234,6 +240,8 @@ Cuando llega un PDF con todas las constancias juntas, el **procedimiento complet
 - `titulo/` (41 PDFs) es el patrón previo de versionado que replicó `PATENTE/`.
 
 ## Registro de cambios recientes (para puesta al día de IA)
+
+- **Sesión 2026-11-14 (Novedades de flota en Admin → Correos, en curso)** — nueva sección **independiente** dentro de `/informes` para mandar por mail lo que se cargó, **sin cron nuevo**: `lib/informe-flota.js` (`obtenerNovedades()`, `armarCorreo()`, `guardarEnvio()`), `GET /api/informes/flota/pendientes` y `POST /api/informes/flota/enviar` (`verifyToken` + `requireAdmin`). Junta **(a)** vehículos con `createdAt`/`fechaAlta` o `updatedAt` dentro del período (acción `Alta` / `Datos actualizados`, **excluye deshabilitados**) y **(b)** documentos de `PATENTE/{patente}/{tipo}.ext` tocados según los commits de GitHub (`github-docs.cambiosDesde(..., {estricto:true})`). **Período:** el primero cubre **7 días**; después usa `config/informesNovedadesFlota.ultimoEnvio`, que se guarda **solo si el mail fue aceptado**. **Flujo:** "Revisar novedades" muestra el resumen y "Enviar novedades" pide confirmación con SweetAlert; si no hay novedades responde **409**, si faltan destinatarios **400**. Usa los mismos destinatarios y `lib/mailer.js`, **solo texto** (el adjunto del PDF pasó a ser opcional). **GitHub estricto:** sin `GITHUB_TOKEN` o si la API falla **no envía** (antes que omitir docs en silencio); con **>25 commits** de `PATENTE/` en el período pide enviar más seguido. `npm run cargar:vencimientos` ahora escribe `updatedAt` **solo si la fecha cambió de verdad** (si no, ensuciaría el resumen). Tests: `npm run test:flota` (**29 checks**, `tests/informe-flota.test.js`) y `npm test` pasó a **226 checks**. **Pendiente:** probar el envío real en producción (local bloqueado por `DEV_READ_ONLY`) y actualizar `Update_2026.11.11_informes-brevo.md`/README al cerrar la sesión.
 
 - **Sesión 2026-11-11 (Admin → Correos + Brevo en producción; `documentacion/Update_2026.11.11_informes-brevo.md`)** — nueva página **`/informes`** (Admin) para el informe de vencimientos: config en **`config/informesMail`** (`destinatarios[]` hasta 20, `asunto`, `cuerpo` con placeholders, `dias` 1..365 default **90**, `activo`), `GET/PUT /api/informes/config`, `GET /api/informes/vista-previa` (devuelve `stats`+`vars`; el cliente renderiza con `renderLocal()`), `POST /api/informes/enviar`. **"Enviar ahora" manda lo que está en pantalla** (`resolverEnvio()` pisa lo guardado, no exige Guardar). Envío: `lib/mailer.js` → **Brevo** (`BREVO_API_KEY`) → SMTP → `{enviado:false,motivo}`; remitente `INFORMES_EMAIL_FROM` → `SMTP_USER` → `grupo@falpat.com.ar`. **Cron**: `vercel.json` → `GET /api/cron/vencimientos` lunes **11:00 UTC (08:00 ART)**, protegido con `CRON_SECRET` (`Bearer` o `?token=`), `?forzar=1`/`?mail=0`/`?dias=N`; sin config guardada usa los defaults (`grupo@falpat.com.ar`, `administracion_hormigonera@constructoraalmajo.com.ar`). **Brevo activado**: cuenta **free** (300/día), remitente verificado, envs en Vercel (`BREVO_API_KEY`, `INFORMES_EMAIL_FROM`, `CRON_SECRET`) + **Redeploy** (las env no se aplican solas). Evidencia: `npm test` **197 checks 0 fallas** (informes 41); cron prod `200` (54 vehículos, 32 vencimientos); informe real por Brevo con PDF de **1.134.535 bytes / 32 filas** enviado a la casilla del usuario. Commits `789b1e5`, `12ea3ad`, `bf1c407`, `94f3c90`. **Cambio final del día:** los correos corporativos rebotaban con `550 5.7.1 Blacklisted [France, Europe]` (el servidor del destinatario bloquea las IPs de Brevo), así que **producción pasó a Gmail SMTP** (`SMTP_HOST/PORT/USER/PASS` en Vercel, sin `BREVO_API_KEY`; `lib/mailer.js` prioriza Brevo si la key existe). Verificado en prod: `mail.via = "smtp"`. **Seguridad:** `documentacion/privado/` está en `.gitignore` (credenciales locales: API key de Brevo de respaldo + contraseña de aplicación de Gmail + `CRON_SECRET`; se recrea en cada PC); ambos secretos se compartieron en un chat → **rotarlos** si se van a seguir usando (pasos en `documentacion/BREVO-MANUAL.md` §5 y §9). **Nunca commitear claves** en docs, código ni tests.
 

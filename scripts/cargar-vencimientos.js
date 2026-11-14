@@ -53,6 +53,27 @@ function tsDate({ y, m, d }) {
   return admin.firestore.Timestamp.fromDate(dt);
 }
 
+// Milisegundos de un Timestamp/Date/string, para detectar si la fecha cambió
+// de verdad. Sin esto el script marcaba updatedAt en todos los vehículos del
+// Excel y el resumen de novedades los listaba a todos aunque no hubiera cambios.
+function tsMs(valor) {
+  if (!valor) return null;
+  if (typeof valor.toMillis === 'function') return valor.toMillis();
+  if (typeof valor.toDate === 'function') return valor.toDate().getTime();
+  const d = valor instanceof Date ? valor : new Date(valor);
+  return isNaN(d.getTime()) ? null : d.getTime();
+}
+
+// Campo "principal" donde el script escribe cada vencimiento (el genérico
+// documentacion.<tipo> se compara aparte).
+function fechaActual(data, tipo, key) {
+  if (tipo === 'VTV' || key === 'vtv') return (data.vtv || {}).fechaVencimiento;
+  if (tipo === 'Seguro' || key === 'seguro') return (data.seguro || {}).fechaVencimiento;
+  if (tipo === 'Registro' || key === 'registro') return data.vencimientoRegistro;
+  if (tipo === 'DNI' || key === 'dni') return data.vencimientoDNI;
+  return ((data.documentacion || {})[key] || {}).fechaVencimiento;
+}
+
 function excelReciente() {
   const dir = path.join(__dirname, '..', 'PATENTE', 'Vtos');
   if (!fs.existsSync(dir)) return null;
@@ -102,27 +123,34 @@ async function main() {
         documentacion: { ...(data.documentacion || {}) }
       };
       let cambiado = false;
+      let cambioReal = false;
       const toques = [];
       for (const item of items) {
         const key = item.tipo.toLowerCase();
+        const docActual = (data.documentacion || {})[key] || {};
         if (item.noVence) {
-          update.documentacion[key] = { ...((update.documentacion[key] || {})), noVence: true };
+          if (docActual.noVence !== true) cambioReal = true;
+          update.documentacion[key] = { ...docActual, noVence: true };
           toques.push(`${item.tipo}=NO VENCE`);
           cambiado = true;
           continue;
         }
         const { fecha } = item;
         const ts = tsDate(fecha);
+        if (tsMs(fechaActual(data, item.tipo, key)) !== tsMs(ts)) cambioReal = true;
+        if (tsMs(docActual.fechaVencimiento) !== tsMs(ts) || docActual.noVence === true) cambioReal = true;
         if (item.tipo === 'VTV' || key === 'vtv') update.vtv.fechaVencimiento = ts;
         else if (item.tipo === 'Seguro' || key === 'seguro') update.seguro.fechaVencimiento = ts;
         else if (item.tipo === 'Registro' || key === 'registro') update.vencimientoRegistro = ts;
         else if (item.tipo === 'DNI' || key === 'dni') update.vencimientoDNI = ts;
-        update.documentacion[key] = { ...((update.documentacion[key] || {})), fechaVencimiento: ts, noVence: false };
+        update.documentacion[key] = { ...docActual, fechaVencimiento: ts, noVence: false };
         toques.push(`${item.tipo}=${String(fecha.d).padStart(2, '0')}/${String(fecha.m).padStart(2, '0')}/${fecha.y}`);
         cambiado = true;
       }
       if (!cambiado) { sinCambio++; continue; }
+      if (!cambioReal) { sinCambio++; console.log(`= ${pat} sin cambios (${toques.join(', ')})`); continue; }
       if (DRY) { console.log(`[DRY] ${pat} -> ${toques.join(', ')}`); continue; }
+      update.updatedAt = new Date();
       await doc.ref.update(update);
       act++;
       console.log(`OK ${pat} -> ${toques.join(', ')}`);
