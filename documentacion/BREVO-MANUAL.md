@@ -135,7 +135,8 @@ Respuesta OK: `{"messageId":"<...>"}`.
 
 - **Prioridad de destinatarios:** config de Admin → Correos (`config/informesMail`)
   → `INFORMES_EMAIL_TO` → defaults del código
-  (`grupo@falpat.com.ar`, `administracion_hormigonera@constructoraalmajo.com.ar`).
+  (`grupo@falpat.com.ar`, `administracion_hormigonera@constructoraalmajo.com.ar`,
+  `ssaavedra1969@gmail.com`).
 - **Prioridad de remitente:** `INFORMES_EMAIL_FROM` → `SMTP_USER` → `grupo@falpat.com.ar`.
 - Cambiar una variable en Vercel **exige Redeploy**.
 

@@ -57,9 +57,10 @@
   `actualizadoEl`, `actualizadoPor`.
 - Límites: 20 destinatarios, asunto ≤ 200, cuerpo ≤ 5000, días 1..365.
 - Defaults: `dias = 90`, `activo = true`, asunto/cuerpo con placeholders.
-- **Estado al 2026-11-11: el doc NO existe en producción** → corren los defaults
-  (destinatarios `grupo@falpat.com.ar` y
-  `administracion_hormigonera@constructoraalmajo.com.ar`).
+- **Estado al 2026-11-14: el doc NO existe en producción** → corren los defaults
+  (destinatarios `grupo@falpat.com.ar`,
+  `administracion_hormigonera@constructoraalmajo.com.ar` y
+  `ssaavedra1969@gmail.com`).
 
 ### Variables de entorno en Vercel (Production)
 
@@ -216,7 +217,7 @@ HEAD=94f3c90  ORIGIN=94f3c90
 2. **Cuenta Brevo en revisión** (solo aplica si se vuelve a Brevo): si la
    marcan "pendiente de aprobación", los envíos fallan hasta que la habilite.
 3. **Config no guardada**: si nadie guarda en Admin → Correos, el cron usa los
-   defaults del código (dos direcciones corporativas).
+   defaults del código (dos direcciones corporativas + `ssaavedra1969@gmail.com`).
 4. **Envs requieren redeploy**: cargar `BREVO_API_KEY` sin redeploy no tiene
    efecto.
 5. **`DEV_READ_ONLY=true` local**: bloquea Guardar/Enviar en local; el envío

@@ -46,13 +46,14 @@ const { check, section, done } = rep;
   check('activo por defecto', def.activo === true);
   check('dias default 90', def.dias === 90);
 
-  section('defaults sin env (los 2 correos de siempre)');
+  section('defaults sin env (los 3 correos de siempre)');
 
   delete process.env.INFORMES_EMAIL_TO;
   const sinEnv = await getInformeConfig();
-  check('2 destinatarios por defecto', sinEnv.destinatarios.length === 2, JSON.stringify(sinEnv.destinatarios));
+  check('3 destinatarios por defecto', sinEnv.destinatarios.length === 3, JSON.stringify(sinEnv.destinatarios));
   check('primer default correcto', sinEnv.destinatarios[0] === DESTINATARIOS_DEFAULT[0]);
   check('segundo default correcto', sinEnv.destinatarios[1] === DESTINATARIOS_DEFAULT[1]);
+  check('tercer default correcto', sinEnv.destinatarios[2] === 'ssaavedra1969@gmail.com');
   process.env.INFORMES_EMAIL_TO = 'grupo@falpat.com.ar, administracion_hormigonera@constructoraalmajo.com.ar, malo';
 
   section('guardar / leer');

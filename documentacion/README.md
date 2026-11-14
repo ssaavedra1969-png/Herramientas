@@ -258,7 +258,8 @@ sidebar y menú móvil). Edita la configuración del informe **sin tocar código
   (08:00 ART)**, protegido con `CRON_SECRET` (`Authorization: Bearer` o
   `?token=`). `?forzar=1` ignora el toggle, `?mail=0` genera el PDF sin enviar,
   `?dias=N` cambia la ventana. Si no hay config guardada usa los defaults
-  (`grupo@falpat.com.ar` y `administracion_hormigonera@constructoraalmajo.com.ar`).
+  (`grupo@falpat.com.ar`, `administracion_hormigonera@constructoraalmajo.com.ar`
+  y `ssaavedra1969@gmail.com`).
 - **Local**: `DEV_READ_ONLY=true` bloquea Guardar/Enviar; el envío real se
   prueba en producción. Evidencia y checklist: `Update_2026.11.11_informes-brevo.md`.
 
