@@ -1,0 +1,188 @@
+<%- include('partials/head') %>
+<div class="flex h-screen overflow-hidden">
+  <%- include('partials/sidebar', { page: 'empleados' }) %>
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <%- include('partials/topbar', { page: 'empleados' }) %>
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-4">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold title-page">Empleados</h1>
+          <p class="text-[11px] sm:text-xs text-[#8b9bb4] mt-1 max-w-2xl">
+            Perfiles agrupados por chofer/DNI, con DNI y Registro como documentos e historial de asignaciones.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-2 no-print">
+          <% if (currentUserData?.role === 'Admin') { %>
+          <button id="btn-nuevo-empleado" type="button" class="btn-primary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Nuevo empleado
+          </button>
+          <button id="btn-sincronizar" type="button" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">
+            Sincronizar
+          </button>
+          <% } %>
+          <button id="btn-exportar" type="button" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">Excel</button>
+          <button id="btn-imprimir" type="button" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">PDF</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
+        <div class="glass-card rounded-xl p-3">
+          <p class="text-[10px] uppercase tracking-widest text-[#4a5568]">Total empleados</p>
+          <p class="text-xl sm:text-2xl font-bold text-[#ffffff]"><span id="emp-total">0</span></p>
+        </div>
+        <div class="glass-card rounded-xl p-3">
+          <p class="text-[10px] uppercase tracking-widest text-[#4a5568]">Asignados</p>
+          <p class="text-xl sm:text-2xl font-bold text-[#34D399]"><span id="emp-asignados">0</span></p>
+        </div>
+        <div class="glass-card rounded-xl p-3">
+          <p class="text-[10px] uppercase tracking-widest text-[#4a5568]">Sin asignar</p>
+          <p class="text-xl sm:text-2xl font-bold text-[#FBBF24]"><span id="emp-sin-asignar">0</span></p>
+        </div>
+        <div class="glass-card rounded-xl p-3">
+          <p class="text-[10px] uppercase tracking-widest text-[#4a5568]">Conflictos</p>
+          <p class="text-xl sm:text-2xl font-bold text-[#F87171]"><span id="emp-conflictos">0</span></p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-xl overflow-hidden mb-4">
+        <div class="flex flex-wrap items-center gap-2 p-2 sm:p-3 search-controls">
+          <div class="relative flex-1 min-w-[180px]">
+            <svg class="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="emp-search" placeholder="Buscar empleado, DNI o patente..." class="w-full pl-8 sm:pl-9 pr-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/15 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon transition-all focus:border-[#2563EB]/50">
+          </div>
+          <select id="emp-filter" class="px-2 py-2 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] rounded-lg border border-[#2563EB]/20 bg-[#0a0e17]/40 input-neon">
+            <option value="todos">Todos</option>
+            <option value="asignados">Asignados</option>
+            <option value="sinAsignar">Sin asignar</option>
+            <option value="conflictos">Conflictos</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[860px]">
+            <thead>
+              <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
+                <th class="px-4 py-3 text-left font-semibold">Empleado</th>
+                <th class="px-4 py-3 text-left font-semibold">DNI</th>
+                <th class="px-4 py-3 text-left font-semibold">Registro</th>
+                <th class="px-4 py-3 text-left font-semibold">Patente(s)</th>
+                <th class="px-4 py-3 text-left font-semibold">Documentos</th>
+                <th class="px-4 py-3 text-left font-semibold">Estado</th>
+                <th class="px-3 py-3 no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="empleados-tbody">
+              <tr><td colspan="7" class="text-center py-8 text-gray-400">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('partials/mobile-menu', { page: 'empleados' }) %>
+
+<div id="modal-empleado" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="glass-card rounded-xl p-6 w-full max-w-lg mx-4 border border-[#2563EB]/20 max-h-[92vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-[#ffffff]">Empleado</h3>
+      <button type="button" onclick="hideModal('modal-empleado')" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <form id="form-empleado">
+      <input type="hidden" id="emp-id">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs text-[#8b9bb4] mb-1">Nombre y apellido *</label>
+          <input type="text" id="emp-nombre" required maxlength="120" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="flex-1">
+            <label class="block text-xs text-[#8b9bb4] mb-1">DNI</label>
+            <input type="text" id="emp-dni" maxlength="40" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs text-[#8b9bb4] mb-1">Registro</label>
+            <input type="text" id="emp-registro" maxlength="40" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="flex-1">
+            <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento DNI</label>
+            <input type="text" id="emp-vencimiento-dni" maxlength="30" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon" placeholder="dd/mm/aaaa">
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento Registro</label>
+            <input type="text" id="emp-vencimiento-registro" maxlength="30" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon" placeholder="dd/mm/aaaa">
+          </div>
+        </div>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="emp-activo" checked class="w-4 h-4 accent-[#2563EB]">
+          <span class="text-sm text-[#ffffff]">Activo</span>
+        </label>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button type="button" id="emp-cancelar" onclick="hideModal('modal-empleado')" class="flex-1 px-4 py-2 text-sm rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] transition-colors">Cancelar</button>
+        <button type="submit" id="emp-guardar" class="flex-1 btn-primary text-sm px-4 py-2">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="modal-traslado" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="glass-card rounded-xl p-6 w-full max-w-md mx-4 border border-[#2563EB]/20">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-[#ffffff]">Trasladar empleado</h3>
+      <button type="button" onclick="hideModal('modal-traslado')" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <input type="hidden" id="emp-traslado-id">
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs text-[#8b9bb4] mb-1">Patente de origen</label>
+        <input type="text" id="emp-traslado-origen" readonly class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/15 rounded-lg text-sm text-[#8b9bb4] input-neon">
+      </div>
+      <div>
+        <label class="block text-xs text-[#8b9bb4] mb-1">Patente destino *</label>
+        <select id="emp-traslado-patente" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon"><option value="">Seleccionar patente...</option></select>
+      </div>
+      <label class="flex items-start gap-2 cursor-pointer">
+        <input type="checkbox" id="emp-traslado-reemplazar" class="w-4 h-4 mt-0.5 accent-[#2563EB]">
+        <span class="text-sm text-[#8b9bb4]">Reemplazar DNI y Registro si la patente destino ya los tiene cargados</span>
+      </label>
+    </div>
+    <div class="flex gap-2 mt-4">
+      <button type="button" onclick="hideModal('modal-traslado')" class="flex-1 px-4 py-2 text-sm rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] transition-colors">Cancelar</button>
+      <button type="button" id="emp-traslado-confirmar" class="flex-1 btn-primary text-sm px-4 py-2">Confirmar traslado</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-historial" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="glass-card rounded-xl p-6 w-full max-w-3xl mx-4 border border-[#2563EB]/30 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#2563EB]/25">
+      <h3 class="text-lg font-bold text-[#ffffff]">Historial de asignaciones</h3>
+      <button type="button" onclick="hideModal('modal-historial')" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <div id="emp-historial-body" class="text-sm text-[#8b9bb4]"></div>
+  </div>
+</div>
+
+<div id="modal-documento" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="glass-card rounded-xl p-4 w-full max-w-4xl mx-4 border border-[#2563EB]/30" style="height:90vh">
+    <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#2563EB]/25">
+      <h3 id="emp-documento-titulo" class="text-sm font-bold text-[#ffffff]">Documento</h3>
+      <button type="button" onclick="cerrarDocumento()" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <div id="emp-documento-frame" class="w-full bg-white rounded-lg" style="height:calc(100% - 48px)">
+      <iframe id="emp-documento-iframe" title="Documento del empleado" class="w-full h-full rounded-lg" frameborder="0"></iframe>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="/js/empleados.js?v=<%= Date.now() %>"></script>
+<%- include('partials/footer') %>

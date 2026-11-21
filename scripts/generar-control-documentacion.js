@@ -108,6 +108,7 @@ async function main() {
     if (!existeCarpeta) sinCarpeta.push(patente);
     else if (!archivos.length) carpetaVacia.push(patente);
     TIPOS.forEach(tipo => {
+      if ((tipo === 'dni' || tipo === 'registro') && v.documentacion?.[tipo]?.sinChofer === true) return;
       const enPc = archivos.some(n => {
         const base = path.parse(n).name.toLowerCase();
         return base === tipo || (base.startsWith(tipo) && /^\d*$/.test(base.slice(tipo.length)));
@@ -140,6 +141,7 @@ async function main() {
   autos.forEach(v => {
     const patente = String(v.patente || '').toUpperCase();
     Object.keys(VENCIMIENTO).forEach(tipo => {
+      if ((tipo === 'dni' || tipo === 'registro') && v.documentacion?.[tipo]?.sinChofer === true) return;
       const raw = VENCIMIENTO[tipo](v);
       if (!raw) return;
       const dias = diasHasta(raw);

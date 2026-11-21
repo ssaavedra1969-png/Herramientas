@@ -18,6 +18,7 @@ const { cargarObraCompleta, agruparPorSector } = require('./lib/centros-docs');
 const adminRoutes = require('./routes/admin');
 const cronRoutes = require('./routes/cron');
 const informesRoutes = require('./routes/informes');
+const empleadosRoutes = require('./routes/empleados');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -92,6 +93,7 @@ app.use('/api/centros', centrosRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/cron', cronRoutes);
 app.use('/api/informes', informesRoutes);
+app.use('/api/empleados', empleadosRoutes);
 
 app.get('/login', (req, res) => {
   if (res.locals.currentUser) return res.redirect('/dashboard');
@@ -128,6 +130,17 @@ app.get('/vehicles', requireAuth, (req, res) => {
 app.get('/centros', requireAuth, (req, res) => {
   res.render('centros', {
     title: 'Centros de Trabajo',
+    page: 'centros',
+    clientConfig: res.locals.clientConfig,
+    currentUser: res.locals.currentUser,
+    currentUserData: res.locals.currentUserData
+  });
+});
+
+app.get('/empleados', requireAuth, (req, res) => {
+  res.render('empleados', {
+    title: 'Empleados',
+    page: 'empleados',
     clientConfig: res.locals.clientConfig,
     currentUser: res.locals.currentUser,
     currentUserData: res.locals.currentUserData

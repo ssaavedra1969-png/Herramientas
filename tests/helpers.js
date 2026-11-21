@@ -36,6 +36,7 @@ app.use(express.json());
 app.use('/api/centros', require(path.join(ROOT, 'routes/centros.js')));
 app.use('/api/vehicles', require(path.join(ROOT, 'routes/vehicles.js')));
 app.use('/api/admin', require(path.join(ROOT, 'routes/admin.js')));
+app.use('/api/empleados', require(path.join(ROOT, 'routes/empleados.js')));
 
 const server = app.listen(0);
 const URL = (p) => `http://127.0.0.1:${server.address().port}${p}`;

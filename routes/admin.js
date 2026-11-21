@@ -521,13 +521,15 @@ function fechaDocVenc(v, tipo) {
     top ||
     (doc && doc.fechaVencimiento) ||
     null;
-  return fechaYMD(cand);
+  const ymd = fechaYMD(cand);
+  if ((tipo === 'dni' || tipo === 'registro') && doc && doc.sinChofer === true && !ymd) return null;
+  return ymd;
 }
 
 // documentacion.<tipo>.noVence === true => el documento no caduca (caso tipico: cedulas)
 function docNoVence(v, tipo) {
   const doc = (v.documentacion && v.documentacion[tipo]) || null;
-  return !!(doc && doc.noVence === true && !doc.fechaVencimiento);
+  return !!(doc && (doc.noVence === true || doc.sinChofer === true) && !doc.fechaVencimiento);
 }
 
 // Service no es un documento: es derivado. proximoServiceFecha es el campo que
@@ -565,7 +567,12 @@ router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
     for (const p of preliminares) {
       p.docs = await docsDePatenteR(p.patente, arbol);
       const subidos = p.v.docsAdjuntos || {};
-      DOC_TIPOS_R.forEach(t => { p.docs[t] = p.docs[t] || !!subidos[t]; });
+      p.dniSinChofer = p.v.documentacion?.dni?.sinChofer === true;
+      p.registroSinChofer = p.v.documentacion?.registro?.sinChofer === true;
+      DOC_TIPOS_R.forEach(t => {
+        const sinChofer = (t === 'dni' && p.dniSinChofer) || (t === 'registro' && p.registroSinChofer);
+        p.docs[t] = p.docs[t] || !!subidos[t] || sinChofer;
+      });
       p.faltantes = DOC_TIPOS_R.filter(t => !p.docs[t]).length;
     }
     const vehicles = preliminares.map(p => {
@@ -573,6 +580,8 @@ router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
       const patente = p.patente;
       const docs = p.docs;
       const faltantes = p.faltantes;
+      const dniSinChofer = p.dniSinChofer;
+      const registroSinChofer = p.registroSinChofer;
       // Los 8 tipos que vencen. service es derivado (proximoServiceFecha).
       const vtvFecha      = fechaDocVenc(v, 'vtv');
       const seguroFecha   = fechaDocVenc(v, 'seguro');
@@ -612,6 +621,8 @@ router.get('/report/flota', verifyToken, requireAdmin, async (req, res) => {
         empresa: v.empresa || '',
         centroTrabajo: v.centroTrabajo || '',
         observaciones: v.observaciones || '',
+        dniSinChofer,
+        registroSinChofer,
         vtvFecha,
         vtvDias: diasHastaYMD(vtvFecha),
         seguroFecha,
@@ -997,4 +1008,5 @@ router.get('/report/export', verifyToken, requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.invalidarCachesDocumentos = invalidarArbolPatenteR;
 

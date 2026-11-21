@@ -74,10 +74,12 @@ lib/
   informe-flota.js           # Novedades de flota: vehículos nuevos/editados + docs de PATENTE/ desde el último envío + documentación pendiente online
   service-parametros.js      # Config editable de service en config/serviceParametros: defaults (21 ítems), normalización, get/guardar (verifyToken + requireAdmin en la ruta)
   mailer.js                  # enviarInforme(): Brevo (BREVO_API_KEY) → SMTP → {enviado:false,motivo}; adjunto opcional
-  github-docs.js             # Lectura de PATENTE/ vía API de GitHub (listarPatenteGlobal, cambiosDesde)
+  github-docs.js             # Lectura/escritura de PATENTE/ vía API de GitHub (listarPatenteGlobal, listarEmpleadosGlobal, cambiosDesde, leer/escribir/borrar/moverRuta; excluye EMPLEADOS del árbol de patentes)
+  empleados.js               # Perfiles de chofer por nombre+DNI, espejos en vehicles, PATENTE/EMPLEADOS/{id}/, historial y traslado con verificación antes de borrar
 middleware/auth.js           # verifyToken, requireAdmin, loadUser, requireAuth
 routes/
   auth.js                    # Login/session
+  empleados.js               # API /api/empleados: perfiles, documentos, historial, traslado y sincronización (POST/PUT/PATCH requieren Admin)
   vehicles.js                # CRUD vehículos + combustible/repuestos subcolecciones + services panel + GET/PUT /api/vehicles/services/parametros
   maintenance.js             # CRUD mantenimientos
   admin.js                   # Dashboard stats, reports, backup
@@ -91,6 +93,7 @@ views/
   reports.ejs                # Reportes: 3 cards plegables (Flota, Documentación, Vencimientos) + CSS de impresión "pizarra"
   service.ejs                # Panel de services + card "Parámetros de service" arriba de todo (solo Admin)
   admin.ejs                  # Gestión de usuarios
+  empleados.ejs              # Empleados: perfiles por chofer/DNI, documentos, historial, traslado, sincronización y export
   informes.ejs               # Admin → Correos: destinatarios, asunto/cuerpo, días, toggle, vista previa, enviar, novedades de flota
   centros.ejs                # Centros de Trabajo / Obras (lista, catálogo, modales crear/editar/eliminar)
   partials/head.ejs          # Head con SDKs CDN
@@ -98,6 +101,7 @@ views/
   partials/footer.ejs        # Firebase init + auth-client.js
 public/js/
   auth-client.js             # Helpers: isAdmin(), getAuthHeaders(), deleteWithBackup(), etc.
+  empleados.js               # UI de Empleados: perfiles, filtros, traslado, historial, documentos y export
   dashboard.js               # Dashboard: clock, search, modales alertas, fleet health, empresas, alertas VTV/choferes
   vehicles.js                # CRUD, bulk delete, filtros, import CSV/Excel (modal edit NO cierra con click afuera)
   vehicle-detail.js          # Combustible + repuestos CRUD + reglas de service (getServiceRegla/applyReglaServicio/updateProximoKm) (sin backdrop click-to-close en modal)
@@ -131,9 +135,12 @@ tests/
   deshabilitado-orden.test.js  # Campo deshabilitado + orden de Vencimientos → npm run test:deshabilitado
   informes-config.test.js    # Config del informe, plantillas y cron → npm run test:informes (41 checks)
   informe-flota.test.js      # Novedades de flota: período, filtros, correo, pendientes y errores → npm run test:flota (40 checks)
+  empleados.test.js          # API Empleados con fake Firestore y GitHub mockeado → npm run test:empleados (24 checks)
+  github-empleados.test.js   # Helpers PATENTE/EMPLEADOS/ y exclusión del árbol de patentes → npm run test:github (9 checks)
   README.md                  # Cómo escribir tests + las trampas del fake
 PATENTE/
   {patente}/{tipo}.ext        # Documentos obligatorios versionados (fuente leída por la app en Vercel)
+  EMPLEADOS/{id}/{tipo}.pdf   # DNI/Registro por perfil de chofer (no entra en el árbol de patentes)
   Reportes/                   # Excel de control generados por npm run generar:control y npm run generar:matafuego (ignorados por git)
 ```
 
@@ -153,6 +160,9 @@ Subcolecciones: `combustible` (fecha, litros, importe, tipo, km, proveedor), `re
 
 ### `users`
 Campos clave: role (Admin|Usuario), displayName, email
+
+### `employees`
+Perfiles de chofer creados desde `/empleados`: `nombre`, `nombreNormalizado`, `clave` (nombre normalizado + DNI), `dni`, `registro`, `vencimientoDNI`, `vencimientoRegistro`, `activo`, `patenteActual` (`null` = disponible), `documentos.{dni,registro}` con `{ruta,presente,adjunto}`, `conflictos[]`, auditoría. Subcolección `historial/{id}`: `patente`, `interno`, `desde`, `hasta` (`null` = vigente), `motivo`, `creadoPor`, `actualizadoPor`. El chofer reemplazado nunca se borra: se cierra su historial y queda `Sin asignar / Disponible`, con PDFs en `PATENTE/EMPLEADOS/{id}/`. Los vehículos sin chofer se marcan con `documentacion.dni|registro.sinChofer = true`, `noVence = true` y `chofer: ''` (no son faltantes ni pendientes). Detalle: `documentacion/Update_2026.11.21_empleados.md`.
 
 ### `counters`
 Doc con campo `current` para auto-increment. Hay **varios docs**, no uno solo. **VERIFICADO contra producción el 2026-09-29 con `npm run inspect:counters` (solo lectura):**
@@ -248,6 +258,8 @@ Cuando llega un PDF con todas las constancias juntas, el **procedimiento complet
 - `titulo/` (41 PDFs) es el patrón previo de versionado que replicó `PATENTE/`.
 
 ## Registro de cambios recientes (para puesta al día de IA)
+
+- **Sesión 2026-11-21 (módulo Empleados; detalle en `documentacion/Update_2026.11.21_empleados.md`)** — nueva sección `/empleados`: perfiles de chofer por nombre + DNI en `employees`, espejos en `vehicles`, PDFs en `PATENTE/EMPLEADOS/{id}/`, historial de patentes, traslado con verificación antes de borrar, sincronización de perfiles virtuales y guardas `sinChofer` en reportes/Excel/informes (DNI y Registro “No aplica” en vehículos sin chofer). API `/api/empleados` (lectura con `verifyToken`, escrituras Admin, 409 en conflictos). Tests nuevos: `npm run test:github` (**9 checks**) y `npm run test:empleados` (**24 checks**); `npm test` = **285 checks, 0 fallas**. Smoke local OK y EJS render OK. También se incluyó el cambio autorizado del usuario en `PATENTE/AG976PG`: `vtv.pdf` nuevo, 2 backups de seguro borrados y VTV `19/11/2027` cargada/verificada en Firestore. **Commit/push aún pendiente de confirmación.** No usar `npm start` (stash/pull/pop automático con `stash@{0}` viejo); para probar escrituras usar `npm test` con el fake, no bajar `DEV_READ_ONLY=true`.
 
 - **Sesión 2026-11-21 (renovación de seguros 07/04/2027; detalle en `documentacion/Update_2026.11.21_service-y-seguros.md`)** — entrada: `PATENTE\Vtos\seguros\COBERTURA DE SEGUROS 07-04-2027.pdf` (33 páginas, OCR con Tesseract **solo `eng`**, sin paquete `spa`). **Página 33 descartada** (sin `PATENTE:`); quedaron **32 constancias**. Correcciones manuales: `AH7840Y→AH784OY` (cero→O), `AHO52ZE→AH052ZE` y `AHO52ZD→AH052ZD` (O→cero). Se instalaron 32 PDFs en `PATENTE/Seg/{PATENTE}.pdf` + `PATENTE/{patente}/seguro.pdf` con **31 backups** (`AH784OY` no tenía seguro viejo); los PDFs de staging en `PATENTE/Seg/` quedaron, se borró solo `seguros.rar`. Carga con `node scripts/cargar-vencimientos.js --archivo=PATENTE/Vtos/SEGUROS_RENOVACION_2026-11-21.xlsx` (dry-run primero): **13 actualizados / 19 sin cambios / 0 errores**; verificado 32/32 con `seguro.fechaVencimiento='07/04/2027'` y `docsAdjuntos.seguro=0`. También `AH657LB`: Registro `04/08/2027`, DNI `29/09/2041` y seguro `23/10/2027` vía `PATENTE\Vtos\DOCUMENTOS_AH657LB_2026-11-21.xlsx` (+4 PDFs nuevos; fuelle quedó en `_originales`). Commits `60ade3a` y `6e016b7`. **No ejecutar `npm run cargar:vencimientos` sin `--archivo`**: revertiría fechas con el Excel viejo.
 

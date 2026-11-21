@@ -119,11 +119,14 @@ router.get('/documentos/reporte', verifyToken, async (req, res) => {
         remotas = arbol.get(patente) || [];
       }
       const subidos = v.docsAdjuntos || {};
+      const dniSinChofer = v.documentacion?.dni?.sinChofer === true;
+      const registroSinChofer = v.documentacion?.registro?.sinChofer === true;
       const docs = {};
       DOC_TIPOS.forEach(t => {
         const enCarpeta = !!locales[t] ||
           (remotas || []).some(nombre => gh.esDeTipo(nombre, t));
-        docs[t] = enCarpeta || !!subidos[t];
+        const sinChofer = (t === 'dni' && dniSinChofer) || (t === 'registro' && registroSinChofer);
+        docs[t] = enCarpeta || !!subidos[t] || sinChofer;
       });
       const faltantes = DOC_TIPOS.filter(t => !docs[t]).length;
       rows.push({
@@ -136,6 +139,8 @@ router.get('/documentos/reporte', verifyToken, async (req, res) => {
         empresa: v.empresa || '',
         centroTrabajo: v.centroTrabajo || '',
         docs,
+        dniSinChofer,
+        registroSinChofer,
         faltantes
       });
     }
@@ -779,4 +784,10 @@ router.get('/template/excel', verifyToken, async (req, res) => {
   }
 });
 
+function invalidarCachesDocumentos() {
+  cacheTTL.delete('reporte-documentos');
+  cacheTTL.delete('patente-arbol');
+}
+
 module.exports = router;
+module.exports.invalidarCachesDocumentos = invalidarCachesDocumentos;

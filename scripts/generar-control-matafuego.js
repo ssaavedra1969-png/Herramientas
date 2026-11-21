@@ -111,6 +111,7 @@ function faltantesDe(v, patente, git) {
 
   const faltan = [];
   TIPOS.forEach(t => {
+    if ((t === 'dni' || t === 'registro') && v.documentacion?.[t]?.sinChofer === true) return;
     if (enPc(t)) return;
     if (enGit(t) === true) return;             // esta en git, falta solo en esta PC
     if (enGit(t) === false && v.docsAdjuntos?.[t]) return; // subido desde la web
