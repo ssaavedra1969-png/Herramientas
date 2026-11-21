@@ -1,6 +1,48 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-10-24.
+Cambios registrados por sesión. Última actualización: 2026-11-21.
+
+## 2026-11-21 — Seguros 07/04/2027 + Parámetros de service
+
+Detalle completo en **`Update_2026.11.21_service-y-seguros.md`** (y en `AGENTS.md` / `README.md`).
+
+### Seguros — commits `60ade3a`, `6e016b7`
+
+- Se procesó `PATENTE\Vtos\seguros\COBERTURA DE SEGUROS 07-04-2027.pdf` (33
+  páginas, OCR solo `eng`). La página 33 se descartó por no tener `PATENTE:`:
+  quedaron **32 constancias**.
+- Correcciones manuales de OCR: `AH7840Y→AH784OY`, `AHO52ZE→AH052ZE`,
+  `AHO52ZD→AH052ZD`.
+- Se instalaron 32 `seguro.pdf` en `PATENTE/{patente}/` + staging en
+  `PATENTE/Seg/`, con **31 backups** (`AH784OY` no tenía seguro viejo). Quedó
+  solo `seguros.rar` eliminado; los PDF de staging no se borraron.
+- Carga con `node scripts/cargar-vencimientos.js
+  --archivo=PATENTE/Vtos/SEGUROS_RENOVACION_2026-11-21.xlsx`: **13
+  actualizados / 19 sin cambios / 0 errores**. Verificado 32/32 con
+  `seguro.fechaVencimiento = '07/04/2027'` y `docsAdjuntos.seguro = 0`.
+- `AH657LB`: Registro `04/08/2027`, DNI `29/09/2041` y seguro `23/10/2027`
+  (`PATENTE\Vtos\DOCUMENTOS_AH657LB_2026-11-21.xlsx`, +4 PDFs).
+- Recordatorio: **nunca correr `npm run cargar:vencimientos` sin `--archivo`**;
+  usar siempre `--dry-run` primero.
+
+### Parámetros de service — commits `d655e92`, `78e16ff`
+
+- Nueva config editable `config/serviceParametros` con **21 ítems / 10 fijos**;
+  defaults en `lib/service-parametros.js` y espejo cliente
+  `SERVICE_PARAMS_DEFAULT` en `public/js/vehicle-detail.js`.
+- API: `GET /api/vehicles/services/parametros` (`verifyToken`) y `PUT`
+  (`verifyToken + requireAdmin`, 403 para `Usuario`).
+- UI: card `#svc-parametros` **arriba de todo** en `/service` (Admin) y link
+  **Parámetros Service** en Utilidades (sidebar, mobile-menu y command palette)
+  → `/service#svc-parametros`.
+- Fix crítico: los ítems "solo por fecha" (`km:null`, `meses`) dejaron de caer
+  en la regla por tipo; no calculan `proximoKm` y el submit usa `conKm =
+  !!(regla && regla.intervalo != null)`. Caso verificado: `AH522SJ` /
+  `Calibrado de ruedas`, sin datos sucios que limpiar.
+- Verificación: `npm test` OK (`negocio` 39/0), `node --check` limpio, EJS
+  Admin/Usuario correctos y JS productivo con cache-bust `?v=78e16ff`.
+- El `vercel --prod --yes` manual devolvió `Not authorized`; no hace falta:
+  `git push origin main` dispara el deploy automático.
 
 ## 2026-10-24 — Publicación manual de documentos PATENTE
 
