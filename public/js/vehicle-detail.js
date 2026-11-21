@@ -1075,7 +1075,12 @@ const SERVICE_PARAMS_DEFAULT = {
     { nombre: 'Cambio líquido de frenos', km: null, meses: null, fijo: false },
     { nombre: 'Cambio correa de distribución', km: null, meses: null, fijo: false },
     { nombre: 'Control de batería', km: null, meses: null, fijo: false },
-    { nombre: 'Control de refrigerante', km: null, meses: null, fijo: false }
+    { nombre: 'Control de refrigerante', km: null, meses: null, fijo: false },
+    { nombre: 'Engrase de Pluma y Chasis', km: null, meses: 3, fijo: true },
+    { nombre: 'Engrase de Chasis', km: null, meses: 3, fijo: true },
+    { nombre: 'Sopleteado de Filtro de Aire', km: null, meses: 3, fijo: true },
+    { nombre: 'Calibrado de ruedas', km: null, meses: 2, fijo: true },
+    { nombre: 'Calibrado de Luces', km: null, meses: 2, fijo: true }
   ]
 };
 
@@ -1115,7 +1120,8 @@ function getServiceRegla(item) {
   let reglaPorTipo = null;
   if (tipo === 'Mixer') reglaPorTipo = { intervalo: 30000, meses: 9 };
   if (tipo === 'Auto' || tipo === 'Camioneta') reglaPorTipo = { intervalo: 10000, meses: 6 };
-  const intervalo = reglaPorTipo ? reglaPorTipo.intervalo : item.km;
+  const soloFecha = item.km == null && item.meses != null;
+  const intervalo = soloFecha ? null : (reglaPorTipo ? reglaPorTipo.intervalo : item.km);
   const meses = item.meses != null ? item.meses : (reglaPorTipo ? reglaPorTipo.meses : null);
   if (intervalo == null && meses == null) return null;
   return { intervalo, meses };
@@ -1186,7 +1192,8 @@ function initServiceForm() {
   }
 
   const updateProximoKm = () => {
-    if (getServiceRegla(serviceItem(tipoEl.value))) { applyReglaServicio(); return; }
+    const regla = getServiceRegla(serviceItem(tipoEl.value));
+    if (regla && regla.intervalo != null) { applyReglaServicio(); return; }
     if (proximoKmTouched) return;
     const km = parseInt(kmEl.value) || 0;
     const intervalo = parseInt(intervaloEl.value) || 0;
@@ -1226,9 +1233,10 @@ function initServiceForm() {
     e.preventDefault();
     if (!isAdmin()) return;
     const regla = getServiceRegla(serviceItem(tipoEl.value));
+    const conKm = !!(regla && regla.intervalo != null);
     const km = parseInt(kmEl.value) || null;
-    const intervalo = regla ? regla.intervalo : (parseInt(intervaloEl.value) || null);
-    const proximoKm = regla
+    const intervalo = conKm ? regla.intervalo : (parseInt(intervaloEl.value) || null);
+    const proximoKm = conKm
       ? (km != null ? km + regla.intervalo : null)
       : (parseInt(proximoKmEl.value) || (km && intervalo ? km + intervalo : null));
     const fechaStr = document.getElementById('s-fecha').value;

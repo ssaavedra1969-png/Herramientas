@@ -83,14 +83,17 @@ const { check, section, done } = makeReporter('negocio');
   section('PARAMETROS DE SERVICE (config/serviceParametros)');
   let cfg = await req('GET', '/api/vehicles/services/parametros');
   check('GET parametros -> 200', cfg.status === 200, JSON.stringify(cfg.json).slice(0, 120));
-  check('seed con 16 items', cfg.json.items && cfg.json.items.length === 16, cfg.json.items && cfg.json.items.length);
-  check('seed con 5 items fijos', cfg.json.items && cfg.json.items.filter((i) => i.fijo).length === 5);
+  check('seed con 21 items', cfg.json.items && cfg.json.items.length === 21, cfg.json.items && cfg.json.items.length);
+  check('seed con 10 items fijos', cfg.json.items && cfg.json.items.filter((i) => i.fijo).length === 10);
   const aceiteSeed = cfg.json.items && cfg.json.items.find((i) => i.nombre === 'Cambio de aceite');
   check('aceite fijo con 10000 km', aceiteSeed && aceiteSeed.fijo === true && aceiteSeed.km === 10000,
     JSON.stringify(aceiteSeed));
   const alineacionSeed = cfg.json.items && cfg.json.items.find((i) => i.nombre === 'Alineación');
   check('item no fijo sin km ni meses', alineacionSeed && alineacionSeed.fijo === false && alineacionSeed.km === null && alineacionSeed.meses === null,
     JSON.stringify(alineacionSeed));
+  const calibradoSeed = cfg.json.items && cfg.json.items.find((i) => i.nombre === 'Calibrado de ruedas');
+  check('calibrado de ruedas: solo fecha (km null, meses 2, fijo)', calibradoSeed && calibradoSeed.km === null &&
+    calibradoSeed.meses === 2 && calibradoSeed.fijo === true, JSON.stringify(calibradoSeed));
 
   const guardar = await req('PUT', '/api/vehicles/services/parametros', {
     body: {
