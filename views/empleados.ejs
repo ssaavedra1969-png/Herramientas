@@ -173,7 +173,10 @@
   <div class="glass-card rounded-xl p-4 w-full max-w-4xl mx-4 border border-[#2563EB]/30" style="height:90vh">
     <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#2563EB]/25">
       <h3 id="emp-documento-titulo" class="text-sm font-bold text-[#ffffff]">Documento</h3>
-      <button type="button" onclick="cerrarDocumento()" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      <div class="flex items-center gap-2">
+        <button id="btn-descargar-documento" type="button" class="px-2 py-1 text-xs rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">Descargar</button>
+        <button type="button" onclick="cerrarDocumento()" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
     </div>
     <div id="emp-documento-frame" class="w-full bg-white rounded-lg" style="height:calc(100% - 48px)">
       <iframe id="emp-documento-iframe" title="Documento del empleado" class="w-full h-full rounded-lg" frameborder="0"></iframe>

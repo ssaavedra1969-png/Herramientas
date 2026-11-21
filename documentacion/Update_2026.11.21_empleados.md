@@ -93,6 +93,7 @@ Errores: `NO_ENCONTRADO → 404`, `CONFLICTO → 409`, `VALIDACION → 400`, res
 - Accesos agregados en `views/partials/sidebar.ejs`, `views/partials/mobile-menu.ejs`, `public/js/command-palette.js` y título en `views/partials/topbar.ejs`.
 - La página es de lectura para cualquier usuario logueado; botones de alta, edición, sincronización, traslado y edición de historial están detrás de `isAdmin()`.
 - Incluye filtros por texto, DNI, patente y estado; alta/edición; sincronización; modal de traslado con confirmación si hay ocupante; historial; visor de DNI/Registro; exportación Excel y PDF/impresión.
+- El visor de DNI/Registro tiene botón **Descargar**: pide el PDF con `?descargar=1` y el endpoint responde `Content-Disposition: attachment`. El link de la tabla sigue abriéndolo inline.
 - Los perfiles virtuales muestran el botón **Sincronizar**; no se pueden editar hasta pasar a perfil real.
 
 ---

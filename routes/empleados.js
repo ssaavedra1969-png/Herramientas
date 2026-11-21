@@ -47,7 +47,8 @@ router.get('/:id/documentos/:tipo', verifyToken, async (req, res) => {
     const doc = await empleados.obtenerDocumentoEmpleado(db, req.params.id, String(req.params.tipo || '').toLowerCase());
     if (!doc) return res.status(404).json({ error: 'Documento no encontrado' });
     res.set('Content-Type', doc.mime || 'application/pdf');
-    res.set('Content-Disposition', `inline; filename="${doc.nombre}"`);
+    const descargar = String(req.query.descargar || '') === '1';
+    res.set('Content-Disposition', `${descargar ? 'attachment' : 'inline'}; filename="${doc.nombre}"`);
     res.set('Cache-Control', 'no-store');
     return res.send(doc.buffer);
   } catch (error) {

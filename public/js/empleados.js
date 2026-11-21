@@ -2,6 +2,7 @@ let empleadosData = [];
 let filtro = { search: '', estado: '' };
 let historialData = [];
 let urlDocumentoActual = null;
+let documentoActual = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-sincronizar')?.addEventListener('click', sincronizarEmpleados);
   document.getElementById('btn-exportar')?.addEventListener('click', exportarEmpleados);
   document.getElementById('btn-imprimir')?.addEventListener('click', imprimirEmpleados);
+  document.getElementById('btn-descargar-documento')?.addEventListener('click', descargarDocumentoActual);
   document.getElementById('form-empleado')?.addEventListener('submit', guardarEmpleado);
   document.getElementById('emp-traslado-confirmar')?.addEventListener('click', confirmarTraslado);
   cargarEmpleados();
@@ -386,7 +388,39 @@ async function verDocumento(ref, tipo) {
     if (frame) frame.src = urlDocumentoActual;
     const titulo = document.getElementById('emp-documento-titulo');
     if (titulo) titulo.textContent = `${e.nombre || ''} — ${tipo.toUpperCase()}`;
+    documentoActual = { id: e.id, tipo, nombre: e.nombre || '' };
     showModal('modal-documento');
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+async function descargarDocumentoActual() {
+  if (!documentoActual) return showToast('No hay documento abierto', 'error');
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/empleados/${encodeURIComponent(documentoActual.id)}/documentos/${encodeURIComponent(documentoActual.tipo)}?descargar=1`, { headers });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'HTTP ' + res.status);
+    }
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const coincidencia = /filename="?([^";]+)"?/i.exec(disposition);
+    const base = String(documentoActual.nombre || 'empleado')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Za-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .toLowerCase() || 'empleado';
+    const nombre = coincidencia ? coincidencia[1] : `${base}_${documentoActual.tipo}.pdf`;
+    const url = URL.createObjectURL(await res.blob());
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = nombre;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (err) {
     showToast('Error: ' + err.message, 'error');
   }
@@ -397,6 +431,7 @@ function cerrarDocumento() {
   if (frame) frame.src = 'about:blank';
   if (urlDocumentoActual) URL.revokeObjectURL(urlDocumentoActual);
   urlDocumentoActual = null;
+  documentoActual = null;
   hideModal('modal-documento');
 }
 
