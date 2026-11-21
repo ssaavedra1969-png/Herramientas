@@ -3,6 +3,7 @@ console.log('[service.js] build:', SVC_BUILD);
 document.addEventListener('DOMContentLoaded', () => {
   const f = document.getElementById('svc-build-flag');
   if (f) f.textContent = SVC_BUILD;
+  if (typeof isAdmin === 'function' && isAdmin()) loadParametros();
 });
 
 let SVC = {
@@ -391,6 +392,80 @@ async function loadPanel() {
   }
 }
 
+async function loadParametros() {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/vehicles/services/parametros', { headers });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    SVC.parametros = (data.items || []).map(i => ({
+      nombre: String(i.nombre || ''),
+      km: i.km == null ? '' : i.km,
+      meses: i.meses == null ? '' : i.meses,
+      fijo: !!i.fijo
+    }));
+    renderParametros();
+  } catch (e) {
+    console.error('Error cargando parámetros de service:', e.message);
+    showToast?.('No se pudieron cargar los parámetros de service', 'error');
+  }
+}
+
+function renderParametros() {
+  const body = document.getElementById('svc-param-body');
+  if (!body) return;
+  const lista = SVC.parametros || [];
+  body.innerHTML = lista.map((it, i) => `
+    <tr class="border-b border-white/5">
+      <td class="px-3 py-1.5"><input data-p="${i}" data-k="nombre" value="${esc(it.nombre)}" placeholder="Nombre del ítem" class="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-[13px] text-[#e8ecf4] outline-none focus:border-[#00E5FF]/50"></td>
+      <td class="px-2 py-1.5 text-center"><input type="checkbox" data-p="${i}" data-k="fijo" ${it.fijo ? 'checked' : ''} class="accent-[#FACC15] w-4 h-4"></td>
+      <td class="px-2 py-1.5"><input type="number" min="1" data-p="${i}" data-k="km" value="${esc(it.km)}" placeholder="—" class="w-24 bg-white/5 border border-white/10 rounded px-2 py-1 text-[13px] text-[#e8ecf4] text-right outline-none focus:border-[#00E5FF]/50"></td>
+      <td class="px-2 py-1.5"><input type="number" min="1" max="120" data-p="${i}" data-k="meses" value="${esc(it.meses)}" placeholder="—" class="w-16 bg-white/5 border border-white/10 rounded px-2 py-1 text-[13px] text-[#e8ecf4] text-right outline-none focus:border-[#00E5FF]/50"></td>
+      <td class="px-3 py-1.5 text-right"><button type="button" onclick="service.removeParam(${i})" class="px-2 py-1 rounded text-[11px] font-semibold bg-[#ef4444]/10 text-[#ef4444] hover:bg-[#ef4444]/20 transition-colors">Eliminar</button></td>
+    </tr>`).join('') || '<tr><td colspan="5" class="px-3 py-4 text-center text-[#4a5568]">No hay ítems cargados</td></tr>';
+  body.querySelectorAll('input[data-p]').forEach(el => {
+    el.addEventListener('change', e => {
+      const idx = Number(e.target.dataset.p);
+      const key = e.target.dataset.k;
+      if (!SVC.parametros[idx]) return;
+      SVC.parametros[idx][key] = key === 'fijo' ? e.target.checked : e.target.value;
+    });
+  });
+}
+
+function addParam() {
+  SVC.parametros = SVC.parametros || [];
+  SVC.parametros.push({ nombre: '', km: '', meses: '', fijo: false });
+  renderParametros();
+  const rows = document.querySelectorAll('#svc-param-body tr');
+  rows[rows.length - 1]?.querySelector('input')?.focus();
+}
+
+function removeParam(i) {
+  if (!SVC.parametros || !SVC.parametros[i]) return;
+  SVC.parametros.splice(i, 1);
+  renderParametros();
+}
+
+async function saveParams() {
+  if (typeof isAdmin === 'function' && !isAdmin()) return;
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/vehicles/services/parametros', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ items: SVC.parametros || [] })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+    showToast('Parámetros de service guardados', 'success');
+    await loadParametros();
+  } catch (e) {
+    console.error('Error guardando parámetros de service:', e.message);
+    showToast('No se pudieron guardar los parámetros: ' + e.message, 'error');
+  }
+}
+
 const service = {
   toggle(id) {
     const detail = document.getElementById('detail-' + id);
@@ -401,6 +476,14 @@ const service = {
     chevron?.classList.toggle('rotate-90');
   },
   filterEstado(key) { SVC.estadoPill = SVC.estadoPill === key ? '' : key; render(); },
-  reload() { clearListeners(); if (SVC.timer) { clearInterval(SVC.timer); SVC.timer = null; } initRealtime(); }
+  addParam,
+  removeParam,
+  saveParams,
+  reload() {
+    clearListeners();
+    if (SVC.timer) { clearInterval(SVC.timer); SVC.timer = null; }
+    initRealtime();
+    if (typeof isAdmin === 'function' && isAdmin()) loadParametros();
+  }
 };
 window.service = service;

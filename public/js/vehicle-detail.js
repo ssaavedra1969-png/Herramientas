@@ -8,8 +8,9 @@ let currentTab = 'resumen';
 let qrCodeInstance = null;
 let editingServiceId = null;
 let proximoKmTouched = false;
+let serviceParams = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const pathParts = window.location.pathname.split('/');
   vehicleId = pathParts[pathParts.length - 1];
 
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  await loadServiceParametros();
   loadVehicle();
   initServiceForm();
   initRepuestoForm();
@@ -1056,24 +1058,44 @@ document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) =
   }
 });
 
-const SERVICE_DEFAULT_KM = {
-  'Cambio de aceite': 10000,
-  'Cambio filtro de aceite': 10000,
-  'Cambio filtro de combustible': 20000,
-  'Cambio filtro de aire': 30000,
-  'Cambio filtro de habitáculo': 15000,
-  'Alineación': 10000,
-  'Balanceo': 10000,
-  'Control de caja': 50000,
-  'Control de diferencial': 50000,
-  'Caja y diferencial': 50000,
-  'Control de neumáticos': 10000,
-  'Cambio pastillas de freno': 40000,
-  'Cambio líquido de frenos': 40000,
-  'Cambio correa de distribución': 90000,
-  'Control de batería': 30000,
-  'Control de refrigerante': 30000
+const SERVICE_PARAMS_DEFAULT = {
+  items: [
+    { nombre: 'Cambio de aceite', km: 10000, meses: null, fijo: true },
+    { nombre: 'Cambio filtro de aceite', km: 10000, meses: null, fijo: true },
+    { nombre: 'Cambio filtro de combustible', km: 20000, meses: null, fijo: true },
+    { nombre: 'Cambio filtro de aire', km: 30000, meses: null, fijo: true },
+    { nombre: 'Cambio filtro de habitáculo', km: 15000, meses: null, fijo: true },
+    { nombre: 'Alineación', km: null, meses: null, fijo: false },
+    { nombre: 'Balanceo', km: null, meses: null, fijo: false },
+    { nombre: 'Control de caja', km: null, meses: null, fijo: false },
+    { nombre: 'Control de diferencial', km: null, meses: null, fijo: false },
+    { nombre: 'Caja y diferencial', km: null, meses: null, fijo: false },
+    { nombre: 'Control de neumáticos', km: null, meses: null, fijo: false },
+    { nombre: 'Cambio pastillas de freno', km: null, meses: null, fijo: false },
+    { nombre: 'Cambio líquido de frenos', km: null, meses: null, fijo: false },
+    { nombre: 'Cambio correa de distribución', km: null, meses: null, fijo: false },
+    { nombre: 'Control de batería', km: null, meses: null, fijo: false },
+    { nombre: 'Control de refrigerante', km: null, meses: null, fijo: false }
+  ]
 };
+
+async function loadServiceParametros() {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch('/api/vehicles/services/parametros', { headers });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data && Array.isArray(data.items)) serviceParams = data;
+  } catch (e) {
+    serviceParams = SERVICE_PARAMS_DEFAULT;
+  }
+}
+
+function serviceItem(nombre) {
+  const items = (serviceParams && serviceParams.items) || SERVICE_PARAMS_DEFAULT.items;
+  const n = String(nombre || '').trim().toLowerCase();
+  return items.find(i => String(i && i.nombre || '').trim().toLowerCase() === n) || null;
+}
 
 const SERVICE_FLUIDO = {
   'Cambio filtro de aceite': 'Cambio de aceite',
@@ -1087,11 +1109,16 @@ function getTipoUnificado() {
   return null;
 }
 
-function getServiceRegla() {
+function getServiceRegla(item) {
+  if (!item || !item.fijo) return null;
   const tipo = getTipoUnificado();
-  if (tipo === 'Mixer') return { intervalo: 30000, meses: 9 };
-  if (tipo === 'Auto' || tipo === 'Camioneta') return { intervalo: 10000, meses: 6 };
-  return null;
+  let reglaPorTipo = null;
+  if (tipo === 'Mixer') reglaPorTipo = { intervalo: 30000, meses: 9 };
+  if (tipo === 'Auto' || tipo === 'Camioneta') reglaPorTipo = { intervalo: 10000, meses: 6 };
+  const intervalo = reglaPorTipo ? reglaPorTipo.intervalo : item.km;
+  const meses = item.meses != null ? item.meses : (reglaPorTipo ? reglaPorTipo.meses : null);
+  if (intervalo == null && meses == null) return null;
+  return { intervalo, meses };
 }
 
 function addMeses(fechaStr, meses) {
@@ -1107,7 +1134,7 @@ function addMeses(fechaStr, meses) {
 }
 
 function applyReglaServicio() {
-  const regla = getServiceRegla();
+  const regla = getServiceRegla(serviceItem(document.getElementById('s-tipo')?.value));
   if (!regla) return;
   const intervaloEl = document.getElementById('s-intervalo');
   const kmEl = document.getElementById('s-km');
@@ -1115,10 +1142,10 @@ function applyReglaServicio() {
   const fechaEl = document.getElementById('s-fecha');
   const proxFechaEl = document.getElementById('s-proximoFecha');
   if (!intervaloEl) return;
-  intervaloEl.value = regla.intervalo;
+  intervaloEl.value = regla.intervalo ?? '';
   const km = parseInt(kmEl?.value) || 0;
-  if (proxKmEl) proxKmEl.value = km ? km + regla.intervalo : '';
-  if (proxFechaEl && fechaEl) proxFechaEl.value = addMeses(fechaEl.value, regla.meses);
+  if (proxKmEl) proxKmEl.value = (km && regla.intervalo) ? km + regla.intervalo : '';
+  if (proxFechaEl && fechaEl && regla.meses) proxFechaEl.value = addMeses(fechaEl.value, regla.meses);
 }
 
 function addServicioSuggestion(name) {
@@ -1154,11 +1181,12 @@ function initServiceForm() {
 
   const serviciosList = document.getElementById('servicios-list');
   if (serviciosList) {
-    serviciosList.innerHTML = Object.keys(SERVICE_DEFAULT_KM).map(s => `<option value="${s}"></option>`).join('');
+    const items = (serviceParams && serviceParams.items) || SERVICE_PARAMS_DEFAULT.items;
+    serviciosList.innerHTML = items.map(i => `<option value="${String(i.nombre || '').replace(/"/g, '&quot;')}"></option>`).join('');
   }
 
   const updateProximoKm = () => {
-    if (getServiceRegla()) { applyReglaServicio(); return; }
+    if (getServiceRegla(serviceItem(tipoEl.value))) { applyReglaServicio(); return; }
     if (proximoKmTouched) return;
     const km = parseInt(kmEl.value) || 0;
     const intervalo = parseInt(intervaloEl.value) || 0;
@@ -1183,17 +1211,11 @@ function initServiceForm() {
 
   tipoEl.addEventListener('input', () => {
     addServicioSuggestion(tipoEl.value);
-    if (getServiceRegla()) {
+    if (getServiceRegla(serviceItem(tipoEl.value))) {
       applyReglaServicio();
     } else {
-      const def = SERVICE_DEFAULT_KM[tipoEl.value];
-      if (def) {
-        intervaloEl.value = def;
-        updateProximoKm();
-      } else {
-        intervaloEl.value = '';
-        updateProximoKm();
-      }
+      intervaloEl.value = '';
+      updateProximoKm();
     }
     updateFluido();
   });
@@ -1203,7 +1225,7 @@ function initServiceForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!isAdmin()) return;
-    const regla = getServiceRegla();
+    const regla = getServiceRegla(serviceItem(tipoEl.value));
     const km = parseInt(kmEl.value) || null;
     const intervalo = regla ? regla.intervalo : (parseInt(intervaloEl.value) || null);
     const proximoKm = regla

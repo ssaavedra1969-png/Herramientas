@@ -5,6 +5,7 @@ const path = require('path');
 const { db, admin } = require('../config/firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const gh = require('../lib/github-docs');
+const { getParametros, guardarParametros } = require('../lib/service-parametros');
 const { parseFecha, toDate, esDeshabilitado } = require('../lib/utils');
 
 const DOCS_DIR = path.join(process.cwd(), 'PATENTE');
@@ -577,6 +578,23 @@ router.delete('/:id/repuestos/:entryId', verifyToken, requireAdmin, async (req, 
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/services/parametros', verifyToken, async (req, res) => {
+  try {
+    res.json({ ok: true, ...(await getParametros()) });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/services/parametros', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const cfg = await guardarParametros(req.body, req.userData?.displayName || req.user?.email || '');
+    res.json({ ok: true, ...cfg });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

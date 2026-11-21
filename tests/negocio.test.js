@@ -80,5 +80,44 @@ const { check, section, done } = makeReporter('negocio');
   check('borrar doc inexistente -> 503 sin GITHUB_TOKEN',
     (await req('DELETE', `/api/vehicles/${wid}/documentos/cedula`)).status === 503);
 
+  section('PARAMETROS DE SERVICE (config/serviceParametros)');
+  let cfg = await req('GET', '/api/vehicles/services/parametros');
+  check('GET parametros -> 200', cfg.status === 200, JSON.stringify(cfg.json).slice(0, 120));
+  check('seed con 16 items', cfg.json.items && cfg.json.items.length === 16, cfg.json.items && cfg.json.items.length);
+  check('seed con 5 items fijos', cfg.json.items && cfg.json.items.filter((i) => i.fijo).length === 5);
+  const aceiteSeed = cfg.json.items && cfg.json.items.find((i) => i.nombre === 'Cambio de aceite');
+  check('aceite fijo con 10000 km', aceiteSeed && aceiteSeed.fijo === true && aceiteSeed.km === 10000,
+    JSON.stringify(aceiteSeed));
+  const alineacionSeed = cfg.json.items && cfg.json.items.find((i) => i.nombre === 'Alineación');
+  check('item no fijo sin km ni meses', alineacionSeed && alineacionSeed.fijo === false && alineacionSeed.km === null && alineacionSeed.meses === null,
+    JSON.stringify(alineacionSeed));
+
+  const guardar = await req('PUT', '/api/vehicles/services/parametros', {
+    body: {
+      items: [
+        { nombre: '  Cambio de aceite ', km: '12000', meses: '8', fijo: 'true' },
+        { nombre: 'Cambio de aceite', km: 1, fijo: true },
+        { nombre: '   ', km: 5 },
+        { nombre: 'Otro', km: 9999999, meses: 999, fijo: false }
+      ]
+    }
+  });
+  check('PUT parametros -> 200', guardar.status === 200, JSON.stringify(guardar.json).slice(0, 160));
+  check('dedupe y descarta nombre vacio', guardar.json.items && guardar.json.items.length === 2,
+    JSON.stringify(guardar.json.items));
+  check('normaliza nombre, km y fijo', guardar.json.items && guardar.json.items[0].nombre === 'Cambio de aceite' &&
+    guardar.json.items[0].km === 12000 && guardar.json.items[0].fijo === true, JSON.stringify(guardar.json.items && guardar.json.items[0]));
+  check('clamp de km y meses', guardar.json.items && guardar.json.items[1].km === 1000000 &&
+    guardar.json.items[1].meses === 120, JSON.stringify(guardar.json.items && guardar.json.items[1]));
+
+  cfg = await req('GET', '/api/vehicles/services/parametros');
+  check('GET devuelve lo guardado', cfg.json.items && cfg.json.items.length === 2 && cfg.json.items[0].meses === 8,
+    JSON.stringify(cfg.json.items));
+  check('registra el autor', typeof cfg.json.actualizadoPor === 'string' && cfg.json.actualizadoPor.length > 0,
+    JSON.stringify(cfg.json.actualizadoPor));
+  check('PUT sin items -> 400', (await req('PUT', '/api/vehicles/services/parametros', { body: {} })).status === 400);
+  check('PUT como Usuario -> 403',
+    (await req('PUT', '/api/vehicles/services/parametros', { body: { items: [] }, as: 'user' })).status === 403);
+
   done();
 })();

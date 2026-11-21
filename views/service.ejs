@@ -80,6 +80,34 @@
           </table>
         </div>
       </div>
+
+      <% if (currentUserData?.role === 'Admin') { %>
+      <div class="glass-card rounded-xl overflow-hidden mt-4" id="svc-parametros">
+        <div class="px-4 py-3 flex flex-wrap items-center gap-2 border-b border-white/5 bg-white/[0.02]">
+          <span class="w-2 h-2 rounded-full bg-[#FACC15]"></span>
+          <h2 class="text-sm font-bold tracking-wide text-[#ffffff]">Parámetros de service</h2>
+          <button type="button" onclick="service.addParam()" class="ml-auto px-2 py-1 rounded-md text-xs font-semibold bg-[#2563EB]/15 text-[#2563EB] hover:bg-[#2563EB]/25 transition-colors">+ Agregar ítem</button>
+          <button type="button" onclick="service.saveParams()" class="px-2 py-1 rounded-md text-xs font-semibold bg-[#00E5FF]/15 text-[#00E5FF] hover:bg-[#00E5FF]/25 transition-colors">Guardar cambios</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[620px]">
+            <thead>
+              <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
+                <th class="px-3 py-2.5 text-left font-semibold">Ítem</th>
+                <th class="px-2 py-2.5 text-center font-semibold">Fijo</th>
+                <th class="px-2 py-2.5 text-right font-semibold">Km</th>
+                <th class="px-2 py-2.5 text-right font-semibold">Meses</th>
+                <th class="px-3 py-2.5 text-right font-semibold">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="svc-param-body"></tbody>
+          </table>
+        </div>
+        <div class="px-4 py-2.5 text-[11px] text-[#4a5568] border-t border-white/5">
+          Solo los ítems marcados como <span class="text-[#FACC15]">Fijo</span> autocompletan km y próxima fecha; los demás los cargás a mano. Los meses cargados acá reemplazan la regla por tipo de vehículo (Mixer 9 / Auto y Camioneta 6).
+        </div>
+      </div>
+      <% } %>
     </main>
   </div>
 </div>
