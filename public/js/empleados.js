@@ -39,6 +39,12 @@ function escEmp(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function fechaEmpleado(valor) {
+  const s = String(valor == null ? '' : valor).trim();
+  if (!s || /\[object Object\]|\b(?:invalid date|nan|null|undefined)\b/i.test(s)) return '';
+  return s;
+}
+
 function resolverEmpleado(ref) {
   if (ref === null || ref === undefined || ref === '') return null;
   return empleadosData.find(e => String(e.id) === String(ref)) || empleadosData[Number(ref)] || null;
@@ -66,7 +72,7 @@ async function cargarEmpleados() {
     empleadosData = Array.isArray(data.empleados) ? data.empleados : (Array.isArray(data) ? data : []);
     renderEmpleados();
   } catch (e) {
-    if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-red-400">Error al cargar empleados: ' + escEmp(e.message) + '</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-red-400">Error al cargar empleados: ' + escEmp(e.message) + '</td></tr>';
     showToast('Error al cargar empleados: ' + e.message, 'error');
   }
 }
@@ -100,11 +106,13 @@ function renderEmpleados() {
   if (!tbody) return;
   const lista = filtrarEmpleados();
   if (!lista.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-[#4a5568]">No hay empleados para mostrar</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-[#4a5568]">No hay empleados para mostrar</td></tr>';
     return;
   }
   tbody.innerHTML = lista.map(e => {
     const ref = escEmp(refEmpleado(e));
+    const vencDni = fechaEmpleado(e.vencimientoDNI);
+    const vencReg = fechaEmpleado(e.vencimientoRegistro);
     const patentes = (e.patentes || []).map(p => p.vehiculoId
       ? `<a href="/vehicle/${escEmp(p.vehiculoId)}" class="text-[#60A5FA] hover:underline" title="${escEmp(p.interno || '')}">${escEmp(p.patente || '—')}</a>`
       : `<span class="text-[#cbd5e1]">${escEmp(p.patente || '—')}</span>`).join(' · ') || '<span class="text-[#4a5568]">—</span>';
@@ -137,6 +145,8 @@ function renderEmpleados() {
         <td class="px-4 py-3 font-medium text-[#ffffff]">${escEmp(e.nombre || '—')}</td>
         <td class="px-4 py-3 text-[#8b9bb4] font-mono text-xs">${escEmp(e.dni || '—')}</td>
         <td class="px-4 py-3 text-[#8b9bb4] font-mono text-xs">${escEmp(e.registro || '—')}</td>
+        <td class="px-4 py-3 text-[#8b9bb4] font-mono text-xs">${escEmp(vencDni)}</td>
+        <td class="px-4 py-3 text-[#8b9bb4] font-mono text-xs">${escEmp(vencReg)}</td>
         <td class="px-4 py-3 text-xs">${patentes}</td>
         <td class="px-4 py-3 text-[11px]">${documentos}</td>
         <td class="px-4 py-3">
@@ -442,8 +452,8 @@ function columnasExport() {
     Registro: e.registro || '',
     Patentes: (e.patentes || []).map(p => p.patente).filter(Boolean).join(' '),
     Estado: estadoTexto(e),
-    'Venc. DNI': e.vencimientoDNI || '',
-    'Venc. Registro': e.vencimientoRegistro || '',
+    'Venc. DNI': fechaEmpleado(e.vencimientoDNI),
+    'Venc. Registro': fechaEmpleado(e.vencimientoRegistro),
     Documentos: ['dni', 'registro'].filter(t => e.documentos && e.documentos[t] && e.documentos[t].presente).map(t => t.toUpperCase()).join(' / ') || '—'
   }));
 }

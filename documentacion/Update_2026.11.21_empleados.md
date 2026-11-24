@@ -2,7 +2,7 @@
 
 Puesta al día para la próxima IA y para la otra PC. Implementa una sección nueva **Empleados** que deja de tratar al chofer como un texto suelto dentro de cada vehículo: agrupa vehículos por chofer + DNI, mantiene un perfil por persona, guarda sus documentos en GitHub, registra el historial de asignaciones y permite trasladar un chofer de una patente a otra con documentos e historial.
 
-Estado: **código y tests listos; commit/push pendiente de autorización explícita**.
+Estado: **código y tests listos; commits `a0232e3` y `6f8a698` ya pusheados**.
 
 ---
 
@@ -147,3 +147,15 @@ El usuario pidió incluir sus cambios propios en esta misma entrega:
 - Un error `CONFLICTO` en el traslado es una guarda de datos, no un bug: requiere confirmación de reemplazo.
 - Al tocar frontend, pedir el JS con `?v=<mtime>` para no leer una versión cacheada.
 - Las vistas y `public/` se recargan al refrescar; `server.js` y rutas requieren reiniciar (`npm run dev` o matar puerto 3000).
+
+---
+
+## 9. Backfill de vencimientos DNI/Registro (sesión posterior)
+
+Se agregó `npm run completar:vencimientos-empleados` (`scripts/completar-vencimientos-empleados.js`). Por defecto es **dry-run**; con `--apply` escribe **solo** `employees.vencimientoDNI` / `employees.vencimientoRegistro` (+ auditoría). Nunca escribe en `vehicles` y no toca `activo`. La lógica vive en `lib/empleados.js` → `completarVencimientosDesdeVehiculos()` y empareja por `empleadoId` o por `clave` (nombre+DNI). Reporta conflictos, perfiles sin vehículo, sin fecha y fechas inválidas.
+
+Resultado del dry-run real contra producción: **29 perfiles, 0 a completar**. Hay **27 perfiles con `[object Object]`** en DNI/Registro tanto en `employees` como en `vehicles`, y **2 sin fecha en ningún lado** (`Alfredo Coronel`, `Carrizo Gustavo`). No hay backup ni Excel con esas fechas (el `CONTROL_VENCIMIENTOS_2026-09-07.xlsx` solo cubre 6 filas DNI/Registro). **No se aplicó ninguna escritura**: el usuario eligió dejar el script listo y no tocar los datos.
+
+Para que se vea lo que sí existe, la grilla de `/empleados` tiene ahora las columnas **Venc. DNI** y **Venc. Registro** (`views/empleados.ejs`, `public/js/empleados.js`). El helper `fechaEmpleado()` muestra la fecha tal cual está cargada y deja la celda vacía cuando el valor está vacío o es inválido (`[object Object]`, `undefined`, etc.). El Excel usa el mismo helper. El modal **Editar** sigue mostrando el valor crudo: no se cambió para no disparar guardados accidentales.
+
+Causa del dato sucio: `construirPerfil()` pasa las fechas por `limpiar()` (`String(valor)`), por lo que un `Timestamp` de Firestore se guarda como `[object Object]`; `camposEspejo()` lo devuelve luego a `vehicles`. **No corregido por decisión del usuario**. No apretar **Sincronizar** esperando que repare las fechas: solo replica el valor dañado. Tests nuevos en `tests/empleados.test.js` (11 checks: 7 del backfill y 4 de la tabla); `npm test` quedó en **296 checks, 0 fallas**.

@@ -1,6 +1,8 @@
 process.env.GITHUB_TOKEN = 'test-token';
 
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const fetchReal = global.fetch;
 const archivos = new Map();
 const b64 = s => Buffer.from(s).toString('base64');
@@ -185,6 +187,45 @@ function perfil(nombreCompleto, dni, registro, patenteActual, id) {
   report.check('PUT replica registro/vencimientos en todos los vehiculos', espejos.every(v => v.registro === 'R-333-NUEVO' && v.vencimientoDNI === '03/03/2031' && v.documentacion?.dni?.fechaVencimiento === '03/03/2031'), JSON.stringify(espejos));
   report.check('activo se guarda como booleano', fake.dump('employees')[0].activo === false, String(fake.dump('employees')[0].activo));
 
+  report.section('BACKFILL VENCIMIENTOS EMPLEADOS');
+  limpiarDatos();
+  const perfilVacio = perfil('Ana Perez', '111', 'R1', 'ORIA', 'empBack');
+  perfilVacio.vencimientoDNI = '';
+  perfilVacio.vencimientoRegistro = '';
+  fake.seed('employees', 'empBack', perfilVacio);
+  fake.seed('vehicles', 'vBack', vehiculo('ORIA', { chofer: 'Ana Perez', dni: '111', registro: 'R1', empleadoId: 'empBack', vencimientoDNI: '05/05/2029', documentacion: { registro: { fechaVencimiento: '06/06/2029' } } }));
+
+  const vehiculosAntes = JSON.stringify(fake.dump('vehicles'));
+  const perfilesAntes = JSON.stringify(fake.dump('employees'));
+  let back = await empleadosLib.completarVencimientosDesdeVehiculos(fake.db, { aplicar: false });
+  report.check('backfill dry-run planea sin escribir', back.planes.length === 1 && back.escritos === 0 && JSON.stringify(fake.dump('employees')) === perfilesAntes, JSON.stringify(back.planes));
+
+  back = await empleadosLib.completarVencimientosDesdeVehiculos(fake.db, { aplicar: true, usuario: 'Admin' });
+  const empBack = fake.dump('employees')[0];
+  report.check('backfill copia DNI y Registro', empBack.vencimientoDNI === '05/05/2029' && empBack.vencimientoRegistro === '06/06/2029' && back.escritos === 1, JSON.stringify(empBack));
+  report.check('backfill no modifica vehicles', JSON.stringify(fake.dump('vehicles')) === vehiculosAntes, JSON.stringify(fake.dump('vehicles')));
+  report.check('backfill conserva activo y patente', empBack.activo === true && empBack.patenteActual === 'ORIA', JSON.stringify(empBack));
+  report.check('backfill registra auditoria', empBack.actualizadoPor === 'Admin' && !!empBack.actualizadoEn, JSON.stringify(empBack));
+
+  limpiarDatos();
+  const perfilConf = perfil('Beto Gomez', '222', 'R2', 'X1', 'empConf');
+  perfilConf.vencimientoDNI = '';
+  perfilConf.vencimientoRegistro = '';
+  fake.seed('employees', 'empConf', perfilConf);
+  fake.seed('vehicles', 'c1', vehiculo('X1', { chofer: 'Beto Gomez', dni: '222', registro: 'R2', vencimientoDNI: '01/01/2029' }));
+  fake.seed('vehicles', 'c2', vehiculo('X2', { chofer: 'beto gomez', dni: '222-', registro: 'R2', vencimientoDNI: '02/02/2029' }));
+  back = await empleadosLib.completarVencimientosDesdeVehiculos(fake.db, { aplicar: true });
+  report.check('backfill marca conflicto y no escribe', back.conflictos.length === 1 && back.escritos === 0 && fake.dump('employees')[0].vencimientoDNI === '', JSON.stringify(back.conflictos));
+
+  limpiarDatos();
+  const perfilSucio = perfil('Arballo Ricardo', '26320538', 'R3', 'AG092TP', 'empSucio');
+  perfilSucio.vencimientoDNI = '[object Object]';
+  perfilSucio.vencimientoRegistro = '';
+  fake.seed('employees', 'empSucio', perfilSucio);
+  fake.seed('vehicles', 's1', vehiculo('AG092TP', { chofer: 'Arballo Ricardo', dni: '26320538', registro: 'R3', vencimientoDNI: '[object Object]', documentacion: { dni: { fechaVencimiento: '[object Object]' } } }));
+  back = await empleadosLib.completarVencimientosDesdeVehiculos(fake.db, { aplicar: true });
+  report.check('backfill reporta fecha invalida sin copiarla', back.invalidos.length === 1 && back.planes.length === 0 && back.escritos === 0 && fake.dump('employees')[0].vencimientoDNI === '[object Object]', JSON.stringify(back.invalidos));
+
   report.section('HISTORIAL');
   limpiarDatos();
   fake.seed('employees', 'emp1', perfil('Ana Perez', '111', 'R1', 'ORIA', 'emp1'));
@@ -235,6 +276,20 @@ function perfil(nombreCompleto, dni, registro, patenteActual, id) {
   r = await req('GET', '/api/admin/report/flota', { as: 'admin' });
   const filaAdmin = r.json?.vehicles?.find(x => x.patente === 'SINCH') || r.json?.flota?.find(x => x.patente === 'SINCH');
   report.check('reporte flota no cuenta DNI/Registro sinChofer como faltantes', !!filaAdmin && filaAdmin.dniSinChofer === true && filaAdmin.registroSinChofer === true && filaAdmin.docs?.dni === true && filaAdmin.docs?.registro === true && filaAdmin.registroFecha === null && filaAdmin.dniFecha === null, JSON.stringify(filaAdmin));
+
+  report.section('TABLA DE EMPLEADOS');
+  const rutaJs = path.join(__dirname, '..', 'public', 'js', 'empleados.js');
+  const rutaVista = path.join(__dirname, '..', 'views', 'empleados.ejs');
+  const jsEmpleados = fs.readFileSync(rutaJs, 'utf8');
+  const vistaEmpleados = fs.readFileSync(rutaVista, 'utf8');
+  const mFecha = /function fechaEmpleado\(valor\) \{([\s\S]*?)\n\}/.exec(jsEmpleados);
+  report.check('helper de fechas extraible del JS', !!mFecha, String(!!mFecha));
+  const fechaEmpleado = new Function('valor', mFecha[1]);
+  report.check('tabla muestra la fecha cargada', fechaEmpleado('05/05/2029') === '05/05/2029', fechaEmpleado('05/05/2029'));
+  report.check('tabla deja vacio el dato invalido', fechaEmpleado('[object Object]') === '' && fechaEmpleado('') === '' && fechaEmpleado('undefined') === '', JSON.stringify([fechaEmpleado('[object Object]'), fechaEmpleado(''), fechaEmpleado('undefined')]));
+  let vistaOk = true;
+  try { require('ejs').compile(vistaEmpleados, { filename: rutaVista }); } catch { vistaOk = false; }
+  report.check('vista compila y tiene las 2 columnas', vistaOk && /Venc\. DNI/.test(vistaEmpleados) && /Venc\. Registro/.test(vistaEmpleados) && /colspan="9"/.test(vistaEmpleados), String(vistaOk));
 
   report.done();
 })().catch(e => { console.error(e); process.exit(1); });

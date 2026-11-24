@@ -18,6 +18,7 @@
     "generar:pdf-seguros": "node scripts/generar-pdf-seguros.js",
     "informe:vencimientos": "node scripts/informe-vencimientos-semanal.js",
     "copiar:docs-choferes": "node scripts/copiar-docs-choferes.js",
+    "completar:vencimientos-empleados": "node scripts/completar-vencimientos-empleados.js",
     "cargar:companias": "node scripts/cargar-compania-seguros.js",
     "limpiar:service": "node scripts/limpiar-service-fields.js",
     "test": "npm run test:escrituras && npm run test:negocio && npm run test:numeracion && npm run test:import && npm run test:deshabilitado && npm run test:inventario && npm run test:informes && npm run test:flota && npm run test:github && npm run test:empleados",
