@@ -275,8 +275,8 @@ function renderVehicleTable(vehicles) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   const _d = raw => {
     if (!raw) return null;
-    const t = raw.toDate ? raw.toDate() : new Date(raw);
-    if (isNaN(t)) return null;
+    const t = typeof raw.toDate === 'function' ? raw.toDate() : fechaParaInput(raw);
+    if (!t || isNaN(t.getTime())) return null;
     return Math.ceil((t - new Date()) / 86400000);
   };
 
@@ -385,8 +385,8 @@ function renderVehicleCards(vehicles) {
     const checked = selectedIds.has(v.id);
 
     let vtvBadge = '';
-    if (mv.vtv?.fechaVencimiento) {
-      const venc = mv.vtv.fechaVencimiento?.toDate ? mv.vtv.fechaVencimiento.toDate() : new Date(mv.vtv.fechaVencimiento);
+    const venc = fechaParaInput(mv.vtv?.fechaVencimiento);
+    if (venc && !isNaN(venc.getTime())) {
       const hoy = new Date();
       const dias = Math.ceil((venc - hoy) / (1000 * 60 * 60 * 24));
       if (dias < 0) vtvBadge = `<span class="card-badge vtv-expired">VTV vencida</span>`;
@@ -743,11 +743,44 @@ function toggleMotivoDeshabilitado() {
 }
 document.getElementById('v-deshabilitado')?.addEventListener('change', toggleMotivoDeshabilitado);
 
+function fechaParaInput(val) {
+  if (val == null || val === '') return null;
+  if (typeof val.toDate === 'function') return val.toDate();
+  if (typeof val === 'object' && typeof val.seconds === 'number') {
+    return new Date(val.seconds * 1000 + Math.floor((val.nanoseconds || 0) / 1e6));
+  }
+  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+  if (typeof val === 'string') {
+    const s = val.trim();
+    let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
+    if (m) return new Date(+m[3], +m[2] - 1, +m[1], 12, 0, 0);
+    m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3], 12, 0, 0);
+  }
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function fmtDDMMYYYY(d) {
+  if (!d || isNaN(d.getTime())) return '';
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+
+function inputFechaTexto(el) {
+  if (!el) return null;
+  if (el.type === 'date') {
+    el.type = 'text';
+    el.inputMode = 'numeric';
+    el.placeholder = 'dd/mm/aaaa';
+  }
+  return el;
+}
+
 function setDateField(id, val) {
-  const el = document.getElementById(id);
-  if (!val) { el.value = ''; return; }
-  const d = val.toDate ? val.toDate() : new Date(val);
-  el.value = d.toISOString().split('T')[0];
+  const el = inputFechaTexto(document.getElementById(id));
+  if (!el) return;
+  const d = fechaParaInput(val);
+  el.value = fmtDDMMYYYY(d);
 }
 
 function closeVehicleModal() {
@@ -756,8 +789,10 @@ function closeVehicleModal() {
 }
 
 function getDateValue(id) {
-  const val = document.getElementById(id).value;
-  return val ? firebase.firestore.Timestamp.fromDate(new Date(val + 'T00:00:00')) : null;
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const d = fechaParaInput(el.value);
+  return d ? firebase.firestore.Timestamp.fromDate(d) : null;
 }
 
 function collectMultas() {
@@ -1224,7 +1259,8 @@ function toTimestamp(val) {
   } else {
     const s = String(val).trim();
     if (!s) return null;
-    d = s.includes('T') ? new Date(s) : new Date(s + 'T00:00:00');
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) d = fechaParaInput(s);
+    else d = s.includes('T') ? new Date(s) : new Date(s + 'T00:00:00');
   }
   if (isNaN(d.getTime())) return null;
   return firebase.firestore.Timestamp.fromDate(d);
@@ -1467,9 +1503,8 @@ const EXPORT_FIELD_DEFS = [
 ];
 
 function fmtDate(d) {
-  if (!d) return '';
-  const dt = d.seconds ? new Date(d.seconds * 1000) : new Date(d);
-  return isNaN(dt) ? '' : dt.toLocaleDateString('es-AR');
+  const dt = fechaParaInput(d);
+  return dt && !isNaN(dt.getTime()) ? dt.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
 }
 
 function openExportModal() {

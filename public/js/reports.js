@@ -483,6 +483,13 @@ function celdaFlota(v, f) {
   return esc(isEmpty(val) ? '—' : val);
 }
 
+function fechaADDMMYYYY(ymd) {
+  if (!ymd) return '';
+  const [y, m, d] = String(ymd).split('-');
+  if (!y || !m || !d) return String(ymd);
+  return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+}
+
 function fechaCol(ymd) {
   if (!ymd) return '—';
   const [y, m, d] = ymd.split('-');
@@ -491,7 +498,7 @@ function fechaCol(ymd) {
   const h = Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), hoy.getUTCDate());
   const dias = Math.round((vto - h) / 86400000);
   const cls = dias < 0 ? 'text-red-400 font-bold' : dias <= 30 ? 'text-amber-400 font-bold' : 'text-[#8b9bb4]';
-  return `<span class="${cls}">${d}/${m}/${y}</span>`;
+  return `<span class="${cls}">${fechaADDMMYYYY(ymd)}</span>`;
 }
 
 /* ================= DOCUMENTACIÓN ================= */
@@ -966,7 +973,7 @@ function sortVencBy(key) {
 function celdaVenc(r) {
   const d = r.doc;
   const cls = d.dias < 0 ? 'text-red-400' : d.dias <= 15 ? 'text-yellow-400' : d.dias <= 30 ? 'text-amber-400' : 'text-[#8b9bb4]';
-  const fecha = d.fecha ? d.fecha.split('-').reverse().join('/') : '—';
+  const fecha = d.fecha ? fechaADDMMYYYY(d.fecha) : '—';
   const dd = d.dias < 0 ? Math.abs(d.dias) + ' d vencido' : d.dias + ' d';
   return `<span class="${cls} font-medium">${esc(fecha)}</span>` +
     `<span class="text-[11px] ${cls}"> · ${esc(dd)}</span>` +
@@ -1079,7 +1086,7 @@ function filasVencExport() {
     Tipo: r.v.tipo || '',
     Chofer: r.v.chofer || '',
     Empresa: r.v.empresa || '',
-    'Fecha vencimiento': r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
+    'Fecha vencimiento': r.doc.fecha ? fechaADDMMYYYY(r.doc.fecha) : '',
     Documento: r.doc.label,
     Dias: r.dias
   }));
@@ -1124,7 +1131,7 @@ async function exportVencPDF() {
   const celda = r => {
     const c = [r.v.patente || '', r.v.interno || '', r.v.tipo || '', r.v.chofer || '', r.v.empresa || ''];
     if (multiDoc) c.push(r.doc.label);
-    c.push(r.doc.fecha ? r.doc.fecha.split('-').reverse().join('/') : '',
+    c.push(r.doc.fecha ? fechaADDMMYYYY(r.doc.fecha) : '',
            r.dias < 0 ? Math.abs(r.dias) + ' Dias Vencidos' : r.dias + ' Dias a Vencer');
     return c;
   };

@@ -110,7 +110,7 @@
         <h2 class="text-sm font-bold title-page mb-3">Vencimientos</h2>
         <div class="space-y-2">
           <% vencimientos.forEach(vc => {
-            const fechaTxt = vc.date ? vc.date.toLocaleDateString('es-AR') : '';
+            const fechaTxt = vc.date ? vc.date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
             const dias = vc.dias;
             let txt, cls;
             if (dias === null) { txt = 'Sin fecha'; cls = 'text-[#4a5568] bg-white/5'; }
@@ -149,7 +149,7 @@
       </div>
       <% } %>
 
-      <% const fmtDate = (d) => { if (!d) return ''; const dd = d.toDate ? d.toDate() : new Date(d); return dd.toLocaleDateString('es-AR'); }; %>
+      <% const fmtDate = (d) => { if (!d) return ''; let dd = d.toDate ? d.toDate() : new Date(d); if (isNaN(dd.getTime()) && typeof d === 'string') { const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(d.trim()); if (m) dd = new Date(+m[3], +m[2] - 1, +m[1], 12, 0, 0); } return isNaN(dd.getTime()) ? '' : dd.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }; %>
       <% const svcEntries = Object.entries(vehicle.serviceSummary || {})
         .map(([tipo, s]) => ({ tipo, ...s }))
         .filter(s => s && (s.proximoKm != null || s.proximoFecha))
@@ -164,7 +164,7 @@
           <% if (fSvc) {
             const dSvc = Math.ceil((fSvc - new Date()) / 86400000);
             const cSvc = dSvc <= 0 ? 'text-red-400' : dSvc <= 7 ? 'text-yellow-400' : 'text-[#00E5FF]';
-          %><div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5"><p class="text-[#8b9bb4] text-[10px]">Fecha</p><p class="font-bold <%= cSvc %>"><%= fSvc.toLocaleDateString('es-AR') %></p></div>
+          %><div class="bg-white/[0.03] rounded-xl p-3 text-center border border-white/5"><p class="text-[#8b9bb4] text-[10px]">Fecha</p><p class="font-bold <%= cSvc %>"><%= fSvc.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></p></div>
           <% } %>
         </div>
         <% if (svcEntries.length) { %>

@@ -359,15 +359,32 @@ function toDateInputValue(val) {
   return `${y}-${m}-${day}`;
 }
 
+function fechaParaInput(val) {
+  if (val == null || val === '') return null;
+  if (typeof val.toDate === 'function') return val.toDate();
+  if (typeof val === 'object' && typeof val.seconds === 'number') {
+    return new Date(val.seconds * 1000 + Math.floor((val.nanoseconds || 0) / 1e6));
+  }
+  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+  if (typeof val === 'string') {
+    const s = val.trim();
+    let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
+    if (m) return new Date(+m[3], +m[2] - 1, +m[1], 12, 0, 0);
+    m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3], 12, 0, 0);
+  }
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatDate(val) {
+  const d = fechaParaInput(val);
+  if (!d) return '-';
+  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
 function toDate(val) {
-  if (!val) return null;
-  let d;
-  if (val.toDate) d = val.toDate();
-  else if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) {
-    const [y, m, day] = val.substring(0, 10).split('-').map(Number);
-    d = new Date(y, m - 1, day);
-  } else d = new Date(val);
-  return d && !isNaN(d.getTime()) ? d : null;
+  return fechaParaInput(val);
 }
 
 function getDocVencimiento(key) {
@@ -980,16 +997,33 @@ function closeVehicleModal() {
   hideModal('modal-vehiculo');
 }
 
+function fmtDDMMYYYY(d) {
+  if (!d || isNaN(d.getTime())) return '';
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+
+function inputFechaTexto(el) {
+  if (!el) return null;
+  if (el.type === 'date') {
+    el.type = 'text';
+    el.inputMode = 'numeric';
+    el.placeholder = 'dd/mm/aaaa';
+  }
+  return el;
+}
+
 function setDateField(id, val) {
-  const el = document.getElementById(id);
-  if (!val) { el.value = ''; return; }
-  const d = val.toDate ? val.toDate() : new Date(val);
-  el.value = d.toISOString().split('T')[0];
+  const el = inputFechaTexto(document.getElementById(id));
+  if (!el) return;
+  const d = fechaParaInput(val);
+  el.value = fmtDDMMYYYY(d);
 }
 
 function getDateValue(id) {
-  const val = document.getElementById(id).value;
-  return val ? firebase.firestore.Timestamp.fromDate(new Date(val + 'T00:00:00')) : null;
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const d = fechaParaInput(el.value);
+  return d ? firebase.firestore.Timestamp.fromDate(d) : null;
 }
 
 document.getElementById('form-vehiculo')?.addEventListener('submit', async (e) => {

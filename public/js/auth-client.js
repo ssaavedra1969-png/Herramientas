@@ -111,21 +111,33 @@ async function getAuthHeaders() {
   };
 }
 
+function parseFecha(valor) {
+  if (valor == null || valor === '') return null;
+  if (typeof valor.toDate === 'function') return valor.toDate();
+  if (typeof valor === 'object' && typeof valor.seconds === 'number') {
+    return new Date(valor.seconds * 1000 + Math.floor((valor.nanoseconds || 0) / 1e6));
+  }
+  if (typeof valor === 'string') {
+    const s = valor.trim();
+    let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
+    if (m) return new Date(+m[3], +m[2] - 1, +m[1], 12, 0, 0);
+    m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3], 12, 0, 0);
+  }
+  const d = new Date(valor);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 function formatDate(timestamp) {
-  if (!timestamp) return '-';
-  let date;
-  if (timestamp.toDate) date = timestamp.toDate();
-  else if (typeof timestamp === 'string' && /^\d{4}-\d{2}-\d{2}/.test(timestamp)) {
-    const [y, m, d] = timestamp.substring(0, 10).split('-').map(Number);
-    date = new Date(y, m - 1, d);
-  } else date = new Date(timestamp);
+  const date = parseFecha(timestamp);
+  if (!date) return '-';
   return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 function daysUntil(date) {
-  if (!date) return null;
+  const target = parseFecha(date);
+  if (!target) return null;
   const now = new Date();
-  const target = date.toDate ? date.toDate() : new Date(date);
   return Math.ceil((target - now) / (1000 * 60 * 60 * 24));
 }
 

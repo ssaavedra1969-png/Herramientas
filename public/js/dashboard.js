@@ -310,7 +310,7 @@ function showRegistroModal() {
     const textColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#EC4899';
     const statusLabel = isCritical ? 'VENCIDO' : isWarning ? 'URGENTE' : 'PRÓXIMO';
     const statusBg = isCritical ? 'rgba(239,68,68,0.15)' : isWarning ? 'rgba(249,115,22,0.15)' : 'rgba(236,72,153,0.15)';
-    const dateStr = v.vencimientoRegistro?.toDate ? v.vencimientoRegistro.toDate().toLocaleDateString('es-AR') : '—';
+    const dateStr = formatDate(v.vencimientoRegistro);
     const registro = v.registro || '';
     const chofer = v.chofer || v.conductorHabitual || '';
     return `
@@ -358,7 +358,7 @@ function showDniModal() {
     const textColor = isCritical ? '#EF4444' : isWarning ? '#F97316' : '#F97316';
     const statusLabel = isCritical ? 'VENCIDO' : isWarning ? 'URGENTE' : 'PRÓXIMO';
     const statusBg = isCritical ? 'rgba(239,68,68,0.15)' : isWarning ? 'rgba(249,115,22,0.15)' : 'rgba(249,115,22,0.15)';
-    const dateStr = v.vencimientoDNI?.toDate ? v.vencimientoDNI.toDate().toLocaleDateString('es-AR') : '—';
+    const dateStr = formatDate(v.vencimientoDNI);
     const dni = v.dni || '';
     const chofer = v.chofer || v.conductorHabitual || '';
     return `

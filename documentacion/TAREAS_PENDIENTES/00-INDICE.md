@@ -14,6 +14,14 @@
   ```
 - Cada instructivo P0 incluye esta misma sección al final.
 
+## PENDIENTES DE LA SESIÓN 2026-11-25 (ver `../Update_2026.11.25_choferes-fechas-handoff.md`)
+
+| # | Qué falta | Por qué |
+|---|-----------|---------|
+| 1 | **Pedir confirmación para commit/push y deployar** los cambios de fechas ya aplicados en local. | Confirmado: Vercel sirve `/js/auth-client.js` con el `formatDate()` viejo (`new Date(timestamp)`) y `/js/vehicle-detail.js` sin el parser local. Firestore tiene `12/09/2039` y `30/04/2027`. |
+| 2 | **Verificar después del deploy** que `/js/auth-client.js` usa `parseFecha()` y que `/js/vehicle-detail.js` incluye `function formatDate(val)` e `inputFechaTexto()`. | Es la prueba de que el build nuevo llegó a producción. |
+| 3 | **Hard refresh en** https://falpat-control-de-vehiculos.vercel.app/vehicle/72ajeLLsbHdTqCXerG38 y confirmar que el bloque Chofer muestra `12/09/2039` y `30/04/2027`. | Si sigue mal ahí sí investigar DevTools/payload. No aplicar `stash@{0}`. |
+
 ## PENDIENTES DE LA SESIÓN 2026-10-02 (ver `../Update_2026.10.02.md`)
 
 | # | Qué falta | Por qué |

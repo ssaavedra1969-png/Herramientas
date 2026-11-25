@@ -489,9 +489,8 @@ async function docsDePatenteR(patente, arbol) {
 
 function fechaYMD(val) {
   if (!val) return null;
-  let d = val.toDate ? val.toDate() : val;
-  if (!(d instanceof Date)) d = new Date(d);
-  if (isNaN(d.getTime())) return null;
+  const d = toDate(val);
+  if (!d) return null;
   return d.toISOString().slice(0, 10);
 }
 

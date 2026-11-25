@@ -7,76 +7,94 @@
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-4">
         <div>
           <h1 class="text-xl sm:text-2xl font-bold title-page">Empleados</h1>
-          <p class="text-[11px] sm:text-xs text-[#8b9bb4] mt-1 max-w-2xl">
+          <p class="text-[11px] sm:text-xs text-slate-400 mt-1 max-w-2xl">
             Perfiles agrupados por chofer/DNI, con DNI y Registro como documentos e historial de asignaciones.
           </p>
         </div>
-        <div class="flex flex-wrap gap-2 no-print">
+        <div class="flex flex-wrap items-center gap-2 no-print">
           <% if (currentUserData?.role === 'Admin') { %>
-          <button id="btn-nuevo-empleado" type="button" class="btn-primary text-xs sm:text-sm flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Nuevo empleado
+          <button id="btn-nuevo-empleado" type="button" class="btn-primary inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Nuevo empleado
           </button>
-          <button id="btn-sincronizar" type="button" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">
-            Sincronizar
+          <button id="btn-sincronizar" type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/70 px-2.5 py-1.5 text-xs text-slate-300 transition-colors hover:border-indigo-500/40 hover:bg-slate-800 hover:text-white sm:px-4 sm:py-2 sm:text-sm">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"/></svg> Sincronizar
           </button>
           <% } %>
-          <button id="btn-exportar" type="button" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">Excel</button>
-          <button id="btn-imprimir" type="button" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">PDF</button>
+          <button id="btn-exportar" type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/70 px-2.5 py-1.5 text-xs text-slate-300 transition-colors hover:border-indigo-500/40 hover:bg-slate-800 hover:text-white sm:px-4 sm:py-2 sm:text-sm">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"/></svg> Excel
+          </button>
+          <button id="btn-imprimir" type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/70 px-2.5 py-1.5 text-xs text-slate-300 transition-colors hover:border-indigo-500/40 hover:bg-slate-800 hover:text-white sm:px-4 sm:py-2 sm:text-sm">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h5"/></svg> PDF
+          </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
-        <div class="glass-card rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-widest text-[#4a5568]">Total empleados</p>
-          <p class="text-xl sm:text-2xl font-bold text-[#ffffff]"><span id="emp-total">0</span></p>
-        </div>
-        <div class="glass-card rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-widest text-[#4a5568]">Asignados</p>
-          <p class="text-xl sm:text-2xl font-bold text-[#34D399]"><span id="emp-asignados">0</span></p>
-        </div>
-        <div class="glass-card rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-widest text-[#4a5568]">Sin asignar</p>
-          <p class="text-xl sm:text-2xl font-bold text-[#FBBF24]"><span id="emp-sin-asignar">0</span></p>
-        </div>
-        <div class="glass-card rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-widest text-[#4a5568]">Conflictos</p>
-          <p class="text-xl sm:text-2xl font-bold text-[#F87171]"><span id="emp-conflictos">0</span></p>
-        </div>
-      </div>
-
-      <div class="glass-card rounded-xl overflow-hidden mb-4">
-        <div class="flex flex-wrap items-center gap-2 p-2 sm:p-3 search-controls">
-          <div class="relative flex-1 min-w-[180px]">
-            <svg class="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="emp-search" placeholder="Buscar empleado, DNI o patente..." class="w-full pl-8 sm:pl-9 pr-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/15 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon transition-all focus:border-[#2563EB]/50">
+      <div class="grid grid-cols-1 gap-4 mb-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-lg shadow-black/20">
+          <div class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
-          <select id="emp-filter" class="px-2 py-2 text-xs font-medium text-[#8b9bb4] hover:text-[#ffffff] rounded-lg border border-[#2563EB]/20 bg-[#0a0e17]/40 input-neon">
-            <option value="todos">Todos</option>
-            <option value="asignados">Asignados</option>
-            <option value="sinAsignar">Sin asignar</option>
-            <option value="conflictos">Conflictos</option>
-          </select>
+          <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Total empleados</p>
+          <p class="mt-3 text-3xl font-bold leading-none text-slate-100 tabular-nums"><span id="emp-total">0</span></p>
+        </div>
+        <div class="relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-lg shadow-black/20">
+          <div class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM16 11l2 2 4-4"/></svg>
+          </div>
+          <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Asignados</p>
+          <p class="mt-3 text-3xl font-bold leading-none text-emerald-400 tabular-nums"><span id="emp-asignados">0</span></p>
+        </div>
+        <div class="relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-lg shadow-black/20">
+          <div class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/10 text-amber-400">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM16 11h6"/></svg>
+          </div>
+          <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Sin asignar</p>
+          <p class="mt-3 text-3xl font-bold leading-none text-amber-400 tabular-nums"><span id="emp-sin-asignar">0</span></p>
+        </div>
+        <div class="relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900/90 p-4 shadow-lg shadow-black/20">
+          <div class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 text-rose-400">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0ZM12 9v4M12 17h.01"/></svg>
+          </div>
+          <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Conflictos</p>
+          <p class="mt-3 text-3xl font-bold leading-none text-rose-400 tabular-nums"><span id="emp-conflictos">0</span></p>
         </div>
       </div>
 
-      <div class="glass-card rounded-xl overflow-hidden">
+      <div class="overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900/80 shadow-lg shadow-black/20 mb-4">
+        <div class="flex flex-col gap-3 p-3 sm:p-4 search-controls">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div class="relative min-w-[220px] flex-1">
+              <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
+              <input type="text" id="emp-search" placeholder="Buscar empleado, DNI o patente..." class="w-full rounded-lg border border-slate-800 bg-slate-950/60 py-2.5 pl-9 pr-3 text-sm text-slate-100 placeholder-slate-500 transition-all focus:border-indigo-500/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/15">
+            </div>
+            <select id="emp-filter" class="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2.5 text-xs font-medium text-slate-300 transition-colors hover:border-indigo-500/40 hover:text-white focus:border-indigo-500/60 focus:outline-none">
+              <option value="todos">Todos</option>
+              <option value="asignados">Asignados</option>
+              <option value="sinAsignar">Sin asignar</option>
+              <option value="conflictos">Conflictos</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900/80 shadow-lg shadow-black/20">
         <div class="overflow-x-auto">
-          <table class="w-full text-sm min-w-[1040px]">
-            <thead>
-              <tr class="border-b border-white/5 text-[10px] uppercase tracking-widest text-[#4a5568]">
-                <th class="px-4 py-3 text-left font-semibold">Empleado</th>
-                <th class="px-4 py-3 text-left font-semibold">DNI</th>
-                <th class="px-4 py-3 text-left font-semibold">Registro</th>
-                <th class="px-4 py-3 text-left font-semibold">Venc. DNI</th>
-                <th class="px-4 py-3 text-left font-semibold">Venc. Registro</th>
-                <th class="px-4 py-3 text-left font-semibold">Patente(s)</th>
-                <th class="px-4 py-3 text-left font-semibold">Documentos</th>
-                <th class="px-4 py-3 text-left font-semibold">Estado</th>
-                <th class="px-3 py-3 no-print"></th>
+          <table class="w-full min-w-[1120px] text-sm">
+            <thead class="bg-slate-950/40">
+              <tr class="border-b border-slate-800/80 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <th class="px-4 py-3.5 text-left font-semibold">Empleado</th>
+                <th class="px-4 py-3.5 text-left font-semibold">DNI</th>
+                <th class="px-4 py-3.5 text-left font-semibold">Registro</th>
+                <th class="px-4 py-3.5 text-left font-semibold">Venc. DNI</th>
+                <th class="px-4 py-3.5 text-left font-semibold">Venc. Registro</th>
+                <th class="px-4 py-3.5 text-left font-semibold">Patente(s)</th>
+                <th class="px-4 py-3.5 text-left font-semibold">Documentos</th>
+                <th class="px-4 py-3.5 text-left font-semibold">Estado</th>
+                <th class="px-4 py-3.5 text-left font-semibold no-print">Acciones</th>
               </tr>
             </thead>
             <tbody id="empleados-tbody">
-              <tr><td colspan="9" class="text-center py-8 text-gray-400">Cargando...</td></tr>
+              <tr><td colspan="9" class="py-8 text-center text-slate-400">Cargando...</td></tr>
             </tbody>
           </table>
         </div>
@@ -88,45 +106,45 @@
 <%- include('partials/mobile-menu', { page: 'empleados' }) %>
 
 <div id="modal-empleado" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-  <div class="glass-card rounded-xl p-6 w-full max-w-lg mx-4 border border-[#2563EB]/20 max-h-[92vh] overflow-y-auto">
+  <div class="w-full max-w-lg mx-4 max-h-[92vh] overflow-y-auto rounded-xl border border-slate-800 bg-slate-900/95 p-6 shadow-2xl shadow-black/50">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold text-[#ffffff]">Empleado</h3>
-      <button type="button" onclick="hideModal('modal-empleado')" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      <h3 class="text-lg font-bold text-slate-100">Empleado</h3>
+      <button type="button" onclick="hideModal('modal-empleado')" class="text-slate-500 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
     </div>
     <form id="form-empleado">
       <input type="hidden" id="emp-id">
       <div class="space-y-3">
         <div>
-          <label class="block text-xs text-[#8b9bb4] mb-1">Nombre y apellido *</label>
-          <input type="text" id="emp-nombre" required maxlength="120" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] placeholder-[#4a5568] input-neon" placeholder="Ej: Juan Pérez">
+          <label class="block text-xs text-slate-400 mb-1">Nombre y apellido *</label>
+          <input type="text" id="emp-nombre" required maxlength="120" class="w-full px-3 py-2 border border-slate-800 bg-slate-950/60 rounded-lg text-sm text-slate-100 placeholder-slate-500 input-neon" placeholder="Ej: Juan Pérez">
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
           <div class="flex-1">
-            <label class="block text-xs text-[#8b9bb4] mb-1">DNI</label>
-            <input type="text" id="emp-dni" maxlength="40" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <label class="block text-xs text-slate-400 mb-1">DNI</label>
+            <input type="text" id="emp-dni" maxlength="40" class="w-full px-3 py-2 border border-slate-800 bg-slate-950/60 rounded-lg text-sm text-slate-100 input-neon">
           </div>
           <div class="flex-1">
-            <label class="block text-xs text-[#8b9bb4] mb-1">Registro</label>
-            <input type="text" id="emp-registro" maxlength="40" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon">
+            <label class="block text-xs text-slate-400 mb-1">Registro</label>
+            <input type="text" id="emp-registro" maxlength="40" class="w-full px-3 py-2 border border-slate-800 bg-slate-950/60 rounded-lg text-sm text-slate-100 input-neon">
           </div>
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
           <div class="flex-1">
-            <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento DNI</label>
-            <input type="text" id="emp-vencimiento-dni" maxlength="30" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon" placeholder="dd/mm/aaaa">
+            <label class="block text-xs text-slate-400 mb-1">Vencimiento DNI</label>
+            <input type="text" id="emp-vencimiento-dni" maxlength="30" class="w-full px-3 py-2 border border-slate-800 bg-slate-950/60 rounded-lg text-sm text-slate-100 input-neon" placeholder="dd/mm/aaaa">
           </div>
           <div class="flex-1">
-            <label class="block text-xs text-[#8b9bb4] mb-1">Vencimiento Registro</label>
-            <input type="text" id="emp-vencimiento-registro" maxlength="30" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon" placeholder="dd/mm/aaaa">
+            <label class="block text-xs text-slate-400 mb-1">Vencimiento Registro</label>
+            <input type="text" id="emp-vencimiento-registro" maxlength="30" class="w-full px-3 py-2 border border-slate-800 bg-slate-950/60 rounded-lg text-sm text-slate-100 input-neon" placeholder="dd/mm/aaaa">
           </div>
         </div>
         <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" id="emp-activo" checked class="w-4 h-4 accent-[#2563EB]">
-          <span class="text-sm text-[#ffffff]">Activo</span>
+          <input type="checkbox" id="emp-activo" checked class="w-4 h-4 accent-indigo-500">
+          <span class="text-sm text-slate-100">Activo</span>
         </label>
       </div>
       <div class="flex gap-2 mt-4">
-        <button type="button" id="emp-cancelar" onclick="hideModal('modal-empleado')" class="flex-1 px-4 py-2 text-sm rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] transition-colors">Cancelar</button>
+        <button type="button" id="emp-cancelar" onclick="hideModal('modal-empleado')" class="flex-1 px-4 py-2 text-sm rounded-lg border border-slate-700 text-slate-400 hover:text-slate-100 transition-colors">Cancelar</button>
         <button type="submit" id="emp-guardar" class="flex-1 btn-primary text-sm px-4 py-2">Guardar</button>
       </div>
     </form>
@@ -134,50 +152,50 @@
 </div>
 
 <div id="modal-traslado" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-  <div class="glass-card rounded-xl p-6 w-full max-w-md mx-4 border border-[#2563EB]/20">
+  <div class="w-full max-w-md mx-4 rounded-xl border border-slate-800 bg-slate-900/95 p-6 shadow-2xl shadow-black/50">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold text-[#ffffff]">Trasladar empleado</h3>
-      <button type="button" onclick="hideModal('modal-traslado')" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      <h3 class="text-lg font-bold text-slate-100">Trasladar empleado</h3>
+      <button type="button" onclick="hideModal('modal-traslado')" class="text-slate-500 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
     </div>
     <input type="hidden" id="emp-traslado-id">
     <div class="space-y-3">
       <div>
-        <label class="block text-xs text-[#8b9bb4] mb-1">Patente de origen</label>
-        <input type="text" id="emp-traslado-origen" readonly class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/15 rounded-lg text-sm text-[#8b9bb4] input-neon">
+        <label class="block text-xs text-slate-400 mb-1">Patente de origen</label>
+        <input type="text" id="emp-traslado-origen" readonly class="w-full px-3 py-2 border border-slate-800 bg-slate-950/60 rounded-lg text-sm text-slate-400 input-neon">
       </div>
       <div>
-        <label class="block text-xs text-[#8b9bb4] mb-1">Patente destino *</label>
-        <select id="emp-traslado-patente" class="w-full px-3 py-2 bg-[#0a0e17]/50 border border-[#2563EB]/20 rounded-lg text-sm text-[#ffffff] input-neon"><option value="">Seleccionar patente...</option></select>
+        <label class="block text-xs text-slate-400 mb-1">Patente destino *</label>
+        <select id="emp-traslado-patente" class="w-full px-3 py-2 border border-slate-800 bg-slate-950/60 rounded-lg text-sm text-slate-100 input-neon"><option value="">Seleccionar patente...</option></select>
       </div>
       <label class="flex items-start gap-2 cursor-pointer">
-        <input type="checkbox" id="emp-traslado-reemplazar" class="w-4 h-4 mt-0.5 accent-[#2563EB]">
-        <span class="text-sm text-[#8b9bb4]">Reemplazar DNI y Registro si la patente destino ya los tiene cargados</span>
+        <input type="checkbox" id="emp-traslado-reemplazar" class="w-4 h-4 mt-0.5 accent-indigo-500">
+        <span class="text-sm text-slate-400">Reemplazar DNI y Registro si la patente destino ya los tiene cargados</span>
       </label>
     </div>
     <div class="flex gap-2 mt-4">
-      <button type="button" onclick="hideModal('modal-traslado')" class="flex-1 px-4 py-2 text-sm rounded-lg border border-[#4a5568] text-[#8b9bb4] hover:text-[#ffffff] transition-colors">Cancelar</button>
+      <button type="button" onclick="hideModal('modal-traslado')" class="flex-1 px-4 py-2 text-sm rounded-lg border border-slate-700 text-slate-400 hover:text-slate-100 transition-colors">Cancelar</button>
       <button type="button" id="emp-traslado-confirmar" class="flex-1 btn-primary text-sm px-4 py-2">Confirmar traslado</button>
     </div>
   </div>
 </div>
 
 <div id="modal-historial" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
-  <div class="glass-card rounded-xl p-6 w-full max-w-3xl mx-4 border border-[#2563EB]/30 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#2563EB]/25">
-      <h3 class="text-lg font-bold text-[#ffffff]">Historial de asignaciones</h3>
-      <button type="button" onclick="hideModal('modal-historial')" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+  <div class="w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto rounded-xl border border-slate-800 bg-slate-900/95 p-6 shadow-2xl shadow-black/50">
+    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+      <h3 class="text-lg font-bold text-slate-100">Historial de asignaciones</h3>
+      <button type="button" onclick="hideModal('modal-historial')" class="text-slate-500 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
     </div>
-    <div id="emp-historial-body" class="text-sm text-[#8b9bb4]"></div>
+    <div id="emp-historial-body" class="text-sm text-slate-400"></div>
   </div>
 </div>
 
 <div id="modal-documento" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
-  <div class="glass-card rounded-xl p-4 w-full max-w-4xl mx-4 border border-[#2563EB]/30" style="height:90vh">
-    <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#2563EB]/25">
-      <h3 id="emp-documento-titulo" class="text-sm font-bold text-[#ffffff]">Documento</h3>
+  <div class="w-full max-w-4xl mx-4 rounded-xl border border-slate-800 bg-slate-900/95 p-4 shadow-2xl shadow-black/50" style="height:90vh">
+    <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+      <h3 id="emp-documento-titulo" class="text-sm font-bold text-slate-100">Documento</h3>
       <div class="flex items-center gap-2">
-        <button id="btn-descargar-documento" type="button" class="px-2 py-1 text-xs rounded-lg border border-[#2563EB]/30 text-[#8b9bb4] hover:text-[#ffffff] hover:bg-[#2563EB]/10 transition-colors">Descargar</button>
-        <button type="button" onclick="cerrarDocumento()" class="text-[#4a5568] hover:text-[#ffffff]"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        <button id="btn-descargar-documento" type="button" class="rounded-lg border border-slate-800 bg-slate-950/60 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-indigo-500/40 hover:bg-slate-800 hover:text-white">Descargar</button>
+        <button type="button" onclick="cerrarDocumento()" class="text-slate-500 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
     </div>
     <div id="emp-documento-frame" class="w-full bg-white rounded-lg" style="height:calc(100% - 48px)">

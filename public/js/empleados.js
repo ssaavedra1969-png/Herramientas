@@ -106,54 +106,77 @@ function renderEmpleados() {
   if (!tbody) return;
   const lista = filtrarEmpleados();
   if (!lista.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-[#4a5568]">No hay empleados para mostrar</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-500">No hay empleados para mostrar</td></tr>';
     return;
   }
   tbody.innerHTML = lista.map(e => {
     const ref = escEmp(refEmpleado(e));
     const vencDni = fechaEmpleado(e.vencimientoDNI);
     const vencReg = fechaEmpleado(e.vencimientoRegistro);
+    const dato = valor => {
+      const s = String(valor == null ? '' : valor).trim();
+      return s && s !== '-'
+        ? `<span class="font-mono text-sm text-slate-300 tabular-nums">${escEmp(s)}</span>`
+        : '<span class="text-xs italic text-slate-500">Sin dato</span>';
+    };
+    const iniciales = String(e.nombre || '').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(p => p.charAt(0).toUpperCase()).join('') || '?';
     const patentes = (e.patentes || []).map(p => p.vehiculoId
-      ? `<a href="/vehicle/${escEmp(p.vehiculoId)}" class="text-[#60A5FA] hover:underline" title="${escEmp(p.interno || '')}">${escEmp(p.patente || '—')}</a>`
-      : `<span class="text-[#cbd5e1]">${escEmp(p.patente || '—')}</span>`).join(' · ') || '<span class="text-[#4a5568]">—</span>';
+      ? `<a href="/vehicle/${escEmp(p.vehiculoId)}" class="inline-flex items-center rounded-md border border-slate-700 bg-slate-800 px-2.5 py-0.5 font-mono text-xs font-semibold tracking-wider text-cyan-300 transition-colors hover:border-cyan-500/50 hover:text-cyan-200" title="${escEmp(p.interno || '')}">${escEmp(p.patente || '—')}</a>`
+      : `<span class="inline-flex items-center rounded-md border border-slate-700 bg-slate-800 px-2.5 py-0.5 font-mono text-xs font-semibold tracking-wider text-cyan-300">${escEmp(p.patente || '—')}</span>`).join(' ') || '<span class="text-xs italic text-slate-500">Sin dato</span>';
     const documentos = ['dni', 'registro'].map(tipo => {
       const doc = e.documentos && e.documentos[tipo];
-      if (!doc || !doc.presente) return `<span class="text-[#4a5568]">${tipo.toUpperCase()} —</span>`;
-      return `<button type="button" onclick="verDocumento('${ref}','${tipo}')" class="text-[#00E5FF] hover:underline" title="Ver ${tipo.toUpperCase()}">${tipo.toUpperCase()}</button>`;
-    }).join(' · ');
+      const presente = !!(doc && doc.presente);
+      const etiqueta = tipo === 'dni' ? 'DNI' : 'Registro';
+      const cls = presente
+        ? 'inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400'
+        : 'inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400';
+      const icono = presente
+        ? '<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>'
+        : '<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+      return presente
+        ? `<button type="button" onclick="verDocumento('${ref}','${tipo}')" class="${cls} transition hover:bg-emerald-500/20" title="Ver ${etiqueta}">${icono}${etiqueta}</button>`
+        : `<span class="${cls}" title="Sin ${etiqueta} cargado">${icono}${etiqueta}</span>`;
+    }).join('');
     const badges = [];
-    if (e.sinAsignar) badges.push('<span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F59E0B]/15 text-[#FBBF24] border border-[#F59E0B]/30">Sin asignar</span>');
-    if (e.virtual) badges.push('<span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#8B5CF6]/15 text-[#A78BFA] border border-[#8B5CF6]/30">Virtual</span>');
-    if ((e.conflictos || []).length) badges.push(`<span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#EF4444]/15 text-[#F87171] border border-[#EF4444]/30" title="${escEmp(e.conflictos.join(' · '))}">Conflictos (${e.conflictos.length})</span>`);
+    if (e.sinAsignar) badges.push('<span class="rounded-full border border-amber-500/25 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">Sin asignar</span>');
+    if (e.virtual) badges.push('<span class="rounded-full border border-violet-500/25 bg-violet-500/10 px-1.5 py-0.5 text-[10px] font-bold text-violet-400">Virtual</span>');
+    if ((e.conflictos || []).length) badges.push(`<span class="rounded-full border border-rose-500/25 bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-bold text-rose-400" title="${escEmp(e.conflictos.join(' · '))}">Conflictos (${e.conflictos.length})</span>`);
     const estadoCls = e.sinAsignar
-      ? 'bg-[#F59E0B]/15 text-[#FBBF24] border-[#F59E0B]/30'
-      : 'bg-[#10B981]/15 text-[#34D399] border-[#10B981]/30';
+      ? 'border-amber-500/25 bg-amber-500/10 text-amber-400'
+      : 'border-emerald-500/25 bg-emerald-500/10 text-emerald-400';
+    const puntoCls = e.sinAsignar ? 'bg-amber-400' : 'bg-emerald-400';
+    const accionCls = 'inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-800 hover:text-white';
     const acciones = [];
     if (isAdmin()) {
       if (e.id) {
-        acciones.push(`<button type="button" onclick="editarEmpleado('${escEmp(e.id)}')" class="text-[#8b9bb4] hover:text-[#ffffff] text-xs mr-2" title="Editar">Editar</button>`);
-        acciones.push(`<button type="button" onclick="abrirTraslado('${escEmp(e.id)}')" class="text-[#60A5FA] hover:text-[#93C5FD] text-xs mr-2" title="Trasladar">Trasladar</button>`);
+        acciones.push(`<button type="button" onclick="editarEmpleado('${escEmp(e.id)}')" class="${accionCls}" title="Editar"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>Editar</button>`);
+        acciones.push(`<button type="button" onclick="abrirTraslado('${escEmp(e.id)}')" class="${accionCls}" title="Trasladar"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-6-6 6 6-6 6"/></svg>Trasladar</button>`);
       } else {
-        acciones.push(`<button type="button" onclick="sincronizarEmpleados()" class="text-[#FBBF24] hover:text-[#FDE68A] text-xs mr-2" title="Crear perfil desde los vehículos">Sincronizar</button>`);
+        acciones.push(`<button type="button" onclick="sincronizarEmpleados()" class="${accionCls}" title="Crear perfil desde los vehículos"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"/></svg>Sincronizar</button>`);
       }
     }
     acciones.push(e.id
-      ? `<button type="button" onclick="verHistorial('${escEmp(e.id)}')" class="text-[#00E5FF] hover:text-[#67E8F9] text-xs" title="Historial">Historial</button>`
-      : '<button type="button" disabled class="text-[#4a5568] text-xs opacity-50 cursor-not-allowed" title="Sincronizá el perfil para ver el historial">Historial</button>');
+      ? `<button type="button" onclick="verHistorial('${escEmp(e.id)}')" class="${accionCls}" title="Historial"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 2m6-2a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z"/></svg>Historial</button>`
+      : '<button type="button" disabled class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-slate-500 opacity-50 cursor-not-allowed" title="Sincronizá el perfil para ver el historial"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 2m6-2a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z"/></svg>Historial</button>');
     return `
-      <tr class="border-b border-white/5 hover:bg-[#2563EB]/10">
-        <td class="px-4 py-3 font-medium text-[#ffffff]">${escEmp(e.nombre || '—')}</td>
-        <td class="px-4 py-3 text-[#8b9bb4] font-mono text-xs">${escEmp(e.dni || '—')}</td>
-        <td class="px-4 py-3 text-[#8b9bb4] font-mono text-xs">${escEmp(e.registro || '—')}</td>
-        <td class="px-4 py-3 text-[#8b9bb4] font-mono text-xs">${escEmp(vencDni)}</td>
-        <td class="px-4 py-3 text-[#8b9bb4] font-mono text-xs">${escEmp(vencReg)}</td>
-        <td class="px-4 py-3 text-xs">${patentes}</td>
-        <td class="px-4 py-3 text-[11px]">${documentos}</td>
-        <td class="px-4 py-3">
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${estadoCls}">${estadoTexto(e)}</span>
-          <div class="flex flex-wrap gap-1 mt-1">${badges.join('')}</div>
+      <tr class="border-b border-slate-800/70 transition-colors hover:bg-slate-800/40">
+        <td class="px-4 py-3.5">
+          <div class="flex items-center gap-3">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-500/15 text-[11px] font-semibold text-indigo-400">${iniciales}</span>
+            <span class="font-medium text-slate-100">${escEmp(e.nombre || '—')}</span>
+          </div>
         </td>
-        <td class="px-3 py-3 no-print whitespace-nowrap">${acciones.join('')}</td>
+        <td class="px-4 py-3.5">${dato(e.dni)}</td>
+        <td class="px-4 py-3.5">${dato(e.registro)}</td>
+        <td class="px-4 py-3.5">${dato(vencDni)}</td>
+        <td class="px-4 py-3.5">${dato(vencReg)}</td>
+        <td class="px-4 py-3.5"><div class="flex flex-wrap items-center gap-1.5">${patentes}</div></td>
+        <td class="px-4 py-3.5"><div class="flex items-center gap-2">${documentos}</div></td>
+        <td class="px-4 py-3.5">
+          <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${estadoCls}"><span class="h-1.5 w-1.5 rounded-full ${puntoCls}"></span>${estadoTexto(e)}</span>
+          <div class="mt-1 flex flex-wrap gap-1">${badges.join('')}</div>
+        </td>
+        <td class="no-print px-4 py-3.5"><div class="flex items-center gap-1.5">${acciones.join('')}</div></td>
       </tr>`;
   }).join('');
 }
