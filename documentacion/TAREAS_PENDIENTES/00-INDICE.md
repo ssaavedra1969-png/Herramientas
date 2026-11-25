@@ -18,9 +18,9 @@
 
 | # | Qué falta | Por qué |
 |---|-----------|---------|
-| 1 | **Pedir confirmación para commit/push y deployar** los cambios de fechas ya aplicados en local. | Confirmado: Vercel sirve `/js/auth-client.js` con el `formatDate()` viejo (`new Date(timestamp)`) y `/js/vehicle-detail.js` sin el parser local. Firestore tiene `12/09/2039` y `30/04/2027`. |
-| 2 | **Verificar después del deploy** que `/js/auth-client.js` usa `parseFecha()` y que `/js/vehicle-detail.js` incluye `function formatDate(val)` e `inputFechaTexto()`. | Es la prueba de que el build nuevo llegó a producción. |
-| 3 | **Hard refresh en** https://falpat-control-de-vehiculos.vercel.app/vehicle/72ajeLLsbHdTqCXerG38 y confirmar que el bloque Chofer muestra `12/09/2039` y `30/04/2027`. | Si sigue mal ahí sí investigar DevTools/payload. No aplicar `stash@{0}`. |
+| 1 | **Hard refresh en** https://falpat-control-de-vehiculos.vercel.app/vehicle/72ajeLLsbHdTqCXerG38 y confirmar que el bloque Chofer muestra `12/09/2039` y `30/04/2027`. | El deploy ya propagó: Vercel sirve `/js/auth-client.js` con `parseFecha()` y `/js/vehicle-detail.js` con `formatDate(val)`/`inputFechaTexto()`. Falta solo la validación visual. |
+| 2 | Si sigue mal, revisar en DevTools el payload de Firestore/`GET /api/vehicles/:id` y buscar otro punto de formateo. | El build nuevo ya está verificado; recién ahí corresponde seguir investigando. No aplicar `stash@{0}`. |
+| 3 | El commit/push/deploy quedó registrado en `87cdc89` (`Choferes: vencimientos dd/mm/aaaa y handoff 2026-11-25`); 26 PDFs borrados y `PATENTE/Vtos/BACKUP/` quedaron fuera. | El usuario autorizó el alcance selectivo. No hacer `git pull` ni tocar `stash@{0}`. |
 
 ## PENDIENTES DE LA SESIÓN 2026-10-02 (ver `../Update_2026.10.02.md`)
 

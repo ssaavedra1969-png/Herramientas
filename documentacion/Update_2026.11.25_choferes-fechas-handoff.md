@@ -2,7 +2,7 @@
 
 Puesta al día para retomar mañana el trabajo de choferes/empleados y el incidente visual de fechas en la ficha de vehículo.
 
-Estado: **causa confirmada: Vercel está sirviendo un build viejo**. Cambios en local, sin commit, sin push y sin deploy. Datos de producción verificados en Firestore. `npm test`: **296 OK, 0 FAIL**. Queda pendiente desplegar y verificar en pantalla.
+Estado: **fix commiteado, pusheado y desplegado** en commit `87cdc89` (`Choferes: vencimientos dd/mm/aaaa y handoff 2026-11-25`). `npm test`: **296 OK, 0 FAIL**. Vercel ya sirve los JS nuevos; queda la verificación visual del usuario con hard refresh.
 
 ---
 
@@ -97,7 +97,7 @@ Fuente: `C:\AI\Antigravity\FALPAT srl\Herramientas\PATENTE\Vtos\REVISAR_VENCIMIE
 
 ---
 
-## 5. Caso Leonardo Valentini — abierto
+## 5. Caso Leonardo Valentini — deploy verificado, pendiente confirmación visual
 
 Datos verificados:
 
@@ -106,19 +106,25 @@ Datos verificados:
   - `Vto Registro`: serial `46507` → `2027-04-30T03:00:48.000Z` → `30/04/2027`.
 - Firestore `employees/YSJXchJgQBasI2iLO93U`: `vencimientoDNI = "12/09/2039"`, `vencimientoRegistro = "30/04/2027"`.
 - Firestore `vehicles/72ajeLLsbHdTqCXerG38` (`AF606JL`): mismos valores correctos.
-- El usuario sigue viendo en la ficha `/vehicle/:id`, bloque Chofer:
+- Antes del deploy el usuario veía en la ficha `/vehicle/:id`, bloque Chofer:
   - `Vto. DNI: 09/12/2039`
   - `Vto. Registro: Invalid Date`
 
 Causa confirmada el 2026-11-25 contra la URL exacta del usuario: https://falpat-control-de-vehiculos.vercel.app/vehicle/72ajeLLsbHdTqCXerG38
 
-- `https://falpat-control-de-vehiculos.vercel.app/js/auth-client.js` todavía sirve el `formatDate(timestamp)` viejo:
+- Antes del deploy, `https://falpat-control-de-vehiculos.vercel.app/js/auth-client.js` servía el `formatDate(timestamp)` viejo:
   - `else date = new Date(timestamp);`
   - `return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });`
   - Con `'12/09/2039'` eso da `09/12/2039`; con `'30/04/2027'` da `Invalid Date`.
-- `https://falpat-control-de-vehiculos.vercel.app/js/vehicle-detail.js` todavía llama `setText('vg-vencimientoDNI', formatDate(vehicleData.vencimientoDNI))` y `setText('vg-vencimientoRegistro', formatDate(vehicleData.vencimientoRegistro))`.
-- Ese JS servido **no contiene** el `formatDate()` local nuevo, ni `parseFecha`, ni `inputFechaTexto()`. Su `setDateField()` sigue siendo el viejo: `const d = val.toDate ? val.toDate() : new Date(val); el.value = d.toISOString().split('T')[0];`.
-- La página sin sesión redirige a `/login`, pero el HTML/JS estático alcanza para confirmar que el deploy es viejo. Firestore no es el problema.
+- Antes del deploy, `https://falpat-control-de-vehiculos.vercel.app/js/vehicle-detail.js` llamaba `setText('vg-vencimientoDNI', formatDate(vehicleData.vencimientoDNI))` y `setText('vg-vencimientoRegistro', formatDate(vehicleData.vencimientoRegistro))`.
+- Ese JS servido **no contenía** el `formatDate()` local nuevo, ni `parseFecha`, ni `inputFechaTexto()`. Su `setDateField()` seguía siendo el viejo: `const d = val.toDate ? val.toDate() : new Date(val); el.value = d.toISOString().split('T')[0];`.
+- La página sin sesión redirige a `/login`, pero el HTML/JS estático alcanza para confirmar el estado del build. Firestore no es el problema.
+
+Post-deploy 2026-11-25, tras el commit/push de `87cdc89`:
+
+- `https://falpat-control-de-vehiculos.vercel.app/js/auth-client.js?v=87cdc89b` sirve `parseFecha(valor)` y `formatDate()` con manejo explícito de `dd/mm/aaaa`.
+- `https://falpat-control-de-vehiculos.vercel.app/js/vehicle-detail.js?v=87cdc89b` sirve `function formatDate(val)` local, `fechaParaInput()` con regex `dd/mm/aaaa`, `inputFechaTexto()`, `setDateField()` y `getDateValue()` nuevos.
+- Falta únicamente el hard refresh y la confirmación visual en el navegador del usuario.
 
 No se pudo reproducir localmente: `Invoke-WebRequest http://localhost:3000/js/vehicles.js` devolvió `ERROR=No es posible conectar con el servidor remoto`.
 
@@ -146,19 +152,15 @@ No hay lint ni typecheck configurados. La validación disponible es `npm test`.
 
 ## 7. Pendiente para mañana
 
-1. **Pedir confirmación explícita** para hacer commit/push de los cambios locales. No aplicar `stash@{0}`.
-2. Después del push, esperar el deploy automático de Vercel (o ejecutar deploy si el usuario lo autoriza) y volver a consultar:
-   - `/js/auth-client.js` debe tener `parseFecha(valor)` usado por `formatDate()`.
-   - `/js/vehicle-detail.js` debe incluir `function formatDate(val)` local y `inputFechaTexto()`.
-3. Recargar https://falpat-control-de-vehiculos.vercel.app/vehicle/72ajeLLsbHdTqCXerG38 con hard refresh y verificar que el bloque Chofer muestre `12/09/2039` y `30/04/2027`.
-4. Si después del deploy sigue mal, recién ahí revisar en DevTools el payload de Firestore/`GET /api/vehicles/:id` y buscar otro punto de formateo.
-5. No asumir que `localhost` está corriendo: el problema confirmado está en el build servido por Vercel.
+1. Hacer **hard refresh** en https://falpat-control-de-vehiculos.vercel.app/vehicle/72ajeLLsbHdTqCXerG38 y verificar que el bloque Chofer muestra `12/09/2039` y `30/04/2027`.
+2. Si después del deploy confirmado sigue mal, recién ahí revisar en DevTools el payload de Firestore/`GET /api/vehicles/:id` y buscar otro punto de formateo.
+3. No asumir que `localhost` está corriendo ni aplicar `stash@{0}`. Ya no hace falta pedir confirmación para este commit/push/deploy: el usuario la dio y los JS nuevos están verificados en Vercel.
 
 ---
 
 ## 8. Reglas y trampas
 
-- No `git pull`, no `stash pop/apply`, no commit, no push y no deploy sin confirmación del usuario.
+- No `git pull` y no `stash pop/apply`. En esta sesión el usuario autorizó commit/push/deploy selectivo; el commit `87cdc89` incluyó solo código/tests/docs y exclusiones (26 PDFs borrados y `PATENTE/Vtos/BACKUP/`) quedaron fuera.
 - `AGENTS.md:15` advierte: existe `stash@{0}` viejo (`WIP on main: 7d89f46 Correos: novedades por patente + documentacion pendiente online`). **No aplicar** sin `git stash show -p stash@{0}` y revisión explícita.
 - No ejecutar `npm start` en esta sesión; no hay servidor local levantado.
 - `PATENTE/Vtos/CONTROL_VENCIMIENTOS_2026-09-07.xlsx` es viejo; no usarlo para cargar vencimientos de choferes.
