@@ -1030,7 +1030,7 @@ function downloadCsvTemplate() {
 
 async function downloadExcelTemplate() {
   try {
-    const resp = await fetch('/api/vehicles/template/excel');
+    const resp = await fetch('/api/vehicles/template/excel', { headers: await getAuthHeaders() });
     if (!resp.ok) throw new Error('Error al descargar plantilla');
     const blob = await resp.blob();
     const link = document.createElement('a');

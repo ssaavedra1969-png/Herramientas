@@ -1,6 +1,22 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-11-21.
+Cambios registrados por sesión. Última actualización: 2026-11-26.
+
+## 2026-11-26 — Fixes UI/permisos + puesta al día docs
+
+- `public/js/vehicles.js`: la descarga de plantilla Excel ahora envía `getAuthHeaders()` al llamar `/api/vehicles/template/excel` (la ruta exige `verifyToken`).
+- `views/centros.ejs`: se incluyó `partials/mobile-menu.ejs`; antes el JS esperaba `#mobile-menu`/`#mobile-menu-backdrop` inexistentes.
+- `views/partials/sidebar.ejs`, `views/partials/mobile-menu.ejs`, `public/js/command-palette.js`: `Reportes` quedó visible solo para Admin (la ruta `/reports` ya era `requireAdminPage`). Se agregó `Correos` (`/informes`) al `ADMIN_NAV` de la command palette.
+- `public/js/reports.js`: comentario del informe semanal corregido a "próximos hasta 90 días, excluye vencidos" (coincide con `lib/informe-vencimientos.js` y la ruta).
+- `views/vehicles.ejs`: jsPDF fijado a `2.5.1` / `jspdf-autotable@3.8.2` (antes `@latest`).
+- Docs actualizados: `AGENTS.md`, `documentacion/README.md`, `CHANGELOG.md`, `tests/README.md` (`296 checks`, 10 suites, Empleados como fuente de verdad, deploy por push a `main`). `.gitignore` ya cubre `*-firebase-adminsdk-*.json`; no se tocaron reglas de Firestore (bloque `maintenance` huérfano queda documentado).
+
+## 2026-11-25 — Choferes: fechas dd/mm/aaaa (commits `87cdc89`, `ce283fb`)
+
+- `employees/{id}` es la fuente de verdad de choferes; `vehicles/{id}` espejo operativo. No usar `POST /api/empleados/sincronizar` (dirección inversa).
+- Vencimientos de chofer como strings `dd/mm/aaaa`; parsers explícitos (`parseFecha`, `fechaParaInput`, `fechaDesdeValor`); no escribir `Timestamp` en `camposEspejo()`.
+- Inputs de vencimiento en modal de vehículo pasaron a texto `dd/mm/aaaa`. `npm test` = **296 OK / 0 FAIL**.
+- Detalle: `documentacion/Update_2026.11.25_choferes-fechas-handoff.md`.
 
 ## 2026-11-21 — Seguros 07/04/2027 + Parámetros de service
 

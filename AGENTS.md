@@ -12,7 +12,7 @@ git stash && git pull origin main && git stash pop
 
 Si hay conflictos: resolver manualmente (mirar qué línea quedó de cada lado), luego `git add .` y `git commit`.
 
-> **Estado 2026-11-21:** existe un `stash@{0}` viejo que contiene borrados de una sesión anterior. **NO aplicarlo** (`git stash pop`/`apply`) salvo revisión explícita con `git stash show -p stash@{0}`. En PowerShell el comando de sincronización de arriba no funciona con `&&`: usar `git stash; if ($?) { git pull origin main; if ($?) { git stash pop } }` — y antes de eso chequear `git stash list`, porque ese `pop` aplicaría el stash viejo.
+> **Estado 2026-11-21:** existe un `stash@{0}` viejo que contiene borrados de una sesión anterior. **NO aplicarlo** (`git stash pop`/`apply`) salvo revisión explícita con `git stash show -p stash@{0}`. En PowerShell el comando de sincronización de arriba no funciona con `&&`: usar `git stash; if ($?) { git pull origin main; if ($?) { git stash pop } }` — y antes de eso chequear `git stash list`, porque ese `pop` aplicaría el stash viejo. Si `git status` ya está limpio y no hay intención de stashear, preferir `git pull origin main` directo.
 
 ### Reglas
 
@@ -31,6 +31,7 @@ Si el hook detecta que el branch está desactualizado, bloquea el commit. Hacer 
 **Al INICIAR sesión (antes de tocar archivos):**
 ```bash
 git pull origin main
+# npm start ejecuta node start.js; en PowerShell evitá el flujo stash/pull/pop automático si hay stash viejo
 npm start
 ```
 
@@ -55,13 +56,14 @@ Toda la documentación del proyecto está en `documentacion/` (índice: `documen
 - **Database:** Firebase Firestore (project: `engaged-card-450213-d7`)
 - **Auth:** Firebase Auth (Google + email/password) + session cookies
 - **Frontend:** Tailwind CSS 3, Chart.js 4, SweetAlert2, PapaParse, XLSX
-- **Deploy:** Vercel (`vercel --prod`) → https://falpat-control-de-vehiculos.vercel.app
+- **Deploy:** Vercel (push a `origin/main` dispara deploy automático) → https://falpat-control-de-vehiculos.vercel.app
 
 ## Proyecto local
 ```bash
-cd "C:\AI\Antigravity\FALPAT srl\Falpat Herramientas"
-npm start           # Inicia servidor en puerto 3000
-vercel --prod       # Deploy a producción
+cd "C:\AI\Antigravity\FALPAT srl\Herramientas"
+npm start           # Inicia servidor en puerto 3000 (node start.js); no usar si hay stash viejo pendiente
+npm run dev         # Servidor con watch (node --watch server.js)
+# Deploy: git push origin main (Vercel despliega automáticamente)
 ```
 
 ## Estructura
@@ -81,7 +83,6 @@ routes/
   auth.js                    # Login/session
   empleados.js               # API /api/empleados: perfiles, documentos, historial, traslado y sincronización (POST/PUT/PATCH requieren Admin)
   vehicles.js                # CRUD vehículos + combustible/repuestos subcolecciones + services panel + GET/PUT /api/vehicles/services/parametros
-  maintenance.js             # CRUD mantenimientos
   admin.js                   # Dashboard stats, reports, backup
   informes.js                # Admin → Correos: config + vista previa + envío manual + novedades de flota (requireAdmin)
   cron.js                    # GET /api/cron/vencimientos (lunes) con CRON_SECRET
@@ -89,7 +90,6 @@ views/
   dashboard.ejs              # Dashboard principal
   vehicles.ejs               # Listado vehículos + modal CRUD + import CSV/Excel
   vehicle-detail.ejs         # Detalle vehículo (combustible/repuestos)
-  maintenance.ejs            # Listado mantenimientos + modal CRUD
   reports.ejs                # Reportes: 3 cards plegables (Flota, Documentación, Vencimientos) + CSS de impresión "pizarra"
   service.ejs                # Panel de services + card "Parámetros de service" arriba de todo (solo Admin)
   admin.ejs                  # Gestión de usuarios
@@ -133,10 +133,11 @@ tests/
   vehiculos-numeracion.test.js  # Numeración de vehículos (código cliente) → npm run test:numeracion
   import-vehiculos.test.js   # Import masivo de vehículos (código cliente) → npm run test:import
   deshabilitado-orden.test.js  # Campo deshabilitado + orden de Vencimientos → npm run test:deshabilitado
-  informes-config.test.js    # Config del informe, plantillas y cron → npm run test:informes (41 checks)
+  informes-config.test.js    # Config del informe, plantillas y cron → npm run test:informes (42 checks)
   informe-flota.test.js      # Novedades de flota: período, filtros, correo, pendientes y errores → npm run test:flota (40 checks)
-  empleados.test.js          # API Empleados con fake Firestore y GitHub mockeado → npm run test:empleados (24 checks)
+  empleados.test.js          # API Empleados con fake Firestore y GitHub mockeado → npm run test:empleados (35 checks)
   github-empleados.test.js   # Helpers PATENTE/EMPLEADOS/ y exclusión del árbol de patentes → npm run test:github (9 checks)
+  inventario-casares.test.js # Import/inventario Casares → npm run test:inventario (21 checks)
   README.md                  # Cómo escribir tests + las trampas del fake
 PATENTE/
   {patente}/{tipo}.ext        # Documentos obligatorios versionados (fuente leída por la app en Vercel)
@@ -259,7 +260,9 @@ Cuando llega un PDF con todas las constancias juntas, el **procedimiento complet
 
 ## Registro de cambios recientes (para puesta al día de IA)
 
-- **Sesión 2026-11-21 (módulo Empleados; detalle en `documentacion/Update_2026.11.21_empleados.md`)** — nueva sección `/empleados`: perfiles de chofer por nombre + DNI en `employees`, espejos en `vehicles`, PDFs en `PATENTE/EMPLEADOS/{id}/`, historial de patentes, traslado con verificación antes de borrar, sincronización de perfiles virtuales y guardas `sinChofer` en reportes/Excel/informes (DNI y Registro “No aplica” en vehículos sin chofer). API `/api/empleados` (lectura con `verifyToken`, escrituras Admin, 409 en conflictos). Tests nuevos: `npm run test:github` (**9 checks**) y `npm run test:empleados` (**24 checks**); `npm test` = **285 checks, 0 fallas**. Smoke local OK y EJS render OK. También se incluyó el cambio autorizado del usuario en `PATENTE/AG976PG`: `vtv.pdf` nuevo, 2 backups de seguro borrados y VTV `19/11/2027` cargada/verificada en Firestore. **Commit/push aún pendiente de confirmación.** No usar `npm start` (stash/pull/pop automático con `stash@{0}` viejo); para probar escrituras usar `npm test` con el fake, no bajar `DEV_READ_ONLY=true`.
+- **Sesión 2026-11-25 (fechas de chofer dd/mm/aaaa; detalle en `documentacion/Update_2026.11.25_choferes-fechas-handoff.md`)** — corrección de visualización/carga de vencimientos de chofer: `employees/{id}` es la **fuente de verdad** y `vehicles/{id}` el espejo operativo; no usar `POST /api/empleados/sincronizar` (copia inversa). Fechas como string `dd/mm/aaaa` con parsers explícitos (`parseFecha`, `fechaParaInput`, `fechaDesdeValor`); no escribir `Timestamp` en `camposEspejo()`. Inputs de vencimiento del modal de vehículo como texto `dd/mm/aaaa`. Commit `87cdc89` pusheado/deployado, y `ce283fb` agregó doc de verificación. `npm test` = **296 checks, 0 fallas**. Pendiente manual: hard refresh y confirmación visual.
+
+- **Sesión 2026-11-21 (módulo Empleados; detalle en `documentacion/Update_2026.11.21_empleados.md`)** — nueva sección `/empleados`: perfiles de chofer por nombre + DNI en `employees`, espejos en `vehicles`, PDFs en `PATENTE/EMPLEADOS/{id}/`, historial de patentes, traslado con verificación antes de borrar, sincronización de perfiles virtuales y guardas `sinChofer` en reportes/Excel/informes (DNI y Registro “No aplica” en vehículos sin chofer). API `/api/empleados` (lectura con `verifyToken`, escrituras Admin, 409 en conflictos). Tests nuevos: `npm run test:github` (**9 checks**) y `npm run test:empleados` (**35 checks** en total actual); `npm test` pasó a 296 checks tras la sesión 11-25. No usar `npm start` si hay stash viejo pendiente; para probar escrituras usar `npm test` con el fake, no bajar `DEV_READ_ONLY=true`.
 
 - **Sesión 2026-11-21 (renovación de seguros 07/04/2027; detalle en `documentacion/Update_2026.11.21_service-y-seguros.md`)** — entrada: `PATENTE\Vtos\seguros\COBERTURA DE SEGUROS 07-04-2027.pdf` (33 páginas, OCR con Tesseract **solo `eng`**, sin paquete `spa`). **Página 33 descartada** (sin `PATENTE:`); quedaron **32 constancias**. Correcciones manuales: `AH7840Y→AH784OY` (cero→O), `AHO52ZE→AH052ZE` y `AHO52ZD→AH052ZD` (O→cero). Se instalaron 32 PDFs en `PATENTE/Seg/{PATENTE}.pdf` + `PATENTE/{patente}/seguro.pdf` con **31 backups** (`AH784OY` no tenía seguro viejo); los PDFs de staging en `PATENTE/Seg/` quedaron, se borró solo `seguros.rar`. Carga con `node scripts/cargar-vencimientos.js --archivo=PATENTE/Vtos/SEGUROS_RENOVACION_2026-11-21.xlsx` (dry-run primero): **13 actualizados / 19 sin cambios / 0 errores**; verificado 32/32 con `seguro.fechaVencimiento='07/04/2027'` y `docsAdjuntos.seguro=0`. También `AH657LB`: Registro `04/08/2027`, DNI `29/09/2041` y seguro `23/10/2027` vía `PATENTE\Vtos\DOCUMENTOS_AH657LB_2026-11-21.xlsx` (+4 PDFs nuevos; fuelle quedó en `_originales`). Commits `60ade3a` y `6e016b7`. **No ejecutar `npm run cargar:vencimientos` sin `--archivo`**: revertiría fechas con el Excel viejo.
 

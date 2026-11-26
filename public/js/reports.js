@@ -1195,8 +1195,8 @@ function printVenc() {
 
 /* PDF del informe semanal: lo genera el SERVIDOR (mismo código que la tarea
    programada de los viernes) y se descarga. A diferencia de exportVencPDF()
-   (que usa los filtros de la pantalla), este es fijo: vencidos + próximos
-   30 días de seguro, VTV, registro y service. */
+   (que usa los filtros de la pantalla), este es fijo: próximos hasta 90 días
+   de seguro, VTV, registro y service (excluye los ya vencidos). */
 async function descargarInformeSemanal() {
   try {
     const res = await fetch('/api/admin/report/vencimientos/semanal/pdf', { headers: await getAuthHeaders() });

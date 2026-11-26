@@ -5,11 +5,17 @@ falso en memoria. Sirven para probar POST/PUT/DELETE, validaciones, batches y
 transacciones, que con `DEV_READ_ONLY=true` no se pueden probar de otra forma.
 
 ```bash
-npm test              # las cuatro suites (105 checks, ~4 s)
+npm test              # 10 suites (296 checks)
 npm run test:escrituras
 npm run test:negocio
 npm run test:numeracion
 npm run test:import
+npm run test:deshabilitado
+npm run test:inventario
+npm run test:informes
+npm run test:flota
+npm run test:github
+npm run test:empleados
 ```
 
 ## Por qué un `db` fake y no la base real
@@ -34,9 +40,15 @@ hace falta tocar `DEV_READ_ONLY` ni hacer backup.
 | `fake-firestore.js` | Emula la API de Firestore que usa el proyecto. |
 | `helpers.js` | Inyecta el fake, monta las rutas en un Express de prueba en un puerto efímero, y expone `req()` + un reporter. |
 | `escrituras.test.js` | Auth, obras, elementos, vehículos (47 checks). |
-| `negocio.test.js` | Contador del catálogo, `recomputeServiceSummary`, `FieldValue.delete()` (25 checks). |
+| `negocio.test.js` | Contador del catálogo, `recomputeServiceSummary`, `FieldValue.delete()` y parámetros de service (39 checks). |
 | `vehiculos-numeracion.test.js` | Numeración de vehículos — **código cliente**, se evalúa sin navegador (16 checks). |
 | `import-vehiculos.test.js` | Import masivo de vehículos — **código cliente** (17 checks). |
+| `deshabilitado-orden.test.js` | Campo `deshabilitado` y orden/filtros de Vencimientos (30 checks). |
+| `inventario-casares.test.js` | Import/inventario Casares (21 checks). |
+| `informes-config.test.js` | Config del informe, plantillas y cron (42 checks). |
+| `informe-flota.test.js` | Novedades de flota: período, filtros, correo, pendientes y errores (40 checks). |
+| `github-empleados.test.js` | Helpers `PATENTE/EMPLEADOS/` y exclusión del árbol de patentes (9 checks). |
+| `empleados.test.js` | API Empleados con fake Firestore y GitHub mockeado (35 checks). |
 
 ## Testear código de `public/js/` (sin navegador)
 
