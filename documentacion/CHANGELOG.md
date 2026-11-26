@@ -2,7 +2,7 @@
 
 Cambios registrados por sesión. Última actualización: 2026-11-26.
 
-## 2026-11-26 — Fixes UI/permisos + puesta al día docs
+## 2026-11-26 — Fixes UI/permisos + puesta al día docs (commit e9ec74)
 
 - `public/js/vehicles.js`: la descarga de plantilla Excel ahora envía `getAuthHeaders()` al llamar `/api/vehicles/template/excel` (la ruta exige `verifyToken`).
 - `views/centros.ejs`: se incluyó `partials/mobile-menu.ejs`; antes el JS esperaba `#mobile-menu`/`#mobile-menu-backdrop` inexistentes.
