@@ -83,7 +83,7 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/titulos', express.static(path.join(__dirname, 'titulo')));
 app.use('/documentos', express.static(path.join(__dirname, 'PATENTE')));
-app.use('/equipos-instrumentos', express.static(path.join(__dirname, 'Equipos e Instrumentos')));
+app.use('/equipos-instrumentos', express.static(path.join(__dirname, 'Equipos e Instrumentos'), { index: false }));
 
 app.use(loadUser);
 
@@ -220,9 +220,19 @@ app.get('/service', (req, res) => {
   });
 });
 
+app.get('/equipos-instrumentos', requireAuth, (req, res) => {
+  res.render('equipos-instrumentos', {
+    title: 'Equipos e Instrumentos',
+    page: 'equipos-instrumentos',
+    clientConfig: res.locals.clientConfig,
+    currentUser: res.locals.currentUser,
+    currentUserData: res.locals.currentUserData
+  });
+});
+
 app.get('/vehicle/scan', requireAuth, (req, res) => {
   res.render('scanner', {
-    title: 'Escanear Vehículo',
+    title: 'Escanear Veh��culo',
     page: 'scan',
     clientConfig: res.locals.clientConfig,
     currentUser: res.locals.currentUser,

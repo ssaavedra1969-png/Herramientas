@@ -1,0 +1,348 @@
+<%- include('partials/head') %>
+<style>
+.ei-demo{--font-display:'Sora','Inter',system-ui,sans-serif;--font-body:'Inter',system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace;--fs-micro:9px;--fs-xs:10px;--fs-sm:12px;--fs-base:13px;--fs-md:14px;--fs-lg:16px;--fs-xl:18px;--fs-2xl:24px;--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--r-xs:4px;--r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:20px;--r-full:999px;--tap-min:32px;--sidebar-w:264px;--ease:cubic-bezier(.2,.8,.2,1);--dur:180ms;--dur-slow:320ms;--sh-sm:0 1px 2px rgba(0,0,0,.5);--sh-md:0 4px 14px rgba(0,0,0,.55);--sh-lg:0 18px 44px -12px rgba(0,0,0,.8);--sh-xl:0 32px 80px -16px rgba(0,0,0,.9);--sh-ac:0 4px 16px -4px rgba(99,102,241,.5);--grad-clock:linear-gradient(135deg,color-mix(in srgb,var(--ac) 15%,var(--bg-raised)) 0%,var(--bg-overlay) 100%)}.ei-demo,.ei-demo [data-theme='pro']{--t-name:'Pro';--bg-app:#0a0b16;--bg-sunken:#06070f;--bg-surface:#11132a;--bg-raised:#181b36;--bg-overlay:#1f2340;--bg-input:#0c0e1d;--bg-hover:rgba(148,163,255,.07);--bg-active:rgba(99,102,241,.18);--tx-strong:#f5f6ff;--tx-base:#ccd0f0;--tx-muted:#9ba0cc;--tx-subtle:#8389b8;--tx-invert:#0a0b16;--bd-subtle:rgba(160,170,255,.11);--bd-base:rgba(160,170,255,.2);--bd-strong:rgba(160,170,255,.34);--ac:#818cf8;--ac-hover:#a5b0ff;--ac-soft:rgba(99,102,241,.16);--ac-border:rgba(129,140,248,.45);--ac-text:#fff;--ac-solid:#4f46e5;--ac-solid-hover:#4338ca;--ok:#10b981;--ok-soft:rgba(16,185,129,.16);--ok-text:#34d399;--warn:#f59e0b;--warn-soft:rgba(245,158,11,.16);--warn-text:#fbbf24;--dan:#ef4444;--dan-soft:rgba(239,68,68,.16);--dan-text:#fca5a5;--info:#22d3ee;--info-soft:rgba(34,211,238,.16);--info-text:#67e8f9;--shadow:#02030a;--grad-brand:linear-gradient(135deg,#6366f1,#22d3ee)}.ei-demo [data-theme='claro']{--t-name:'Claro';--bg-app:#d9d1c0;--bg-sunken:#c9c0ad;--bg-surface:#e6dfd0;--bg-raised:#eee7d9;--bg-overlay:#f1ebdf;--bg-input:#ece5d7;--bg-hover:rgba(74,58,38,.06);--bg-active:rgba(15,118,110,.14);--tx-strong:#2b2620;--tx-base:#453e34;--tx-muted:#665d50;--tx-subtle:#7a7062;--tx-invert:#e6dfd0;--bd-subtle:#d3c8b3;--bd-base:#bfb39b;--bd-strong:#a1937a;--ac:#0f6f68;--ac-hover:#0b5d57;--ac-soft:rgba(15,111,104,.12);--ac-border:rgba(15,111,104,.36);--ac-text:#f1ebdf;--ac-solid:#0f6f68;--ac-solid-hover:#0b514c;--ok:#04785a;--ok-soft:#cfe6d6;--ok-text:#0a4c39;--warn:#96560a;--warn-soft:#f2e2c2;--warn-text:#6f4008;--dan:#b62b2b;--dan-soft:#f0d6d2;--dan-text:#7d1f1f;--info:#0d6478;--info-soft:#cfe3e9;--info-text:#0a4557;--shadow:#453e34;--grad-brand:linear-gradient(135deg,#0f6f68,#3d8f5f)}.ei-demo [data-theme='industrial']{--t-name:'Industrial';--bg-app:#17140f;--bg-sunken:#100e0a;--bg-surface:#201c15;--bg-raised:#2a251b;--bg-overlay:#342e22;--bg-input:#131009;--bg-hover:rgba(255,214,140,.06);--bg-active:rgba(245,158,11,.18);--tx-strong:#fdf8ec;--tx-base:#e0d7c4;--tx-muted:#aba08a;--tx-subtle:#928873;--tx-invert:#17140f;--bd-subtle:rgba(255,226,170,.1);--bd-base:rgba(255,226,170,.18);--bd-strong:rgba(255,226,170,.32);--ac:#fbbf24;--ac-hover:#fcd34d;--ac-soft:rgba(245,158,11,.16);--ac-border:rgba(251,191,36,.44);--ac-text:#17140f;--ac-solid:#f59e0b;--ac-solid-hover:#d97706;--ok:#22c55e;--ok-soft:rgba(34,197,94,.16);--ok-text:#86efac;--warn:#fbbf24;--warn-soft:rgba(251,191,36,.16);--warn-text:#fde68a;--dan:#f43f5e;--dan-soft:rgba(244,63,94,.16);--dan-text:#fda4af;--info:#38bdf8;--info-soft:rgba(56,189,248,.16);--info-text:#7dd3fc;--shadow:#100e0a;--grad-brand:linear-gradient(135deg,#f59e0b,#ef4444)}.ei-demo [data-theme='auto']{--t-name:'Auto'}.ei-demo @media(prefers-color-scheme:dark){[data-theme='auto']{--bg-app:#120e1e;--bg-sunken:#0c0915;--bg-surface:#1a1529;--bg-raised:#241d38;--bg-overlay:#2d2447;--bg-input:#100d1a;--bg-hover:rgba(196,181,253,.07);--bg-active:rgba(139,92,246,.2);--tx-strong:#f7f3ff;--tx-base:#d8d0ee;--tx-muted:#a79dcb;--tx-subtle:#8d83b3;--tx-invert:#120e1e;--bd-subtle:rgba(196,181,253,.12);--bd-base:rgba(196,181,253,.2);--bd-strong:rgba(196,181,253,.34);--ac:#c084fc;--ac-hover:#d8b4fe;--ac-soft:rgba(168,85,247,.18);--ac-border:rgba(192,132,252,.45);--ac-text:#1a0f2e;--ac-solid:#7c3aed;--ac-solid-hover:#6d28d9;--ok:#34d399;--ok-soft:rgba(52,211,153,.16);--ok-text:#6ee7b7;--warn:#fbbf24;--warn-soft:rgba(251,191,36,.16);--warn-text:#fcd34d;--dan:#fb7185;--dan-soft:rgba(251,113,133,.16);--dan-text:#fda4af;--info:#22d3ee;--info-soft:rgba(34,211,238,.16);--info-text:#67e8f9;--shadow:#0c0915}}.ei-demo @media(prefers-color-scheme:light){[data-theme='auto']{--bg-app:#d5e0e2;--bg-sunken:#c5d2d5;--bg-surface:#e2ebed;--bg-raised:#eaf1f2;--bg-overlay:#edf3f4;--bg-input:#e9f0f1;--bg-hover:rgba(23,74,84,.06);--bg-active:rgba(124,58,237,.13);--tx-strong:#1a2224;--tx-base:#2c383b;--tx-muted:#55666a;--tx-subtle:#6a7c80;--tx-invert:#e2ebed;--bd-subtle:#cfdcde;--bd-base:#b6c8cc;--bd-strong:#93aab1;--ac:#6d28d9;--ac-hover:#5b21b6;--ac-soft:rgba(124,58,237,.1);--ac-border:rgba(124,58,237,.3);--ac-text:#fbfefe;--ac-solid:#6d28d9;--ac-solid-hover:#5b21b6;--ok:#047857;--ok-soft:#d3f0e4;--ok-text:#04543c;--warn:#a45b09;--warn-soft:#fbe9ca;--warn-text:#7c4406;--dan:#c02626;--dan-soft:#fadbdb;--dan-text:#8c1d1d;--info:#0e6f88;--info-soft:#d6edf5;--info-text:#0a5062;--shadow:#c5d2d5}}.ei-demo *{box-sizing:border-box;border-color:var(--bd-subtle)}.ei-demo,.ei-demo{margin:0;padding:0}.ei-demo{font-family:var(--font-body);font-size:var(--fs-base);line-height:1.5;background:var(--bg-app);color:var(--tx-base);overflow-x:hidden;-webkit-font-smoothing:antialiased}.ei-demo body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(var(--bd-subtle) 1px,transparent 1px),linear-gradient(90deg,var(--bd-subtle) 1px,transparent 1px);background-size:44px 44px;opacity:.4;mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 20%,transparent 78%)}.ei-demo body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 55% 45% at 6% -4%,var(--ac-soft) 0%,transparent 60%),radial-gradient(ellipse 45% 40% at 98% 8%,var(--info-soft) 0%,transparent 58%),radial-gradient(ellipse 60% 45% at 50% 104%,var(--ac-soft) 0%,transparent 62%);animation:aurora 26s var(--ease) infinite alternate}.ei-demo @keyframes aurora{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(1.5%,-1.2%,0) scale(1.06)}100%{transform:translate3d(-1.2%,1.4%,0) scale(1.02)}}.ei-demo h1,.ei-demo h2,.ei-demo h3{font-family:var(--font-display);color:var(--tx-strong);letter-spacing:-.02em;line-height:1.2;margin:0}.ei-demo h1{font-size:var(--fs-2xl);font-weight:800}.ei-demo h2{font-size:var(--fs-xl);font-weight:700}.ei-demo h3{font-size:var(--fs-lg);font-weight:700}.ei-demo .title-page{background:linear-gradient(96deg,var(--tx-strong) 8%,var(--ac) 52%,var(--info) 96%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-size:220% 100%;animation:sheen 9s var(--ease) infinite}.ei-demo @keyframes sheen{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}.ei-demo .t-strong{color:var(--tx-strong)}.ei-demo .t-muted{color:var(--tx-muted)}.ei-demo .t-subtle{color:var(--tx-subtle)}.ei-demo .t-ok{color:var(--ok-text)}.ei-demo .t-warn{color:var(--warn-text)}.ei-demo .t-danger{color:var(--dan-text)}.ei-demo .t-ac{color:var(--ac)}.ei-demo .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}.ei-demo .hidden{display:none!important}.ei-demo[data-nav='collapsed'] 
+    .ei-demo[data-nav='collapsed'] .sidebar .nav-sec,.ei-demo[data-nav='collapsed'] .sidebar .nav-label,.ei-demo[data-nav='collapsed'] .sidebar .user-meta,.ei-demo[data-nav='collapsed'] .sidebar .theme-label{display:none}.ei-demo[data-nav='collapsed'] 
+    
+    
+    
+    .brand span{color:var(--tx-subtle);font-weight:600}.ei-demo .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;border-radius:0 3px 3px 0;background:var(--ac);box-shadow:0 0 10px var(--ac)}.ei-demo .page-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}.ei-demo .page-head p{margin:6px 0 0;font-size:13px;color:var(--tx-muted)}.ei-demo .demo-note{margin-top:16px;padding:10px 14px;border:1px solid var(--ac-border);border-radius:var(--r-md);background:var(--ac-soft);color:var(--tx-base);font-size:12px}.ei-demo .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-top:20px}.ei-demo .kpi{position:relative;display:flex;flex-direction:column;gap:4px;padding:14px;background:var(--bg-surface);border:1px solid var(--bd-subtle);border-radius:var(--r-lg);box-shadow:var(--sh-sm);overflow:hidden}.ei-demo .kpi::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,var(--kpi-tone,var(--ac)),transparent 92%)}.ei-demo .kpi::after{content:'';position:absolute;top:-34px;right:-34px;width:108px;height:108px;border-radius:50%;background:radial-gradient(circle,var(--kpi-tone,var(--ac)) 0%,transparent 68%);opacity:.13;pointer-events:none}.ei-demo .kpi__label{font-size:9px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--tx-subtle)}.ei-demo .kpi__value{font-family:var(--font-display);font-size:30px;font-weight:800;line-height:1.05;letter-spacing:-.035em;color:var(--tx-strong)}.ei-demo .kpi__foot{font-size:10px;color:var(--tx-subtle);margin-top:auto}.ei-demo .tabs-main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px;perspective:900px}.ei-demo .tab-main{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;border:1px solid var(--bd-strong);border-radius:var(--r-lg);background:linear-gradient(145deg,var(--bg-raised),var(--bg-surface));color:var(--tx-strong);font-family:var(--font-display);font-size:15px;font-weight:800;letter-spacing:-.01em;text-align:left;cursor:pointer;box-shadow:0 10px 24px -14px var(--shadow),inset 0 1px 0 var(--bg-hover);transform:translateZ(0) rotateX(1deg);transform-origin:center bottom;transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),border-color var(--dur) var(--ease),background var(--dur) var(--ease)}.ei-demo .tab-main::before{content:'';position:absolute;left:16px;right:16px;top:0;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--ac),var(--info));opacity:.55}.ei-demo .tab-main:hover{transform:translateY(-2px) rotateX(0deg);border-color:var(--ac-border);box-shadow:0 18px 32px -16px var(--shadow)}.ei-demo .tab-main.active{color:var(--tx-strong);border-color:var(--ac);background:linear-gradient(145deg,var(--ac-soft),var(--bg-surface));box-shadow:0 20px 36px -16px var(--shadow),inset 0 0 0 1px var(--ac-border);transform:translateY(-3px) rotateX(0deg)}.ei-demo .tab-main.active::before{opacity:1;height:4px}.ei-demo .tab-main .n{padding:3px 10px;border-radius:var(--r-full);background:var(--bg-overlay);border:1px solid var(--bd-base);font-family:var(--font-mono);font-size:10px;color:var(--tx-muted);box-shadow:inset 0 1px 2px rgba(0,0,0,.18)}.ei-demo .tab-main.active .n{background:var(--ac-soft);border-color:var(--ac-border);color:var(--ac)}.ei-demo .panel{position:relative;margin-top:14px;padding:20px;overflow:hidden;border-color:var(--bd-base);box-shadow:var(--sh-md)}.ei-demo .panel::before{content:'';position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--ac),var(--info));pointer-events:none}.ei-demo .panel.panel-active{border-color:var(--bd-strong);box-shadow:var(--sh-lg)}.ei-demo .glass-card{background:var(--bg-surface);border:1px solid var(--bd-subtle);box-shadow:var(--sh-sm);border-radius:var(--r-lg)}.ei-demo .panel-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.ei-demo .panel-head h2{font-size:20px;letter-spacing:-.02em}.ei-demo .panel-head p{margin:4px 0 0;font-size:12px;color:var(--tx-muted)}.ei-demo .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-body);font-weight:600;font-size:13px;line-height:1;padding:10px 18px;min-height:32px;border-radius:var(--r-md);border:1px solid transparent;cursor:pointer;white-space:nowrap;text-decoration:none;transition:all var(--dur)}.ei-demo .btn svg{width:16px;height:16px}.ei-demo .btn:active{transform:scale(.98)}.ei-demo .btn:disabled{opacity:.5;cursor:not-allowed}.ei-demo .btn-primary{background:var(--ac-solid);color:var(--ac-text);box-shadow:var(--sh-ac)}.ei-demo .btn-primary:hover:not(:disabled){background:var(--ac-solid-hover)}.ei-demo .btn-secondary{background:var(--bg-raised);color:var(--tx-strong);border-color:var(--bd-base)}.ei-demo .btn-secondary:hover:not(:disabled){background:var(--bg-overlay);border-color:var(--bd-strong)}.ei-demo .btn-ghost{background:transparent;color:var(--tx-muted)}.ei-demo .btn-ghost:hover{background:var(--bg-hover);color:var(--tx-strong)}.ei-demo .btn-danger{background:var(--dan-soft);color:var(--dan-text);border-color:var(--dan)}.ei-demo .btn-sm{min-height:30px;padding:6px 10px;font-size:12px}.ei-demo .filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;padding:12px;border:1px solid var(--bd-subtle);border-radius:var(--r-md);background:var(--bg-raised);margin-bottom:14px}.ei-demo .field{display:flex;flex-direction:column;min-width:150px;flex:1}.ei-demo .field label,.ei-demo .label{display:block;font-size:12px;font-weight:600;color:var(--tx-muted);margin-bottom:4px}.ei-demo .input,.ei-demo input.input,.ei-demo select.input,.ei-demo textarea.input{width:100%;background:var(--bg-input);color:var(--tx-strong);border:1px solid var(--bd-base);border-radius:var(--r-md);padding:9px 12px;min-height:32px;font-family:var(--font-body);font-size:13px;transition:all var(--dur)}.ei-demo .input::placeholder{color:var(--tx-subtle)}.ei-demo .input:focus,.ei-demo input:focus,.ei-demo select:focus,.ei-demo textarea:focus{outline:none;border-color:var(--ac)!important;box-shadow:0 0 0 3px var(--ac-soft)!important}.ei-demo select.input{appearance:none;padding-right:26px;background-image:linear-gradient(45deg,transparent 50%,var(--tx-muted) 50%),linear-gradient(135deg,var(--tx-muted) 50%,transparent 50%);background-position:calc(100% - 16px) 15px,calc(100% - 11px) 15px;background-size:5px 5px;background-repeat:no-repeat}.ei-demo textarea.input{min-height:78px;resize:vertical}.ei-demo .input[readonly]{color:var(--tx-muted);background:var(--bg-raised);cursor:default}.ei-demo .filters .field{flex:1 1 160px;max-width:260px}.ei-demo .table-wrap{overflow-x:auto;border:1px solid var(--bd-subtle);border-radius:var(--r-md)}.ei-demo .tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}.ei-demo .tbl thead th{position:sticky;top:0;z-index:2;background:var(--bg-raised);color:var(--tx-muted);font-family:var(--font-body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;text-align:left;padding:12px 14px;border-bottom:1px solid var(--bd-base);white-space:nowrap;user-select:none}.ei-demo .tbl thead th.sortable{cursor:pointer}.ei-demo .tbl thead th.sortable:hover{color:var(--tx-strong);background:var(--bg-overlay)}.ei-demo .tbl tbody td{padding:10px 14px;border-bottom:1px solid var(--bd-subtle);color:var(--tx-base);vertical-align:middle;white-space:nowrap}.ei-demo .tbl tbody tr:hover{background:var(--bg-hover)}.ei-demo .tbl tbody tr:last-child td{border-bottom:none}.ei-demo .tbl .num{font-family:var(--font-mono);text-align:right;font-variant-numeric:tabular-nums}.ei-demo .code{font-family:var(--font-mono);font-weight:700;color:var(--tx-strong);letter-spacing:.04em}.ei-demo .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:var(--r-full);font-size:10px;font-weight:700;letter-spacing:.03em;border:1px solid transparent;white-space:nowrap}.ei-demo .badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}.ei-demo .badge-ok{background:var(--ok-soft);color:var(--ok-text);border-color:var(--ok)}.ei-demo .badge-warn{background:var(--warn-soft);color:var(--warn-text);border-color:var(--warn)}.ei-demo .badge-danger{background:var(--dan-soft);color:var(--dan-text);border-color:var(--dan)}.ei-demo .badge-info{background:var(--info-soft);color:var(--info-text);border-color:var(--info)}.ei-demo .badge-ac{background:var(--ac-soft);color:var(--ac);border-color:var(--ac-border)}.ei-demo .badge-muted{background:var(--bg-hover);color:var(--tx-muted);border-color:var(--bd-base)}.ei-demo .row-actions{display:flex;gap:6px}.ei-demo .icon-btn{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--bd-base);border-radius:var(--r-sm);background:var(--bg-raised);color:var(--tx-muted);cursor:pointer}.ei-demo .icon-btn:hover{color:var(--ac);border-color:var(--ac-border);background:var(--ac-soft)}.ei-demo .icon-btn svg{width:14px;height:14px}.ei-demo .panel-foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:11px;color:var(--tx-subtle)}.ei-demo .empty{padding:28px;text-align:center;color:var(--tx-subtle);font-size:13px}.ei-demo .catalogo{margin-top:14px;padding:10px 14px}.ei-demo .catalogo summary{cursor:pointer;display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;color:var(--tx-strong);font-size:13px}.ei-demo .catalogo summary::after{content:'resumen rápido · plegable';font-family:var(--font-body);font-size:10px;font-weight:500;color:var(--tx-subtle)}.ei-demo .catalogo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px 18px;margin-top:8px}.ei-demo .cat-line{font-size:11px;line-height:1.45;color:var(--tx-muted)}.ei-demo .cat-line b{color:var(--tx-strong);font-weight:600}.ei-demo .cell-sub{display:block;margin-top:2px;font-size:10px;color:var(--tx-subtle);line-height:1.3}.ei-demo .tol-row{display:grid;grid-template-columns:1fr 160px;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd-subtle)}.ei-demo .tol-row:last-child{border-bottom:none}.ei-demo .wizard-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}.ei-demo .step{padding:10px 12px;border:1px solid var(--bd-subtle);border-radius:var(--r-md);background:var(--bg-raised)}.ei-demo .step b{display:block;font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--tx-subtle)}.ei-demo .step .input{margin-top:5px}.ei-demo .step-num{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:6px;border-radius:50%;background:var(--ac-soft);color:var(--ac);font-size:10px;font-weight:800}.ei-demo .notice{padding:14px;border:1px solid var(--warn);border-radius:var(--r-md);background:var(--warn-soft);color:var(--warn-text);font-size:13px}.ei-demo .doc-chip{display:inline-flex;align-items:center;gap:8px;padding:5px 9px;border-radius:var(--r-full);border:1px solid var(--ac-border);background:var(--ac-soft);color:var(--ac);font-size:11px;margin:4px 6px 0 0}.ei-demo .doc-chip button{border:none;background:transparent;color:inherit;cursor:pointer;font-weight:800}.ei-demo .modal-backdrop{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--shadow) 68%,transparent);backdrop-filter:blur(4px)}.ei-demo .modal{width:min(960px,100%);max-height:92vh;display:flex;flex-direction:column;background:var(--bg-surface);border:1px solid var(--bd-strong);border-radius:var(--r-lg);box-shadow:var(--sh-xl);overflow:hidden}.ei-demo .modal.sm{width:min(640px,100%)}.ei-demo .modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--bd-subtle);background:var(--bg-raised);flex-shrink:0}.ei-demo .modal-head h2{font-size:18px}.ei-demo .modal-head p{margin:2px 0 0;font-size:11px;color:var(--tx-subtle)}.ei-demo .modal-.ei-demo{padding:20px;overflow-y:auto}.ei-demo .modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--bd-subtle);background:var(--bg-raised);flex-shrink:0}.ei-demo .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.ei-demo .form-grid .full{grid-column:1/-1}.ei-demo .hint{font-size:10px;color:var(--tx-subtle);margin-top:4px}.ei-demo .def-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ei-demo .def-item{padding:10px 12px;border:1px solid var(--bd-subtle);border-radius:var(--r-md);background:var(--bg-raised)}.ei-demo .def-item .k{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tx-subtle)}.ei-demo .def-item .v{font-size:13px;font-weight:600;color:var(--tx-strong);margin-top:2px;overflow-wrap:anywhere}.ei-demo .cert-paper{background:var(--bg-overlay);border:1px solid var(--bd-base);border-radius:var(--r-md);padding:28px;max-width:640px;margin:0 auto;color:var(--tx-strong)}.ei-demo .cert-paper h3{text-align:center;font-size:18px;letter-spacing:.08em;text-transform:uppercase}.ei-demo .cert-paper .cert-sub{text-align:center;font-size:11px;color:var(--tx-muted);margin-top:4px}.ei-demo .cert-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 22px;margin-top:22px;font-size:12px}.ei-demo .cert-grid div{border-bottom:1px dashed var(--bd-base);padding-bottom:6px}.ei-demo .cert-grid b{display:block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx-subtle)}.ei-demo .cert-foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--bd-base);font-size:10px;color:var(--tx-subtle);text-align:center}.ei-demo .cmdk{position:fixed;inset:0;z-index:100;display:none;padding-top:12vh;justify-content:center;background:color-mix(in srgb,var(--shadow) 62%,transparent);backdrop-filter:blur(4px)}.ei-demo .cmdk.open{display:flex}.ei-demo .cmdk__panel{width:min(640px,calc(100vw - 32px));max-height:62vh;display:flex;flex-direction:column;background:var(--bg-raised);border:1px solid var(--bd-strong);border-radius:var(--r-lg);box-shadow:var(--sh-xl);overflow:hidden}.ei-demo .cmdk__input{width:100%;padding:16px;border:none;border-bottom:1px solid var(--bd-subtle);background:transparent;color:var(--tx-strong);font-family:var(--font-body);font-size:16px;outline:none}.ei-demo .cmdk__list{flex:1;overflow-y:auto;padding:8px}.ei-demo .cmdk__group{padding:12px 12px 4px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx-subtle)}.ei-demo .cmdk__item{display:flex;align-items:center;gap:12px;width:100%;padding:8px 12px;min-height:40px;border:none;border-radius:var(--r-sm);background:transparent;color:var(--tx-base);font-size:13px;text-align:left;cursor:pointer}.ei-demo .cmdk__item:hover,.ei-demo .cmdk__item.sel{background:var(--ac-soft);color:var(--ac)}.ei-demo .cmdk__item .tag{margin-left:auto;padding:2px 7px;border-radius:var(--r-full);background:var(--bg-overlay);border:1px solid var(--bd-base);font-size:10px;font-weight:600;color:var(--tx-muted)}.ei-demo .cmdk__foot{padding:8px 16px;border-top:1px solid var(--bd-subtle);background:var(--bg-surface);font-size:11px;color:var(--tx-subtle)}.ei-demo .toast{position:fixed;right:20px;bottom:20px;z-index:120;max-width:360px;padding:12px 16px;border-radius:var(--r-md);border:1px solid var(--bd-base);background:var(--bg-raised);color:var(--tx-strong);font-size:13px;box-shadow:var(--sh-lg);animation:slidein .2s var(--ease)}.ei-demo .toast.ok{border-color:var(--ok);background:var(--ok-soft);color:var(--ok-text)}.ei-demo .toast.err{border-color:var(--dan);background:var(--dan-soft);color:var(--dan-text)}.ei-demo .toast.warn{border-color:var(--warn);background:var(--warn-soft);color:var(--warn-text)}.ei-demo @keyframes slidein{from{opacity:0;transform:translateY(12px)}}.ei-demo @media(max-width:1023px){.sidebar.open{transform:none}}.ei-demo @media(max-width:767px){.search-trigger span:not(.search-trigger__kbd){display:none}.top-actions .btn-secondary{display:none}.form-grid,.def-grid,.cert-grid{grid-template-columns:1fr}.filters .field{max-width:none}.wizard-steps{grid-template-columns:1fr}.tabs-main{grid-template-columns:1fr}.tab-main{font-size:14px;padding:14px 16px}}
+  
+</style>
+<div class="flex h-screen overflow-hidden">
+  <%- include('partials/sidebar', { page: 'equipos-instrumentos' }) %>
+
+  <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+    <%- include('partials/topbar', { page: 'equipos-instrumentos' }) %>
+
+    <div class="flex-1 overflow-y-auto p-4 md:p-6 ei-demo">
+<main class="page">
+        <div class="page-head"><div><h1 class="title-page">Equipos e Instrumentos</h1><p>Mantenimiento de Instrumentos · Pruebas/Ensayos — Plantas Luján y Campana</p></div><span class="badge badge-ac">Asistente de carga en 3 pasos</span></div>
+        <div class="demo-note"><b>Demo local.</b> 12 registros de muestra con fecha de referencia <span class="mono">27/11/2026</span>. El semáforo es solo visual (30 días de anticipación). Los cambios viven en esta pestaña.</div>
+        <details class="glass-card catalogo" open>
+          <summary>Catálogos fijos de la sección</summary>
+          <div class="catalogo-grid">
+            <div>
+              <div class="cat-line"><b>Ubicación:</b> Luján · Campana</div>
+              <div class="cat-line"><b>Sectores:</b> Laboratorio · Balanza</div>
+              <div class="cat-line"><b>Periodicidad:</b> Diaria · Semanal · Mensual · Trimestral · Semestral · Anual</div>
+            </div>
+            <div>
+              <div class="cat-line"><b>Equipos · Laboratorio:</b> <span id="cat-eq-lab"></span></div>
+              <div class="cat-line"><b>Equipos · Balanza:</b> <span id="cat-eq-bal"></span></div>
+              <div class="cat-line"><b>Pruebas:</b> Peso (Moretti/Distribal) · Presión (UTEST/Cosacob) · Humedad (Cocina, todos los áridos)</div>
+              <div class="cat-line"><b>Tolerancia por equipo:</b> <span id="cat-tolerancias"></span> <button class="btn btn-ghost btn-sm" type="button" onclick="abrirTolerancias()">Editar</button></div>
+            </div>
+            <div>
+              <div class="cat-line"><b>Mantenimiento:</b> Calibración · Preventivo · Chequeo de sensores</div>
+              <div class="cat-line"><b>Áridos:</b> <span id="cat-aridos"></span></div>
+              <div class="cat-line"><b>Probetas:</b> <span id="cat-proveta"></span></div>
+            </div>
+          </div>
+        </details>
+        <div class="kpis" id="kpis"></div>
+        <div class="tabs-main">
+          <button class="tab-main active" data-parte="mant" onclick="cambiarParte('mant')">1 · Mantenimiento de Instrumentos <span class="n" id="n-mant">0</span></button>
+          <button class="tab-main" data-parte="prueba" onclick="cambiarParte('prueba')">2 · Pruebas/Ensayos <span class="n" id="n-prueba">0</span></button>
+        </div>
+        <section class="glass-card panel panel-active" id="panel-mant">
+          <div class="panel-head"><div><h2>1 · Mantenimiento de Instrumentos</h2><p>Control de los equipos utilizados para mediciones, pruebas y ensayos.</p></div><button class="btn btn-secondary btn-sm" onclick="abrirForm('mant')">+ Nuevo mantenimiento</button></div>
+          <div class="filters">
+            <div class="field"><label for="m-q">Buscar</label><input id="m-q" class="input" type="search" placeholder="Equipo, planta…"></div>
+            <div class="field"><label for="m-planta">Planta/Ubicación</label><select id="m-planta" class="input"></select></div>
+            <div class="field"><label for="m-sector">Sector</label><select id="m-sector" class="input"></select></div>
+            <div class="field"><label for="m-equipo">Equipo</label><select id="m-equipo" class="input"></select></div>
+            <div class="field"><label for="m-tipo">Tipo de Mantenimiento</label><select id="m-tipo" class="input"></select></div>
+            <button class="btn btn-ghost btn-sm" onclick="limpiar('m')">Limpiar</button>
+          </div>
+          <div class="table-wrap"><table class="tbl"><thead><tr><th>Planta</th><th>Sector</th><th>Equipo</th><th>Tipo de Mantenimiento</th><th>Fecha de Control</th><th>Periodicidad</th><th>Próximo Control</th><th class="num">Días</th><th>Certificado</th><th></th></tr></thead><tbody id="body-mant"></tbody></table></div>
+          <div class="panel-foot"><span id="conteo-mant">—</span><span>Semáforo calculado sobre Próximo Control</span></div>
+        </section>
+        <section class="glass-card panel hidden" id="panel-prueba">
+          <div class="panel-head"><div><h2>2 · Pruebas/Ensayos</h2><p>Ensayos sobre elementos: peso, presión y humedad, con categoría y elemento asociado.</p></div><button class="btn btn-secondary btn-sm" onclick="abrirForm('prueba')">+ Nueva prueba/ensayo</button></div>
+          <div class="filters">
+            <div class="field"><label for="p-q">Buscar</label><input id="p-q" class="input" type="search" placeholder="Equipo, elemento…"></div>
+            <div class="field"><label for="p-planta">Planta/Ubicación</label><select id="p-planta" class="input"></select></div>
+            <div class="field"><label for="p-equipo">Equipo</label><select id="p-equipo" class="input"></select></div>
+            <div class="field"><label for="p-prueba">Tipo de Prueba/Ensayo</label><select id="p-prueba" class="input"></select></div>
+            <div class="field"><label for="p-categoria">Categoría</label><select id="p-categoria" class="input"></select></div>
+            <div class="field"><label for="p-estado">Estado</label><select id="p-estado" class="input"></select></div>
+            <button class="btn btn-ghost btn-sm" onclick="limpiar('p')">Limpiar</button>
+          </div>
+          <div class="table-wrap"><table class="tbl"><thead><tr><th>Planta</th><th>Sector</th><th>Equipo</th><th>Tipo de Prueba/Ensayo</th><th>Categoría</th><th>Elemento</th><th>Resultado / Humedad</th><th>Estado</th><th>Acción tomada</th><th>Fecha de Control</th><th>Periodicidad</th><th>Próximo Control</th><th class="num">Días</th><th>Certificado</th><th></th></tr></thead><tbody id="body-prueba"></tbody></table></div>
+          <div class="panel-foot"><span id="conteo-prueba">—</span></div>
+        </section>
+      </main>
+</div>
+  </div>
+
+  <div id="modal-form" class="modal-backdrop hidden">
+    <div class="modal"><div class="modal-head"><div><h2 id="form-titulo">Cargar registro</h2><p>Primero elegí planta, sector y tipo de control; después se muestra el formulario correspondiente.</p></div><button class="icon-btn" onclick="cerrarForm()">✕</button></div>
+      <div class="modal-body">
+        <div class="wizard-steps">
+          <div class="step"><label><span class="step-num">1</span>Planta/Ubicación</label><select id="w-planta" class="input" onchange="onWizard()"></select></div>
+          <div class="step"><label><span class="step-num">2</span>Sector</label><select id="w-sector" class="input" onchange="onWizard()"></select></div>
+          <div class="step"><label><span class="step-num">3</span>Tipo de Control</label><select id="w-tipo" class="input" onchange="onWizard()"></select></div>
+        </div>
+        <div id="w-dynamic"></div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-secondary" onclick="cerrarForm()">Cancelar</button><button id="w-guardar" class="btn btn-primary" onclick="guardarRegistro()">Guardar registro</button></div>
+    </div>
+  </div>
+  <div id="modal-detalle" class="modal-backdrop hidden">
+    <div class="modal sm"><div class="modal-head"><div><h2 id="det-titulo">Detalle del registro</h2><p>Todos los campos cargados</p></div><button class="icon-btn" onclick="cerrar('modal-detalle')">✕</button></div><div class="modal-body" id="det-body"></div><div class="modal-foot"><button class="btn btn-secondary" onclick="cerrar('modal-detalle')">Cerrar</button><button class="btn btn-primary" onclick="editarDesdeDetalle()">Editar</button></div></div>
+  </div>
+  <div id="modal-cert" class="modal-backdrop hidden">
+    <div class="modal sm"><div class="modal-head"><div><h2>Vista previa del certificado</h2><p id="cert-ruta" class="mono"></p></div><button class="icon-btn" onclick="cerrar('modal-cert')">✕</button></div><div class="modal-body"><div id="cert-paper"></div></div><div class="modal-foot"><button class="btn btn-secondary" onclick="cerrar('modal-cert')">Cerrar</button><button class="btn btn-secondary" onclick="abrirCertPDF()">Abrir PDF</button><button class="btn btn-primary" onclick="descargarCertPDF()">Descargar PDF</button></div></div>
+  </div>
+  <div id="modal-tolerancias" class="modal-backdrop hidden">
+    <div class="modal sm"><div class="modal-head"><div><h2>Tolerancia admitida por equipo</h2><p>Se configura una vez al dar de alta el equipo y se usa para calcular Apto / No apto.</p></div><button class="icon-btn" onclick="cerrar('modal-tolerancias')">✕</button></div><div class="modal-body"><div id="tol-body"></div></div><div class="modal-foot"><button class="btn btn-secondary" onclick="cerrar('modal-tolerancias')">Cancelar</button><button class="btn btn-primary" onclick="guardarTolerancias()">Guardar tolerancias</button></div></div>
+  </div>
+  <div id="cmdk" class="cmdk"><div class="cmdk__panel"><input id="cmdk-input" class="cmdk__input" placeholder="Buscar registro o sección…" autocomplete="off"><div id="cmdk-list" class="cmdk__list"></div><div class="cmdk__foot">↑ ↓ para navegar · Enter para abrir · Esc para cerrar</div></div></div>
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    const DEMO_HOY = new Date(2026,10,27);
+    const PLANTAS = ['Luján','Campana'];
+    const SECTORES = ['Laboratorio','Balanza'];
+    const TIPO_CONTROL = ['Mantenimiento de Instrumentos','Pruebas/Ensayos'];
+    const EQ_LAB = ['Balanza Moretti','Balanza Distribal','Balanza UTEST','Prensa Cosacob','Cocina'];
+    const EQ_BALANZA = ['Balanza Casilda'];
+    let TOLERANCIAS = {'Balanza Moretti':0.1,'Balanza Distribal':0.1,'Balanza UTEST':0.1,'Prensa Cosacob':0.5,'Cocina':0.5,'Balanza Casilda':0.1};
+    const ACCIONES = ['Recalibración','Ajuste','Reparación','Reposición','Observación / seguimiento','Otro'];
+    const fmtPct = n => String(Number(Number(n).toFixed(2))).replace('.',',');
+    const MANT_LAB = ['Calibración','Mantenimiento Preventivo'];
+    const MANT_BAL = ['Calibración','Chequeo de sensores'];
+    const PRUEBAS_PESO = ['Peso'];
+    const PRUEBAS_PRESION = ['Presión'];
+    const PRUEBAS_HUMEDAD = ['Humedad'];
+    const CATEGORIAS = ['Aridos','Probetas'];
+    const ELEMENTOS_ARIDOS = ['Arena Fina','Arena Gruesa','Piedra Partida 6.12','Piedra Partida 6.20','Piedra Partida 10.30'];
+    const ELEMENTOS_PROVETA = ['Hormigon 10.20','Hormigon 15.30'];
+    const PERIODICIDADES = [{v:1,l:'1 día · Diaria'},{v:7,l:'7 días · Semanal'},{v:30,l:'30 días · Mensual'},{v:90,l:'90 días · Trimestral'},{v:180,l:'180 días · Semestral'},{v:365,l:'365 días · Anual'}];
+    function pruebasPara(equipo){if(equipo==='Balanza UTEST'||equipo==='Prensa Cosacob')return PRUEBAS_PRESION;if(equipo==='Cocina')return PRUEBAS_HUMEDAD;return PRUEBAS_PESO;}
+
+    let registros = [
+      {id:'M-001',parte:'mant',planta:'Luján',sector:'Laboratorio',equipo:'Balanza Moretti',tipo:'Calibración',fecha:'2026-06-10',periodicidad:180,proximo:'2026-12-07',docs:['certificado_calibracion_2026-06-10.pdf','informe_verificacion_moretti.pdf']},
+      {id:'M-002',parte:'mant',planta:'Campana',sector:'Balanza',equipo:'Balanza Casilda',tipo:'Chequeo de sensores',fecha:'2026-08-25',periodicidad:90,proximo:'2026-11-23',docs:['chequeo_sensores_casilda_2026-08-25.pdf']},
+      {id:'M-003',parte:'mant',planta:'Luján',sector:'Laboratorio',equipo:'Prensa Cosacob',tipo:'Mantenimiento Preventivo',fecha:'2026-07-20',periodicidad:365,proximo:'2027-07-20',docs:['mantenimiento_prensa_cosacob_2026-07-20.pdf']},
+      {id:'P-001',parte:'prueba',planta:'Luján',sector:'Laboratorio',equipo:'Balanza Moretti',prueba:'Peso',categoria:'Aridos',elemento:'Piedra Partida 6.12',resultado:12.45,referencia:12.5,tolerancia:0.1,desviacion:0.4,estado:'No apto',accion:'Ajuste',fecha:'2026-11-05',periodicidad:30,proximo:'2026-12-05',docs:['ensayo_peso_2026-11-05.pdf']},
+      {id:'P-002',parte:'prueba',planta:'Campana',sector:'Laboratorio',equipo:'Prensa Cosacob',prueba:'Presión',categoria:'Probetas',elemento:'Hormigon 15.30',resultado:28.6,referencia:28.5,tolerancia:0.5,desviacion:0.35,estado:'Apto',accion:'',fecha:'2026-10-15',periodicidad:90,proximo:'2027-01-13',docs:['ensayo_presion_2026-10-15.pdf','curva_carga_hormigon.pdf']},
+      {id:'P-003',parte:'prueba',planta:'Luján',sector:'Laboratorio',equipo:'Balanza UTEST',prueba:'Presión',categoria:'Probetas',elemento:'Hormigon 10.20',resultado:24.8,referencia:25,tolerancia:0.1,desviacion:0.8,estado:'No apto',accion:'Recalibración',fecha:'2026-11-26',periodicidad:1,proximo:'2026-11-27',docs:['ensayo_presion_diario_2026-11-26.pdf']},
+      {id:'P-004',parte:'prueba',planta:'Campana',sector:'Laboratorio',equipo:'Balanza Distribal',prueba:'Peso',categoria:'Aridos',elemento:'Arena Fina',resultado:8.75,referencia:8.75,tolerancia:0.1,desviacion:0,estado:'Apto',accion:'',fecha:'2026-11-20',periodicidad:7,proximo:'2026-11-27',docs:['ensayo_peso_semanal_2026-11-20.pdf']},
+      {id:'P-005',parte:'prueba',planta:'Luján',sector:'Laboratorio',equipo:'Cocina',prueba:'Humedad',categoria:'Aridos',elemento:'Arena Fina',resultado:4.2,referencia:4.2,tolerancia:0.5,desviacion:0,estado:'Apto',accion:'',fecha:'2026-11-24',periodicidad:7,proximo:'2026-12-01',docs:['humedad_arena_fina_2026-11-24.pdf']},
+      {id:'P-006',parte:'prueba',planta:'Luján',sector:'Laboratorio',equipo:'Cocina',prueba:'Humedad',categoria:'Aridos',elemento:'Arena Gruesa',resultado:5.4,referencia:5.4,tolerancia:0.5,desviacion:0,estado:'Apto',accion:'',fecha:'2026-11-24',periodicidad:7,proximo:'2026-12-01',docs:['humedad_arena_gruesa_2026-11-24.pdf']},
+      {id:'P-007',parte:'prueba',planta:'Luján',sector:'Laboratorio',equipo:'Cocina',prueba:'Humedad',categoria:'Aridos',elemento:'Piedra Partida 6.12',resultado:3.1,referencia:3.11,tolerancia:0.5,desviacion:0.32,estado:'Apto',accion:'',fecha:'2026-11-24',periodicidad:7,proximo:'2026-12-01',docs:['humedad_piedra_6.12_2026-11-24.pdf']},
+      {id:'P-008',parte:'prueba',planta:'Luján',sector:'Laboratorio',equipo:'Cocina',prueba:'Humedad',categoria:'Aridos',elemento:'Piedra Partida 6.20',resultado:2.8,referencia:2.9,tolerancia:0.5,desviacion:3.45,estado:'No apto',accion:'Reposición',fecha:'2026-11-24',periodicidad:7,proximo:'2026-12-01',docs:['humedad_piedra_6.20_2026-11-24.pdf']},
+      {id:'P-009',parte:'prueba',planta:'Luján',sector:'Laboratorio',equipo:'Cocina',prueba:'Humedad',categoria:'Aridos',elemento:'Piedra Partida 10.30',resultado:2.3,referencia:2.3,tolerancia:0.5,desviacion:0,estado:'Apto',accion:'',fecha:'2026-11-24',periodicidad:7,proximo:'2026-12-01',docs:['humedad_piedra_10.30_2026-11-24.pdf']}
+    ];
+
+    let parteActual='mant', editandoId=null, adjuntos=[], draft={}, detalleId=null, currentCert=null;
+    const $ = id => document.getElementById(id);
+    const fmt = iso => iso ? iso.split('-').reverse().join('/') : '—';
+    const dias = iso => Math.round((new Date(iso+'T00:00:00')-DEMO_HOY)/86400000);
+    function estado(r){const d=dias(r.proximo);if(d<0)return{k:'Vencido',c:'badge-danger',d};if(d<=30)return{k:'Por vencer',c:'badge-warn',d};return{k:'Vigente',c:'badge-ok',d};}
+    function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function fillSelect(el,items,placeholder){el.innerHTML=(placeholder?`<option value="">${esc(placeholder)}</option>`:'')+items.map(i=>{const v=typeof i==='object'?i.v:i,l=typeof i==='object'?i.l:i;return `<option value="${esc(v)}">${esc(l)}</option>`;}).join('');}
+    function addDays(iso,n){const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+Number(n));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+    function initSelects(){
+      [['m-planta',PLANTAS],['p-planta',PLANTAS],['w-planta',PLANTAS]].forEach(([id,a])=>fillSelect($(id),a,id==='w-planta'?'Seleccione…':'Todas'));
+      [['m-sector',SECTORES],['w-sector',SECTORES]].forEach(([id,a])=>fillSelect($(id),a,id==='w-sector'?'Seleccione…':'Todos'));
+      fillSelect($('m-equipo'),EQ_LAB.concat(EQ_BALANZA),'Todos');
+      fillSelect($('p-equipo'),EQ_LAB,'Todos');
+      fillSelect($('m-tipo'),MANT_LAB.concat(MANT_BAL),'Todos');
+      fillSelect($('p-prueba'),PRUEBAS_PESO.concat(PRUEBAS_PRESION,PRUEBAS_HUMEDAD),'Todas');
+      fillSelect($('p-categoria'),CATEGORIAS,'Todas');
+      fillSelect($('p-estado'),['Apto','No apto'],'Todos');
+      fillSelect($('w-tipo'),TIPO_CONTROL,'Seleccione…');
+      $('cat-eq-lab').textContent=EQ_LAB.join(' · ');
+      $('cat-eq-bal').textContent=EQ_BALANZA.join(' · ');
+      $('cat-aridos').textContent=ELEMENTOS_ARIDOS.join(' · ');
+      $('cat-proveta').textContent=ELEMENTOS_PROVETA.join(' · ');
+      renderCatalogo();
+    }
+    function renderCatalogo(){const eqs=EQ_LAB.concat(EQ_BALANZA);$('cat-tolerancias').textContent=eqs.map(e=>e+' ±'+fmtPct(TOLERANCIAS[e])+' %').join(' · ');}
+    function abrirTolerancias(){const eqs=EQ_LAB.concat(EQ_BALANZA);$('tol-body').innerHTML=eqs.map((e,i)=>`<div class="tol-row"><label for="tol-${i}">${esc(e)}</label><div style="display:flex;align-items:center;gap:6px"><input id="tol-${i}" class="input" type="number" step="0.01" min="0" value="${TOLERANCIAS[e]}"><span class="mono">± %</span></div></div>`).join('');$('modal-tolerancias').classList.remove('hidden');}
+    function guardarTolerancias(){const eqs=EQ_LAB.concat(EQ_BALANZA);for(let i=0;i<eqs.length;i++){const v=Number($('tol-'+i).value);if(Number.isNaN(v)||v<0){toast('La tolerancia debe ser un número mayor o igual a cero.','err');return;}TOLERANCIAS[eqs[i]]=v;}renderCatalogo();cerrar('modal-tolerancias');toast('Tolerancias actualizadas.','ok');}
+    function cambiarParte(p){parteActual=p;document.querySelectorAll('.tab-main').forEach(b=>b.classList.toggle('active',b.dataset.parte===p));$('panel-mant').classList.toggle('hidden',p!=='mant');$('panel-prueba').classList.toggle('hidden',p!=='prueba');$('panel-mant').classList.toggle('panel-active',p==='mant');$('panel-prueba').classList.toggle('panel-active',p==='prueba');}
+    function renderKpis(){
+      const m=registros.filter(r=>r.parte==='mant').length,p=registros.filter(r=>r.parte==='prueba').length;
+      const e=registros.map(estado);
+      const items=[['Mantenimiento de Instrumentos',m,'registros','var(--ac)'],['Pruebas/Ensayos',p,'registros','var(--info)'],['Por vencer',e.filter(x=>x.k==='Por vencer').length,'dentro de 30 días','var(--warn)'],['Vencidos',e.filter(x=>x.k==='Vencido').length,'requieren control','var(--dan)']];
+      $('kpis').innerHTML=items.map(([l,v,f,t])=>`<div class="kpi" style="--kpi-tone:${t}"><span class="kpi__label">${l}</span><span class="kpi__value">${v}</span><span class="kpi__foot">${f}</span></div>`).join('');
+      $('n-mant').textContent=m;$('n-prueba').textContent=p;
+    }
+    function docsCell(r){return `<button class="btn btn-ghost btn-sm" onclick="verDoc('${r.id}',0)">${r.docs.length} PDF</button>`;}
+    function renderTablas(){
+      const mq=$('m-q').value.trim().toLowerCase(),mp=$('m-planta').value,ms=$('m-sector').value,me=$('m-equipo').value,mt=$('m-tipo').value;
+      const m=registros.filter(r=>r.parte==='mant'&&(!mq||[r.planta,r.sector,r.equipo,r.tipo].join(' ').toLowerCase().includes(mq))&&(!mp||r.planta===mp)&&(!ms||r.sector===ms)&&(!me||r.equipo===me)&&(!mt||r.tipo===mt));
+      $('body-mant').innerHTML=m.length?m.map(r=>{const s=estado(r);return `<tr><td>${esc(r.planta)}</td><td>${esc(r.sector)}</td><td class="t-strong">${esc(r.equipo)}</td><td>${esc(r.tipo)}</td><td class="mono">${fmt(r.fecha)}</td><td>${r.periodicidad} días</td><td class="mono">${fmt(r.proximo)}</td><td class="num ${s.k==='Vencido'?'t-danger':s.k==='Por vencer'?'t-warn':'t-strong'}">${s.d}</td><td>${docsCell(r)}</td><td><div class="row-actions"><button class="icon-btn" title="Ver" onclick="abrirDetalle('${r.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></svg></button><button class="icon-btn" title="Editar" onclick="abrirForm('mant','${r.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L20 8l-4-4L4 16v4z"/></svg></button></div></td></tr>`;}).join(''):'<tr><td colspan="10" class="empty">Sin registros con esos filtros.</td></tr>';
+      $('conteo-mant').textContent=`${m.length} de ${registros.filter(r=>r.parte==='mant').length} registros de mantenimiento`;
+      const pq=$('p-q').value.trim().toLowerCase(),pp=$('p-planta').value,pe=$('p-equipo').value,pr=$('p-prueba').value,pc=$('p-categoria').value,pes=$('p-estado').value;
+      const p=registros.filter(r=>r.parte==='prueba'&&(!pq||[r.planta,r.equipo,r.prueba,r.categoria,r.elemento,r.resultado,r.estado,r.accion].join(' ').toLowerCase().includes(pq))&&(!pp||r.planta===pp)&&(!pe||r.equipo===pe)&&(!pr||r.prueba===pr)&&(!pc||r.categoria===pc)&&(!pes||r.estado===pes));
+      $('body-prueba').innerHTML=p.length?p.map(r=>{const s=estado(r);const badgeEstado=r.estado==='Apto'?'<span class="badge badge-ok">Apto</span>':r.estado==='No apto'?'<span class="badge badge-danger">No apto</span>':'<span class="badge badge-muted">—</span>';return `<tr><td>${esc(r.planta)}</td><td>${esc(r.sector)}</td><td class="t-strong">${esc(r.equipo)}</td><td>${esc(r.prueba)}</td><td>${esc(r.categoria)}</td><td>${esc(r.elemento)}</td><td class="num">${esc(r.resultado)}${r.referencia!=null?`<span class="cell-sub">ref ${esc(r.referencia)} · desv ${r.desviacion==null?'—':fmtPct(r.desviacion)+'%'}</span>`:''}</td><td>${badgeEstado}</td><td>${r.estado==='No apto'?esc(r.accion||'Pendiente'):'—'}</td><td class="mono">${fmt(r.fecha)}</td><td>${r.periodicidad} días</td><td class="mono">${fmt(r.proximo)}</td><td class="num ${s.k==='Vencido'?'t-danger':s.k==='Por vencer'?'t-warn':'t-strong'}">${s.d}</td><td>${docsCell(r)}</td><td><div class="row-actions"><button class="icon-btn" title="Ver" onclick="abrirDetalle('${r.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></svg></button><button class="icon-btn" title="Editar" onclick="abrirForm('prueba','${r.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L20 8l-4-4L4 16v4z"/></svg></button></div></td></tr>`;}).join(''):'<tr><td colspan="15" class="empty">Sin registros con esos filtros.</td></tr>';
+      $('conteo-prueba').textContent=`${p.length} de ${registros.filter(r=>r.parte==='prueba').length} registros de pruebas/ensayos`;
+    }
+    function renderTodo(){renderKpis();renderTablas();}
+    function limpiar(p){['q','planta','equipo','tipo','categoria','estado'].forEach(s=>{const el=$(p+'-'+s);if(el)el.value='';});if(p==='m')$('m-sector').value='';if(p==='p')$('p-prueba').value='';renderTablas();}
+    function abrirForm(parte,id){
+      editandoId=id||null;adjuntos=[];draft={};
+      const r=id?registros.find(x=>x.id===id):null;
+      $('form-titulo').textContent=r?`Editar ${r.id}`:'Cargar registro';
+      $('w-planta').value=r?r.planta:'';
+      $('w-sector').value=r?r.sector:'';
+      $('w-tipo').value=r?(r.parte==='mant'?'Mantenimiento de Instrumentos':'Pruebas/Ensayos'):(parte==='mant'?'Mantenimiento de Instrumentos':parte==='prueba'?'Pruebas/Ensayos':'');
+      if(r){draft={equipo:r.equipo,tipo_mant:r.tipo,prueba:r.prueba,categoria:r.categoria,elemento:r.elemento,resultado:r.resultado,referencia:r.referencia,tolerancia:r.tolerancia,desviacion:r.desviacion,estado:r.estado,accion:r.accion,fecha:r.fecha,periodicidad:r.periodicidad,proximo:r.proximo};adjuntos=r.docs.slice();}
+      renderDynamic();$('modal-form').classList.remove('hidden');
+    }
+    function cerrarForm(){$('modal-form').classList.add('hidden');}
+    function updateDraft(){
+      ['equipo','tipo_mant','prueba','categoria','elemento','resultado','aridos','proveta','fecha','periodicidad','proximo'].forEach(k=>{const el=$('w-'+k);if(el)draft[k]=el.value;});
+    }
+    function actualizarEstado(){
+      const resultado=Number($('w-resultado').value),referencia=Number($('w-referencia').value),tol=Number(TOLERANCIAS[$('w-equipo').value]);
+      const valido=!Number.isNaN(resultado)&&!Number.isNaN(referencia)&&referencia!==0&&!Number.isNaN(tol);
+      const desv=valido?Math.abs(resultado-referencia)/Math.abs(referencia)*100:null;
+      const apto=desv!=null&&desv<=tol;
+      draft.referencia=$('w-referencia').value;draft.tolerancia=tol;draft.desviacion=desv==null?'':Number(desv.toFixed(2));draft.estado=desv==null?'':(apto?'Apto':'No apto');
+      $('w-tolerancia').value='±'+fmtPct(tol)+' %';
+      $('w-desviacion').value=desv==null?'':(fmtPct(draft.desviacion)+' %');
+      $('w-estado').innerHTML=desv==null?'<span class="badge badge-muted">Sin calcular</span>':`<span class="badge ${apto?'badge-ok':'badge-danger'}">${apto?'Apto':'No apto'}</span>`;
+      const accion=$('w-accion');if(accion){accion.disabled=apto||desv==null;if(apto||desv==null){accion.value='';draft.accion='';}else draft.accion=accion.value;}
+      return {apto,desv,tol};
+    }
+    function onMedicion(){updateDraft();actualizarEstado();}
+    function onWizard(){updateDraft();if($('w-tipo').value==='Pruebas/Ensayos'&&$('w-sector').value==='Balanza'){renderDynamic();return;}renderDynamic();}
+    function opts(items,sel){return items.map(i=>`<option value="${esc(i)}"${i===sel?' selected':''}>${esc(i)}</option>`).join('');}
+    function optsPeriod(sel){return PERIODICIDADES.map(i=>`<option value="${i.v}"${Number(sel)===i.v?' selected':''}>${esc(i.l)}</option>`).join('');}
+    function campo(label,inner,hint){return `<div class="field ${hint?'full':''}"><label>${label}</label>${inner}${hint?`<div class="hint">${hint}</div>`:''}</div>`;}
+    function commonFields(equipos,tipoLabel,tipoOptions,tipoKey){
+      return `<div class="form-grid">
+        ${campo('1 · Equipo *',`<select id="w-equipo" class="input" onchange="updateDraft()">${opts(equipos,draft.equipo)}</select>`)}
+        ${campo(`2 · ${tipoLabel} *`,`<select id="w-${tipoKey}" class="input" onchange="updateDraft()">${opts(tipoOptions,draft[tipoKey])}</select>`)}
+        ${campo('3 · Fecha De Control *',`<input id="w-fecha" class="input" type="date" value="${esc(draft.fecha||'2026-11-27')}" onchange="onFecha()">`)}
+        ${campo('4 · Periodicidad *',`<select id="w-periodicidad" class="input" onchange="onPeriodicidad()">${optsPeriod(draft.periodicidad||365)}</select>`)}
+        ${campo('5 · Próximo Control (calculado)',`<div style="display:flex;gap:6px"><input id="w-proximo" class="input" type="date" value="${esc(draft.proximo||'')}"><button class="btn btn-secondary btn-sm" type="button" onclick="calcularProximo()">Calcular</button></div>`,'Se calcula con Fecha De Control + Periodicidad.Editable si el certificado indica otra fecha.')}
+        ${campo('6 · Certificado',`<button class="btn btn-secondary btn-sm" type="button" onclick="adjuntarDoc()">Adjuntar documentación</button><div id="w-docs"></div>`,'Toda la documentación respaldatoria del control.')}
+      </div>`;
+    }
+    function renderDynamic(){
+      const planta=$('w-planta').value,sector=$('w-sector').value,tipo=$('w-tipo').value;
+      const box=$('w-dynamic'),save=$('w-guardar');
+      if(!planta||!sector||!tipo){box.innerHTML='<div class="notice">Seleccioná primero <b>Planta/Ubicación</b>, <b>Sector</b> y <b>Tipo de Control</b> para mostrar el formulario correspondiente.</div>';save.disabled=true;return;}
+      save.disabled=false;
+      if(tipo==='Mantenimiento de Instrumentos'){
+        if(sector==='Laboratorio')box.innerHTML=`<div class="badge badge-ac" style="margin-bottom:14px">Mantenimiento · Laboratorio</div>`+commonFields(EQ_LAB,'Tipo de Mantenimiento',MANT_LAB,'tipo_mant');
+        else box.innerHTML=`<div class="badge badge-ac" style="margin-bottom:14px">Mantenimiento · Balanza</div>`+commonFields(EQ_BALANZA,'Tipo de Mantenimiento',MANT_BAL,'tipo_mant');
+      }else if(sector==='Laboratorio'){
+        const equipo=draft.equipo||EQ_LAB[0];
+        draft.equipo=equipo;
+        const cocina=equipo==='Cocina';
+        if(cocina)draft.categoria='Aridos';
+        const cat=draft.categoria||'Aridos';
+        const pruebas=pruebasPara(equipo);
+        if(!pruebas.includes(draft.prueba))draft.prueba='';
+        box.innerHTML=`<div class="badge badge-ac" style="margin-bottom:14px">Pruebas/Ensayos · Laboratorio · ${esc(equipo)}</div><div class="form-grid">
+          ${campo('1 · Equipo *',`<select id="w-equipo" class="input" onchange="onEquipoPrueba()">${opts(EQ_LAB,equipo)}</select>`)}
+          ${campo('2 · Tipo de Prueba/Ensayo *',`<select id="w-prueba" class="input" onchange="updateDraft()">${opts(pruebas,draft.prueba)}</select>`,cocina?'Cocina: humedad de cada árido.':'Según el equipo: Moretti/Distribal = Peso · UTEST/Cosacob = Presión.')}
+          ${campo('3 · Categoría *',`<select id="w-categoria" class="input" ${cocina?'disabled':''} onchange="onCategoria()">${opts(CATEGORIAS,cat)}</select>`,cocina?'Cocina solo mide áridos.':'')}
+          ${campo('4 · Elemento Aridos *',`<select id="w-aridos" class="input" ${cat==='Aridos'?'':'disabled'} onchange="updateDraft()">${opts(ELEMENTOS_ARIDOS,draft.elemento)}</select>`,cocina?'Todos los áridos disponibles.':(cat==='Aridos'?'':'Oculto para esta categoría.'))}
+          ${campo('5 · Elemento Proveta *',`<select id="w-proveta" class="input" ${cat==='Probetas'?'':'disabled'} onchange="updateDraft()">${opts(ELEMENTOS_PROVETA,draft.elemento)}</select>`,cat==='Probetas'?'':'Oculto para esta categoría.')}
+          ${campo(cocina?'6 · Valor humedad (%) *':'6 · Valor resultado *',`<input id="w-resultado" class="input" type="number" step="any" value="${esc(draft.resultado==null?'':draft.resultado)}" onchange="onMedicion()">`,cocina?'Humedad medida en el árido seleccionado.':'Valor numérico obtenido en el ensayo.')}
+          ${campo('7 · Tolerancia admitida',`<input id="w-tolerancia" class="input mono" type="text" value="±${fmtPct(TOLERANCIAS[equipo])} %" readonly>`,'Se carga una vez al dar de alta el equipo. No se edita en cada ensayo.')}
+          ${campo('8 · Valor de referencia/patrón *',`<input id="w-referencia" class="input" type="number" step="any" value="${esc(draft.referencia==null?'':draft.referencia)}" onchange="onMedicion()">`,'Valor esperado contra el que se compara la medición.')}
+          ${campo('9 · Desviación obtenida (%)',`<input id="w-desviacion" class="input mono" type="text" value="${esc(draft.desviacion==null?'':fmtPct(draft.desviacion)+' %')}" readonly>`,'|resultado − referencia| / referencia × 100.')}
+          ${campo('10 · Estado',`<div id="w-estado"><span class="badge badge-muted">Sin calcular</span></div>`,'Apto si la desviación es menor o igual a la tolerancia.')}
+          ${campo('11 · Acción tomada',`<select id="w-accion" class="input" ${draft.estado==='No apto'?'':'disabled'} onchange="updateDraft()"><option value="">Seleccione…</option>${opts(ACCIONES,draft.accion)}</select>`,'Se habilita y es obligatoria solo cuando el estado es No apto.')}
+          ${campo('12 · Fecha De Control *',`<input id="w-fecha" class="input" type="date" value="${esc(draft.fecha||'2026-11-27')}" onchange="onFecha()">`)}
+          ${campo('13 · Periodicidad *',`<select id="w-periodicidad" class="input" onchange="onPeriodicidad()">${optsPeriod(draft.periodicidad||30)}</select>`,'Diaria, Semanal, Mensual y las restantes.')}
+          ${campo('14 · Próximo Control (calculado)',`<div style="display:flex;gap:6px"><input id="w-proximo" class="input" type="date" value="${esc(draft.proximo||'')}"><button class="btn btn-secondary btn-sm" type="button" onclick="calcularProximo()">Calcular</button></div>`,'Se calcula con Fecha De Control + Periodicidad.')}
+          ${campo('15 · Certificado',`<button class="btn btn-secondary btn-sm" type="button" onclick="adjuntarDoc()">Adjuntar documentación</button><div id="w-docs"></div>`,'Toda la documentación respaldatoria del ensayo.')}
+        </div>`;
+        if(cat==='Probetas'&&!ELEMENTOS_PROVETA.includes(draft.elemento))draft.elemento='';
+        if(cat==='Aridos'&&!ELEMENTOS_ARIDOS.includes(draft.elemento))draft.elemento='';
+        actualizarEstado();
+      }else{
+        box.innerHTML='<div class="notice"><b>Pruebas/Ensayos · Balanza</b><br>El formulario de pruebas y ensayos está definido solo para el sector <b>Laboratorio</b>. Cambiá el sector a Laboratorio o elegí <b>Mantenimiento de Instrumentos</b>.</div>';
+        save.disabled=true;return;
+      }
+      renderDocs();if(!$('w-proximo').value)calcularProximo();
+    }
+    function onCategoria(){updateDraft();const cat=$('w-categoria').value;draft.categoria=cat;draft.aridos='';draft.proveta='';draft.elemento='';renderDynamic();}
+    function onEquipoPrueba(){updateDraft();const equipo=$('w-equipo').value,permitidas=pruebasPara(equipo);if(!permitidas.includes(draft.prueba))draft.prueba='';if(equipo==='Cocina'){draft.categoria='Aridos';draft.aridos='';draft.proveta='';draft.elemento='';}renderDynamic();}
+    function onFecha(){updateDraft();calcularProximo();}
+    function onPeriodicidad(){updateDraft();calcularProximo();}
+    function calcularProximo(){const f=$('w-fecha').value,p=$('w-periodicidad').value;if(f&&p){$('w-proximo').value=addDays(f,p);updateDraft();}}
+    function renderDocs(){const el=$('w-docs');if(!el)return;el.innerHTML=adjuntos.map((d,i)=>`<span class="doc-chip">${esc(d)}<button type="button" onclick="quitarDoc(${i})">✕</button></span>`).join('');}
+    function adjuntarDoc(){const tipo=$('w-tipo').value;const base=tipo==='Pruebas/Ensayos'?(draft.prueba==='Humedad'?'informe_humedad':'informe_ensayo'):'certificado_control';adjuntos.push(`${base}_${String(adjuntos.length+1).padStart(2,'0')}_2026-11-27.pdf`);renderDocs();toast('Documento de demostración adjuntado.','info');}
+    function quitarDoc(i){adjuntos.splice(i,1);renderDocs();}
+    function guardarRegistro(){
+      updateDraft();
+      const planta=$('w-planta').value,sector=$('w-sector').value,tipo=$('w-tipo').value;
+      if(tipo==='Pruebas/Ensayos'&&$('w-referencia'))actualizarEstado();
+      if(!planta||!sector||!tipo){toast('Completá los 3 primeros pasos.','err');return;}
+      if(!draft.equipo||!draft.fecha||!draft.periodicidad){toast('Completá equipo, fecha y periodicidad.','err');return;}
+      if(!adjuntos.length){toast('Adjuntá al menos un certificado o documento de respaldo.','err');return;}
+      let r;
+      if(tipo==='Mantenimiento de Instrumentos'){
+        if(!draft.tipo_mant){toast('Seleccioná el tipo de mantenimiento.','err');return;}
+        r={id:editandoId||('M-'+String(Math.max(0,...registros.filter(x=>x.parte==='mant').map(x=>Number(x.id.slice(2))))+1).padStart(3,'0')),parte:'mant',planta,sector,equipo:draft.equipo,tipo:draft.tipo_mant,fecha:draft.fecha,periodicidad:Number(draft.periodicidad),proximo:draft.proximo||addDays(draft.fecha,draft.periodicidad),docs:adjuntos.slice()};
+      }else{
+        if(sector!=='Laboratorio'){toast('Pruebas/Ensayos solo está definido para Laboratorio.','err');return;}
+        const elem=draft.categoria==='Probetas'?(draft.proveta||draft.elemento):(draft.aridos||draft.elemento);
+        if(!draft.prueba||!draft.categoria||!elem){toast('Completá prueba, categoría y elemento.','err');return;}
+        if(!pruebasPara(draft.equipo).includes(draft.prueba)){toast('El tipo de prueba no corresponde al equipo seleccionado.','err');return;}
+        if(draft.prueba==='Humedad'&&draft.categoria!=='Aridos'){toast('La humedad se mide sobre áridos.','err');return;}
+        if(draft.resultado===''||draft.resultado==null||Number.isNaN(Number(draft.resultado))){toast(draft.prueba==='Humedad'?'Completá el valor de humedad.':'Completá el valor resultado.','err');return;}
+        if(draft.referencia===''||draft.referencia==null||Number.isNaN(Number(draft.referencia))||Number(draft.referencia)===0){toast('Completá el valor de referencia/patrón (distinto de cero).','err');return;}
+        if(!draft.estado){toast('Completá resultado y referencia para calcular el estado.','err');return;}
+        if(draft.estado==='No apto'&&!draft.accion){toast('Completá la acción tomada para el equipo no apto.','err');return;}
+        r={id:editandoId||('P-'+String(Math.max(0,...registros.filter(x=>x.parte==='prueba').map(x=>Number(x.id.slice(2))))+1).padStart(3,'0')),parte:'prueba',planta,sector,equipo:draft.equipo,prueba:draft.prueba,categoria:draft.categoria,elemento:elem,resultado:Number(draft.resultado),referencia:Number(draft.referencia),tolerancia:Number(draft.tolerancia),desviacion:draft.desviacion===''?null:Number(draft.desviacion),estado:draft.estado,accion:draft.estado==='No apto'?draft.accion:'',fecha:draft.fecha,periodicidad:Number(draft.periodicidad),proximo:draft.proximo||addDays(draft.fecha,draft.periodicidad),docs:adjuntos.slice()};
+      }
+      registros=editandoId?registros.map(x=>x.id===editandoId?r:x):registros.concat(r);
+      renderTodo();cambiarParte(r.parte);cerrarForm();toast(editandoId?'Registro actualizado.':'Registro guardado.','ok');
+    }
+    function abrirDetalle(id){const r=registros.find(x=>x.id===id);if(!r)return;detalleId=id;const s=estado(r);const f=(k,v)=>`<div class="def-item"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+      const base=[[ 'id',r.id],['Planta/Ubicación',r.planta],['Sector',r.sector],['Equipo',r.equipo],['Fecha De Control',fmt(r.fecha)],['Periodicidad',r.periodicidad+' días'],['Próximo Control',fmt(r.proximo)]];
+      const extra=r.parte==='mant'?[['Tipo de Mantenimiento',r.tipo]]:[['Tipo de Prueba/Ensayo',r.prueba],['Categoría',r.categoria],['Elemento',r.elemento],[r.prueba==='Humedad'?'Valor humedad (%)':'Valor resultado',r.resultado],['Tolerancia admitida','±'+fmtPct(r.tolerancia)+' %'],['Valor de referencia/patrón',r.referencia],['Desviación obtenida (%)',r.desviacion==null?'—':fmtPct(r.desviacion)+' %'],['Estado',r.estado],['Acción tomada',r.accion||'—']];
+      $('det-titulo').textContent=`${r.id} · ${r.equipo}`;
+      $('det-body').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><span class="badge ${s.c}">${s.k} · ${Math.abs(s.d)} días</span><span class="badge badge-ac">${r.parte==='mant'?'Mantenimiento de Instrumentos':'Pruebas/Ensayos'}</span></div><div class="def-grid">${base.concat(extra).map(([k,v])=>f(k,esc(v))).join('')}</div><div class="def-item" style="margin-top:10px"><div class="k">Certificado · documentación respaldatoria</div><div class="v">${r.docs.map((d,i)=>`<button class="btn btn-ghost btn-sm" onclick="verDoc('${r.id}',${i})">${esc(d)}</button>`).join(' ')}</div></div>`;
+      $('modal-detalle').classList.remove('hidden');
+    }
+    function editarDesdeDetalle(){const id=detalleId;cerrar('modal-detalle');const r=registros.find(x=>x.id===id);abrirForm(r.parte,id);}
+    function verDoc(id,i){const r=registros.find(x=>x.id===id);if(!r)return;const doc=r.docs[i]||r.docs[0];const datos=[];
+      datos.push(['Planta/Ubicación',r.planta],['Sector',r.sector],['Equipo',r.equipo],['Fecha De Control',fmt(r.fecha)],['Periodicidad',r.periodicidad+' días'],['Próximo Control',fmt(r.proximo)]);
+      if(r.parte==='mant')datos.push(['Tipo de Mantenimiento',r.tipo]);else datos.push(['Tipo de Prueba/Ensayo',r.prueba],['Categoría',r.categoria],['Elemento',r.elemento],[r.prueba==='Humedad'?'Valor humedad (%)':'Valor resultado',r.resultado],['Tolerancia admitida','±'+fmtPct(r.tolerancia)+' %'],['Valor de referencia/patrón',r.referencia],['Desviación obtenida (%)',r.desviacion==null?'—':fmtPct(r.desviacion)+' %'],['Estado',r.estado],['Acción tomada',r.accion||'—']);
+      currentCert={titulo:r.parte==='mant'?'Certificado de control':(r.prueba==='Humedad'?'Informe de humedad':'Informe de prueba/ensayo'),codigo:r.id,descripcion:r.equipo,ruta:doc,datos};
+      $('cert-ruta').textContent=doc;
+      $('cert-paper').innerHTML=`<div class="cert-paper"><h3>${esc(currentCert.titulo)}</h3><div class="cert-sub">Grupo Falpat SRL · documento de demostración</div><div class="cert-grid"><div><b>Registro</b>${esc(r.id)}</div><div><b>Equipo</b>${esc(r.equipo)}</div>${datos.map(([k,v])=>`<div><b>${esc(k)}</b>${esc(v)}</div>`).join('')}</div><div class="cert-foot">Generado localmente para la demo · no reemplaza un certificado real</div></div>`;
+      $('modal-cert').classList.remove('hidden');
+    }
+    function pdfClean(s){return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');}
+    function makeDemoPDF(){const lines=[currentCert.titulo.toUpperCase()+' - GRUPO FALPAT SRL','Registro: '+currentCert.codigo,'Equipo: '+currentCert.descripcion,'Documento: '+currentCert.ruta,...currentCert.datos.map(([k,v])=>k+': '+v),'Generado localmente para la demo.'];
+      const stream='BT /F1 11 Tf 50 790 Td '+lines.map((l,i)=>(i?'0 -20 Td ':'')+'('+pdfClean(l)+') Tj').join(' ')+' ET';
+      const objs=['<</Type/Catalog/Pages 2 0 R>>','<</Type/Pages/Kids[3 0 R]/Count 1>>','<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]/Resources<</Font<</F1 4 0 R>>>>/Contents 5 0 R>>','<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>','<</Length '+stream.length+'>>\nstream\n'+stream+'\nendstream'];
+      let pdf='%PDF-1.4\n',offs=[0];objs.forEach((o,i)=>{offs.push(pdf.length);pdf+=(i+1)+' 0 obj\n'+o+'\nendobj\n';});const x=pdf.length;
+      pdf+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n'+offs.slice(1).map(o=>String(o).padStart(10,'0')+' 00000 n \n').join('')+'trailer\n<</Size '+(objs.length+1)+'/Root 1 0 R>>\nstartxref\n'+x+'\n%%EOF';
+      return new Blob([pdf],{type:'application/pdf'});
+    }
+    function abrirCertPDF(){if(!currentCert)return;const u=URL.createObjectURL(makeDemoPDF());window.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),60000);}
+    function descargarCertPDF(){if(!currentCert)return;const u=URL.createObjectURL(makeDemoPDF()),a=document.createElement('a');a.href=u;a.download=currentCert.codigo+'_demo.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(u),60000);toast('PDF de demostración descargado.','ok');}
+    function cerrar(id){$(id).classList.add('hidden');}
+    function toast(msg,tipo){const t=$('toast');t.textContent=msg;t.className='toast '+(tipo==='err'?'err':tipo==='ok'?'ok':tipo==='warn'?'warn':'');t.classList.remove('hidden');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.add('hidden'),3200);}
+    document.addEventListener('DOMContentLoaded',()=>{
+      initSelects();renderTodo();
+      ['m-q','m-planta','m-sector','m-equipo','m-tipo','p-q','p-planta','p-equipo','p-prueba','p-categoria','p-estado'].forEach(id=>$(id).addEventListener('input',renderTablas));
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Escape'){['modal-detalle','modal-form','modal-cert','modal-tolerancias'].forEach(cerrar);}
+      });
+      document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',ev=>{if(ev.target===b&&b.id!=='modal-form')b.classList.add('hidden');}));
+    });
+      document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',ev=>{if(ev.target===b&&b.id!=='modal-form')b.classList.add('hidden');}));
+      tick();setInterval(tick,1000);
+    });
+  </script>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
