@@ -50,6 +50,10 @@ const qrGroupOpen = ['scan', 'stickers', 'fichas', 'carpeta'].includes(currentPa
           <svg class="w-4 h-4 transition-transform chevron <%= qrGroupOpen ? 'rotate-180' : '' %>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div class="nav-group mt-1 space-y-1 <%= qrGroupOpen ? '' : 'hidden' %>">
+          <a href="/equipos-instrumentos/" target="_blank" class="nav-link text-sm">
+            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/></svg>
+            Equipos e Instrumentos
+          </a>
           <a href="/vehicle/scan" class="nav-link text-sm <%= currentPage === 'scan' ? 'active' : '' %>">
             <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M12 12h.01M12 12h-.01M8 4h.01M16 4h.01M4 8h.01M4 16h.01M20 8h.01M20 16h.01"/></svg>
             Escáner QR

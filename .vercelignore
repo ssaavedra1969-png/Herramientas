@@ -5,6 +5,7 @@ PATENTE/
 **/_originales/
 .env*
 *.pdf
+!Equipos e Instrumentos/*.pdf
 *.mp4
 *.webm
 *.tar.gz

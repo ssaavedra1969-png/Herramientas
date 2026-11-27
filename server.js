@@ -83,6 +83,7 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/titulos', express.static(path.join(__dirname, 'titulo')));
 app.use('/documentos', express.static(path.join(__dirname, 'PATENTE')));
+app.use('/equipos-instrumentos', express.static(path.join(__dirname, 'Equipos e Instrumentos')));
 
 app.use(loadUser);
 
