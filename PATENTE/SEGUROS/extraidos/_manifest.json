@@ -1,0 +1,506 @@
+[
+  {
+    "pat": "AD330CI",
+    "pages": [
+      4,
+      5,
+      6
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AD330CI.pdf",
+    "sha256": "0a4d746a4af979372e499d91b9bf697081b6b4f0a201f2f1f609905b52e9df1b",
+    "bytes": 4623677,
+    "pages_out": 3,
+    "pats_in_text": [
+      "AD330CI"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AE192RO",
+    "pages": [
+      28,
+      29,
+      30
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AE192RO.pdf",
+    "sha256": "091042a988696b970ee6bb3896e0cf5b7e65e0e901e618f6bf944f99c66589c6",
+    "bytes": 4623632,
+    "pages_out": 3,
+    "pats_in_text": [
+      "AE192RO"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AE192RP",
+    "pages": [
+      31,
+      32,
+      33
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AE192RP.pdf",
+    "sha256": "1e29b2d409781c2f9ea0a49fd64945531fc2d8d4171dcbf782873a57dd40544a",
+    "bytes": 4623634,
+    "pages_out": 3,
+    "pats_in_text": [
+      "AE192RP"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "FDN167",
+    "pages": [
+      49,
+      50,
+      51
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\FDN167.pdf",
+    "sha256": "2617c94cb6e45830d2aa73a3138586e78de850172895ca8a10c6d8ead42de1b3",
+    "bytes": 4623754,
+    "pages_out": 3,
+    "pats_in_text": [
+      "FDN167"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "NYR481",
+    "pages": [
+      70,
+      71,
+      72
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\NYR481.pdf",
+    "sha256": "9a9170451d3c99235e2b32b576b8b0ff0b98dabe6d0901a5ad2af8c9a9908dd9",
+    "bytes": 4623662,
+    "pages_out": 3,
+    "pats_in_text": [
+      "NYR481"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AE449YW",
+    "pages": [
+      73,
+      74,
+      75
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AE449YW.pdf",
+    "sha256": "d3885c6eec688db7a548a4aa6372b675f37e11036a8c062cbbebafafb2ee35f2",
+    "bytes": 4623725,
+    "pages_out": 3,
+    "pats_in_text": [
+      "AE449YW"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AE449YV",
+    "pages": [
+      78,
+      79
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AE449YV.pdf",
+    "sha256": "c5d710427894a99f409cd61de415d3b9cd177316cfede89ed865af7f0428c83a",
+    "bytes": 3083030,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AE449YV"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AF606JL",
+    "pages": [
+      90,
+      91
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AF606JL.pdf",
+    "sha256": "aa35e56cb5f14c19cb2e6f29a49499e326c80f1831ec26e4b09bd99fe03a0959",
+    "bytes": 3083010,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AF606JL"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AE344VR",
+    "pages": [
+      101,
+      102,
+      103
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AE344VR.pdf",
+    "sha256": "150620c12edf736d3ce0d171bc5a6854d9781265396a2ab00c2e093a4680e938",
+    "bytes": 4624342,
+    "pages_out": 3,
+    "pats_in_text": [
+      "AE344VR"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AG388HP",
+    "pages": [
+      106,
+      107,
+      108
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AG388HP.pdf",
+    "sha256": "6896a32e98f1b9243ba4313ae30e088a34d4f370754a94989e4a30a6add11437",
+    "bytes": 4624356,
+    "pages_out": 3,
+    "pats_in_text": [
+      "AG388HP"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AG269DZ",
+    "pages": [
+      109,
+      110
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AG269DZ.pdf",
+    "sha256": "988d3aeec033c58397e65f4467a753b2629faab37b9475205d72d8b5e789f72f",
+    "bytes": 3083035,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AG269DZ"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AG148TK",
+    "pages": [
+      111,
+      112
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AG148TK.pdf",
+    "sha256": "7a8f16ff26d54c5fee8a90290c25a443dd9ccef3b4511bf9832534f46b75e0d6",
+    "bytes": 3083011,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AG148TK"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AE947GR",
+    "pages": [
+      113,
+      114
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AE947GR.pdf",
+    "sha256": "0dbd4cbc95ec582e3fe2b44c46b5e7e97dc07ab58981d116f07f888fa3411fd2",
+    "bytes": 3083025,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AE947GR"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AE947GS",
+    "pages": [
+      115,
+      116
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AE947GS.pdf",
+    "sha256": "37e49211031a8757d70a5818a0cf75de4556cae9f7a739a1e81903f5075d9941",
+    "bytes": 3083026,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AE947GS"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AG896XV",
+    "pages": [
+      123,
+      124
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AG896XV.pdf",
+    "sha256": "affae7ad12081310a1ffebbd3daed635e4c88e51a43b98b88e47656ca8cfcd8b",
+    "bytes": 3083028,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AG896XV"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AG719TT",
+    "pages": [
+      129,
+      130
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AG719TT.pdf",
+    "sha256": "901a0f4983ff548b82f97b04266f0f7f4224a1f1f8a03cb35195ab84a6d0bc23",
+    "bytes": 3083030,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AG719TT"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AG719US",
+    "pages": [
+      135,
+      136,
+      137
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AG719US.pdf",
+    "sha256": "530fb65bdce50b66de9488a71f797af7d229a68ee0c383fb1d3ed17fcda5cc31",
+    "bytes": 4624356,
+    "pages_out": 3,
+    "pats_in_text": [
+      "AG719US"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AH125AF",
+    "pages": [
+      142,
+      143
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AH125AF.pdf",
+    "sha256": "fd1b327e327345bbd0857828885a5c0e92ecc502882cd9800d3e4e67c990cafb",
+    "bytes": 3083019,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AH125AF"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AH522SJ",
+    "pages": [
+      160,
+      161
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AH522SJ.pdf",
+    "sha256": "fccb2beea1c18f624d5413d0e7587c11f5f9f2010398d0b651de1ce3476578d2",
+    "bytes": 3083039,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AH522SJ"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AH125AG",
+    "pages": [
+      168,
+      169
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AH125AG.pdf",
+    "sha256": "a5aef11cdb41545f8032cc6a19029305953da32b93e5059aeb9d9d1fe1df5670",
+    "bytes": 3082995,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AH125AG"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AG276BQ",
+    "pages": [
+      174,
+      175
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AG276BQ.pdf",
+    "sha256": "5a64338a661d11a1ccb1b909e44a77749109f3b79640a87bd56666a5f60f2855",
+    "bytes": 3083021,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AG276BQ"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AH136TE",
+    "pages": [
+      176,
+      177
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AH136TE.pdf",
+    "sha256": "c70e9a179303cd111118dce12f7060c20d6ff09fe41e73f46a1bdaeecc6f9f99",
+    "bytes": 3082994,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AH136TE"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AF804RU",
+    "pages": [
+      178,
+      179,
+      180
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AF804RU.pdf",
+    "sha256": "1df2aeb9257c78e8be5de958f50bef3a39a4fa786ebc28fcd98c87ba912cd1df",
+    "bytes": 4624322,
+    "pages_out": 3,
+    "pats_in_text": [
+      "AF804RU"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AH784OY",
+    "pages": [
+      191,
+      192
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AH784OY.pdf",
+    "sha256": "c2c6c16034d05dfb8e9985340b16798159287945c5d49915a0549665753bd428",
+    "bytes": 3082990,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AH784OY"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AI417ZZ",
+    "pages": [
+      195,
+      196
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AI417ZZ.pdf",
+    "sha256": "267e75d3a3842b3b7ed6b8a999b95275ba1c63a7ac179f8836802a687a94c3eb",
+    "bytes": 3082999,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AI417ZZ"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  },
+  {
+    "pat": "AI484IB",
+    "pages": [
+      205,
+      206
+    ],
+    "file": "PATENTE\\SEGUROS\\extraidos\\AI484IB.pdf",
+    "sha256": "865b3ad7b336ddc507b99e29b769f34c9d4462a7a451864202ef196fa8be28e3",
+    "bytes": 3083020,
+    "pages_out": 2,
+    "pats_in_text": [
+      "AI484IB"
+    ],
+    "vig": [
+      "07/10/2026",
+      "07/04/2027"
+    ],
+    "ok_pat": true
+  }
+]

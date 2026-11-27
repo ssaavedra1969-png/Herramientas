@@ -1,0 +1,444 @@
+{
+  "rows": [
+    {
+      "pat": "AD330CI",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 4623677,
+      "old_bytes": 1395486,
+      "pages": 3,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AE192RO",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 4623632,
+      "old_bytes": 1395459,
+      "pages": 3,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AE192RP",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 4623634,
+      "old_bytes": 899479,
+      "pages": 3,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "FDN167",
+      "in_fleet": true,
+      "exists": false,
+      "same": null,
+      "new_bytes": 4623754,
+      "old_bytes": null,
+      "pages": 3,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "NYR481",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 4623662,
+      "old_bytes": 204246,
+      "pages": 3,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AE449YW",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 4623725,
+      "old_bytes": 204180,
+      "pages": 3,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AE449YV",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083030,
+      "old_bytes": 203175,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AF606JL",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083010,
+      "old_bytes": 207603,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AE344VR",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 4624342,
+      "old_bytes": 207451,
+      "pages": 3,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AG388HP",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 4624356,
+      "old_bytes": 209079,
+      "pages": 3,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AG269DZ",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083035,
+      "old_bytes": 208669,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AG148TK",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083011,
+      "old_bytes": 207521,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AE947GR",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083025,
+      "old_bytes": 206188,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AE947GS",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083026,
+      "old_bytes": 206147,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AG896XV",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083028,
+      "old_bytes": 1086694,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AG719TT",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083030,
+      "old_bytes": 206981,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AG719US",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 4624356,
+      "old_bytes": 206974,
+      "pages": 3,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AH125AF",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083019,
+      "old_bytes": 1129444,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AH522SJ",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083039,
+      "old_bytes": 207633,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AH125AG",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3082995,
+      "old_bytes": 1583207,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AG276BQ",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3083021,
+      "old_bytes": 209089,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AH136TE",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3082994,
+      "old_bytes": 207386,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AF804RU",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 4624322,
+      "old_bytes": 207447,
+      "pages": 3,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AH784OY",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3082990,
+      "old_bytes": 205494,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AI417ZZ",
+      "in_fleet": true,
+      "exists": true,
+      "same": false,
+      "new_bytes": 3082999,
+      "old_bytes": 400606,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    },
+    {
+      "pat": "AI484IB",
+      "in_fleet": true,
+      "exists": false,
+      "same": null,
+      "new_bytes": 3083020,
+      "old_bytes": null,
+      "pages": 2,
+      "vig": [
+        "07/10/2026",
+        "07/04/2027"
+      ]
+    }
+  ],
+  "fleet_not_in_pdf": [
+    "AB922TD",
+    "AC264CZ",
+    "AC361ME",
+    "AD718OH",
+    "AD957RY",
+    "AE335KK",
+    "AE355LN",
+    "AE597NY",
+    "AE943EN",
+    "AF170SV",
+    "AF206GB",
+    "AG092TP",
+    "AG255NS",
+    "AG255NT",
+    "AG469YL",
+    "AG851RW",
+    "AG924XW",
+    "AG976PD",
+    "AG976PE",
+    "AG976PG",
+    "AH052ZD",
+    "AH052ZE",
+    "AH124ZK",
+    "AH190PG",
+    "AH297ON",
+    "AH657LB",
+    "AH919KE",
+    "Casares",
+    "Empleados",
+    "GKX407",
+    "HEM287",
+    "HOA036",
+    "LEC583",
+    "LFI597",
+    "PCS413"
+  ],
+  "deleted_not_in_patente": [
+    "AB545TG",
+    "AB556RO",
+    "AB629JS",
+    "AB629JT",
+    "AB700JA",
+    "AC378PC",
+    "AD221FP",
+    "AD740ML",
+    "AD740MM",
+    "AD740MN",
+    "AD740MO",
+    "AD740MT",
+    "AD983JY",
+    "AE150TL",
+    "AE150TM",
+    "AE178OG",
+    "AE280PX",
+    "AE403QQ",
+    "AE520RU",
+    "AE562CQ",
+    "AE633PP",
+    "AE947GQ",
+    "AF037KG",
+    "AF037KI",
+    "AF238XL",
+    "AF238XY",
+    "AF267JA",
+    "AF267JB",
+    "AF411TR",
+    "AF423AW",
+    "AF436NI",
+    "AF436NJ",
+    "AF444SQ",
+    "AF444SV",
+    "AF990AL",
+    "AF990AN",
+    "AG269DY",
+    "AG388HO",
+    "AG896XU",
+    "AG896XW",
+    "AG924WI",
+    "AG924WJ",
+    "AG924WK",
+    "AH068OO",
+    "AH290BK",
+    "AH290BL",
+    "AH290BN",
+    "AH357BX",
+    "AH522TN",
+    "AH522TO",
+    "AH532CA",
+    "AH532DQ",
+    "AH604KU",
+    "AH702VG",
+    "AH702XM",
+    "AH784OU",
+    "AH784OV",
+    "AH919IQ",
+    "AH919KF",
+    "AI417ZY",
+    "AI484IC",
+    "GKX629",
+    "KHI296"
+  ]
+}
