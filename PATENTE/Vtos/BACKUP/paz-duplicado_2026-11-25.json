@@ -1,0 +1,310 @@
+{
+  "fecha": "2026-11-25T19:55:21.884Z",
+  "employees": [
+    {
+      "id": "5xs6kTtuc3ov7GYsX8Xp",
+      "data": {
+        "nombre": "Paz Emanuel",
+        "nombreNormalizado": "paz emanuel",
+        "clave": "paz emanuel|33331683",
+        "dni": "33331683",
+        "registro": "33331683",
+        "activo": true,
+        "patenteActual": "AH522SJ",
+        "documentos": {
+          "dni": {
+            "ruta": "PATENTE/AH522SJ/dni.pdf",
+            "presente": false
+          },
+          "registro": {
+            "ruta": "PATENTE/AH522SJ/registro.pdf",
+            "presente": false
+          }
+        },
+        "conflictos": [],
+        "creadoEn": "2026-11-21T17:35:55.124Z",
+        "creadoPor": "SANDRO",
+        "vencimientoRegistro": "07/10/2028",
+        "vencimientoDNI": "03/01/2038",
+        "actualizadoEn": "2026-11-25T19:45:35.927Z",
+        "actualizadoPor": "carga-excel-2026-11-25"
+      }
+    },
+    {
+      "id": "X1CVzzhm7m7h3AKWB7Wg",
+      "data": {
+        "nombre": "Paz Emmanuel",
+        "nombreNormalizado": "paz emmanuel",
+        "clave": "paz emmanuel|33331683",
+        "dni": "33331683",
+        "registro": "33331683",
+        "vencimientoDNI": "[object Object]",
+        "vencimientoRegistro": "[object Object]",
+        "documentos": {
+          "dni": {
+            "ruta": "PATENTE/AF170SV/dni.pdf",
+            "presente": false
+          },
+          "registro": {
+            "ruta": "PATENTE/AF170SV/registro.pdf",
+            "presente": false
+          }
+        },
+        "conflictos": [],
+        "creadoEn": "2026-11-21T17:35:55.197Z",
+        "creadoPor": "SANDRO",
+        "actualizadoEn": "2026-11-25T19:44:56.121Z",
+        "actualizadoPor": "carga-excel-2026-11-25",
+        "patenteActual": "",
+        "activo": false
+      }
+    }
+  ],
+  "vehicles": [
+    {
+      "id": "L91BPBTNc0LOfUwZ1Npc",
+      "data": {
+        "patente": "AF170SV",
+        "interno": "V021",
+        "marca": "Mercedes Benz",
+        "modelo": "ATEGO 2721 48",
+        "anio": 2022,
+        "subtipo": "",
+        "chasis": "8AB958154NA802853",
+        "numeroMotor": "924989U1355583",
+        "capacidadCarga": 13200,
+        "kilometraje": 0,
+        "horometro": 0,
+        "estadoGeneral": "Bueno",
+        "fechaUltimaRevision": null,
+        "marcaTrompo": null,
+        "serieTrompo": null,
+        "modeloTrompo": null,
+        "cargaM3Trompo": null,
+        "centroTrabajo": "Lujan",
+        "conductorHabitual": "",
+        "observaciones": "",
+        "fotoURL": "",
+        "multas": [],
+        "documentos": [],
+        "createdAt": {
+          "_seconds": 1784733113,
+          "_nanoseconds": 617000000
+        },
+        "fechaAlta": {
+          "_seconds": 1784733113,
+          "_nanoseconds": 617000000
+        },
+        "empresa": "Falpat SRL",
+        "año": null,
+        "serviceSummary": {
+          "Control de luces": {
+            "fecha": {
+              "_seconds": 1785207600,
+              "_nanoseconds": 0
+            },
+            "km": null,
+            "proximoKm": null,
+            "proximoFecha": null
+          }
+        },
+        "tipo": "Bomba Pluma",
+        "trompo": false,
+        "matafuego": {
+          "fechaControl": null,
+          "estado": "Sin Matafuego",
+          "fechaVto": null
+        },
+        "proximoServiceTipo": null,
+        "nroBet": "",
+        "vtv": {
+          "fechaRealizacion": null,
+          "fechaVencimiento": {
+            "_seconds": 1798254000,
+            "_nanoseconds": 0
+          },
+          "costo": null,
+          "centroMedicion": "",
+          "resultado": "Pendiente"
+        },
+        "dni": "33331683",
+        "registro": "33331683",
+        "updatedAt": {
+          "_seconds": 1791467736,
+          "_nanoseconds": 211000000
+        },
+        "seguro": {
+          "compania": "SANCOR",
+          "poliza": "",
+          "tipo": "",
+          "fechaVencimiento": {
+            "_seconds": 1807110000,
+            "_nanoseconds": 0
+          },
+          "costo": null
+        },
+        "empleadoId": "5xs6kTtuc3ov7GYsX8Xp",
+        "chofer": "Paz Emanuel",
+        "vencimientoRegistro": "07/10/2028",
+        "vencimientoDNI": "03/01/2038",
+        "documentacion": {
+          "seguro": {
+            "fechaVencimiento": {
+              "_seconds": 1807110000,
+              "_nanoseconds": 0
+            },
+            "noVence": false
+          },
+          "vtv": {
+            "fechaVencimiento": {
+              "_seconds": 1798297200,
+              "_nanoseconds": 0
+            }
+          },
+          "dni": {
+            "fechaVencimiento": "03/01/2038"
+          },
+          "registro": {
+            "fechaVencimiento": "07/10/2028"
+          }
+        }
+      }
+    },
+    {
+      "id": "KynUVgMThmEKrq0yxrQS",
+      "data": {
+        "observaciones": "",
+        "multas": [],
+        "cargaM3Trompo": null,
+        "marcaTrompo": null,
+        "kilometraje": 0,
+        "interno": "V052",
+        "marca": "Mercedes Benz",
+        "matafuego": {
+          "estado": "Sin Matafuego",
+          "fechaControl": null,
+          "fechaVto": null
+        },
+        "documentos": [],
+        "patente": "AH522SJ",
+        "capacidadCarga": null,
+        "fotoURL": "",
+        "trompo": false,
+        "nroBet": "",
+        "subtipo": "",
+        "modeloTrompo": null,
+        "serieTrompo": null,
+        "createdAt": {
+          "_seconds": 1788552024,
+          "_nanoseconds": 242000000
+        },
+        "fechaAlta": {
+          "_seconds": 1788552024,
+          "_nanoseconds": 242000000
+        },
+        "proximoServiceTipo": null,
+        "centroTrabajo": "Lujan",
+        "tipo": "Bomba Pluma",
+        "chasis": "9BM9584788SB386209",
+        "numeroMotor": "457910U1164103",
+        "vtv": {
+          "fechaRealizacion": null,
+          "fechaVencimiento": {
+            "_seconds": 1798513200,
+            "_nanoseconds": 0
+          },
+          "costo": null,
+          "centroMedicion": "",
+          "resultado": "Pendiente"
+        },
+        "empresa": "Constructora Almajo Norte SRL",
+        "modelo": "AXOR 3344",
+        "año": 2025,
+        "chofer": "Paz Emanuel",
+        "dni": "33331683",
+        "registro": "33331683",
+        "seguro": {
+          "poliza": "",
+          "tipo": "",
+          "fechaVencimiento": {
+            "_seconds": 1807110000,
+            "_nanoseconds": 0
+          },
+          "costo": null,
+          "compania": "SANCOR"
+        },
+        "proximoServiceFecha": null,
+        "proximoServiceKm": null,
+        "serviceSummary": {
+          "Calibrado de Luces": {
+            "fecha": {
+              "_seconds": 1795143600,
+              "_nanoseconds": 0
+            },
+            "km": 13196,
+            "proximoKm": null,
+            "proximoFecha": {
+              "_seconds": 1800500400,
+              "_nanoseconds": 0
+            }
+          },
+          "Engrase de Pluma y Chasis": {
+            "fecha": {
+              "_seconds": 1795143600,
+              "_nanoseconds": 0
+            },
+            "km": 13196,
+            "proximoKm": null,
+            "proximoFecha": {
+              "_seconds": 1803265200,
+              "_nanoseconds": 0
+            }
+          },
+          "Calibrado de ruedas": {
+            "fecha": {
+              "_seconds": 1795143600,
+              "_nanoseconds": 0
+            },
+            "km": 13196,
+            "proximoKm": null,
+            "proximoFecha": {
+              "_seconds": 1800500400,
+              "_nanoseconds": 0
+            }
+          }
+        },
+        "updatedAt": {
+          "_seconds": 1795266937,
+          "_nanoseconds": 614000000
+        },
+        "empleadoId": "5xs6kTtuc3ov7GYsX8Xp",
+        "vencimientoRegistro": "07/10/2028",
+        "vencimientoDNI": "03/01/2038",
+        "documentacion": {
+          "seguro": {
+            "fechaVencimiento": {
+              "_seconds": 1807110000,
+              "_nanoseconds": 0
+            },
+            "noVence": false
+          },
+          "vtv": {
+            "fechaVencimiento": {
+              "_seconds": 1798556400,
+              "_nanoseconds": 0
+            }
+          },
+          "cedula": {
+            "noVence": true
+          },
+          "dni": {
+            "fechaVencimiento": "03/01/2038"
+          },
+          "registro": {
+            "fechaVencimiento": "07/10/2028"
+          }
+        }
+      }
+    }
+  ]
+}

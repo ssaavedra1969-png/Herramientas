@@ -1,0 +1,133 @@
+{
+  "id": "cps0WS7psqgSA72T7KsC",
+  "patente": "AG269DZ",
+  "fecha": "2026-11-25T19:26:48.864Z",
+  "data": {
+    "patente": "AG269DZ",
+    "interno": "V026",
+    "marca": "Mercedes Benz",
+    "modelo": "AXOR 3131",
+    "anio": 2023,
+    "tipo": "mixer",
+    "subtipo": "Tzr",
+    "chasis": "9BM958264RB338107",
+    "numeroMotor": "926992U1455411",
+    "capacidadCarga": 24000,
+    "kilometraje": 0,
+    "horometro": 0,
+    "estadoGeneral": "Bueno",
+    "fechaUltimaRevision": null,
+    "trompo": true,
+    "marcaTrompo": "Tzr",
+    "serieTrompo": null,
+    "modeloTrompo": "MX 0086-24",
+    "cargaM3Trompo": "8 M3",
+    "centroTrabajo": "Lujan",
+    "conductorHabitual": "",
+    "observaciones": "",
+    "fotoURL": "",
+    "multas": [],
+    "documentos": [],
+    "createdAt": {
+      "_seconds": 1784733113,
+      "_nanoseconds": 617000000
+    },
+    "fechaAlta": {
+      "_seconds": 1784733113,
+      "_nanoseconds": 617000000
+    },
+    "nroBet": "22",
+    "empresa": "Constructora Almajo Norte SRL",
+    "serviceSummary": {
+      "Cambio filtro de aceite": {
+        "km": 38576,
+        "proximoFecha": null,
+        "proximoKm": 68576,
+        "fecha": {
+          "_seconds": 1782529200,
+          "_nanoseconds": 0
+        }
+      },
+      "Cambio filtro de combustible": {
+        "proximoFecha": null,
+        "proximoKm": 68576,
+        "km": 38576,
+        "fecha": {
+          "_seconds": 1782529200,
+          "_nanoseconds": 0
+        }
+      },
+      "Cambio filtro de aire": {
+        "proximoFecha": null,
+        "fecha": {
+          "_seconds": 1782529200,
+          "_nanoseconds": 0
+        },
+        "proximoKm": 68576,
+        "km": 38576
+      }
+    },
+    "proximoServiceKm": 68576,
+    "proximoServiceTipo": "Cambio filtro de aire",
+    "chofer": "Juan Cruz Dovale",
+    "vtv": {
+      "fechaRealizacion": null,
+      "fechaVencimiento": {
+        "_seconds": 1801796400,
+        "_nanoseconds": 0
+      },
+      "costo": null,
+      "centroMedicion": "",
+      "resultado": "Pendiente"
+    },
+    "año": null,
+    "matafuego": {
+      "estado": "Sin Matafuego",
+      "fechaControl": null,
+      "fechaVto": null
+    },
+    "dni": "40888197",
+    "registro": "40888197",
+    "updatedAt": {
+      "_seconds": 1791215612,
+      "_nanoseconds": 864000000
+    },
+    "seguro": {
+      "poliza": "",
+      "tipo": "",
+      "fechaVencimiento": {
+        "_seconds": 1807110000,
+        "_nanoseconds": 0
+      },
+      "costo": null,
+      "compania": "SANCOR"
+    },
+    "vencimientoRegistro": "[object Object]",
+    "empleadoId": "OKDrWlfRwi64rqEpmECy",
+    "vencimientoDNI": "[object Object]",
+    "documentacion": {
+      "vtv": {
+        "fechaVencimiento": {
+          "_seconds": 1801839600,
+          "_nanoseconds": 0
+        }
+      },
+      "cedula": {
+        "noVence": true
+      },
+      "seguro": {
+        "fechaVencimiento": {
+          "_seconds": 1807110000,
+          "_nanoseconds": 0
+        },
+        "noVence": false
+      },
+      "dni": {
+        "fechaVencimiento": "[object Object]"
+      },
+      "registro": {
+        "fechaVencimiento": "[object Object]"
+      }
+    }
+  }
+}
