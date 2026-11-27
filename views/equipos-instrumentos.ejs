@@ -97,7 +97,7 @@
   <div id="modal-tolerancias" class="modal-backdrop hidden">
     <div class="modal sm"><div class="modal-head"><div><h2>Tolerancia admitida por equipo</h2><p>Se configura una vez al dar de alta el equipo y se usa para calcular Apto / No apto.</p></div><button class="icon-btn" onclick="cerrar('modal-tolerancias')">✕</button></div><div class="modal-body"><div id="tol-body"></div></div><div class="modal-foot"><button class="btn btn-secondary" onclick="cerrar('modal-tolerancias')">Cancelar</button><button class="btn btn-primary" onclick="guardarTolerancias()">Guardar tolerancias</button></div></div>
   </div>
-  <div id="cmdk" class="cmdk"><div class="cmdk__panel"><input id="cmdk-input" class="cmdk__input" placeholder="Buscar registro o sección…" autocomplete="off"><div id="cmdk-list" class="cmdk__list"></div><div class="cmdk__foot">↑ ↓ para navegar · Enter para abrir · Esc para cerrar</div></div></div>
+  </div>
   <div id="toast" class="toast hidden"></div>
 
   <script>
@@ -336,9 +336,6 @@
         if(e.key==='Escape'){['modal-detalle','modal-form','modal-cert','modal-tolerancias'].forEach(cerrar);}
       });
       document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',ev=>{if(ev.target===b&&b.id!=='modal-form')b.classList.add('hidden');}));
-    });
-      document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',ev=>{if(ev.target===b&&b.id!=='modal-form')b.classList.add('hidden');}));
-      tick();setInterval(tick,1000);
     });
   </script>
     </div>
