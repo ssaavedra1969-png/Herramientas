@@ -1,6 +1,17 @@
 # CHANGELOG — Sistema de Control de Mantenimiento
 
-Cambios registrados por sesión. Última actualización: 2026-11-26.
+Cambios registrados por sesión. Última actualización: 2026-11-28.
+
+## 2026-11-28 — Equipos e Instrumentos: demo, tolerancias, manual e integración (commits `ca27da3`, `22b0a46`, `2b5952c`, `2719547`)
+
+- Nueva sección **Equipos e Instrumentos** con demo funcional de Mantenimiento y Pruebas/Ensayos, 12 registros de muestra, filtros, modales, alta/edición y catálogo compacto.
+- Reglas de negocio: **Cocina = Humedad** sobre Áridos (Probetas deshabilitada), pruebas por equipo (Peso/Presión/Humedad), periodicidades y semáforo visual.
+- **Tolerancia por equipo** editable: cálculo de desviación, estado **Apto/No apto** y **Acción tomada** obligatoria en No apto.
+- Manual de usuario PDF generado con identidad visual de Grupo Falpat SRL.
+- Publicación en Vercel: static `/equipos-instrumentos`, excepción en `.vercelignore` para los PDF de la carpeta y enlace en Utilidades (sidebar + mobile-menu).
+- Integración final como **sección real autenticada** en `/equipos-instrumentos` con `views/equipos-instrumentos.ejs`, sidebar/topbar reales y estilos scopeados bajo `.ei-demo`.
+- Fix final: se quitaron handlers huérfanos (`tick()`, `cmdk`, duplicado de `modal-backdrop`) que dejaban la sección integrada sin responder.
+- Detalle completo: `documentacion/Update_2026.11.28.md`.
 
 ## 2026-11-26 — Fixes UI/permisos + puesta al día docs (commit e9ec74)
 
